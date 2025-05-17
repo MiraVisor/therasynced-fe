@@ -11,8 +11,8 @@ import { useTheme } from "next-themes";
 const Navbar = () => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // To track menu state (open/close)
-  const [hash, setHash] = useState("#home"); // Active section state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hash, setHash] = useState("#home");
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -107,15 +107,17 @@ const Navbar = () => {
           >
             pricing
           </Link>
-
-          {/* You can also include action buttons in the mobile menu */}
-          <Button
-            variant={"ghost"}
-            className="capitalize w-36 h-10 rounded-sm bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--muted)]"
-          >
-            sign up
-          </Button>
-          <Button className="capitalize w-36 h-10 rounded-sm">log in</Button>
+          <Link href="/authentication/sign-up" passHref>
+            <Button
+              variant={"ghost"}
+              className="capitalize w-36 h-10 rounded-sm bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--muted)]"
+            >
+              sign up
+            </Button>
+          </Link>{" "}
+          <Link href="/authentication/sign-in" passHref>
+            <Button className="capitalize w-36 h-10 rounded-sm">log in</Button>{" "}
+          </Link>
         </div>
       )}
     </>
@@ -185,10 +187,15 @@ const Navbar = () => {
         </div>
       </div>
       <div className="flex items-center gap-6">
-        <Button variant={"ghost"} className="capitalize w-36 h-10 rounded-sm">
-          sign up
-        </Button>
-        <Button className="capitalize w-36 h-10 rounded-sm">log in</Button>
+        <Link href="/authentication/sign-up" passHref>
+          <Button variant="ghost" className="capitalize w-36 h-10 rounded-sm">
+            sign up
+          </Button>
+        </Link>
+
+        <Link href="/authentication/sign-in" passHref>
+          <Button className="capitalize w-36 h-10 rounded-sm">log in</Button>
+        </Link>
       </div>
     </div>
   );
