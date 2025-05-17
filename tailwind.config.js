@@ -11,11 +11,14 @@ module.exports = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        blackColor: "var(--black)",
         card: "var(--card)",
         cardForeground: "var(--card-foreground)",
         popover: "var(--popover)",
         popoverForeground: "var(--popover-foreground)",
         primary: "var(--primary)",
+        successGreen: "var(--success-green)",
+
         primaryForeground: "var(--primary-foreground)",
         secondary: "var(--secondary)",
         secondaryForeground: "var(--secondary-foreground)",

@@ -1,5 +1,5 @@
-import { Eye, EyeOff } from 'lucide-react';
-import React, { useState } from 'react';
+import { Eye, EyeOff } from "lucide-react";
+import React, { useState } from "react";
 
 interface CustomInputProps {
   name: string;
@@ -29,23 +29,25 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
       helperText,
       errorMessage,
       required,
-      type = 'text',
+      type = "text",
       ariaInvalid,
     },
-    ref,
+    ref
   ) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [inputValue, setInputValue] = useState(value || '');
+    const [inputValue, setInputValue] = useState(value || "");
 
     const handleClearInput = () => {
-      setInputValue('');
+      setInputValue("");
       if (onChange) {
-        onChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>);
+        onChange({
+          target: { value: "" },
+        } as React.ChangeEvent<HTMLInputElement>);
       }
     };
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-0.5">
         <label
           htmlFor={name}
           className="font-[700] text-[14px] leading-[25px] font-sans text-foreground "
@@ -55,7 +57,7 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
         <div className="relative">
           <input
             id={name}
-            type={showPassword ? 'text' : type}
+            type={showPassword ? "text" : type}
             name={name}
             value={inputValue}
             onChange={(e) => {
@@ -68,13 +70,17 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
             placeholder={placeholder}
             required={required}
             ref={ref}
-            aria-invalid={ariaInvalid ? 'true' : 'false'}
+            aria-invalid={ariaInvalid ? "true" : "false"}
             aria-describedby={
-              errorMessage ? `${name}-error` : helperText ? `${name}-helper` : undefined
+              errorMessage
+                ? `${name}-error`
+                : helperText
+                ? `${name}-helper`
+                : undefined
             }
-            className="px-3 py-2 border rounded-md w-full h-[40px] focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
+            className="px-3 py-2 border rounded-md w-full h-[40px] focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {type === 'password' && (
+          {type === "password" && (
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
@@ -85,7 +91,7 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
             </button>
           )}
           {/* Cross button to clear input, not shown for password field */}
-          {inputValue && type !== 'password' && (
+          {inputValue && type !== "password" && (
             <button
               type="button"
               onClick={handleClearInput}
@@ -107,9 +113,9 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
         )}
       </div>
     );
-  },
+  }
 );
 
-CustomInput.displayName = 'CustomInput';
+CustomInput.displayName = "CustomInput";
 
 export default CustomInput;

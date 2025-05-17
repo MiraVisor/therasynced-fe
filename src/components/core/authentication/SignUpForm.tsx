@@ -1,120 +1,93 @@
-import { FcGoogle } from "react-icons/fc";
-import { FaFacebook } from "react-icons/fa";
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { useState } from "react";
+import CustomInput from "@/components/common/input/CustomInput";
+import { Button } from "@/components/ui/button";
+
+// Zod Schema for Validation
+const signupSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(100, "Name must be under 100 characters"),
+  email: z.string().email("Invalid email").max(100, "Email is too long"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+      "Password must include uppercase, lowercase, number, and special character"
+    ),
+});
+
+// Infer type
+type SignUpFormData = z.infer<typeof signupSchema>;
+
 export default function SignUpForm() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signupSchema),
+  });
+
+  const onSubmit: SubmitHandler<SignUpFormData> = async (data) => {
+    console.log("Submitted data:", data);
+    setIsLoading(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // simulate API call
+      reset();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="bg-therasynced-background rounded-lg shadow-lg max-w-md w-full p-8">
-        <div className="flex justify-center mb-6">
-          <img
-            src="/svgs/therasynced_logo.svg"
-            alt="Therasynced Logo"
-            className="h-14"
-          />
-        </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <CustomInput
+        title="Name"
+        placeholder="Enter your full name"
+        type="text"
+        {...register("name")}
+        errorMessage={errors.name?.message}
+        ariaInvalid={!!errors.name}
+      />
 
-        <h1 className="text-3xl font-semibold text-therasynced-primary text-center mb-1">
-          Welcome
-        </h1>
-        <p className="text-center text-therasynced-textGray mb-8">
-          Let’s Login to your THERASYNCED Account
-        </p>
+      <CustomInput
+        title="Email"
+        placeholder="Enter your email"
+        type="email"
+        {...register("email")}
+        errorMessage={errors.email?.message}
+        ariaInvalid={!!errors.email}
+      />
 
-        {/* Social Buttons */}
-        <div className="space-y-3 mb-8">
-          <button className="w-full bg-gray-100 text-black flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 transition">
-            <span></span>
-            Continue with Apple
-          </button>
-          <button className="w-full bg-gray-100 text-black flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 transition">
-            <FcGoogle />
-            Continue with Google
-          </button>
-          <button className="w-full bg-gray-100 text-black flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 transition">
-            <FaFacebook />
-            Continue with Facebook
-          </button>
-        </div>
-
-        {/* OR separator */}
-        <div className="flex items-center text-gray-400 mb-8">
-          <hr className="flex-grow border-t border-gray-300" />
-          <span className="mx-3 text-sm">OR</span>
-          <hr className="flex-grow border-t border-gray-300" />
-        </div>
-
-        {/* Form Fields */}
-        <form className="space-y-6">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-therasynced-primary font-semibold mb-1"
-            >
-              Your Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              placeholder="Ex: Maguire@gmail.com"
-              className="w-full rounded-lg bg-therasynced-inputBg border border-gray-300 px-4 py-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-therasynced-secondary"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-therasynced-primary font-semibold mb-1"
-            >
-              Your Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="Ex: Maguire@gmail.com"
-              className="w-full rounded-lg bg-therasynced-inputBg border border-gray-300 px-4 py-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-therasynced-secondary"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-therasynced-primary font-semibold mb-1"
-            >
-              Create Password
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                className="w-full rounded-lg bg-therasynced-inputBg border border-gray-300 px-4 py-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-therasynced-secondary"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
-              >
-                👁️
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-therasynced-primary text-white font-semibold py-3 rounded-lg hover:bg-gray-800 transition"
-          >
-            Create Account →
-          </button>
-        </form>
-
-        <p className="text-center text-gray-400 mt-6 text-sm">
-          Already have an Account?{" "}
-          <a
-            href="/authentication/sign-in"
-            className="text-therasynced-primary font-semibold hover:underline"
-          >
-            Log In
-          </a>
-        </p>
+      <CustomInput
+        title="Create Password"
+        placeholder="Create a strong password"
+        type="password"
+        {...register("password")}
+        errorMessage={errors.password?.message}
+        ariaInvalid={!!errors.password}
+      />
+      <div className="mt-2">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-mutedForeground dark:text-foreground mt-4"
+        >
+          {isSubmitting ? "Creating Account..." : "Create Account →"}
+        </Button>
       </div>
-    </div>
+    </form>
   );
 }
