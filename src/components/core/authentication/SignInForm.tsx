@@ -68,7 +68,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-mutedForeground dark:text-foreground"
+       className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
       >
         {isSubmitting ? "Submitting..." : "Login →"}
       </Button>

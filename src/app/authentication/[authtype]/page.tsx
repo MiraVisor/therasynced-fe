@@ -9,6 +9,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import Image from "next/image";
+import OnboardingForm from "@/components/core/authentication/OnboardingForm";
 interface AuthPageProps {
   params: {
     authtype: string;
@@ -25,7 +26,8 @@ export default function AuthPage({ params }: AuthPageProps) {
   const [currentView, setCurrentView] = useState<AuthView>(
     authtype as AuthView
   );
-  // State to track if we're showing the OTP verification screen
+  const [signUpStep, setSignUpStep] = useState(1); // New Step Tracker
+  const [signUpData, setSignUpData] = useState<any>({});
   const [showOtp, setShowOtp] = useState(false);
   if (!validAuthTypes.includes(authtype)) {
     return notFound();
@@ -46,25 +48,42 @@ export default function AuthPage({ params }: AuthPageProps) {
   const handleRequestOtp = () => {
     setShowOtp(true);
   };
+  const handleNextStep = (data: any) => {
+    setSignUpData((prev: any) => ({ ...prev, ...data }));
+    setSignUpStep((prev) => prev + 1);
+  };
 
+  const handleFinalSubmit = (data: any) => {
+    const finalData = { ...signUpData, ...data };
+    console.log("Final Sign-Up Payload", finalData);
+    // TODO: Hit your sign-up API with finalData here
+  };
   // Determine which form to show based on current view
   const renderAuthForm = () => {
-    switch (currentView) {
-      case "sign-in":
-        return <SignInForm onForgotPassword={handleForgotPassword} />;
-      case "sign-up":
-        return <SignUpForm />;
-      case "forgot-password":
-        return <ForgotPasswordForm onBackToSignIn={handleBackToSignIn} />;
-      default:
-        return <SignInForm onForgotPassword={handleForgotPassword} />;
+    if (currentView === "sign-up") {
+      if (signUpStep === 1) {
+        return (
+          <SignUpForm onNext={handleNextStep} initialValues={signUpData} />
+        );
+      } else if (signUpStep === 2) {
+        return (
+          <OnboardingForm
+            onBack={() => setSignUpStep(1)}
+            onSubmit={handleFinalSubmit}
+          />
+        );
+      }
     }
+    if (currentView === "sign-in")
+      return <SignInForm onForgotPassword={handleForgotPassword} />;
+    if (currentView === "forgot-password")
+      return <ForgotPasswordForm onBackToSignIn={handleBackToSignIn} />;
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-2 px-4">
-      <div className="bg-background rounded-lg shadow-lg max-w-md w-full p-8">
-        <div className="flex justify-center mb-2">
+    <div className="min-h-screen bg-background flex items-center justify-center py-6 px-4 bg-[url('/svgs/signup_bg.svg')] bg-cover bg-center bg-no-repeat">
+      <div className="bg-background rounded-lg shadow-lg max-w-md w-full px-6 py-3">
+        <div className="flex justify-center mb-1">
           <Image
             src="/svgs/therasynced_logo.svg"
             alt="Therasynced Logo"
@@ -73,34 +92,35 @@ export default function AuthPage({ params }: AuthPageProps) {
             priority={true}
           />
         </div>
-
+        <ThemeToggle />
         <h1 className="font-medium text-[32px] leading-[48px] tracking-normal text-center align-middle text-foreground">
           Welcome
-          {/* <ThemeToggle /> */}
         </h1>
 
-        <p className="text-center text-[16px] leading-[48px] tracking-normal align-middle text-primary mb-3">
+        <p className="text-center text-primary mb-3">
           {currentView === "sign-up"
-            ? "Let's Create your THERASYNCED Account"
+            ? signUpStep === 1
+              ? "Let's Create your THERASYNCED Account"
+              : "Complete your profile"
             : currentView === "forgot-password"
             ? "Reset Your Password"
             : "Login to your THERASYNCED Account"}
         </p>
 
         {/* Only show social buttons for sign-in and sign-up */}
-        {currentView !== "forgot-password" && (
+        {currentView !== "forgot-password" && signUpStep === 1 && (
           <>
             {/* Social Buttons */}
             <div className="space-y-1.5 mb-6">
-              <button className="w-full bg-[#ebefed] dark:bg-muted text-primary flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 transition max-h-[40px]">
+              <button className="w-full bg-[#ebefed] dark:bg-muted text-primary flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition max-h-[40px]">
                 <FaApple />
                 Continue with Apple
               </button>
-              <button className="w-full bg-[#ebefed] dark:bg-muted text-primary flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 transition max-h-[40px]">
+              <button className="w-full bg-[#ebefed] dark:bg-muted text-primary flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition max-h-[40px]">
                 <FcGoogle />
                 Continue with Google
               </button>
-              <button className="w-full bg-[#ebefed] dark:bg-muted text-primary  flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 transition max-h-[40px]">
+              <button className="w-full bg-[#ebefed] dark:bg-muted text-primary  flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition max-h-[40px]">
                 <FaFacebook />
                 Continue with Facebook
               </button>

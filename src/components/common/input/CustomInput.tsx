@@ -1,9 +1,9 @@
 import { Eye, EyeOff } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface CustomInputProps {
   name: string;
-  value?: string;
+
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   ref?: React.Ref<HTMLInputElement>;
@@ -21,7 +21,7 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
   (
     {
       name,
-      value,
+
       onChange,
       onBlur,
       title,
@@ -35,16 +35,6 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
     ref
   ) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [inputValue, setInputValue] = useState(value || "");
-
-    const handleClearInput = () => {
-      setInputValue("");
-      if (onChange) {
-        onChange({
-          target: { value: "" },
-        } as React.ChangeEvent<HTMLInputElement>);
-      }
-    };
 
     return (
       <div className="space-y-0.5">
@@ -59,11 +49,9 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
             id={name}
             type={showPassword ? "text" : type}
             name={name}
-            value={inputValue}
             onChange={(e) => {
-              setInputValue(e.target.value);
               if (onChange) {
-                onChange(e);
+                onChange?.(e);
               }
             }}
             onBlur={onBlur}
@@ -88,16 +76,6 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          )}
-          {/* Cross button to clear input, not shown for password field */}
-          {inputValue && type !== "password" && (
-            <button
-              type="button"
-              onClick={handleClearInput}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center bg-gray-200 text-gray-600 rounded-full hover:bg-gray-300 cursor-pointer"
-            >
-              <span className="text-sm leading-none">×</span>
             </button>
           )}
         </div>

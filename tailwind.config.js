@@ -28,6 +28,7 @@ module.exports = {
         accentForeground: "var(--accent-foreground)",
         destructive: "var(--destructive)",
         border: "var(--border)",
+        grey: "var(--grey)",
         input: "var(--input)",
         ring: "var(--ring)",
         chart1: "var(--chart-1)",

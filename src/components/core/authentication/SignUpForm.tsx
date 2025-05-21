@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomInput from "@/components/common/input/CustomInput";
 import { Button } from "@/components/ui/button";
 
@@ -26,9 +26,18 @@ const signupSchema = z.object({
 // Infer type
 type SignUpFormData = z.infer<typeof signupSchema>;
 
-export default function SignUpForm() {
-  const [isLoading, setIsLoading] = useState(false);
+interface SignUpFormProps {
+  onNext: (data: any) => void;
+  initialValues?: {
+    name?: string;
+    email?: string;
+    password?: string;
+  };
+}
 
+export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  // console.log("initialValues", initialValues);
   const {
     register,
     handleSubmit,
@@ -36,14 +45,26 @@ export default function SignUpForm() {
     reset,
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signupSchema),
+    defaultValues: initialValues
+      ? initialValues
+      : {
+          name: "",
+          email: "",
+          password: "",
+        },
   });
+  // Reset form when initialValues change
+  useEffect(() => {
+    reset(initialValues);
+  }, [initialValues]);
 
   const onSubmit: SubmitHandler<SignUpFormData> = async (data) => {
     console.log("Submitted data:", data);
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       reset();
+      onNext(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,7 +104,7 @@ export default function SignUpForm() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-mutedForeground dark:text-foreground mt-4"
+          className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
         >
           {isSubmitting ? "Creating Account..." : "Create Account →"}
         </Button>
