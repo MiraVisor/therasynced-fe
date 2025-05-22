@@ -62,7 +62,7 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
     console.log("Submitted data:", data);
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
       reset();
       onNext(data);
     } catch (err) {
@@ -104,9 +104,10 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
+          isLoading={isSubmitting}
           className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
         >
-          {isSubmitting ? "Creating Account..." : "Create Account →"}
+          {"Create Account →"}
         </Button>
       </div>
     </form>

@@ -8,17 +8,19 @@ import { date } from "zod";
 interface OnboardingFormProps {
   onBack: () => void;
   onSubmit: (data: any) => void;
+  isLoading?: boolean;
 }
 const genderOptions = ["male", "female", "non-binary"];
-const roleOptions = ["patient", "therapist", "freelancer"];
+const roleOptions = ["patient", "team", "freelancer"];
 export default function OnboardingForm({
   onBack,
   onSubmit,
+  isLoading,
 }: OnboardingFormProps) {
   const [formData, setFormData] = useState({
-    lookingFor: "male",
+    gender: "male",
     dob: "",
-    location: "",
+    city: "",
     role: "patient",
   });
   const [selected, setSelected] = useState("male");
@@ -27,7 +29,11 @@ export default function OnboardingForm({
   };
 
   const handleContinue = () => {
-    onSubmit(formData);
+    const transformedData = {
+      ...formData,
+      role: formData.role.toUpperCase(),
+    };
+    onSubmit(transformedData);
   };
 
   return (
@@ -39,10 +45,10 @@ export default function OnboardingForm({
           <label
             key={option}
             className="flex items-center space-x-2 cursor-pointer "
-            onClick={() => handleChange("lookingFor", option)}
+            onClick={() => handleChange("gender", option)}
           >
             <Checkbox
-              checked={formData.lookingFor === option}
+              checked={formData.gender === option}
               className=" h-[18px] w-[18px]"
             />
             <span className="text-grey">
@@ -69,8 +75,8 @@ export default function OnboardingForm({
           className={cn(
             "flex w-full justify-between items-center rounded-2xl border border-gray-200 bg-white px-4 py-2 text-left text-sm font-normal text-muted-foreground bg-background text-foreground"
           )}
-          value={formData.location}
-          onChange={(e) => handleChange("location", e.target.value)}
+          value={formData.city}
+          onChange={(e) => handleChange("city", e.target.value)}
         />
       </div>
 
@@ -107,6 +113,7 @@ export default function OnboardingForm({
           variant="blackOutline"
           className="bg-black text-white px-4 py-2 rounded border-border"
           onClick={handleContinue}
+          isLoading={isLoading}
         >
           Continue
         </Button>

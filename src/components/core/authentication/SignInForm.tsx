@@ -1,11 +1,15 @@
 "use client";
 import CustomInput from "@/components/common/input/CustomInput";
 import { Button } from "@/components/ui/button";
+import { useAppDispatch } from "@/redux/hooks/useAppHooks";
+import { loginUser } from "@/redux/slices";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { ThreeDots } from "react-loader-spinner";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 import { z } from "zod";
-
 
 const formSchema = z.object({
   email: z
@@ -22,7 +26,6 @@ const formSchema = z.object({
     ),
 });
 
-
 type FormData = z.infer<typeof formSchema>;
 
 const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
@@ -34,10 +37,20 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
     mode: "onBlur",
     resolver: zodResolver(formSchema),
   });
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    console.log("Form Submitted:", data);
-    // Handle form submission logic here
+    try {
+      const res = await dispatch(loginUser(data)).unwrap();
+      toast.success(res?.message || "Sign-Up Successful");
+      router.push("/");
+      console.log("Sign-Up Response", res);
+    } catch (err) {
+      const error = err as { message?: string };
+      toast.error(error.message || "Sign-Up Failed");
+      console.error("Sign-Up Error", error);
+    }
   };
 
   return (
@@ -68,9 +81,10 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
       <Button
         type="submit"
         disabled={isSubmitting}
-       className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
+        isLoading={isSubmitting}
+        className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
       >
-        {isSubmitting ? "Submitting..." : "Login →"}
+        {"Login →"}
       </Button>
     </form>
   );
