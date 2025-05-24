@@ -1,0 +1,21 @@
+import { useDispatch, useSelector } from 'react-redux';
+import type { TypedUseSelectorHook } from 'react-redux';
+
+import { AppDispatch, RootState } from '@/redux/store';
+
+import { loginUser, logout } from '../slices';
+
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+
+//TODO: Will update this later as per the requirement
+export const useAuth = () => {
+  const dispatch = useAppDispatch();
+  const auth = useAppSelector((state) => state.auth);
+
+  return {
+    ...auth,
+    login: (credentials: { email: string; password: string }) => dispatch(loginUser(credentials)),
+    logout: () => dispatch(logout()),
+  };
+};
