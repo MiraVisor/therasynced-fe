@@ -21,7 +21,6 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
   (
     {
       name,
-
       onChange,
       onBlur,
       title,

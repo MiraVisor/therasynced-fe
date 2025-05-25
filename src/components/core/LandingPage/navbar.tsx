@@ -1,206 +1,110 @@
-import { MenuIcon, XIcon } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
+'use client';
 
-import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/lib/utils";
-import { useTheme } from "next-themes";
+import { MenuIcon, X } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+
+import { ModeToggle } from '@/components/mode-toggler';
+import { Button } from '@/components/ui/button';
+
+const navLinks = [
+  { href: '#services', label: 'Our Services' },
+  { href: '#features', label: 'Why Us' },
+  { href: '#freelancers', label: 'Experts' },
+  { href: '#pricing', label: 'Pricing' },
+];
 
 const Navbar = () => {
-  const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [hash, setHash] = useState("#home");
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-  console.log("resolvedTheme", resolvedTheme);
-  const MobileNavbar = () => (
-    <>
-      <div className="flex items-center justify-between px-6 py-4 shadow-lg">
-        <Link href={"/"}>
+  const toggleMenu = () => setIsOpen((prev) => !prev);
+  const closeMenu = () => setIsOpen(false);
+
+  return (
+    <header className="w-full z-50 px-4 sm:px-6 lg:px-8 py-2.5 border-b border-muted/10">
+      <div className="max-w-screen-xl mx-auto flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center" onClick={closeMenu}>
           <Image
-            src={
-              resolvedTheme === "dark"
-                ? "/svgs/next_dark.jpeg"
-                : "/svgs/next.svg"
-            }
+            src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
             alt="logo"
-            width={54}
-            height={54}
+            width={77}
+            height={77}
+            className="transition-transform duration-300"
           />
         </Link>
-        {/* Toggle the menu visibility when the icon is clicked */}
+
+        {/* Desktop Nav */}
+        <ul className="hidden md:flex items-center gap-6 lg:gap-8">
+          {navLinks.map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className="relative px-3 py-1.5 text-sm font-medium tracking-wide text-gray-600 dark:text-zinc-300 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        {/* CTA + Theme Toggle */}
         <div className="flex items-center gap-4">
-          <ThemeToggle />
-          {isMenuOpen ? (
-            <XIcon
-              size={24}
-              onClick={toggleMenu}
-              className="cursor-pointer animate-in fade-in zoom-in duration-300 text-black dark:text-black"
-            />
-          ) : (
-            <MenuIcon
-              size={24}
-              onClick={toggleMenu}
-              className="cursor-pointer animate-in fade-in zoom-in duration-300 text-black dark:text-black"
-            />
-          )}{" "}
-        </div>
-      </div>
-
-      {/* The mobile menu */}
-      {isMenuOpen && (
-        <div
-          className={`flex flex-col items-center gap-6 p-4 bg-white shadow-lg transition-all duration-300 ease-in-out transform ${
-            isMenuOpen ? "translate-x-0" : "-translate-x-full"
-          }`} // Slide menu in/out based on `isMenuOpen`
-        >
-          <Link
-            href={"#home"}
-            onClick={() => {
-              setHash("#home");
-              setIsMenuOpen(false); // Close menu after clicking a link
-            }}
-            className={`capitalize text-sm ${
-              hash === "#home" ? "text-primary" : "text-[#767676]"
-            } transition-colors`}
-          >
-            home
-          </Link>
-          <Link
-            href={"#about"}
-            onClick={() => {
-              setHash("#about");
-              setIsMenuOpen(false); // Close menu after clicking a link
-            }}
-            className={`capitalize text-sm ${
-              hash === "#about" ? "text-primary" : "text-[#767676]"
-            } transition-colors`}
-          >
-            about us
-          </Link>
-          <Link
-            href={"#services"}
-            onClick={() => {
-              setHash("#services");
-              setIsMenuOpen(false); // Close menu after clicking a link
-            }}
-            className={`capitalize text-sm ${
-              hash === "#services" ? "text-primary" : "text-[#767676]"
-            } transition-colors`}
-          >
-            our services
-          </Link>
-          <Link
-            href={"#pricing"}
-            onClick={() => {
-              setHash("#pricing");
-              setIsMenuOpen(false); // Close menu after clicking a link
-            }}
-            className={`capitalize text-sm ${
-              hash === "#pricing" ? "text-primary" : "text-[#767676]"
-            } transition-colors`}
-          >
-            pricing
-          </Link>
-          <Link href="/authentication/sign-up" passHref>
-            <Button
-              variant={"ghost"}
-              className="capitalize w-36 h-10 rounded-sm bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--muted)]"
-            >
-              sign up
-            </Button>
-          </Link>{" "}
-          <Link href="/authentication/sign-in" passHref>
-            <Button className="capitalize w-36 h-10 rounded-sm">log in</Button>{" "}
-          </Link>
-        </div>
-      )}
-    </>
-  );
-
-  const DesktopNavbar = () => (
-    <div className="flex items-center justify-between px-14 py-4 shadow-lg font-semibold">
-      <div className="flex items-center gap-11">
-        <Link href={"/"}>
-          <Image
-            src={
-              resolvedTheme === "dark"
-                ? "/svgs/next_dark.jpeg"
-                : "/svgs/next.svg"
-            }
-            alt="logo"
-            width={54}
-            height={54}
-          />
-        </Link>
-        <div className="flex gap-6">
-          <Link
-            href={"#home"}
-            onClick={() => setHash("#home")}
-            className={`capitalize border-b-2 ${
-              hash === "#home"
-                ? "text-primary border-b-primary"
-                : "text-foreground border-b-transparent"
-            } text-sm`}
-          >
-            home
-          </Link>
-          <Link
-            href={"#about"}
-            onClick={() => setHash("#about")}
-            className={`capitalize border-b-2 ${
-              hash === "#about"
-                ? "text-primary border-b-primary"
-                : "text-foreground border-b-transparent"
-            } text-sm`}
-          >
-            about us
-          </Link>
-          <Link
-            href={"#services"}
-            onClick={() => setHash("#services")}
-            className={`capitalize border-b-2 ${
-              hash === "#services"
-                ? "text-primary border-b-primary"
-                : "text-foreground border-b-transparent"
-            } text-sm`}
-          >
-            our services
-          </Link>
-          <Link
-            href={"#pricing"}
-            onClick={() => setHash("#pricing")}
-            className={`capitalize border-b-2 ${
-              hash === "#pricing"
-                ? "text-primary border-b-primary"
-                : "text-foreground border-b-transparent"
-            } text-sm`}
-          >
-            pricing
-          </Link>
-          <ThemeToggle />
-        </div>
-      </div>
-      <div className="flex items-center gap-6">
-        <Link href="/authentication/sign-up" passHref>
-          <Button variant="ghost" className="capitalize w-36 h-10 rounded-sm">
-            sign up
+          <ModeToggle />
+          <Button className="hidden sm:inline-block text-sm font-medium tracking-wide px-6 py-1.5 rounded-xl transition-all duration-300 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
+            Get Started
           </Button>
-        </Link>
 
-        <Link href="/authentication/sign-in" passHref>
-          <Button className="capitalize w-36 h-10 rounded-sm">log in</Button>
-        </Link>
+          {/* Mobile Hamburger */}
+          <button
+            className="md:hidden inline-flex items-center justify-center p-2"
+            onClick={toggleMenu}
+            aria-label="Toggle Menu"
+          >
+            {isOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
-    </div>
-  );
 
-  return <>{isMobile ? <MobileNavbar /> : <DesktopNavbar />}</>;
+      {/* Mobile Menu Drawer */}
+      <div
+        className={`md:hidden fixed top-0 right-0 h-full w-64 bg-white dark:bg-zinc-900 shadow-lg transform transition-transform duration-300 z-40 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col p-6 gap-6 pt-20">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={closeMenu}
+              className="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-primary transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <Button
+            className="w-full mt-4 text-sm font-medium tracking-wide px-4 py-2 rounded-xl transition-all duration-300 bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/25"
+            onClick={closeMenu}
+          >
+            Get Started
+          </Button>
+        </div>
+      </div>
+
+      {/* Overlay when menu is open */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black bg-opacity-40 md:hidden"
+          onClick={closeMenu}
+        ></div>
+      )}
+    </header>
+  );
 };
 
 export default Navbar;

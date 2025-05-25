@@ -1,13 +1,13 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { useEffect, useState } from "react";
+import { type ClassValue, clsx } from 'clsx';
+import { useEffect, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -15,10 +15,10 @@ export function useIsMobile() {
     };
 
     checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
+    window.addEventListener('resize', checkIsMobile);
 
     return () => {
-      window.removeEventListener("resize", checkIsMobile);
+      window.removeEventListener('resize', checkIsMobile);
     };
   }, []);
 
