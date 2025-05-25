@@ -7,7 +7,7 @@ import { notFound, useRouter } from "next/navigation";
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
-import { ThemeToggle } from "@/components/common/ThemeToggle";
+
 import Image from "next/image";
 import OnboardingForm from "@/components/core/authentication/OnboardingForm";
 import { useAppDispatch } from "@/redux/hooks/useAppHooks";
@@ -110,7 +110,7 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
             priority={true}
           />
         </div>
-        <ThemeToggle />
+
         <h1 className="font-medium text-[32px] leading-[48px] tracking-normal text-center align-middle text-foreground">
           Welcome
         </h1>
