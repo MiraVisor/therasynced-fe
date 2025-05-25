@@ -13,10 +13,10 @@ export function ModeToggle() {
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       variant="outline"
       size="icon"
-      className="relative"
+      className="relative h-10 w-10"
     >
-      <Sun className="h-[1.2rem] w-[1.2rem] transition-transform duration-300 dark:scale-0" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 transition-transform duration-300 dark:scale-100" />
+      <Sun className="h-5 w-5 transition-transform duration-300 dark:scale-0" />
+      <Moon className="absolute h-5 w-5 scale-0 transition-transform duration-300 dark:scale-100" />
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
