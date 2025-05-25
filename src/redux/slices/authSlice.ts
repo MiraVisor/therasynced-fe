@@ -1,37 +1,55 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-import { loginApi } from '../api';
+import { loginApi, signUpUserApi } from "../api";
+import { registerUserTypes } from "@/types/types";
 
 const initialState: {
   isAuthenticated: boolean;
   token: string | null;
 } = {
-  isAuthenticated: typeof window !== 'undefined' && localStorage.getItem('token') ? true : false,
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
+  isAuthenticated:
+    typeof window !== "undefined" && localStorage.getItem("token")
+      ? true
+      : false,
+  token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
 };
 
 export const loginUser = createAsyncThunk(
-  'auth/loginUser',
-  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+  "auth/loginUser",
+  async (
+    credentials: { email: string; password: string },
+    { rejectWithValue }
+  ) => {
     try {
       const data = await loginApi(credentials);
 
       return data;
     } catch (err: unknown) {
-      return rejectWithValue(err || 'Something went wrong');
+      return rejectWithValue(err || "Something went wrong");
     }
-  },
+  }
 );
+export const signUpUser = createAsyncThunk(
+  "auth/registerUser",
+  async (credentials: registerUserTypes, { rejectWithValue }) => {
+    try {
+      const data = await signUpUserApi(credentials);
 
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err || "Something went wrong");
+    }
+  }
+);
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     logout: (state) => {
       state.isAuthenticated = false;
       state.token = null;
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
       }
     },
   },
@@ -42,8 +60,8 @@ const authSlice = createSlice({
         const token = action.payload.data.access_token;
         state.token = token;
         state.isAuthenticated = true;
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('token', token);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token", token);
         }
       })
       .addCase(loginUser.rejected, (state) => {

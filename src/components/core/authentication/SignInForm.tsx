@@ -1,0 +1,93 @@
+"use client";
+import CustomInput from "@/components/common/input/CustomInput";
+import { Button } from "@/components/ui/button";
+import { useAppDispatch } from "@/redux/hooks/useAppHooks";
+import { loginUser } from "@/redux/slices";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { ThreeDots } from "react-loader-spinner";
+import React from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+import { z } from "zod";
+
+const formSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address")
+    .max(100, "Email cannot exceed 100 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      "Password must include uppercase, lowercase, number, and special character"
+    ),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    mode: "onBlur",
+    resolver: zodResolver(formSchema),
+  });
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    try {
+      const res = await dispatch(loginUser(data)).unwrap();
+      toast.success(res?.message || "Sign-Up Successful");
+      router.push("/");
+      console.log("Sign-Up Response", res);
+    } catch (err) {
+      const error = err as { message?: string };
+      toast.error(error.message || "Sign-Up Failed");
+      console.error("Sign-Up Error", error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <CustomInput
+        title="Email"
+        placeholder="Enter your email"
+        type="email"
+        {...register("email")}
+        errorMessage={errors.email?.message}
+        ariaInvalid={!!errors.email}
+      />
+      <CustomInput
+        title="Password"
+        placeholder="Enter your password"
+        type="password"
+        {...register("password")}
+        errorMessage={errors.password?.message}
+        ariaInvalid={!!errors.password}
+      />
+      {/* Forgot Password Link */}
+      <p
+        className="text-sm text-red-600 cursor-pointer hover:underline"
+        onClick={onForgotPassword}
+      >
+        Forgot Password?
+      </p>
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        isLoading={isSubmitting}
+        className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
+      >
+        {"Login →"}
+      </Button>
+    </form>
+  );
+};
+
+export default SignInForm;
