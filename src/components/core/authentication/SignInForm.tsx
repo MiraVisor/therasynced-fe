@@ -1,28 +1,29 @@
-"use client";
-import CustomInput from "@/components/common/input/CustomInput";
-import { Button } from "@/components/ui/button";
-import { useAppDispatch } from "@/redux/hooks/useAppHooks";
-import { loginUser } from "@/redux/slices";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { ThreeDots } from "react-loader-spinner";
-import React from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { toast } from "react-toastify";
-import { z } from "zod";
+'use client';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
+import { z } from 'zod';
+
+import CustomInput from '@/components/common/input/CustomInput';
+import { Button } from '@/components/ui/button';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { loginUser } from '@/redux/slices';
 
 const formSchema = z.object({
   email: z
     .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address")
-    .max(100, "Email cannot exceed 100 characters"),
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address')
+    .max(100, 'Email cannot exceed 100 characters'),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
+    .min(8, 'Password must be at least 8 characters')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      "Password must include uppercase, lowercase, number, and special character"
+      'Password must include uppercase, lowercase, number, and special character',
     ),
 });
 
@@ -34,7 +35,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    mode: "onBlur",
+    mode: 'onBlur',
     resolver: zodResolver(formSchema),
   });
   const dispatch = useAppDispatch();
@@ -43,13 +44,11 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       const res = await dispatch(loginUser(data)).unwrap();
-      toast.success(res?.message || "Sign-Up Successful");
-      router.push("/");
-      console.log("Sign-Up Response", res);
+      toast.success(res?.message || 'Sign-Up Successful');
+      router.push('/dashboard');
     } catch (err) {
       const error = err as { message?: string };
-      toast.error(error.message || "Sign-Up Failed");
-      console.error("Sign-Up Error", error);
+      toast.error(error.message || 'Sign-Up Failed');
     }
   };
 
@@ -59,7 +58,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
         title="Email"
         placeholder="Enter your email"
         type="email"
-        {...register("email")}
+        {...register('email')}
         errorMessage={errors.email?.message}
         ariaInvalid={!!errors.email}
       />
@@ -67,15 +66,12 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
         title="Password"
         placeholder="Enter your password"
         type="password"
-        {...register("password")}
+        {...register('password')}
         errorMessage={errors.password?.message}
         ariaInvalid={!!errors.password}
       />
       {/* Forgot Password Link */}
-      <p
-        className="text-sm text-red-600 cursor-pointer hover:underline"
-        onClick={onForgotPassword}
-      >
+      <p className="text-sm text-red-600 cursor-pointer hover:underline" onClick={onForgotPassword}>
         Forgot Password?
       </p>
       <Button
@@ -84,7 +80,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
         isLoading={isSubmitting}
         className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
       >
-        {"Login →"}
+        {'Login →'}
       </Button>
     </form>
   );

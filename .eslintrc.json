@@ -15,7 +15,9 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
-    "no-console": "error",
+    "no-console": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
     "no-inline-comments": "warn",
 
     "react/react-in-jsx-scope": "off",

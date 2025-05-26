@@ -1,25 +1,23 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { useEffect, useState } from "react";
-import CustomInput from "@/components/common/input/CustomInput";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+import CustomInput from '@/components/common/input/CustomInput';
+import { Button } from '@/components/ui/button';
 
 // Zod Schema for Validation
 const signupSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .max(100, "Name must be under 100 characters"),
-  email: z.string().email("Invalid email").max(100, "Email is too long"),
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be under 100 characters'),
+  email: z.string().email('Invalid email').max(100, 'Email is too long'),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
+    .min(8, 'Password must be at least 8 characters')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-      "Password must include uppercase, lowercase, number, and special character"
+      'Password must include uppercase, lowercase, number, and special character',
     ),
 });
 
@@ -36,8 +34,6 @@ interface SignUpFormProps {
 }
 
 export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  // console.log("initialValues", initialValues);
   const {
     register,
     handleSubmit,
@@ -48,9 +44,9 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
     defaultValues: initialValues
       ? initialValues
       : {
-          name: "",
-          email: "",
-          password: "",
+          name: '',
+          email: '',
+          password: '',
         },
   });
   // Reset form when initialValues change
@@ -59,16 +55,11 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
   }, [initialValues]);
 
   const onSubmit: SubmitHandler<SignUpFormData> = async (data) => {
-    console.log("Submitted data:", data);
-    setIsLoading(true);
     try {
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
       reset();
       onNext(data);
     } catch (err) {
-      console.error(err);
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -78,7 +69,7 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
         title="Name"
         placeholder="Enter your full name"
         type="text"
-        {...register("name")}
+        {...register('name')}
         errorMessage={errors.name?.message}
         ariaInvalid={!!errors.name}
       />
@@ -87,7 +78,7 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
         title="Email"
         placeholder="Enter your email"
         type="email"
-        {...register("email")}
+        {...register('email')}
         errorMessage={errors.email?.message}
         ariaInvalid={!!errors.email}
       />
@@ -96,7 +87,7 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
         title="Create Password"
         placeholder="Create a strong password"
         type="password"
-        {...register("password")}
+        {...register('password')}
         errorMessage={errors.password?.message}
         ariaInvalid={!!errors.password}
       />
@@ -107,7 +98,7 @@ export default function SignUpForm({ onNext, initialValues }: SignUpFormProps) {
           isLoading={isSubmitting}
           className="w-full font-semibold py-3 rounded-lg transition bg-primary text-white dark:bg-primary dark:text-white mt-4 hover:bg-[#015d33]"
         >
-          {"Create Account →"}
+          {'Create Account →'}
         </Button>
       </div>
     </form>

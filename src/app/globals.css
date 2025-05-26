@@ -111,6 +111,7 @@
   --popover-foreground: #1b1c37;
 
   /* Sidebar (light mode) */
+
   --sidebar: #ffffff;
   --sidebar-foreground: #1b1c37;
   --sidebar-primary: #007745;
@@ -119,6 +120,9 @@
   --sidebar-accent-foreground: #1b1c37;
   --sidebar-border: #d1e4da;
   --sidebar-ring: #5cb68c;
+
+  --dashboard-bg-light: #f3f6f5;
+  --dashboard-bg-dark: #181c1a;
 }
 
 .dark {
@@ -152,14 +156,16 @@
   --ring: #22c55e;
 
   /* Sidebar (dark mode) */
-  --sidebar: #000000;
-  --sidebar-foreground: #f0fdf4;
-  --sidebar-primary: #34d399; /* a softer green for dark backgrounds */
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #1f2e27;
-  --sidebar-accent-foreground: #f0fdf4;
-  --sidebar-border: #1c2b23;
+  --sidebar: #121212;
+  --sidebar-foreground: #e0f2f1;
+  --sidebar-primary: #34d399;
+  --sidebar-primary-foreground: #0f0f0f;
+  --sidebar-accent: #1e2b24;
+  --sidebar-accent-foreground: #dcfce7;
+  --sidebar-border: #2e3b35;
   --sidebar-ring: #5cb68c;
+
+  --dashboard-bg: var(--dashboard-bg-dark);
 }
 
 @layer base {
