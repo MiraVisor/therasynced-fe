@@ -57,6 +57,7 @@ module.exports = {
           border: 'var(--sidebar-border)',
           ring: 'var(--sidebar-ring)',
         },
+        dashboard: 'var(--dashboard-bg)',
       },
       borderRadius: {
         sm: 'calc(var(--radius) - 2px)',

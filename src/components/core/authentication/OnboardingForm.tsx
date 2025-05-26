@@ -1,29 +1,27 @@
-"use client";
-import { useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/common/input/DatePicker";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { date } from "zod";
+'use client';
+
+import { useState } from 'react';
+
+import { DatePicker } from '@/components/common/input/DatePicker';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
+
 interface OnboardingFormProps {
   onBack: () => void;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
 }
-const genderOptions = ["male", "female", "non-binary"];
-const roleOptions = ["patient", "team", "freelancer"];
-export default function OnboardingForm({
-  onBack,
-  onSubmit,
-  isLoading,
-}: OnboardingFormProps) {
+const genderOptions = ['male', 'female', 'non-binary'];
+const roleOptions = ['patient', 'team', 'freelancer'];
+export default function OnboardingForm({ onBack, onSubmit, isLoading }: OnboardingFormProps) {
   const [formData, setFormData] = useState({
-    gender: "male",
-    dob: "",
-    city: "",
-    role: "patient",
+    gender: 'male',
+    dob: '',
+    city: '',
+    role: 'patient',
   });
-  const [selected, setSelected] = useState("male");
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -45,15 +43,10 @@ export default function OnboardingForm({
           <label
             key={option}
             className="flex items-center space-x-2 cursor-pointer "
-            onClick={() => handleChange("gender", option)}
+            onClick={() => handleChange('gender', option)}
           >
-            <Checkbox
-              checked={formData.gender === option}
-              className=" h-[18px] w-[18px]"
-            />
-            <span className="text-grey">
-              {option.charAt(0).toUpperCase() + option.slice(1)}
-            </span>
+            <Checkbox checked={formData.gender === option} className=" h-[18px] w-[18px]" />
+            <span className="text-grey">{option.charAt(0).toUpperCase() + option.slice(1)}</span>
           </label>
         ))}
       </div>
@@ -61,42 +54,36 @@ export default function OnboardingForm({
       <div>
         <DatePicker
           title="Date of Birth"
-          onChange={(date) => handleChange("dob", date?.toISOString() ?? "")}
+          onChange={(date) => handleChange('dob', date?.toISOString() ?? '')}
         />
       </div>
 
       <div>
-        <label className="block text-foreground font-semibold text-[18px] mb-1">
-          Location
-        </label>
+        <label className="block text-foreground font-semibold text-[18px] mb-1">Location</label>
         <input
           type="text"
           placeholder="City"
           className={cn(
-            "flex w-full justify-between items-center rounded-2xl border border-gray-200 bg-white px-4 py-2 text-left text-sm font-normal text-muted-foreground bg-background text-foreground"
+            'flex w-full justify-between items-center rounded-2xl border border-gray-200 bg-white px-4 py-2 text-left text-sm font-normal text-muted-foreground bg-background text-foreground',
           )}
           value={formData.city}
-          onChange={(e) => handleChange("city", e.target.value)}
+          onChange={(e) => handleChange('city', e.target.value)}
         />
       </div>
 
       <div className="mt-4">
-        <label className="block text-foreground font-semibold text-[18px] mb-2 ">
-          Choose
-        </label>
+        <label className="block text-foreground font-semibold text-[18px] mb-2 ">Choose</label>
         {roleOptions.map((option) => (
           <label
             key={option}
             className="flex items-center space-x-2 cursor-pointer "
-            onClick={() => handleChange("role", option)}
+            onClick={() => handleChange('role', option)}
           >
             <Checkbox
               checked={formData.role === option}
               className="rounded-full h-[20px] w-[20px]"
             />
-            <span className="text-grey">
-              {option.charAt(0).toUpperCase() + option.slice(1)}
-            </span>
+            <span className="text-grey">{option.charAt(0).toUpperCase() + option.slice(1)}</span>
           </label>
         ))}
       </div>

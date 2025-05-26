@@ -20,9 +20,9 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full">
+      <div className="flex h-screen w-full ">
         <AppSidebar role={userRole} />
-        <main className="flex-1 overflow-y-auto p-8 w-full bg-background">
+        <main className="flex-1 overflow-y-auto p-8 w-full bg-dashboard">
           <div
             className={`flex items-center ${isMobile ? 'justify-between' : 'justify-end'} mb-8 w-full`}
           >

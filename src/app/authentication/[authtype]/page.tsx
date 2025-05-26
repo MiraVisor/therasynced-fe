@@ -1,4 +1,4 @@
-import ClientAuthPage from "@/components/core/authentication/ClientAuthPage";
+import ClientAuthPage from '@/components/core/authentication/ClientAuthPage';
 
 interface AuthPageProps {
   params: {
