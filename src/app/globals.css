@@ -112,8 +112,8 @@
 
   /* Sidebar (light mode) */
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1b1c37;
+  --sidebar: #007745;
+  --sidebar-foreground: #ffffff;
   --sidebar-primary: #007745;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e6f4ed;
@@ -122,7 +122,7 @@
   --sidebar-ring: #5cb68c;
 
   --dashboard-bg-light: #f3f6f5;
-  --dashboard-bg-dark: #181c1a;
+  --dashboard-bg-dark: #1c1c1c;
 }
 
 .dark {
@@ -156,8 +156,9 @@
   --ring: #22c55e;
 
   /* Sidebar (dark mode) */
-  --sidebar: #121212;
-  --sidebar-foreground: #e0f2f1;
+  --sidebar: #1c1c1c;
+  --sidebar-foreground: #ffffff;
+
   --sidebar-primary: #34d399;
   --sidebar-primary-foreground: #0f0f0f;
   --sidebar-accent: #1e2b24;

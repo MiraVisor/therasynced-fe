@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -127,22 +127,23 @@ export function AppSidebar({ role }: AppSidebarProps) {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
   const pathname = usePathname();
-
+  const router = useRouter();
   const links = navigationLinks[role];
 
   return (
-    <Sidebar variant="sidebar" collapsible={'icon'} className="border-r ">
-      <SidebarHeader className="mx-auto w-full">
-        <div className="flex items-center justify-between gap-2 px-2 mx-auto">
-          {!isMobile && (
-            <Image
-              src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
-              alt="logo"
-              width={120}
-              height={120}
-              className="transition-transform duration-300"
-            />
-          )}
+    <Sidebar variant="sidebar" collapsible={'icon'} className="p-4 bg-dashboard !border-r-0 ">
+      <SidebarHeader className="mx-auto w-full ">
+        <div
+          className="flex items-center justify-between gap-2 px-2 mx-auto cursor-pointer"
+          onClick={() => router.push('/dashboard')}
+        >
+          <Image
+            src={`/svgs/NewLogoLight.svg`}
+            alt="logo"
+            width={120}
+            height={120}
+            className="transition-transform duration-300"
+          />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -153,7 +154,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
                 <SidebarMenuButton
                   asChild
                   className={cn(
-                    'h-12 bg-secondary/20 transition-all duration-200',
+                    'h-[40px] bg-secondary/20 transition-all duration-200 px-5',
                     'hover:bg-accent  active:bg-accent/50',
                     resolvedTheme === 'dark' ? 'text-foreground' : 'text-foreground/90',
                     'data-[active=true]:bg-accent/50 data-[active=true]:font-medium',
