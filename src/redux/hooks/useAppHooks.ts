@@ -8,7 +8,6 @@ import { loginUser, logout } from '../slices';
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 
-//TODO: Will update this later as per the requirement
 export const useAuth = () => {
   const dispatch = useAppDispatch();
   const auth = useAppSelector((state) => state.auth);

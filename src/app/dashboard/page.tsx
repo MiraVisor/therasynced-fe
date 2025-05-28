@@ -2,26 +2,34 @@
 
 import { Bell } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
 import { ModeToggle } from '@/components/mode-toggler';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { cn, useIsMobile } from '@/lib/utils';
-
-type UserRole = 'user' | 'freelancer' | 'admin';
-
-// This would typically come from your auth system
-const userRole: UserRole = 'user';
+import { useAuth } from '@/redux/hooks/useAppHooks';
 
 export default function DashboardPage() {
+  const { role: userRole } = useAuth();
+
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, [userRole]);
+
+  if (!hydrated) {
+    return null;
+  }
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full ">
-        <AppSidebar role={userRole} />
+        <AppSidebar userRole={userRole} />
         <main className="flex-1 overflow-y-auto p-8 w-full bg-dashboard">
           <div
             className={`flex items-center ${isMobile ? 'justify-between' : 'justify-end'} mb-8 w-full`}

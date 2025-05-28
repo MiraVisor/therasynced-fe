@@ -1,6 +1,6 @@
-import api from "@/services/api";
-import { ENDPOINTS } from "@/services/endpoints";
-import { registerUserTypes } from "@/types/types";
+import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
+import { registerUserTypes } from '@/types/types';
 
 export const loginApi = async (data: { email: string; password: string }) => {
   const response = await api.post(ENDPOINTS.auth.login, data);
@@ -22,6 +22,6 @@ export const loginApi = async (data: { email: string; password: string }) => {
 };
 
 export const signUpUserApi = async (data: registerUserTypes) => {
-  const response = await api.post("auth/signup", data);
+  const response = await api.post('auth/signup', data);
   return response.data;
 };

@@ -43,11 +43,10 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { cn, useIsMobile } from '@/lib/utils';
-
-type Role = 'user' | 'freelancer' | 'admin';
+import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  role: Role;
+  userRole: RoleType | null;
 }
 
 const navigationLinks = {
@@ -124,12 +123,12 @@ const navigationLinks = {
   ],
 };
 
-export function AppSidebar({ role }: AppSidebarProps) {
+export function AppSidebar({ userRole }: AppSidebarProps) {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
-  const links = navigationLinks[role];
+  const links = userRole ? navigationLinks[userRole] : [];
 
   const handleNavigation = (url: string) => {
     router.push(url);
