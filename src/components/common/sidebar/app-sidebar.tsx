@@ -19,6 +19,7 @@ import {
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import router from 'next/router';
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -52,8 +53,8 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 const navigationLinks = {
   user: [
     {
-      name: 'Overview',
-      url: '/dashboard/overview',
+      name: 'Home',
+      url: '/dashboard',
       icon: Home,
     },
     {
@@ -70,7 +71,7 @@ const navigationLinks = {
   freelancer: [
     {
       name: 'Overview',
-      url: '/dashboard/overview',
+      url: '/dashboard',
       icon: Home,
     },
     {
@@ -97,7 +98,7 @@ const navigationLinks = {
   admin: [
     {
       name: 'Overview',
-      url: '/dashboard/overview',
+      url: '/dashboard',
       icon: Home,
     },
     {
@@ -130,6 +131,9 @@ export function AppSidebar({ role }: AppSidebarProps) {
   const router = useRouter();
   const links = navigationLinks[role];
 
+  const handleNavigation = (url: string) => {
+    router.push(url);
+  };
   return (
     <Sidebar variant="sidebar" collapsible={'icon'} className="p-4 bg-dashboard !border-r-0 ">
       <SidebarHeader className="mx-auto w-full ">
@@ -154,16 +158,20 @@ export function AppSidebar({ role }: AppSidebarProps) {
                 <SidebarMenuButton
                   asChild
                   className={cn(
-                    'h-[40px] bg-secondary/20 transition-all duration-200 px-5',
-                    'hover:bg-accent  active:bg-accent/50',
+                    'h-[40px] bg-secondary/20 transition-all duration-200 px-5 cursor-pointer',
+                    'hover:bg-accent active:bg-accent/50',
                     resolvedTheme === 'dark' ? 'text-foreground' : 'text-foreground/90',
-                    'data-[active=true]:bg-accent/50 data-[active=true]:font-medium',
+
+                    'data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground',
                     isMobile &&
                       'group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:hover:bg-transparent group-data-[collapsible=icon]:hover:translate-x-0',
                   )}
                   isActive={pathname === item.url}
                 >
-                  <a href={item.url} className="mx-auto flex items-center gap-3">
+                  <div
+                    className="mx-auto flex items-center gap-3"
+                    onClick={() => handleNavigation(item.url)}
+                  >
                     <item.icon
                       className={cn(
                         'size-5 transition-all duration-200',
@@ -177,7 +185,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
                       )}
                     />
                     <span className="text-sm font-medium">{item.name}</span>
-                  </a>
+                  </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
