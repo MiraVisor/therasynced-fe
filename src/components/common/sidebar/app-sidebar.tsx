@@ -63,7 +63,7 @@ const navigationLinks = {
     },
     {
       name: 'My Bookings',
-      url: '/dashboard/bookings',
+      url: '/dashboard/my-bookings',
       icon: Calendar,
     },
   ],
