@@ -8,3 +8,5 @@ export interface registerUserTypes {
   dob: string;
   city: string;
 }
+
+export type RoleType = 'user' | 'freelancer' | 'admin';
