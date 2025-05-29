@@ -1,5 +1,5 @@
-import { Eye, EyeOff } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Eye, EyeOff } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface CustomInputProps {
   name: string;
@@ -28,10 +28,10 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
       helperText,
       errorMessage,
       required,
-      type = "text",
+      type = 'text',
       ariaInvalid,
     },
-    ref
+    ref,
   ) => {
     const [showPassword, setShowPassword] = useState(false);
 
@@ -46,7 +46,7 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
         <div className="relative">
           <input
             id={name}
-            type={showPassword ? "text" : type}
+            type={showPassword ? 'text' : type}
             name={name}
             onChange={(e) => {
               if (onChange) {
@@ -57,17 +57,13 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
             placeholder={placeholder}
             required={required}
             ref={ref}
-            aria-invalid={ariaInvalid ? "true" : "false"}
+            aria-invalid={ariaInvalid ? 'true' : 'false'}
             aria-describedby={
-              errorMessage
-                ? `${name}-error`
-                : helperText
-                ? `${name}-helper`
-                : undefined
+              errorMessage ? `${name}-error` : helperText ? `${name}-helper` : undefined
             }
             className="px-3 py-2 border rounded-md w-full h-[40px] focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {type === "password" && (
+          {type === 'password' && (
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
@@ -90,9 +86,9 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
-CustomInput.displayName = "CustomInput";
+CustomInput.displayName = 'CustomInput';
 
 export default CustomInput;
