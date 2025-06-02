@@ -1,16 +1,17 @@
 'use client';
 
-import { ExpertList } from '@/components/core/Dashboard/UserSide/Explore/ExpertList';
-import { SectionHeader } from '@/components/core/Dashboard/UserSide/Explore/SectionHeader';
-import { ViewMoreButton } from '@/components/core/Dashboard/UserSide/Explore/ViewMoreButton';
+import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 
 const ExplorePage = () => {
   return (
-    <div className="p-6">
-      <SectionHeader />
-      <ExpertList />
-      <ViewMoreButton />
-    </div>
+    <DashboardPageWrapper
+      header={
+        <h2 className="text-xl font-semibold">Hi Nadeem! 👋 Here’s what’s happening today.</h2>
+      }
+    >
+      {/* Page-specific content */}
+      <div>Explore things here</div>
+    </DashboardPageWrapper>
   );
 };
 

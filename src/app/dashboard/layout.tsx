@@ -1,12 +1,8 @@
 'use client';
 
-import { Bell } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
-import { ModeToggle } from '@/components/mode-toggler';
-import { Button } from '@/components/ui/button';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 

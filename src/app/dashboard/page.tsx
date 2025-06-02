@@ -9,11 +9,9 @@ import { useAuth } from '@/redux/hooks/useAppHooks';
 
 export default function DashboardHome() {
   const { role: userRole } = useAuth();
-export default function DashboardHome() {
-  const { role: userRole } = useAuth();
 
   return (
-    <DashboardPageWrapper header={<SearchBar />}>
+    <DashboardPageWrapper header={<SearchBar isLocationEnabled />}>
       {userRole === 'user' && (
         <div className="mb-12">
           <SectionHeader />
