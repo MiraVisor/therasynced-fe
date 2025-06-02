@@ -50,7 +50,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 const navigationLinks = {
-  user: [
+  PATIENT: [
     {
       name: 'Home',
       url: '/dashboard',
@@ -67,7 +67,7 @@ const navigationLinks = {
       icon: Calendar,
     },
   ],
-  freelancer: [
+  FREELANCER: [
     {
       name: 'Overview',
       url: '/dashboard',
@@ -94,7 +94,7 @@ const navigationLinks = {
       icon: BarChart,
     },
   ],
-  admin: [
+  ADMIN: [
     {
       name: 'Overview',
       url: '/dashboard',

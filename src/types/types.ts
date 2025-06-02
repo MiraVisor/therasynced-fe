@@ -9,4 +9,4 @@ export interface registerUserTypes {
   city: string;
 }
 
-export type RoleType = 'user' | 'freelancer' | 'admin';
+export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
