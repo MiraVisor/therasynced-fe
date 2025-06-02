@@ -1,16 +1,16 @@
 'use client';
 
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 
-const MyBookingsPage = () => {
-  const { role: userRole } = useAuth();
-
+export default function MyBookingsPage() {
   return (
-    <div>
-      My Bookings with Role as{' '}
-      <span className="text-red-500 text-xl font-bold uppercase">{userRole}</span>
-    </div>
+    <DashboardPageWrapper
+      header={
+        <h2 className="text-xl font-semibold">Hi Nadeem! 👋 Here’s what’s happening today.</h2>
+      }
+    >
+      {/* Page-specific content */}
+      <div>Your bookings go here</div>
+    </DashboardPageWrapper>
   );
-};
-
-export default MyBookingsPage;
+}

@@ -1,15 +1,17 @@
 'use client';
 
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { ExpertList } from '@/components/core/Dashboard/UserSide/Explore/ExpertList';
+import { SectionHeader } from '@/components/core/Dashboard/UserSide/Explore/SectionHeader';
+import { ViewMoreButton } from '@/components/core/Dashboard/UserSide/Explore/ViewMoreButton';
 
-const ExlorePage = () => {
-  const { role: userRole } = useAuth();
-
+const ExplorePage = () => {
   return (
-    <div>
-      Exlore Page as <span className="text-red-500 text-xl font-bold uppercase">{userRole}</span>
+    <div className="p-6">
+      <SectionHeader />
+      <ExpertList />
+      <ViewMoreButton />
     </div>
   );
 };
 
-export default ExlorePage;
+export default ExplorePage;
