@@ -11,16 +11,17 @@ const initialState: {
 } = {
   isAuthenticated: typeof window !== 'undefined' && !!localStorage.getItem('token'),
   token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  role: typeof window !== 'undefined' ? (localStorage.getItem('role') as RoleType) || 'user' : null,
+  role:
+    typeof window !== 'undefined' ? (localStorage.getItem('role') as RoleType) || 'PATIENT' : null,
 };
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const data = await loginApi(credentials);
-
-      return data;
+      const response = await loginApi(credentials);
+      console.log('Login response data:', response?.data);
+      return response?.data;
     } catch (err: unknown) {
       return rejectWithValue(err || 'Something went wrong');
     }
@@ -45,8 +46,10 @@ const authSlice = createSlice({
     logout: (state) => {
       state.isAuthenticated = false;
       state.token = null;
+      state.role = null;
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
+        localStorage.removeItem('role');
       }
     },
   },
@@ -54,13 +57,19 @@ const authSlice = createSlice({
     builder
       .addCase(loginUser.pending, () => {})
       .addCase(loginUser.fulfilled, (state, action) => {
-        const token = action.payload.data.access_token;
+        const token = action.payload.data.token;
+        const role = action.payload.data.user.role;
+
         state.token = token;
+        state.role = role;
         state.isAuthenticated = true;
+
         if (typeof window !== 'undefined') {
           localStorage.setItem('token', token);
+          localStorage.setItem('role', role);
         }
       })
+
       .addCase(loginUser.rejected, (state) => {
         state.isAuthenticated = false;
         state.token = null;
