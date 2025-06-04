@@ -19,8 +19,6 @@ import {
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import router from 'next/router';
-import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -42,7 +40,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { cn, useIsMobile } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {

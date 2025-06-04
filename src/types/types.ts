@@ -10,3 +10,9 @@ export interface registerUserTypes {
 }
 
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
+
+export enum ROLES {
+  PATIENT = 'PATIENT',
+  FREELANCER = 'FREELANCER',
+  ADMIN = 'ADMIN',
+}
