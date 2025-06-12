@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
+import { getCookie, removeCookie, setCookie } from '@/lib/utils';
 import { RoleType, registerUserTypes } from '@/types/types';
 
 import { loginApi, signUpUserApi } from '../api';
@@ -9,10 +10,9 @@ const initialState: {
   token: string | null;
   role: RoleType | null;
 } = {
-  isAuthenticated: typeof window !== 'undefined' && !!localStorage.getItem('token'),
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  role:
-    typeof window !== 'undefined' ? (localStorage.getItem('role') as RoleType) || 'PATIENT' : null,
+  isAuthenticated: typeof window !== 'undefined' && !!getCookie('token'),
+  token: typeof window !== 'undefined' ? getCookie('token') : null,
+  role: null, // Role will be fetched from server on each request
 };
 
 export const loginUser = createAsyncThunk(
@@ -20,25 +20,25 @@ export const loginUser = createAsyncThunk(
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const response = await loginApi(credentials);
-      console.log('Login response data:', response?.data);
       return response?.data;
     } catch (err: unknown) {
       return rejectWithValue(err || 'Something went wrong');
     }
   },
 );
+
 export const signUpUser = createAsyncThunk(
   'auth/registerUser',
   async (credentials: registerUserTypes, { rejectWithValue }) => {
     try {
       const data = await signUpUserApi(credentials);
-
       return data;
     } catch (err: any) {
       return rejectWithValue(err || 'Something went wrong');
     }
   },
 );
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -48,9 +48,11 @@ const authSlice = createSlice({
       state.token = null;
       state.role = null;
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
+        removeCookie('token');
       }
+    },
+    setRole: (state, action) => {
+      state.role = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -65,17 +67,17 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
 
         if (typeof window !== 'undefined') {
-          localStorage.setItem('token', token);
-          localStorage.setItem('role', role);
+          setCookie('token', token);
         }
       })
 
       .addCase(loginUser.rejected, (state) => {
         state.isAuthenticated = false;
         state.token = null;
+        state.role = null;
       });
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, setRole } = authSlice.actions;
 export default authSlice.reducer;

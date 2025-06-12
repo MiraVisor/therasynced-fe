@@ -19,3 +19,5 @@ export const ENDPOINTS = {
     cancel: (id: string) => `/orders/${id}/cancel`,
   },
 } as const;
+
+export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;

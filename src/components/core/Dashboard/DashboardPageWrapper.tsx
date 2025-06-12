@@ -6,7 +6,8 @@ import { useTheme } from 'next-themes';
 import { ModeToggle } from '@/components/mode-toggler';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { cn, useIsMobile } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 export function DashboardPageWrapper({
   header,

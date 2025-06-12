@@ -5,29 +5,38 @@ import { ExpertList } from '@/components/core/Dashboard/UserSide/Explore/ExpertL
 import { SearchBar } from '@/components/core/Dashboard/UserSide/Explore/SearchBar';
 import { SectionHeader } from '@/components/core/Dashboard/UserSide/Explore/SectionHeader';
 import { ViewMoreButton } from '@/components/core/Dashboard/UserSide/Explore/ViewMoreButton';
-import { getDecodedToken } from '@/lib/utils';
+import { isRole } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
+import { ROLES } from '@/types/types';
+
+import Unauthorized from '../unauthorized';
 
 export default function DashboardHome() {
   const { role: userRole } = useAuth();
-  const token = getDecodedToken();
+
+  // if (!isRole(userRole)) return <Unauthorized />;//No need for this check as the layout already handles unauthorized access
+
   return (
     <DashboardPageWrapper header={<SearchBar isLocationEnabled />}>
-      {userRole === 'PATIENT' && (
+      {userRole === ROLES.PATIENT && (
         <div className="mb-12">
           <SectionHeader />
           <ExpertList />
           <ViewMoreButton />
         </div>
       )}
-      {userRole === 'FREELANCER' && (
+
+      {userRole === ROLES.FREELANCER && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Today&apos;s Schedule</h2>
+          {/* Add freelancer-specific components here */}
         </div>
       )}
-      {userRole === 'ADMIN' && (
+
+      {userRole === ROLES.ADMIN && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Platform Overview</h2>
+          {/* Add admin-specific components here */}
         </div>
       )}
     </DashboardPageWrapper>
