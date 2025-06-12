@@ -1,11 +1,11 @@
 'use client';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { ExpertList } from '@/components/core/Dashboard/UserSide/Explore/ExpertList';
-import { SearchBar } from '@/components/core/Dashboard/UserSide/Explore/SearchBar';
-import { SectionHeader } from '@/components/core/Dashboard/UserSide/Explore/SectionHeader';
-import { ViewMoreButton } from '@/components/core/Dashboard/UserSide/Explore/ViewMoreButton';
-import UserOverview from '@/components/core/Dashboard/UserSide/Overview/UserOverview';
+import { SearchBar } from '@/components/core/Dashboard/SearchBar';
+import { ExpertList } from '@/components/core/Dashboard/UserSide/Overview/ExpertSection';
+import { SectionHeader } from '@/components/core/Dashboard/UserSide/Overview/SectionHeader';
+import UserOverview from '@/components/core/Dashboard/UserSide/Overview/UserOverviewMain';
+import { ViewMoreButton } from '@/components/core/Dashboard/UserSide/Overview/ViewMoreButton';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { ROLES } from '@/types/types';
 

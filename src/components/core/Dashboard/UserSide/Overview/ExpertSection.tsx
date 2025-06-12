@@ -3,7 +3,7 @@ import React from 'react';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
-interface ExpertCardProps {
+export interface Expert {
   name: string;
   specialty: string;
   experience: string;
@@ -12,7 +12,9 @@ interface ExpertCardProps {
   isFavorite?: boolean;
 }
 
-export const ExpertCard: React.FC<ExpertCardProps> = ({
+interface ExpertCardProps extends Expert {}
+
+const ExpertCard: React.FC<ExpertCardProps> = ({
   name,
   specialty,
   experience,
@@ -44,5 +46,17 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({
       <Button variant="outline">View Profile</Button>
       <Button>Book Now</Button>
     </div>
+  </div>
+);
+
+interface ExpertListProps {
+  experts: Expert[];
+}
+
+export const ExpertList: React.FC<ExpertListProps> = ({ experts }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {experts.map((expert, idx) => (
+      <ExpertCard key={idx} {...expert} />
+    ))}
   </div>
 );
