@@ -5,26 +5,16 @@ import { ExpertList } from '@/components/core/Dashboard/UserSide/Explore/ExpertL
 import { SearchBar } from '@/components/core/Dashboard/UserSide/Explore/SearchBar';
 import { SectionHeader } from '@/components/core/Dashboard/UserSide/Explore/SectionHeader';
 import { ViewMoreButton } from '@/components/core/Dashboard/UserSide/Explore/ViewMoreButton';
-import { isRole } from '@/lib/utils';
+import UserOverview from '@/components/core/Dashboard/UserSide/Overview/UserOverview';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { ROLES } from '@/types/types';
-
-import Unauthorized from '../unauthorized';
 
 export default function DashboardHome() {
   const { role: userRole } = useAuth();
 
-  // if (!isRole(userRole)) return <Unauthorized />;//No need for this check as the layout already handles unauthorized access
-
   return (
-    <DashboardPageWrapper header={<SearchBar isLocationEnabled />}>
-      {userRole === ROLES.PATIENT && (
-        <div className="mb-12">
-          <SectionHeader />
-          <ExpertList />
-          <ViewMoreButton />
-        </div>
-      )}
+    <>
+      {userRole === ROLES.PATIENT && <UserOverview />}
 
       {userRole === ROLES.FREELANCER && (
         <div className="mt-8">
@@ -39,6 +29,6 @@ export default function DashboardHome() {
           {/* Add admin-specific components here */}
         </div>
       )}
-    </DashboardPageWrapper>
+    </>
   );
 }
