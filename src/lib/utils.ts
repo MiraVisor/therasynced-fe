@@ -2,8 +2,17 @@ import { type ClassValue, clsx } from 'clsx';
 import { jwtDecode } from 'jwt-decode';
 import { twMerge } from 'tailwind-merge';
 
+import { ROLES } from '@/types/types';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+interface DecodedToken {
+  sub: string;
+  email: string;
+  role: string;
+  iat: number;
+  exp: number;
 }
 
 interface DecodedToken {
@@ -46,3 +55,7 @@ export const getDecodedToken = (): DecodedToken | null => {
   }
   return null;
 };
+
+export function isRole(value: unknown): value is ROLES {
+  return typeof value === 'string' && Object.values(ROLES).includes(value as ROLES);
+}

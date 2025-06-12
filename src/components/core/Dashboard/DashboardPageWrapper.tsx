@@ -21,7 +21,7 @@ export function DashboardPageWrapper({
 
   return (
     <>
-      <div className="flex flex-col gap-6 mb-8 w-full">
+      <div className="flex flex-col gap-6 mb-1 w-full ">
         <div
           className={`flex items-center ${
             !isMobile ? 'justify-between' : 'justify-between'

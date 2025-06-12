@@ -1,10 +1,11 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { getCookie, removeCookie, setCookie } from '@/lib/utils';
+import { getCookie, getDecodedToken, removeCookie, setCookie } from '@/lib/utils';
 import { RoleType, registerUserTypes } from '@/types/types';
 
 import { loginApi, signUpUserApi } from '../api';
 
+const decodedToken = typeof window !== 'undefined' ? getDecodedToken() : null;
 const initialState: {
   isAuthenticated: boolean;
   token: string | null;
@@ -12,7 +13,7 @@ const initialState: {
 } = {
   isAuthenticated: typeof window !== 'undefined' && !!getCookie('token'),
   token: typeof window !== 'undefined' ? getCookie('token') : null,
-  role: null, // Role will be fetched from server on each request
+  role: (decodedToken?.role as RoleType) ?? null,
 };
 
 export const loginUser = createAsyncThunk(
@@ -70,6 +71,7 @@ const authSlice = createSlice({
           setCookie('token', token);
         }
       })
+
       .addCase(loginUser.rejected, (state) => {
         state.isAuthenticated = false;
         state.token = null;
