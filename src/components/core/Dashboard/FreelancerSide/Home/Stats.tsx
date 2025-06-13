@@ -56,7 +56,7 @@ const CardsData: FreelancerStatCardType[] = [
 const Stats = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-16">
-      {CardsData.map((data) => {
+      {CardsData.map((data, index) => {
         return (
           <div
             key={data.id}
@@ -67,8 +67,10 @@ const Stats = () => {
                 <h2 className="text-xs md:text-base font-medium text-gray-600 tracking-wide">
                   {data.title}
                 </h2>
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mt-1 md:mt-2">
-                  {data.number}
+                <p className="text-lg md:text-xl lg:text-3xl font-bold text-gray-900 mt-1 md:mt-2">
+                  {index === 3 && '€'}
+                  {data.number && index === 3 ? Number(data.number).toLocaleString() : data.number}
+                  {index === 1 && '+'}
                 </p>
               </div>
               <div className="pl-2 md:pl-3 rounded-lg md:rounded-xl ">
