@@ -5,7 +5,7 @@ import { setRole } from '@/redux/slices/authSlice';
 import { store } from '@/redux/store';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -28,7 +28,7 @@ api.interceptors.response.use(
   (response: AxiosResponse) => {
     // Update role from server response if available
     if (response.data?.user?.role) {
-      store.dispatch(setRole(response.data.user.role)); //TODO: check if this is needed or we can use the role from the token and also check if role is coming from response
+      store.dispatch(setRole(response.data.user.role));
     }
     return response;
   },

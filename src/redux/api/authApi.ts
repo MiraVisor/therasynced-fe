@@ -1,9 +1,9 @@
 import api from '@/services/api';
-import { BACKEND_URL, ENDPOINTS } from '@/services/endpoints';
+import { ENDPOINTS } from '@/services/endpoints';
 import { registerUserTypes } from '@/types/types';
 
 export const loginApi = async (data: { email: string; password: string }) => {
-  const response = await api.post(BACKEND_URL + ENDPOINTS.auth.login, data);
+  const response = await api.post(ENDPOINTS.auth.login, data);
 
   // const userDetails = {
   //   token: response?.data.data?.access_token,
@@ -22,6 +22,6 @@ export const loginApi = async (data: { email: string; password: string }) => {
 };
 
 export const signUpUserApi = async (data: registerUserTypes) => {
-  const response = await api.post('auth/signup', data);
+  const response = await api.post(ENDPOINTS.auth.signup, data);
   return response.data;
 };
