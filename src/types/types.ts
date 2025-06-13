@@ -16,3 +16,12 @@ export enum ROLES {
   FREELANCER = 'FREELANCER',
   ADMIN = 'ADMIN',
 }
+
+export type FreelancerStatCardType = {
+  id: number;
+  title: string;
+  number: number;
+  icon: JSX.Element;
+  percentage: 'up' | 'down';
+  percentageNumber: number;
+};
