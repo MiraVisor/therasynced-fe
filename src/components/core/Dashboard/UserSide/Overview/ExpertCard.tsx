@@ -19,7 +19,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   imageUrl = 'https://randomuser.me/api/portraits/women/44.jpg',
 }) => (
   <div
-    className={`border rounded-lg px-6 py-8 flex flex-col gap-2 relative min-w-[280px] ${
+    className={`border rounded-lg px-6 py-8 flex flex-col gap-2  shadow-md relative min-w-[280px] ${
       showFavoriteText ? 'min-h-[412px]' : 'min-h-[350px]'
     }`}
   >
@@ -29,19 +29,21 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       </h3>
     )}
     <div className="flex items-center gap-3">
-      <Avatar className="w-12 h-12 rounded-full overflow-hidden">
-        <AvatarImage src={imageUrl} className="w-full h-full object-cover" />
-      </Avatar>
-      <div>
-        <div className="font-semibold">{name}</div>
-        <div className="text-xs text-gray-500">{specialty}</div>
-        <div className="text-xs text-gray-500">{experience}</div>
-        <div className="flex items-center gap-1 mt-1">
-          {[...Array(5)].map((_, i) => (
-            <span key={i} className={i < rating ? 'text-yellow-400' : 'text-gray-300'}>
-              ★
-            </span>
-          ))}
+      <div className="flex gap-2">
+        <Avatar className="w-12 h-12 rounded-full overflow-hidden">
+          <AvatarImage src={imageUrl} className="w-full h-full object-cover" />
+        </Avatar>
+        <div className="flex flex-col justify-center gap-2">
+          <div className="font-inter font-semibold text-base16">{name}</div>
+          <div className="font-inter font-medium text-base14 text-[#525252]">{specialty}</div>
+          <div className="font-inter font-medium text-base14  text-[#525252]">{experience}</div>
+          <div className="flex items-center gap-0.5 mt-1 text-[20px]">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className={i < rating ? 'text-yellow-400' : 'text-gray-300'}>
+                ★
+              </span>
+            ))}
+          </div>
         </div>
       </div>
       <button
@@ -52,7 +54,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         {isFavorite ? '♥' : '♡'}
       </button>
     </div>
-    <div className="text-sm text-gray-600 mt-2">{description}</div>
+    <div className="text-sm text-[#525252] mt-2 mb-3">{description}</div>
     <div className="flex gap-2 mt-4">
       <Button
         variant="outline"

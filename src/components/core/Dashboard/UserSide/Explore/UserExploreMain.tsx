@@ -55,7 +55,7 @@ const UserExploreMain = () => {
     >
       <div className="flex flex-col gap-6">
         {/* Top Grid: Favorite + Appointment */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Favorite Expert Section */}
           <section className="lg:col-span-4">
             <ExpertCard {...selectedAppointment.expert} showFavoriteText={true} />
@@ -63,16 +63,10 @@ const UserExploreMain = () => {
 
           {/* Appointment Section */}
           <section className="lg:col-span-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700 min-h-[375px]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 shadow-md border border-gray-100 dark:border-gray-700 h-[410px]">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm ">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    className="rounded-xl"
-                  />
-                </div>
+                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-xl" />
+
                 <AppointmentCard
                   expert={selectedAppointment.expert}
                   date={selectedAppointment.date}
