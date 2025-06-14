@@ -1,106 +1,89 @@
-import Image from 'next/image';
+import { ArrowDown, ArrowUp, Calendar, DollarSign, Star, Users } from 'lucide-react';
 
-import { FreelancerStatCardType } from '@/types/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const CardsData: FreelancerStatCardType[] = [
+const CardsData = [
   {
-    id: 1,
-    title: 'Weekly Appointments',
-    number: 40,
-    icon: (
-      <Image
-        src={'../freelancers/weekly_appointments.svg'}
-        alt="weekly apooinments icon"
-        width={60}
-        height={60}
-      />
-    ),
-    percentage: 'up',
-    percentageNumber: 8.5,
+    title: 'Total Appointments',
+    value: '1,248',
+    change: '+24',
+    trend: 'up',
+    icon: Calendar,
+    iconBg: 'bg-blue-50',
+    iconColor: 'text-blue-600',
   },
   {
-    id: 2,
-    title: 'Client Satisfaction',
-    number: 10,
-    icon: (
-      <Image
-        src={'../freelancers/client_satisfaction.svg'}
-        alt="client satisfaction icon"
-        width={60}
-        height={60}
-      />
-    ),
-    percentage: 'up',
-    percentageNumber: 1.3,
+    title: 'Client Rating',
+    value: '4.8',
+    change: '+0.2',
+    trend: 'up',
+    icon: Star,
+    iconBg: 'bg-purple-50',
+    iconColor: 'text-purple-600',
   },
   {
-    id: 3,
-    title: 'Active Clients',
-    number: 4,
-    icon: (
-      <Image src={'../freelancers/new_clients.svg'} alt="new clients icon" width={60} height={60} />
-    ),
-    percentage: 'down',
-    percentageNumber: 4.3,
+    title: 'New Clients',
+    value: '8',
+    change: '+3',
+    trend: 'up',
+    icon: Users,
+    iconBg: 'bg-green-50',
+    iconColor: 'text-green-600',
   },
   {
-    id: 4,
-    title: 'Revenue',
-    number: 13400,
-    icon: <Image src={'../freelancers/revenue.svg'} alt="revenue icon" width={60} height={60} />,
-    percentage: 'up',
-    percentageNumber: 1.8,
+    title: 'Weekly Revenue',
+    value: '€2,480',
+    change: '+€320',
+    trend: 'up',
+    icon: DollarSign,
+    iconBg: 'bg-amber-50',
+    iconColor: 'text-amber-600',
   },
 ];
 
 const Stats = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-16">
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
       {CardsData.map((data, index) => {
+        const Icon = data.icon;
         return (
-          <div
-            key={data.id}
-            className="bg-white rounded-xl md:rounded-2xl border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_20px_-3px_rgba(0,0,0,0.1),0_12px_24px_-2px_rgba(0,0,0,0.06)] transition-all duration-300 backdrop-blur-sm flex flex-col gap-4 md:gap-6 justify-between"
+          <Card
+            key={index}
+            className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl lg:rounded-2xl hover:shadow-lg transition-all duration-300"
           >
-            <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
-              <div>
-                <h2 className="text-xs md:text-base font-medium text-gray-600 tracking-wide">
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 px-5 lg:px-6 pt-5 lg:pt-6">
+              <div className="space-y-1">
+                <CardTitle className="text-sm lg:text-base font-medium text-gray-600">
                   {data.title}
-                </h2>
-                <p className="text-lg md:text-xl lg:text-3xl font-bold text-gray-900 mt-1 md:mt-2">
-                  {index === 3 && '€'}
-                  {data.number && index === 3 ? Number(data.number).toLocaleString() : data.number}
-                  {index === 1 && '+'}
-                </p>
+                </CardTitle>
+                <div className="text-2xl lg:text-3xl font-semibold text-gray-900">{data.value}</div>
               </div>
-              <div className="pl-2 md:pl-3 rounded-lg md:rounded-xl ">
-                <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14">{data.icon}</div>
+              <div
+                className={`p-3 lg:p-4 rounded-2xl ${data.iconBg} group-hover:scale-110 transition-transform duration-300`}
+              >
+                <Icon className={`h-6 w-6 lg:h-7 lg:w-7 ${data.iconColor}`} />
               </div>
-            </div>
-            <div className="flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 border-t border-gray-100">
-              <Image
-                src={
-                  data.percentage === 'up'
-                    ? '../freelancers/trending_up.svg'
-                    : '../freelancers/trending_down.svg'
-                }
-                alt="trending icon"
-                width={16}
-                height={16}
-                className="opacity-80"
-              />
-              <div className="text-xs md:text-sm">
-                <span
-                  className={`${data.percentage === 'up' ? 'text-emerald-600' : 'text-red-400'} font-medium`}
+            </CardHeader>
+            <CardContent className="px-5 lg:px-6 pb-5 lg:pb-6">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex items-center text-xs lg:text-sm font-medium ${
+                    data.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                  }`}
                 >
-                  {data.percentageNumber}%{' '}
-                </span>
-                <span className="text-gray-600">
-                  {data.percentage === 'up' ? 'up' : 'down'} from last week
-                </span>
+                  {data.trend === 'up' ? (
+                    <ArrowUp className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1.5" />
+                  ) : (
+                    <ArrowDown className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1.5" />
+                  )}
+                  {data.change}
+                </div>
+                <CardDescription className="text-xs lg:text-sm text-gray-500">
+                  from last week
+                </CardDescription>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
       })}
     </div>

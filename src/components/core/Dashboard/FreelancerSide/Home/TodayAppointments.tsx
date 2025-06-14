@@ -1,117 +1,99 @@
-const sampleAppointments = [
+import { Clock, MapPin, User } from 'lucide-react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const appointments = [
   {
     id: 1,
-    time: '09:00 AM',
-    date: 'Mar 15, 2024',
     clientName: 'Sarah Johnson',
-    type: 'Therapy Session',
-    status: 'confirmed',
-    duration: '60 min',
+    time: '09:00 AM',
+    duration: '45 min',
+    location: 'Online Session',
+    status: 'cancelled',
   },
   {
     id: 2,
-    time: '11:30 AM',
-    date: 'Mar 15, 2024',
-    clientName: 'Michael Chen',
-    type: 'Initial Consultation',
-    status: 'pending',
-    duration: '45 min',
+    clientName: 'Michael Brown',
+    time: '10:30 AM',
+    duration: '60 min',
+    location: 'Office',
+    status: 'upcoming',
   },
   {
     id: 3,
-    time: '02:00 PM',
-    date: 'Mar 15, 2024',
     clientName: 'Emma Wilson',
-    type: 'Follow-up Session',
-    status: 'confirmed',
-    duration: '60 min',
+    time: '02:00 PM',
+    duration: '45 min',
+    location: 'Online Session',
+    status: 'completed',
   },
 ];
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'confirmed':
-      return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-    case 'pending':
-      return 'bg-amber-50 text-amber-700 border border-amber-200';
+    case 'completed':
+      return 'bg-green-100 text-green-700';
     case 'cancelled':
-      return 'bg-red-50 text-red-700 border border-red-200';
+      return 'bg-red-100 text-red-700';
+    case 'upcoming':
+      return 'bg-blue-100 text-blue-700';
     default:
-      return 'bg-gray-50 text-gray-700 border border-gray-200';
+      return 'bg-gray-100 text-gray-700';
   }
 };
 
-const AppointmentCard = ({ appointment }: { appointment: (typeof sampleAppointments)[0] }) => (
-  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4 md:p-5 transition-all duration-200 rounded-xl group border border-gray-100 hover:border-gray-200 hover:shadow-sm">
-    <div className="flex-shrink-0 w-full sm:w-20 flex flex-row sm:flex-col items-center sm:items-start gap-2 sm:gap-0">
-      <div className="text-sm sm:text-base font-semibold text-gray-900">{appointment.time}</div>
-      <div className="text-xs sm:text-sm text-gray-500 sm:mt-1">{appointment.date}</div>
-    </div>
-    <div className="flex-1 min-w-0 w-full">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-3 md:gap-4">
-        <div className="min-w-0">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate transition-colors">
-            {appointment.clientName}
-          </h3>
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 mt-1 sm:mt-1.5 md:mt-2">
-            <span className="text-sm sm:text-base text-gray-600 font-medium">
-              {appointment.type}
-            </span>
-            <span className="text-gray-300 hidden sm:inline">•</span>
-            <span className="text-sm sm:text-base text-gray-600">{appointment.duration}</span>
+const AppointmentCard = ({ appointment }: { appointment: (typeof appointments)[0] }) => {
+  return (
+    <div className="bg-white/80 backdrop-blur-sm border border-gray-200/80 rounded-lg lg:rounded-xl p-4 lg:p-5 hover:shadow-md transition-all duration-200">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
+            <h3 className="text-sm lg:text-base font-medium text-gray-900">
+              {appointment.clientName}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
+            <p className="text-xs lg:text-sm text-gray-600">
+              {appointment.time} ({appointment.duration})
+            </p>
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
+            <p className="text-xs lg:text-sm text-gray-600">{appointment.location}</p>
           </div>
         </div>
-        <span
-          className={`text-xs sm:text-sm font-medium px-2 sm:px-2.5 md:px-3 py-1 md:py-1.5 rounded-full ${getStatusColor(appointment.status)} self-start sm:self-auto`}
-        >
-          {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-        </span>
+        <div className="flex items-center justify-between lg:justify-end gap-2">
+          <span
+            className={`px-2.5 py-1 rounded-full text-xs lg:text-sm font-medium ${getStatusColor(
+              appointment.status,
+            )}`}
+          >
+            {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+          </span>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const TodayAppointments = () => {
-  const hasAppointments = Boolean(sampleAppointments.length > 0);
-
   return (
-    <div className="p-4 sm:p-5 md:p-6 w-full border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/90 rounded-xl sm:rounded-2xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4 md:mb-5">
-        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900">
+    <Card className="w-full border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl lg:rounded-2xl">
+      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white px-4 lg:px-5 py-4 lg:py-5">
+        <CardTitle className="text-base lg:text-lg font-semibold text-gray-800">
           Today&apos;s Appointments
-        </h2>
-      </div>
-
-      {hasAppointments ? (
-        <div className="space-y-2 sm:space-y-3 md:space-y-4">
-          {sampleAppointments.map((appointment) => (
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 lg:p-5">
+        <div className="space-y-3 lg:space-y-4">
+          {appointments.map((appointment) => (
             <AppointmentCard key={appointment.id} appointment={appointment} />
           ))}
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-[160px] sm:h-[180px] md:h-[240px] text-center">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gray-50 rounded-full flex items-center justify-center mb-3 sm:mb-4 md:mb-5">
-            <svg
-              className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <p className="text-sm sm:text-base text-gray-600 font-medium">
-            No appointments scheduled for today
-          </p>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">Your schedule is clear</p>
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
