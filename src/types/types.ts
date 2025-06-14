@@ -8,7 +8,14 @@ export interface registerUserTypes {
   dob: string;
   city: string;
 }
-
+export interface Expert {
+  name: string;
+  specialty: string;
+  experience: string;
+  rating: number;
+  description: string;
+  isFavorite?: boolean;
+}
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 
 export enum ROLES {

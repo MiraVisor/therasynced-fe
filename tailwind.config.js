@@ -65,6 +65,28 @@ module.exports = {
         lg: 'calc(var(--radius) + 2px)',
         xl: 'calc(var(--radius) + 4px)',
       },
+
+      fontFamily: {
+        inter: ['Inter', 'sans-serif'],
+      },
+
+      fontSize: {
+        base16: ['16px', { lineHeight: '100%', letterSpacing: '0%' }],
+        base14: ['14px', { lineHeight: '100%', letterSpacing: '0%' }],
+        headingLg: ['24px', { lineHeight: '120%', letterSpacing: '-0.5px' }],
+        headingSm: ['18px', { lineHeight: '120%', letterSpacing: '-0.2px' }],
+        caption: ['12px', { lineHeight: '100%' }],
+      },
+
+      fontWeight: {
+        light: 300,
+        normal: 400,
+        medium: 500,
+        semibold: 600,
+        bold: 700,
+        heavy: 800,
+        extrabold: 900,
+      },
     },
   },
   plugins: [],
