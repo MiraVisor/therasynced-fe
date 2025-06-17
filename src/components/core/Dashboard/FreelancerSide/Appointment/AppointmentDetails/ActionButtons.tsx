@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { updateAppointmentStatus } from '@/redux/slices/appointmentSlice';
+import { closeEventDialog } from '@/redux/slices/calendarSlice';
 import { Appointment } from '@/types/types';
 
 interface ActionButtonsProps {
@@ -27,7 +28,6 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
   const isCompleted = appointment.status === 'COMPLETED';
 
   const handleCancelAppointment = () => {
-    // TODO: Implement cancel appointment functionality
     if (isCancelled) {
       toast.error('This appointment is already cancelled', {
         position: 'top-right',
@@ -39,15 +39,33 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
       });
       return;
     }
+
+    const previousStatus = appointment.status;
     dispatch(updateAppointmentStatus({ id: appointment.id, status: 'CANCELLED' }));
-    toast.success('Appointment cancelled successfully', {
-      position: 'top-right',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    dispatch(closeEventDialog());
+
+    toast.success(
+      <div className="flex flex-col gap-2">
+        <span>Appointment cancelled successfully</span>
+        <button
+          onClick={() => {
+            dispatch(updateAppointmentStatus({ id: appointment.id, status: previousStatus }));
+            toast.dismiss();
+          }}
+          className="text-sm text-primary hover:text-primary/80 font-medium"
+        >
+          Undo
+        </button>
+      </div>,
+      {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      },
+    );
   };
 
   const handleReportUser = () => {
@@ -61,6 +79,7 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
       pauseOnHover: true,
       draggable: true,
     });
+    dispatch(closeEventDialog());
   };
 
   return (

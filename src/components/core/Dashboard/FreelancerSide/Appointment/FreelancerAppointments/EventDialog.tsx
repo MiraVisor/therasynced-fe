@@ -1,18 +1,25 @@
+import { useDispatch, useSelector } from 'react-redux';
+
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { Appointment } from '@/types/types';
+import { closeEventDialog } from '@/redux/slices/calendarSlice';
+import { RootState } from '@/redux/store';
 
 import { AppointmentDetails } from '../AppointmentDetails';
 
 interface EventDialogProps {
-  selectedEvent: Appointment | null;
-  onClose: () => Promise<void>;
   onTypingChange: (isTyping: boolean) => void;
 }
 
-export const EventDialog = ({ selectedEvent, onClose, onTypingChange }: EventDialogProps) => {
+export const EventDialog = ({ onTypingChange }: EventDialogProps) => {
   const isMobile = useMediaQuery('(max-width: 1024px)');
+  const dispatch = useDispatch();
+  const { selectedEvent, isEventDialogOpen } = useSelector((state: RootState) => state.calendar);
+
+  const handleClose = async () => {
+    dispatch(closeEventDialog());
+  };
 
   const content = selectedEvent && (
     <div className="h-full flex flex-col">
@@ -25,10 +32,10 @@ export const EventDialog = ({ selectedEvent, onClose, onTypingChange }: EventDia
   if (isMobile) {
     return (
       <Drawer
-        open={!!selectedEvent}
+        open={isEventDialogOpen}
         onOpenChange={async (open) => {
           if (!open) {
-            await onClose();
+            await handleClose();
           }
         }}
       >
@@ -39,10 +46,10 @@ export const EventDialog = ({ selectedEvent, onClose, onTypingChange }: EventDia
 
   return (
     <Dialog
-      open={!!selectedEvent}
+      open={isEventDialogOpen}
       onOpenChange={async (open) => {
         if (!open) {
-          await onClose();
+          await handleClose();
         }
       }}
     >
@@ -50,11 +57,11 @@ export const EventDialog = ({ selectedEvent, onClose, onTypingChange }: EventDia
         className="max-w-3xl w-[95vw] sm:w-[90vw] md:w-[80vw] lg:w-[70vw] xl:w-[60vw] max-h-[80vh] overflow-y-auto p-0 sm:p-0"
         onEscapeKeyDown={(e) => {
           e.preventDefault();
-          onClose();
+          handleClose();
         }}
         onPointerDownOutside={(e) => {
           e.preventDefault();
-          onClose();
+          handleClose();
         }}
       >
         {content}

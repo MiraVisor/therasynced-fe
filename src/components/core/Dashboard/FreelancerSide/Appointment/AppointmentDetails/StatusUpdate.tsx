@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { updateAppointmentStatus } from '@/redux/slices/appointmentSlice';
+import { closeEventDialog } from '@/redux/slices/calendarSlice';
 import { Appointment } from '@/types/types';
 
 interface StatusUpdateProps {
@@ -50,15 +51,33 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
       });
       return;
     }
+
+    const previousStatus = appointment.status;
     dispatch(updateAppointmentStatus({ id: appointment.id, status: newStatus }));
-    toast.success(`Appointment status updated to ${newStatus.toLowerCase()}`, {
-      position: 'top-right',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    dispatch(closeEventDialog());
+
+    toast.success(
+      <div className="flex flex-col gap-2">
+        <span>Appointment status updated to {newStatus.toLowerCase()}</span>
+        <button
+          onClick={() => {
+            dispatch(updateAppointmentStatus({ id: appointment.id, status: previousStatus }));
+            toast.dismiss();
+          }}
+          className="text-sm text-primary hover:text-primary/80 font-medium"
+        >
+          Undo
+        </button>
+      </div>,
+      {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      },
+    );
   };
 
   if (isCancelled || isCompleted) {

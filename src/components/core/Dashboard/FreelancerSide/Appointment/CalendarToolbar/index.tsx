@@ -93,21 +93,20 @@ export const CalendarToolbar = ({
         </div>
         <div className="flex items-center gap-2">
           <ViewSelector view={view} onView={onView} />
+          <div className="flex lg:hidden items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const today = new Date();
+                dispatch(setSelectedDate(today));
+              }}
+            >
+              Today
+            </Button>
+          </div>
           <FilterSelector filters={filters} onFilterChange={onFilterChange} />
         </div>
-        <div className="flex lg:hidden items-center gap-4">
-          <Button
-            variant="outline"
-            className="ml-2"
-            onClick={() => {
-              const today = new Date();
-              dispatch(setSelectedDate(today));
-            }}
-          >
-            Today
-          </Button>
-          <span className="ml-2 truncate font-medium">{getViewLabel()}</span>
-        </div>
+        <span className="ml-2 truncate font-medium display lg:hidden">{getViewLabel()}</span>
       </div>
       <ActiveFilters filters={filters} />
     </div>

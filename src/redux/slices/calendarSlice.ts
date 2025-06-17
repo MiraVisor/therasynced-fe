@@ -1,12 +1,14 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { addDays, addMonths, addWeeks, subDays, subMonths, subWeeks } from 'date-fns';
 
-import { AppointmentFilters, View } from '@/types/types';
+import { Appointment, AppointmentFilters, View } from '@/types/types';
 
 interface CalendarState {
   selectedDate: Date;
   calendarView: View;
   filters: AppointmentFilters;
+  selectedEvent: Appointment | null;
+  isEventDialogOpen: boolean;
 }
 
 const initialState: CalendarState = {
@@ -19,6 +21,8 @@ const initialState: CalendarState = {
     showOnlyPast: false,
     selectedDate: new Date(),
   },
+  selectedEvent: null,
+  isEventDialogOpen: false,
 };
 
 const calendarSlice = createSlice({
@@ -63,6 +67,14 @@ const calendarSlice = createSlice({
     setFilters: (state, action: PayloadAction<Partial<CalendarState['filters']>>) => {
       state.filters = { ...state.filters, ...action.payload };
     },
+    setSelectedEvent: (state, action: PayloadAction<Appointment | null>) => {
+      state.selectedEvent = action.payload;
+      state.isEventDialogOpen = !!action.payload;
+    },
+    closeEventDialog: (state) => {
+      state.selectedEvent = null;
+      state.isEventDialogOpen = false;
+    },
   },
 });
 
@@ -73,6 +85,8 @@ export const {
   navigateToToday,
   setCalendarView,
   setFilters,
+  setSelectedEvent,
+  closeEventDialog,
 } = calendarSlice.actions;
 
 export default calendarSlice.reducer;
