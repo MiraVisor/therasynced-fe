@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
-import { getCookie } from '@/lib/utils';
-import { setRole } from '@/redux/slices/authSlice';
+import { getCookie, isTokenValid } from '@/lib/utils';
+import { checkAuth, setRole } from '@/redux/slices/authSlice';
 import { store } from '@/redux/store';
 
 const api = axios.create({
@@ -11,13 +11,28 @@ const api = axios.create({
   },
 });
 
+// List of endpoints that don't require authentication
+const publicEndpoints = ['/auth/login', '/auth/signup', '/auth/forgot-password'];
+
 // Request Interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Skip token validation for public endpoints
+    const isPublicEndpoint = publicEndpoints.some((endpoint) => config.url?.includes(endpoint));
+
+    if (!isPublicEndpoint) {
+      // Check token validity before each request
+      if (!isTokenValid()) {
+        store.dispatch(checkAuth());
+        return Promise.reject(new Error('Token is invalid or expired'));
+      }
+
+      const token = getCookie('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
+
     return config;
   },
   (error) => Promise.reject(error),
@@ -35,7 +50,7 @@ api.interceptors.response.use(
   (error) => {
     // Handle unauthorized access
     if (error.response?.status === 401) {
-      store.dispatch(setRole(null));
+      store.dispatch(checkAuth());
     }
     return Promise.reject({
       message: error.response?.data?.message || 'Something went wrong',

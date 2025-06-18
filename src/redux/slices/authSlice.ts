@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { getCookie, getDecodedToken, removeCookie, setCookie } from '@/lib/utils';
+import { getCookie, getDecodedToken, isTokenValid, removeCookie, setCookie } from '@/lib/utils';
 import { RoleType, registerUserTypes } from '@/types/types';
 
 import { loginApi, signUpUserApi } from '../api';
@@ -11,7 +11,7 @@ const initialState: {
   token: string | null;
   role: RoleType | null;
 } = {
-  isAuthenticated: typeof window !== 'undefined' && !!getCookie('token'),
+  isAuthenticated: typeof window !== 'undefined' && isTokenValid(),
   token: typeof window !== 'undefined' ? getCookie('token') : null,
   role: (decodedToken?.role as RoleType) ?? null,
 };
@@ -55,6 +55,13 @@ const authSlice = createSlice({
     setRole: (state, action) => {
       state.role = action.payload;
     },
+    checkAuth: (state) => {
+      state.isAuthenticated = isTokenValid();
+      if (!state.isAuthenticated) {
+        state.token = null;
+        state.role = null;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -68,10 +75,9 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
 
         if (typeof window !== 'undefined') {
-          setCookie('token', token);
+          setCookie('token', token, { days: 7 });
         }
       })
-
       .addCase(loginUser.rejected, (state) => {
         state.isAuthenticated = false;
         state.token = null;
@@ -80,5 +86,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setRole } = authSlice.actions;
+export const { logout, setRole, checkAuth } = authSlice.actions;
 export default authSlice.reducer;
