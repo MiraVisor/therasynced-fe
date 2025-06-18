@@ -10,7 +10,6 @@ import { useAuth } from '@/redux/hooks/useAppHooks';
 
 export default function Home() {
   const [hasMounted, setHasMounted] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
 
@@ -18,25 +17,12 @@ export default function Home() {
     setHasMounted(true);
   }, []);
 
-  // Client-side authentication check
+  // Client-side authentication check and redirect
   useEffect(() => {
-    if (hasMounted && !authChecked) {
-      setAuthChecked(true);
-
+    if (hasMounted) {
       const hasValidToken = isTokenValid();
 
-      if (hasValidToken && !isAuthenticated) {
-        // Token exists but Redux state isn't updated yet
-        // Wait a bit for Redux to rehydrate, then check again
-        const timer = setTimeout(() => {
-          if (isTokenValid() && !isAuthenticated) {
-            // If still not authenticated after delay, redirect to sign-in
-            router.push('/authentication/sign-in');
-          }
-        }, 1000);
-
-        return () => clearTimeout(timer);
-      } else if (isAuthenticated) {
+      if (hasValidToken && isAuthenticated) {
         // User is authenticated, redirect to dashboard
         const decodedToken = getDecodedToken();
         if (decodedToken?.email) {
@@ -56,9 +42,13 @@ export default function Home() {
           );
         }
         router.replace('/dashboard');
+      } else if (hasValidToken && !isAuthenticated) {
+        // Token exists but Redux state isn't updated yet
+        // This will be handled by the StoreProvider's checkAuth
+        router.push('/authentication/sign-in');
       }
     }
-  }, [hasMounted, isAuthenticated, router, logout, authChecked]);
+  }, [hasMounted, isAuthenticated, router, logout]);
 
   if (!hasMounted) return null;
 

@@ -1,12 +1,33 @@
 import { ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { isTokenValid } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 
 const Unauthorized = () => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+
+  // Check if user actually has a valid token
+  useEffect(() => {
+    const hasValidToken = isTokenValid();
+
+    if (hasValidToken && isAuthenticated) {
+      // User is authenticated, redirect to dashboard
+      router.replace('/dashboard');
+    } else if (hasValidToken && !isAuthenticated) {
+      // Token exists but Redux state not updated, wait a bit
+      const timer = setTimeout(() => {
+        if (isTokenValid()) {
+          router.replace('/dashboard');
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, router]);
 
   if (!isAuthenticated) {
     return (

@@ -19,19 +19,11 @@ interface DecodedToken {
 interface CookieOptions {
   days?: number;
   path?: string;
-  domain?: string;
   secure?: boolean;
-  sameSite?: 'Strict' | 'Lax' | 'None';
 }
 
 export const setCookie = (name: string, value: string, options: CookieOptions = {}) => {
-  const {
-    days = 7,
-    path = '/',
-    domain,
-    secure = process.env.NODE_ENV === 'production',
-    sameSite = 'Lax', // TODO: Change to 'Strict' in production when using subdomains
-  } = options;
+  const { days = 7, path = '/', secure = process.env.NODE_ENV === 'production' } = options;
 
   // Validate inputs
   if (!name || typeof name !== 'string') {
@@ -54,14 +46,6 @@ export const setCookie = (name: string, value: string, options: CookieOptions = 
 
   // Add path
   cookieString += `;path=${path}`;
-
-  // Add domain if specified
-  if (domain) {
-    cookieString += `;domain=${domain}`;
-  }
-
-  // Add SameSite
-  cookieString += `;SameSite=${sameSite}`;
 
   // Add secure flag
   if (secure) {
@@ -101,12 +85,7 @@ export const getCookie = (name: string): string | null => {
 };
 
 export const removeCookie = (name: string, options: Partial<CookieOptions> = {}) => {
-  const {
-    path = '/',
-    domain,
-    secure = process.env.NODE_ENV === 'production',
-    sameSite = 'Lax', // TODO: Change to 'Strict' in production when using subdomains
-  } = options;
+  const { path = '/', secure = process.env.NODE_ENV === 'production' } = options;
 
   // Validate input
   if (!name || typeof name !== 'string') {
@@ -115,14 +94,6 @@ export const removeCookie = (name: string, options: Partial<CookieOptions> = {})
 
   // Build deletion string with the same attributes it was set with
   let deletionString = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
-
-  // Add domain if specified
-  if (domain) {
-    deletionString += `;domain=${domain}`;
-  }
-
-  // Add SameSite
-  deletionString += `;SameSite=${sameSite}`;
 
   // Add secure flag
   if (secure) {
