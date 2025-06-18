@@ -30,7 +30,7 @@ export const setCookie = (name: string, value: string, options: CookieOptions = 
     path = '/',
     domain,
     secure = process.env.NODE_ENV === 'production',
-    sameSite = process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax', // Strict in prod, Lax in dev
+    sameSite = 'Lax', // TODO: Change to 'Strict' in production when using subdomains
   } = options;
 
   // Validate inputs
@@ -105,7 +105,7 @@ export const removeCookie = (name: string, options: Partial<CookieOptions> = {})
     path = '/',
     domain,
     secure = process.env.NODE_ENV === 'production',
-    sameSite = process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax', // Strict in prod, Lax in dev
+    sameSite = 'Lax', // TODO: Change to 'Strict' in production when using subdomains
   } = options;
 
   // Validate input
