@@ -10,6 +10,7 @@ import { useAuth } from '@/redux/hooks/useAppHooks';
 
 export default function Home() {
   const [hasMounted, setHasMounted] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
 
@@ -17,15 +18,26 @@ export default function Home() {
     setHasMounted(true);
   }, []);
 
-  // Client-side fallback: Check if user is authenticated and redirect
+  // Client-side authentication check
   useEffect(() => {
-    if (hasMounted) {
+    if (hasMounted && !authChecked) {
+      setAuthChecked(true);
+
       const hasValidToken = isTokenValid();
 
       if (hasValidToken && !isAuthenticated) {
-        // Force a page reload to rehydrate Redux state
-        window.location.reload();
+        // Token exists but Redux state isn't updated yet
+        // Wait a bit for Redux to rehydrate, then check again
+        const timer = setTimeout(() => {
+          if (isTokenValid() && !isAuthenticated) {
+            // If still not authenticated after delay, redirect to sign-in
+            router.push('/authentication/sign-in');
+          }
+        }, 1000);
+
+        return () => clearTimeout(timer);
       } else if (isAuthenticated) {
+        // User is authenticated, redirect to dashboard
         const decodedToken = getDecodedToken();
         if (decodedToken?.email) {
           const handleSignOut = () => {
@@ -46,7 +58,7 @@ export default function Home() {
         router.replace('/dashboard');
       }
     }
-  }, [hasMounted, isAuthenticated, router, logout]);
+  }, [hasMounted, isAuthenticated, router, logout, authChecked]);
 
   if (!hasMounted) return null;
 
