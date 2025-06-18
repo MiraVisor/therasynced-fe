@@ -4,8 +4,16 @@ import { getCookie, isTokenValid } from '@/lib/utils';
 import { checkAuth, setRole } from '@/redux/slices/authSlice';
 import { store } from '@/redux/store';
 
+// Validate backend URL configuration
+if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+  console.error('NEXT_PUBLIC_BACKEND_URL environment variable is not set!');
+  throw new Error(
+    'Backend URL not configured. Please set NEXT_PUBLIC_BACKEND_URL environment variable.',
+  );
+}
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000',
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
   headers: {
     'Content-Type': 'application/json',
   },
