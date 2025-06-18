@@ -58,15 +58,10 @@ const Appointments = () => {
     dispatch(setAppointments(allAppointments));
   }, [dispatch]);
 
-  const handleSelectEvent = (event: Appointment) => {
-    // eslint-disable-next-line no-console
-    console.log('Selected event:', event);
-  };
-
   return (
     <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Appointments</h2>}>
       <div className="h-[100px]">
-        <FreelancerAppointments onSelectEvent={handleSelectEvent} />
+        <FreelancerAppointments />
       </div>
     </DashboardPageWrapper>
   );
