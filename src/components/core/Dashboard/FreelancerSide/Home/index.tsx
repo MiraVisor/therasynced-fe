@@ -1,7 +1,7 @@
-import { DashboardPageWrapper } from '../DashboardPageWrapper';
-import Charts from './Home/Charts';
-import Stats from './Home/Stats';
-import TodayAppointments from './Home/TodayAppointments';
+import { DashboardPageWrapper } from '../../DashboardPageWrapper';
+import Charts from './Charts';
+import Stats from './Stats';
+import TodayAppointments from './TodayAppointments';
 
 const FreelancerHome = () => {
   return (
