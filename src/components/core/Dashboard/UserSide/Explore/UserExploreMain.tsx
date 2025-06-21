@@ -6,7 +6,7 @@ import { Expert } from '@/types/types';
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import ExpertCard from '../Overview/ExpertCard';
 import { AppointmentCard } from './AppointmentCard';
-import { MessageSection } from './MessageSection';
+import MessageSection from './MessageSection';
 
 interface Appointment {
   expert: Expert;
