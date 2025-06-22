@@ -67,7 +67,9 @@ module.exports = {
       },
 
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
+        'open-sans': ['var(--font-open-sans)', 'sans-serif'],
+        inter: ['var(--font-inter)', 'sans-serif'],
+        poppins: ['var(--font-poppins)', 'sans-serif'],
       },
 
       fontSize: {
