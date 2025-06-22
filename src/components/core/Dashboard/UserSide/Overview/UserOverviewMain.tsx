@@ -1,13 +1,16 @@
 import React from 'react';
 
+import { Expert } from '@/types/types';
+
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import { SearchBar } from '../../SearchBar';
-import { Expert, ExpertList } from './ExpertSection';
+import { ExpertList } from './ExpertSection';
 import { SectionHeader } from './SectionHeader';
 import { ViewMoreButton } from './ViewMoreButton';
 
 const dummyExperts: Expert[] = [
   {
+    id: '1',
     name: 'Dr Lee Marshall',
     specialty: 'message therapy',
     experience: '7+ Years of Experience',
@@ -17,6 +20,7 @@ const dummyExperts: Expert[] = [
     isFavorite: true,
   },
   {
+    id: '2',
     name: 'Dr Lee Marshall',
     specialty: 'message therapy',
     experience: '7+ Years of Experience',
@@ -26,6 +30,7 @@ const dummyExperts: Expert[] = [
     isFavorite: false,
   },
   {
+    id: '3',
     name: 'Dr Lee Marshall',
     specialty: 'message therapy',
     experience: '7+ Years of Experience',
@@ -35,6 +40,7 @@ const dummyExperts: Expert[] = [
     isFavorite: true,
   },
   {
+    id: '4',
     name: 'Dr Lee Marshall',
     specialty: 'message therapy',
     experience: '7+ Years of Experience',
@@ -44,6 +50,7 @@ const dummyExperts: Expert[] = [
     isFavorite: false,
   },
   {
+    id: '5',
     name: 'Dr Lee Marshall',
     specialty: 'message therapy',
     experience: '7+ Years of Experience',
@@ -53,6 +60,7 @@ const dummyExperts: Expert[] = [
     isFavorite: true,
   },
   {
+    id: '6',
     name: 'Dr Lee Marshall',
     specialty: 'message therapy',
     experience: '7+ Years of Experience',
