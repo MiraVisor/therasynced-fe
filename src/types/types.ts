@@ -9,6 +9,7 @@ export interface registerUserTypes {
   city: string;
 }
 export interface Expert {
+  id: string;
   name: string;
   specialty: string;
   experience: string;

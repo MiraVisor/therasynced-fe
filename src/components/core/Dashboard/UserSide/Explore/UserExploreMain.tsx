@@ -53,7 +53,7 @@ const UserExploreMain = () => {
         </h2>
       }
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-0">
         {/* Top Grid: Favorite + Appointment */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Favorite Expert Section */}
