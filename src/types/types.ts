@@ -33,3 +33,35 @@ export type FreelancerStatCardType = {
   percentage: 'up' | 'down';
   percentageNumber: number;
 };
+
+export type AppointmentStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
+
+export interface Appointment {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
+  clientName: string;
+  description?: string;
+  location: string;
+  notes: string;
+}
+
+export interface AppointmentFilters {
+  hideCompleted: boolean;
+  hideCancelled: boolean;
+  showOnlyUpcoming: boolean;
+  showOnlyPast: boolean;
+  selectedDate: Date;
+}
+
+export interface AppointmentState {
+  appointments: Appointment[];
+  filters: AppointmentFilters;
+  selectedAppointment: Appointment | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export type View = 'month' | 'week' | 'work_week' | 'day' | 'agenda';

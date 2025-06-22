@@ -1,6 +1,6 @@
 'use client';
 
-import FreelancerHome from '@/components/core/Dashboard/FreelancerSide';
+import FreelancerHome from '@/components/core/Dashboard/FreelancerSide/Home';
 import UserOverview from '@/components/core/Dashboard/UserSide/Overview/UserOverviewMain';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { ROLES } from '@/types/types';

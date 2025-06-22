@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/redux/hooks/useAppHooks';
 import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -83,8 +84,8 @@ const navigationLinks = {
       icon: MessageSquare,
     },
     {
-      name: 'Clients',
-      url: '/dashboard/clients',
+      name: 'Services',
+      url: '/dashboard/serivces',
       icon: Users,
     },
     {
@@ -127,11 +128,18 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const { resolvedTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuth();
   const links = userRole ? navigationLinks[userRole] : [];
 
   const handleNavigation = (url: string) => {
     router.push(url);
   };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/authentication/sign-in');
+  };
+
   return (
     <Sidebar variant="sidebar" collapsible={'icon'} className="p-4 bg-dashboard !border-r-0 ">
       <SidebarHeader className="mx-auto w-full ">
@@ -142,8 +150,9 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
           <Image
             src={`/svgs/NewLogoLight.svg`}
             alt="logo"
-            width={120}
-            height={120}
+            width={150}
+            height={40}
+            priority
             className="transition-transform duration-300"
           />
         </div>
@@ -327,6 +336,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                   className={cn(
                     'text-destructive hover:!bg-destructive hover:!text-destructive-foreground',
                   )}
+                  onClick={handleLogout}
                 >
                   <LogOut className="mr-2 size-4" />
                   Log out
