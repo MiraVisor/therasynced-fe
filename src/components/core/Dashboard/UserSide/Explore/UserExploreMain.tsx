@@ -19,6 +19,7 @@ const UserExploreMain = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedAppointment] = useState<Appointment>({
     expert: {
+      id: '1',
       name: 'Dr Lee Marshall',
       specialty: 'message therapy',
       experience: '7+ Years of Experience',

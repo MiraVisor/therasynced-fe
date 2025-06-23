@@ -16,12 +16,6 @@ import { ChevronDown, Search } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -97,11 +91,11 @@ export function DataTable<TData, TValue>({
   const [firstWord, ...rest] = (title ?? '').split(' ');
   const restTitle = rest.join(' ');
   return (
-    <div className="w-full space-y-4">
+    <div className="bg-[#ffffff] rounded-lg p-6 shadow-lg">
       {/* Header Section */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
-          <h2 className=" font-poppins text-[22px] font-bold tracking-tight">
+          <h2 className="font-poppins text-[22px] font-bold tracking-tight">
             <span className="text-black">{firstWord} </span>
             <span className="text-primary">{restTitle}</span>
           </h2>
@@ -115,7 +109,7 @@ export function DataTable<TData, TValue>({
                 placeholder={searchPlaceholder}
                 value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
                 onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
-                className="pl-8"
+                className="pl-8 border-gray-200"
               />
             </div>
           )}
@@ -131,7 +125,7 @@ export function DataTable<TData, TValue>({
                 }
               }}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] border-gray-200">
                 <SelectValue placeholder="Sort by: Newest" />
               </SelectTrigger>
               <SelectContent>
@@ -141,7 +135,7 @@ export function DataTable<TData, TValue>({
             </Select>
           )}
 
-          {/* Column Visibility */}
+          {/* /* Column Visibility */}
           {/* {enableColumnVisibility && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -167,19 +161,22 @@ export function DataTable<TData, TValue>({
                   })}
               </DropdownMenuContent>
             </DropdownMenu>
-          )} */}
+          )}  */}
         </div>
       </div>
 
       {/* Table */}
-      <div className="rounded-md border bg-white">
+      <div className="rounded-lg bg-[#ffffff] overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+              <TableRow key={headerGroup.id} className="hover:bg-transparent bg-gray-50">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="font-medium text-gray-600">
+                    <TableHead
+                      key={header.id}
+                      className="font-poppins font-medium text-[14px] text-table-header py-4 px-6 first:pl-6 last:pr-6 border-0"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -195,10 +192,13 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="border-b hover:bg-gray-50"
+                  className="hover:bg-gray-50 border-0"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-4">
+                    <TableCell
+                      key={cell.id}
+                      className="font-poppins font-medium text-[14px] text-table-row py-4 px-6 first:pl-6 last:pr-6 border-0"
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -206,7 +206,10 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center font-poppins font-medium text-[14px] text-table-row border-0"
+                >
                   No results found.
                 </TableCell>
               </TableRow>
@@ -217,21 +220,21 @@ export function DataTable<TData, TValue>({
 
       {/* Pagination */}
       {enablePagination && (
-        <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex items-center justify-between space-x-2 pt-6">
           <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
+            <p className="text-sm font-poppins font-medium text-table-row">Rows per page</p>
             <Select
               value={`${table.getState().pagination.pageSize}`}
               onValueChange={(value) => {
                 table.setPageSize(Number(value));
               }}
             >
-              <SelectTrigger className="h-8 w-[70px]">
+              <SelectTrigger className="h-8 w-[70px] font-poppins border-gray-200">
                 <SelectValue placeholder={table.getState().pagination.pageSize} />
               </SelectTrigger>
               <SelectContent side="top">
                 {pageSizeOptions.map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                  <SelectItem key={pageSize} value={`${pageSize}`} className="font-poppins">
                     {pageSize}
                   </SelectItem>
                 ))}
@@ -240,13 +243,13 @@ export function DataTable<TData, TValue>({
           </div>
 
           <div className="flex items-center space-x-6 lg:space-x-8">
-            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+            <div className="flex w-[100px] items-center justify-center text-sm font-poppins font-medium text-table-row">
               Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
               <Button
                 variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
+                className="hidden h-8 w-8 p-0 lg:flex font-poppins border-gray-200 hover:bg-gray-50"
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
@@ -255,7 +258,7 @@ export function DataTable<TData, TValue>({
               </Button>
               <Button
                 variant="outline"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 font-poppins border-gray-200 hover:bg-gray-50"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
@@ -280,7 +283,11 @@ export function DataTable<TData, TValue>({
                     <Button
                       key={page}
                       variant={page === pageIndex ? 'default' : 'outline'}
-                      className="h-8 w-8 p-0"
+                      className={`h-8 w-8 p-0 font-poppins font-medium text-[14px] ${
+                        page === pageIndex
+                          ? 'bg-primary text-white hover:bg-primary/90'
+                          : 'border-gray-200 text-table-row hover:bg-gray-50'
+                      }`}
                       onClick={() => table.setPageIndex(page)}
                     >
                       {page + 1}
@@ -292,7 +299,7 @@ export function DataTable<TData, TValue>({
 
               <Button
                 variant="outline"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 font-poppins border-gray-200 hover:bg-gray-50"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
@@ -301,7 +308,7 @@ export function DataTable<TData, TValue>({
               </Button>
               <Button
                 variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
+                className="hidden h-8 w-8 p-0 lg:flex font-poppins border-gray-200 hover:bg-gray-50"
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
               >

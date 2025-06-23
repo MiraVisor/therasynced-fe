@@ -12,6 +12,10 @@ module.exports = {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
 
+        // Table specific colors
+        'table-row': '#292D32',
+        'table-header': '#B5B7C0',
+
         blackColor: 'var(--black)',
         card: 'var(--card)',
         'card-foreground': 'var(--card-foreground)',
