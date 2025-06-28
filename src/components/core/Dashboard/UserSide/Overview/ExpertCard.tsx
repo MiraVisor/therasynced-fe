@@ -65,13 +65,13 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       </div>
       <div className="text-sm text-[#525252] mt-2 mb-3">{description}</div>
       <div className="flex gap-2 mt-4">
-        <Button
-          variant="outline"
-          className="flex-1 bg-[#00684A] text-white border-[#00684A] hover:bg-[#00684A]/90"
-        >
+        <Button variant="outline" className="flex-1 bg-gray-100 text-black hover:bg-gray-200">
           View Profile
         </Button>
-        <Button className="flex-1 bg-gray-100 text-black hover:bg-gray-200" onClick={handleBookNow}>
+        <Button
+          className="flex-1 bg-[#00684A] text-white border-[#00684A] hover:bg-[#00684A]/90"
+          onClick={handleBookNow}
+        >
           Book Now
         </Button>
       </div>
