@@ -1,314 +1,356 @@
-import { Paperclip, Send } from 'lucide-react';
-import React, { useState } from 'react';
-import { text } from 'stream/consumers';
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
+import {
+  ChannelFilters,
+  ChannelSort,
+  QueryChannelAPIResponse,
+  Channel as StreamChannel,
+  StreamChat,
+} from 'stream-chat';
+import {
+  Channel,
+  ChannelHeader,
+  ChannelList,
+  Chat,
+  MessageInput,
+  MessageList,
+  Thread,
+  Window,
+} from 'stream-chat-react';
 
-import { Avatar } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import '@/styles/stream-chat-custom.css';
 import { Expert } from '@/types/types';
 
-interface Message {
-  id: string;
-  text: string;
-  isFromUser: boolean;
-  timestamp: string;
-}
-
-interface Contact {
-  id: string;
-  name: string;
-  title: string;
-  lastMessage: string;
-  timestamp: string;
-  avatar: string;
-  isVerified?: boolean;
-}
+// Import Stream Chat CSS
+import 'stream-chat-react/dist/css/v2/index.css';
 
 interface MessageSectionProps {
   onSendMessage?: (message: string) => void;
   expert: Expert;
 }
 
-const MessageSection: React.FC<MessageSectionProps> = ({ onSendMessage, expert }) => {
-  // expert prop is received but not used in the current implementation
-  // can be used in the future to customize messages or display expert info
-  const [newMessage, setNewMessage] = useState('');
-  const [selectedContact, setSelectedContact] = useState<string>('1');
+const MessageSection: React.FC<MessageSectionProps> = ({ expert }) => {
+  const [client, setClient] = useState<StreamChat | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
-  // Dummy contacts list to match the UI
-  const contacts: Contact[] = [
-    {
-      id: '1',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    {
-      id: '2',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    {
-      id: '3',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    {
-      id: '4',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-  ];
+  useEffect(() => {
+    const initChat = async () => {
+      try {
+        // Create a mock client for demo purposes
+        const mockClient = new StreamChat('demo-api-key');
 
-  // Mock chat messages for selected contact
-  const chatMessages: { [key: string]: Message[] } = {
-    '1': [
-      {
-        id: '1',
-        text: 'Hello! How are You? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-      {
-        id: '3',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-    ],
-    '2': [
-      {
-        id: '1',
-        text: 'Hello! How are You? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-      {
-        id: '3',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-    ],
-    '3': [
-      {
-        id: '1',
-        text: 'Hello! How are You? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-    ],
-    '4': [
-      {
-        id: '1',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-    ],
+        // Set up mock user without connecting to real API
+        mockClient.user = {
+          id: 'user-1',
+          name: 'Current User',
+          image: undefined,
+        };
+        mockClient.userID = 'user-1';
+
+        // Create dummy users/experts
+        const dummyExperts = [
+          {
+            id: 'dr-lee-marshell',
+            name: 'Dr Lee Marshell',
+            title: 'Certified Physiotherapist',
+            image: 'https://via.placeholder.com/40/4338ca/ffffff?text=DM',
+            lastMessage: 'Hello! How are you doing?........',
+            time: '16:20',
+            isOnline: true,
+          },
+          {
+            id: 'dr-sarah-wilson',
+            name: 'Dr Sarah Wilson',
+            title: 'Clinical Psychologist',
+            image: 'https://via.placeholder.com/40/059669/ffffff?text=SW',
+            lastMessage: 'Thank you for the session today',
+            time: '15:45',
+            isOnline: false,
+          },
+          {
+            id: 'dr-james-parker',
+            name: 'Dr James Parker',
+            title: 'Orthopedic Specialist',
+            image: 'https://via.placeholder.com/40/dc2626/ffffff?text=JP',
+            lastMessage: 'Your treatment plan is ready',
+            time: '14:30',
+            isOnline: true,
+          },
+          {
+            id: 'dr-emily-chen',
+            name: 'Dr Emily Chen',
+            title: 'Sports Medicine',
+            image: 'https://via.placeholder.com/40/7c3aed/ffffff?text=EC',
+            lastMessage: 'See you next week!',
+            time: '12:15',
+            isOnline: false,
+          },
+        ];
+
+        // Create channels for each expert
+        const channels: { [key: string]: StreamChannel } = {};
+
+        for (const expertData of dummyExperts) {
+          const channelId = `chat-user-1-${expertData.id}`;
+          const channel = mockClient.channel('messaging', channelId, {
+            members: ['user-1', expertData.id],
+            created_by: { id: 'user-1', name: 'Current User' },
+          });
+
+          // Initialize channel state
+          channel.state.members = {
+            'user-1': {
+              user_id: 'user-1',
+              user: { id: 'user-1', name: 'Current User' },
+              role: 'member',
+            },
+            [expertData.id]: {
+              user_id: expertData.id,
+              user: {
+                id: expertData.id,
+                name: expertData.name,
+                image: expertData.image,
+              },
+              role: 'member',
+            },
+          };
+
+          // Add different messages for different experts
+          if (expertData.id === 'dr-lee-marshell') {
+            channel.state.messages = [
+              {
+                id: 'msg-1',
+                text: 'Hello! How are You? 😊',
+                user: { id: expertData.id, name: expertData.name, image: expertData.image },
+                created_at: new Date('2024-01-26T16:20:00'),
+                updated_at: new Date('2024-01-26T16:20:00'),
+                deleted_at: null,
+                pinned_at: null,
+                status: 'sent',
+                type: 'regular',
+                html: 'Hello! How are You? 😊',
+              },
+              {
+                id: 'msg-2',
+                text: 'Hello! i am good...how are you?? Hows everything going? 😊',
+                user: { id: 'user-1', name: 'Current User' },
+                created_at: new Date('2024-01-26T16:21:00'),
+                updated_at: new Date('2024-01-26T16:21:00'),
+                deleted_at: null,
+                pinned_at: null,
+                status: 'sent',
+                type: 'regular',
+                html: 'Hello! i am good...how are you?? Hows everything going? 😊',
+              },
+              {
+                id: 'msg-3',
+                text: 'Hello! i am good...how are you?? Hows everything going? 😊',
+                user: { id: expertData.id, name: expertData.name, image: expertData.image },
+                created_at: new Date('2024-01-26T16:22:00'),
+                updated_at: new Date('2024-01-26T16:22:00'),
+                deleted_at: null,
+                pinned_at: null,
+                status: 'sent',
+                type: 'regular',
+                html: 'Hello! i am good...how are you?? Hows everything going? 😊',
+              },
+              {
+                id: 'msg-4',
+                text: 'Hello! i am good...how are you?? Hows everything going? 😊',
+                user: { id: 'user-1', name: 'Current User' },
+                created_at: new Date('2024-01-26T16:23:00'),
+                updated_at: new Date('2024-01-26T16:23:00'),
+                deleted_at: null,
+                pinned_at: null,
+                status: 'sent',
+                type: 'regular',
+                html: 'Hello! i am good...how are you?? Hows everything going? 😊',
+              },
+            ] as unknown as typeof channel.state.messages;
+          } else {
+            // Add sample messages for other experts
+            channel.state.messages = [
+              {
+                id: `msg-${expertData.id}-1`,
+                text: expertData.lastMessage,
+                user: { id: expertData.id, name: expertData.name, image: expertData.image },
+                created_at: new Date('2024-01-26T15:00:00'),
+                updated_at: new Date('2024-01-26T15:00:00'),
+                deleted_at: null,
+                pinned_at: null,
+                status: 'sent',
+                type: 'regular',
+                html: expertData.lastMessage,
+              },
+            ] as unknown as typeof channel.state.messages;
+          }
+
+          channel.state.watcher_count = 2;
+          channel.state.read = {};
+          channel.state.typing = {};
+          channel.state.last_message_at = new Date('2024-01-26T16:20:00');
+
+          // Set additional channel properties for proper initialization
+          channel.cid = `messaging:${channelId}`;
+          channel.id = channelId;
+          channel.type = 'messaging';
+          channel.data = {
+            created_by: { id: 'user-1', name: 'Current User' },
+            members: ['user-1', expertData.id],
+          };
+
+          // Properly initialize the channel
+          channel.initialized = true;
+          channel._client = mockClient;
+
+          // Mock the watch method
+          channel.watch = () =>
+            Promise.resolve({
+              duration: '0ms',
+              channel: {
+                ...channel.state,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                id: channelId,
+                type: 'messaging',
+                cid: `messaging:${channelId}`,
+                config: {},
+                frozen: false,
+                disabled: false,
+              },
+              messages: channel.state.messages,
+              members: channel.state.members,
+              membership: {
+                user_id: 'user-1',
+                user: { id: 'user-1', name: 'Current User' },
+                role: 'member',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              },
+              pinned_messages: [],
+              watcher_count: 2,
+              read: [],
+              hidden: false,
+              truncated_at: null,
+            } as unknown as QueryChannelAPIResponse);
+
+          // Mock additional channel methods that might be called
+          channel.query = () => channel.watch();
+          channel.countUnread = () => 0;
+          channel.muteStatus = () => ({
+            muted: false,
+            createdAt: null,
+            expiresAt: null,
+          });
+
+          // Initialize the channel immediately
+          await channel.watch();
+
+          channels[channelId] = channel;
+        }
+
+        // Mock the queryChannels method to return our dummy channels
+        mockClient.queryChannels = () => {
+          const channelList = Object.values(channels);
+          return Promise.resolve(channelList);
+        };
+
+        setClient(mockClient);
+        setIsConnected(true);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error initializing chat:', error);
+      }
+    };
+
+    initChat();
+  }, [expert.id, expert.name]);
+
+  if (!isConnected || !client) {
+    return (
+      <div className="bg-white dark:bg-gray-800 h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Connecting to chat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const filters: ChannelFilters = {
+    type: 'messaging',
+    members: { $in: [client.userID!] },
   };
-
-  const currentMessages = chatMessages[selectedContact] || [];
-
-  const handleSend = () => {
-    if (newMessage.trim() && onSendMessage) {
-      onSendMessage(newMessage);
-      setNewMessage('');
-    }
-  };
+  const sort: ChannelSort = { last_message_at: -1 };
+  const options = { limit: 10 };
 
   return (
-    <div className="bg-white dark:bg-gray-800 h-full flex">
-      {/* Left Panel - Messages List */}
-      <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="flex-1 overflow-y-auto">
-          {contacts.map((contact) => (
-            <div
-              key={contact.id}
-              onClick={() => setSelectedContact(contact.id)}
-              className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                selectedContact === contact.id ? 'bg-green-50 dark:bg-green-900/20' : ''
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="relative">
-                  <Avatar className="w-12 h-12">
-                    <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                        {contact.name.charAt(0)}
-                      </span>
-                    </div>
-                  </Avatar>
-                  {contact.isVerified && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-2.5 h-2.5 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
+    <div className="bg-white dark:bg-gray-800 h-full">
+      <Chat client={client} theme="str-chat__theme-light">
+        <div className="flex h-full">
+          {/* Left side - Channel List */}
+          <div className="w-1/3 border-r border-gray-200 dark:border-gray-700">
+            <ChannelList
+              // filters={filters}
+              sort={sort}
+              options={options}
+              showChannelSearch
+              Preview={(props) => {
+                const { channel } = props;
+                const members = Object.values(channel.state.members || {});
+                const otherMember = members.find((member) => member.user?.id !== client.userID);
+                const user = otherMember?.user;
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                      {contact.name}
-                    </h3>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {contact.timestamp}
-                    </span>
+                return (
+                  <div className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600">
+                    <div className="relative">
+                      <Image
+                        src={
+                          user?.image ||
+                          `https://via.placeholder.com/40/4338ca/ffffff?text=${user?.name?.charAt(0) || 'U'}`
+                        }
+                        alt={user?.name || 'User'}
+                        width={48}
+                        height={48}
+                        className="rounded-full"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                    </div>
+                    <div className="ml-3 flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {user?.name || 'Unknown User'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Certified Physiotherapist
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">16:20</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 truncate mt-1">
+                        Hello! How are you doing?........
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{contact.title}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
-                    {contact.lastMessage}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                );
+              }}
+            />
+          </div>
 
-      {/* Right Panel - Chat Messages */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10">
-              <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  {contacts.find((c) => c.id === selectedContact)?.name.charAt(0)}
-                </span>
-              </div>
-            </Avatar>
-            <div>
-              <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                {contacts.find((c) => c.id === selectedContact)?.name}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {contacts.find((c) => c.id === selectedContact)?.title}
-              </p>
-            </div>
+          {/* Right side - Chat Interface */}
+          <div className="flex-1">
+            <Channel>
+              <Window>
+                <ChannelHeader />
+                <MessageList />
+                <MessageInput />
+              </Window>
+              <Thread />
+            </Channel>
           </div>
         </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {currentMessages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.isFromUser ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className="flex items-start gap-3 max-w-[70%]">
-                {!message.isFromUser && (
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                        D
-                      </span>
-                    </div>
-                  </Avatar>
-                )}
-
-                <div
-                  className={`rounded-2xl px-4 py-2 ${
-                    message.isFromUser
-                      ? 'bg-green-500 text-white'
-                      : 'bg-green-100 dark:bg-green-900/30 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <p className="text-sm">{message.text}</p>
-                </div>
-
-                {message.isFromUser && (
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                        Y
-                      </span>
-                    </div>
-                  </Avatar>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Message Input */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your message...."
-                className="w-full rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full"
-              >
-                <Paperclip className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </Button>
-            </div>
-            <Button
-              onClick={handleSend}
-              className="bg-green-600 hover:bg-green-700 text-white rounded-full w-12 h-12 p-0"
-              disabled={!newMessage.trim()}
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      </Chat>
     </div>
   );
 };

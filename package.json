@@ -57,6 +57,8 @@
     "react-tooltip": "^5.28.1",
     "recharts": "^2.15.3",
     "sonner": "^2.0.5",
+    "stream-chat": "^9.10.0",
+    "stream-chat-react": "^13.2.1",
     "tailwind-merge": "^3.3.0",
     "vaul": "^1.1.2",
     "zod": "^3.24.4"

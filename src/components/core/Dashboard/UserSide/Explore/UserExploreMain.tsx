@@ -83,9 +83,16 @@ const UserExploreMain = () => {
 
         {/* Messages Section */}
         <section className="mt-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-6">Messages</h3>
-            <MessageSection expert={selectedAppointment.expert} onSendMessage={handleSendMessage} />
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-semibold">Messages</h3>
+            </div>
+            <div className="p-6">
+              <MessageSection
+                expert={selectedAppointment.expert}
+                onSendMessage={handleSendMessage}
+              />
+            </div>
           </div>
         </section>
       </div>
