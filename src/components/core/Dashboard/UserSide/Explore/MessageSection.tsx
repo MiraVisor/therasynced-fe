@@ -229,7 +229,7 @@ const MessageSection: React.FC<MessageSectionProps> = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 h-[509px] flex flex-col overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 h-[509px] flex flex-col overflow-hidden ">
       <div className="flex h-full">
         {/* Channel List - Desktop: always visible, Mobile: toggleable */}
         <div

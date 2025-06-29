@@ -87,7 +87,7 @@ const UserExploreMain = () => {
             <div className="p-6 border-b border-gray-100 dark:border-gray-700">
               <h3 className="text-lg font-semibold">Messages</h3>
             </div>
-            <div className="p-6">
+            <div className="py-0 px-1">
               <MessageSection
                 expert={selectedAppointment.expert}
                 onSendMessage={handleSendMessage}
