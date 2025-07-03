@@ -177,9 +177,9 @@ export const MessageSection = () => {
     <div className={styles.messageContainer}>
       <MainContainer responsive>
         <Sidebar position="left" scrollable>
-          {/* <ConversationHeader>
+          <ConversationHeader>
             <ConversationHeader.Content userName="Messages" />
-          </ConversationHeader> */}
+          </ConversationHeader>
           <ConversationList>
             {contacts.map((contact) => (
               <Conversation
