@@ -88,10 +88,7 @@ const UserExploreMain = () => {
               <h3 className="text-lg font-semibold">Messages</h3>
             </div>
             <div className="py-0 px-1">
-              <MessageSection
-                expert={selectedAppointment.expert}
-                onSendMessage={handleSendMessage}
-              />
+              <MessageSection />
             </div>
           </div>
         </section>

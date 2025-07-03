@@ -1,0 +1,295 @@
+/* Custom styles for MessageSection with Chatscope */
+.messageContainer {
+  height: 600px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+/* Chatscope overrides for custom styling */
+.messageContainer :global(.cs-main-container) {
+  height: 100% !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.messageContainer :global(.cs-sidebar) {
+  background: #f8f9fa !important;
+  border-right: 1px solid #e5e7eb !important;
+  width: 300px !important;
+}
+
+.messageContainer :global(.cs-conversation-header) {
+  background: white !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 16px !important;
+}
+
+.messageContainer :global(.cs-conversation-header__content) {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+.messageContainer :global(.cs-conversation-list) {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.messageContainer :global(.cs-conversation) {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  background: transparent !important;
+  transition: background-color 0.2s !important;
+  margin: 0 !important;
+}
+
+.messageContainer :global(.cs-conversation:hover) {
+  background: #f3f4f6 !important;
+}
+
+.messageContainer :global(.cs-conversation--active) {
+  background: #dbeafe !important;
+  border-right: 3px solid #3b82f6 !important;
+}
+
+.messageContainer :global(.cs-avatar) {
+  width: 40px !important;
+  height: 40px !important;
+  margin-right: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+.messageContainer :global(.cs-conversation__content) {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info) {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info__name) {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+  margin: 0 0 2px 0 !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info__last-activity-time) {
+  font-size: 12px !important;
+  color: #9ca3af !important;
+  margin-left: 8px !important;
+  white-space: nowrap !important;
+}
+
+.messageContainer :global(.cs-conversation__content__last-sender-name) {
+  font-size: 12px !important;
+  color: #6b7280 !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info__main) {
+  font-size: 12px !important;
+  color: #9ca3af !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 180px !important;
+}
+
+.messageContainer :global(.cs-conversation__unread-dot) {
+  background: #3b82f6 !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  border-radius: 9px !important;
+  font-size: 11px !important;
+  color: white !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 8px !important;
+}
+
+.messageContainer :global(.cs-chat-container) {
+  background: white !important;
+}
+
+.messageContainer :global(.cs-chat-container .cs-conversation-header) {
+  background: white !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 16px !important;
+}
+
+.messageContainer :global(.cs-chat-container .cs-conversation-header__content) {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+}
+
+.messageContainer :global(.cs-chat-container .cs-conversation-header__content__info) {
+  font-size: 12px !important;
+  color: #6b7280 !important;
+  margin-top: 2px !important;
+}
+
+.messageContainer :global(.cs-message-list) {
+  background: #f8f9fa !important;
+  padding: 16px !important;
+}
+
+.messageContainer :global(.cs-message) {
+  margin-bottom: 16px !important;
+  display: flex !important;
+  align-items: flex-end !important;
+}
+
+.messageContainer :global(.cs-message--incoming) {
+  justify-content: flex-start !important;
+}
+
+.messageContainer :global(.cs-message--outgoing) {
+  justify-content: flex-end !important;
+}
+
+.messageContainer :global(.cs-message--incoming .cs-message__content) {
+  background: #e5e7eb !important;
+  color: #111827 !important;
+  border-radius: 18px 18px 18px 4px !important;
+  padding: 8px 12px !important;
+  max-width: 70% !important;
+  margin-left: 8px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+.messageContainer :global(.cs-message--outgoing .cs-message__content) {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-radius: 18px 18px 4px 18px !important;
+  padding: 8px 12px !important;
+  max-width: 70% !important;
+  margin-right: 8px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+.messageContainer :global(.cs-message--incoming .cs-avatar) {
+  width: 32px !important;
+  height: 32px !important;
+  margin-right: 0 !important;
+  margin-bottom: 2px !important;
+}
+
+.messageContainer :global(.cs-message--outgoing .cs-avatar) {
+  display: none !important;
+}
+
+.messageContainer :global(.cs-message__content-wrapper) {
+  display: flex !important;
+  align-items: flex-end !important;
+}
+
+.messageContainer :global(.cs-message-input) {
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 16px !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor-wrapper) {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 24px !important;
+  padding: 12px 16px !important;
+  background: white !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor) {
+  font-size: 14px !important;
+  outline: none !important;
+  border: none !important;
+  background: transparent !important;
+  min-height: 20px !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor-wrapper:focus-within) {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 1px #3b82f6 !important;
+}
+
+.messageContainer :global(.cs-message-input__send-button) {
+  background: #3b82f6 !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  margin-left: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s !important;
+}
+
+.messageContainer :global(.cs-message-input__send-button:hover) {
+  background: #2563eb !important;
+}
+
+.messageContainer :global(.cs-message-input__send-button svg) {
+  fill: white !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.messageContainer :global(.cs-typing-indicator) {
+  margin: 0 16px 16px 56px !important;
+  color: #6b7280 !important;
+  font-size: 12px !important;
+  font-style: italic !important;
+}
+
+/* Hide default conversation header in sidebar */
+.messageContainer :global(.cs-sidebar .cs-conversation-header) {
+  display: none !important;
+}
+
+/* Custom conversation info styling - fallback for any custom elements */
+.conversationInfo {
+  width: 100%;
+}
+
+.conversationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.conversationName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.conversationTime {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.conversationSubtitle {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.conversationPreview {
+  font-size: 12px;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
