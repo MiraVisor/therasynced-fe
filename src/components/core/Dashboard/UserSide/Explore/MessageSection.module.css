@@ -1,35 +1,48 @@
 /* Custom styles for MessageSection with Chatscope */
 .messageContainer {
   height: 600px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   overflow: hidden;
 }
 
 /* Chatscope overrides for custom styling */
 .messageContainer :global(.cs-main-container) {
   height: 100% !important;
-  border-radius: 12px;
+  border-radius: 0 !important;
   overflow: hidden;
+  border: none !important;
 }
 
 .messageContainer :global(.cs-sidebar) {
-  background: #f8f9fa !important;
-  border-right: 1px solid #e5e7eb !important;
+  background: var(--card) !important;
+  border-right: 1px solid var(--border) !important;
   width: 300px !important;
 }
 
+.messageContainer :global(.cs-sidebar .cs-conversation-header) {
+  background: var(--card) !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 20px 16px !important;
+}
+
+.messageContainer :global(.cs-sidebar .cs-conversation-header__content) {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: var(--foreground) !important;
+}
+
 .messageContainer :global(.cs-conversation-header) {
-  background: white !important;
-  border-bottom: 1px solid #e5e7eb !important;
+  background: var(--card) !important;
+  border-bottom: 1px solid var(--border) !important;
   padding: 16px !important;
 }
 
 .messageContainer :global(.cs-conversation-header__content) {
   font-size: 18px !important;
   font-weight: 600 !important;
-  color: #111827 !important;
+  color: var(--card-foreground) !important;
 }
 
 .messageContainer :global(.cs-conversation-list) {
@@ -39,19 +52,19 @@
 
 .messageContainer :global(.cs-conversation) {
   padding: 12px 16px !important;
-  border-bottom: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid var(--border) !important;
   background: transparent !important;
   transition: background-color 0.2s !important;
   margin: 0 !important;
 }
 
 .messageContainer :global(.cs-conversation:hover) {
-  background: #f3f4f6 !important;
+  background: var(--sidebar-accent) !important;
 }
 
 .messageContainer :global(.cs-conversation--active) {
-  background: #dbeafe !important;
-  border-right: 3px solid #3b82f6 !important;
+  background: var(--sidebar-accent) !important;
+  border-right: 3px solid var(--primary) !important;
 }
 
 .messageContainer :global(.cs-avatar) {
@@ -76,26 +89,26 @@
 .messageContainer :global(.cs-conversation__content__info__name) {
   font-size: 14px !important;
   font-weight: 500 !important;
-  color: #111827 !important;
+  color: var(--foreground) !important;
   margin: 0 0 2px 0 !important;
 }
 
 .messageContainer :global(.cs-conversation__content__info__last-activity-time) {
   font-size: 12px !important;
-  color: #9ca3af !important;
+  color: var(--muted-foreground) !important;
   margin-left: 8px !important;
   white-space: nowrap !important;
 }
 
 .messageContainer :global(.cs-conversation__content__last-sender-name) {
   font-size: 12px !important;
-  color: #6b7280 !important;
+  color: var(--muted-foreground) !important;
   margin: 0 0 4px 0 !important;
 }
 
 .messageContainer :global(.cs-conversation__content__info__main) {
   font-size: 12px !important;
-  color: #9ca3af !important;
+  color: var(--muted-foreground) !important;
   margin: 0 !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -104,12 +117,12 @@
 }
 
 .messageContainer :global(.cs-conversation__unread-dot) {
-  background: #3b82f6 !important;
+  background: var(--primary) !important;
   min-width: 18px !important;
   height: 18px !important;
   border-radius: 9px !important;
   font-size: 11px !important;
-  color: white !important;
+  color: var(--primary-foreground) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -117,29 +130,29 @@
 }
 
 .messageContainer :global(.cs-chat-container) {
-  background: white !important;
+  background: var(--card) !important;
 }
 
 .messageContainer :global(.cs-chat-container .cs-conversation-header) {
-  background: white !important;
-  border-bottom: 1px solid #e5e7eb !important;
+  background: var(--card) !important;
+  border-bottom: 1px solid var(--border) !important;
   padding: 16px !important;
 }
 
 .messageContainer :global(.cs-chat-container .cs-conversation-header__content) {
   font-size: 14px !important;
   font-weight: 500 !important;
-  color: #111827 !important;
+  color: var(--card-foreground) !important;
 }
 
 .messageContainer :global(.cs-chat-container .cs-conversation-header__content__info) {
   font-size: 12px !important;
-  color: #6b7280 !important;
+  color: var(--muted-foreground) !important;
   margin-top: 2px !important;
 }
 
 .messageContainer :global(.cs-message-list) {
-  background: #f8f9fa !important;
+  background: var(--background) !important;
   padding: 16px !important;
 }
 
@@ -158,8 +171,8 @@
 }
 
 .messageContainer :global(.cs-message--incoming .cs-message__content) {
-  background: #e5e7eb !important;
-  color: #111827 !important;
+  background: var(--sidebar-accent) !important;
+  color: var(--foreground) !important;
   border-radius: 18px 18px 18px 4px !important;
   padding: 8px 12px !important;
   max-width: 70% !important;
@@ -169,8 +182,8 @@
 }
 
 .messageContainer :global(.cs-message--outgoing .cs-message__content) {
-  background: #3b82f6 !important;
-  color: white !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
   border-radius: 18px 18px 4px 18px !important;
   padding: 8px 12px !important;
   max-width: 70% !important;
@@ -196,16 +209,16 @@
 }
 
 .messageContainer :global(.cs-message-input) {
-  background: white !important;
-  border-top: 1px solid #e5e7eb !important;
+  background: var(--card) !important;
+  border-top: 1px solid var(--border) !important;
   padding: 16px !important;
 }
 
 .messageContainer :global(.cs-message-input__content-editor-wrapper) {
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid var(--border) !important;
   border-radius: 24px !important;
   padding: 12px 16px !important;
-  background: white !important;
+  background: var(--background) !important;
 }
 
 .messageContainer :global(.cs-message-input__content-editor) {
@@ -214,15 +227,16 @@
   border: none !important;
   background: transparent !important;
   min-height: 20px !important;
+  color: var(--foreground) !important;
 }
 
 .messageContainer :global(.cs-message-input__content-editor-wrapper:focus-within) {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 1px #3b82f6 !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
 }
 
 .messageContainer :global(.cs-message-input__send-button) {
-  background: #3b82f6 !important;
+  background: var(--primary) !important;
   border: none !important;
   border-radius: 50% !important;
   width: 36px !important;
@@ -233,29 +247,44 @@
   justify-content: center !important;
   cursor: pointer !important;
   transition: background-color 0.2s !important;
+  color: var(--primary-foreground) !important;
 }
 
 .messageContainer :global(.cs-message-input__send-button:hover) {
-  background: #2563eb !important;
+  background: var(--primary) !important;
+  opacity: 0.9 !important;
 }
 
 .messageContainer :global(.cs-message-input__send-button svg) {
-  fill: white !important;
+  fill: var(--primary-foreground) !important;
+  color: var(--primary-foreground) !important;
   width: 16px !important;
   height: 16px !important;
 }
 
 .messageContainer :global(.cs-typing-indicator) {
   margin: 0 16px 16px 56px !important;
-  color: #6b7280 !important;
+  color: var(--muted-foreground) !important;
   font-size: 12px !important;
   font-style: italic !important;
 }
 
-/* Hide default conversation header in sidebar */
 .messageContainer :global(.cs-sidebar .cs-conversation-header) {
-  display: none !important;
+  background: #f8f9fa !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 20px 16px !important;
 }
+
+.messageContainer :global(.cs-sidebar .cs-conversation-header__content) {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+/* Hide default conversation header in sidebar - commented out to show Messages header */
+/* .messageContainer :global(.cs-sidebar .cs-conversation-header) {
+  display: none !important;
+} */
 
 /* Custom conversation info styling - fallback for any custom elements */
 .conversationInfo {
@@ -272,23 +301,23 @@
 .conversationName {
   font-size: 14px;
   font-weight: 500;
-  color: #111827;
+  color: var(--foreground);
 }
 
 .conversationTime {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--muted-foreground);
 }
 
 .conversationSubtitle {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--muted-foreground);
   margin-bottom: 4px;
 }
 
 .conversationPreview {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--muted-foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

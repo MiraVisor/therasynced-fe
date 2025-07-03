@@ -105,10 +105,10 @@ export const MessageSection = () => {
       },
       {
         id: '5',
-        sender: 'You',
+        sender: 'Dr Lee Marshell',
         message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
         sentTime: '16:20',
-        direction: 'outgoing',
+        direction: 'incoming',
       },
       {
         id: '6',
@@ -185,7 +185,9 @@ export const MessageSection = () => {
               <Conversation
                 key={contact.id}
                 name={contact.name}
+                lastSenderName={contact.info}
                 info={contact.preview}
+                lastActivityTime={contact.time}
                 active={activeContact?.id === contact.id}
                 unreadCnt={contact.unreadCount}
                 onClick={() => setActiveContact(contact)}
@@ -230,7 +232,7 @@ export const MessageSection = () => {
             onSend={handleSendMessage}
             disabled={!activeContact}
             attachButton={false}
-            placeholder="Type your message...."
+            placeholder="Type your Message"
           />
         </ChatContainer>
       </MainContainer>
