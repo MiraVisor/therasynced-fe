@@ -73,6 +73,8 @@ export const MessageSection = () => {
   const [activeContact, setActiveContact] = useState<Contact>(contacts[0]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  // User avatar - can be made dynamic based on logged-in user
+  const userAvatar = 'https://randomuser.me/api/portraits/men/1.jpg';
   const [messages, setMessages] = useState<Messages>({
     1: [
       {
@@ -177,9 +179,9 @@ export const MessageSection = () => {
     <div className={styles.messageContainer}>
       <MainContainer responsive>
         <Sidebar position="left" scrollable>
-          <ConversationHeader>
+          {/* <ConversationHeader>
             <ConversationHeader.Content userName="Messages" />
-          </ConversationHeader>
+          </ConversationHeader> */}
           <ConversationList>
             {contacts.map((contact) => (
               <Conversation
@@ -200,7 +202,7 @@ export const MessageSection = () => {
 
         <ChatContainer>
           {activeContact && (
-            <ConversationHeader>
+            <ConversationHeader className={styles.conversationHeader}>
               <Avatar src={activeContact.avatar} name={activeContact.name} />
               <ConversationHeader.Content userName={activeContact.name} info={activeContact.info} />
             </ConversationHeader>
@@ -222,6 +224,7 @@ export const MessageSection = () => {
                   {msg.direction === 'incoming' && (
                     <Avatar src={activeContact.avatar} name={msg.sender} />
                   )}
+                  {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
                 </Message>
               ))}
           </MessageList>
