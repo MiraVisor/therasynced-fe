@@ -43,6 +43,12 @@
   padding: 16px !important;
   box-shadow: none !important;
 }
+.messageContainer :global(.cs-conversation-header__content .cs-conversation-header__user-name) {
+  background-color: transparent !important;
+}
+.messageContainer :global(.cs-conversation-header__content .cs-conversation-header__info) {
+  background-color: transparent !important;
+}
 
 .messageContainer :global(.cs-conversation-header__content) {
   font-size: 16px !important;
@@ -264,7 +270,9 @@
 
 .messageContainer :global(.cs-message__content-wrapper) {
   display: flex !important;
-  align-items: flex-end !important;
+  align-items: flex-start !important;
+  margin-left: 8px !important;
+  
 }
 
 .messageContainer :global(.cs-message-input) {
@@ -295,6 +303,10 @@
 .messageContainer :global(.cs-message-input__content-editor::placeholder) {
   color: var(--muted-foreground) !important;
   font-size: 14px !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor) {
+  background-color: #fff !important;
 }
 
 .messageContainer :global(.cs-message-input__content-editor-wrapper:focus-within) {

@@ -13,6 +13,8 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import React, { useState } from 'react';
 
+import { useIsMobile } from '@/hooks/use-mobile';
+
 import styles from './MessageSection.module.css';
 
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
@@ -73,6 +75,8 @@ export const MessageSection = () => {
   const [activeContact, setActiveContact] = useState<Contact>(contacts[0]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const isMobile = useIsMobile();
   // User avatar - can be made dynamic based on logged-in user
   const userAvatar = 'https://randomuser.me/api/portraits/men/1.jpg';
   const [messages, setMessages] = useState<Messages>({
