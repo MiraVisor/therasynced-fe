@@ -1,7 +1,10 @@
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
+import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
 import { Expert } from '@/types/types';
 
 interface ExpertCardProps extends Expert {
@@ -21,9 +24,24 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   imageUrl = 'https://randomuser.me/api/portraits/women/44.jpg',
 }) => {
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleBookNow = () => {
     router.push(`/dashboard/doctors/${id}`);
+  };
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const result = await dispatch(favoriteFreelancer(id) as any).unwrap();
+      if (result && typeof result === 'object' && 'favorited' in result) {
+        toast.success(result.favorited ? 'Added to favorites' : 'Removed from favorites');
+      } else {
+        toast.success(!isFavorite ? 'Added to favorites' : 'Removed from favorites');
+      }
+    } catch (err: any) {
+      toast.error('Failed to update favorite');
+    }
   };
 
   return (
@@ -59,19 +77,20 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           className={`absolute top-3 right-5 text-xl ${
             isFavorite ? 'text-[#FF2D87]' : 'text-gray-300'
           }`}
+          onClick={handleFavorite}
         >
           {isFavorite ? '♥' : '♡'}
         </button>
       </div>
       <div className="text-sm text-[#525252] mt-2 mb-3">{description}</div>
       <div className="flex gap-2 mt-4">
-        <Button variant="outline" className="flex-1 bg-gray-100 text-black hover:bg-gray-200">
+        <Button
+          variant="outline"
+          className="flex-1 bg-[#00684A] text-white border-[#00684A] hover:bg-[#00684A]/90"
+        >
           View Profile
         </Button>
-        <Button
-          className="flex-1 bg-[#00684A] text-white border-[#00684A] hover:bg-[#00684A]/90"
-          onClick={handleBookNow}
-        >
+        <Button className="flex-1 bg-gray-100 text-black hover:bg-gray-200" onClick={handleBookNow}>
           Book Now
         </Button>
       </div>
