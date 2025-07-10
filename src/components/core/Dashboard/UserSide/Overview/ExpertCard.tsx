@@ -1,7 +1,10 @@
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
+import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
 import { Expert } from '@/types/types';
 
 interface ExpertCardProps extends Expert {
@@ -21,9 +24,24 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   imageUrl = 'https://randomuser.me/api/portraits/women/44.jpg',
 }) => {
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleBookNow = () => {
     router.push(`/dashboard/doctors/${id}`);
+  };
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const result = await dispatch(favoriteFreelancer(id) as any).unwrap();
+      if (result && typeof result === 'object' && 'favorited' in result) {
+        toast.success(result.favorited ? 'Added to favorites' : 'Removed from favorites');
+      } else {
+        toast.success(!isFavorite ? 'Added to favorites' : 'Removed from favorites');
+      }
+    } catch (err: any) {
+      toast.error('Failed to update favorite');
+    }
   };
 
   return (
@@ -59,6 +77,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           className={`absolute top-3 right-5 text-xl ${
             isFavorite ? 'text-[#FF2D87]' : 'text-gray-300'
           }`}
+          onClick={handleFavorite}
         >
           {isFavorite ? '♥' : '♡'}
         </button>
