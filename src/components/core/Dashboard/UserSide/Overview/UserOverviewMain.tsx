@@ -8,7 +8,6 @@ import { Expert } from '@/types/types';
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import { SearchBar } from '../../SearchBar';
 import { ExpertList } from './ExpertSection';
-import { ExpertList } from './ExpertSection';
 import { SectionHeader } from './SectionHeader';
 import { ViewMoreButton } from './ViewMoreButton';
 
