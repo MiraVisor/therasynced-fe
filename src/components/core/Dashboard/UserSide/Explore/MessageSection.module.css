@@ -658,3 +658,28 @@
   color: var(--card-foreground) !important;
   margin-left: 10px !important;
 }
+
+/* Date separator styling for chat */
+.dateSeparator {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 16px 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.dateSeparatorText {
+  background: rgba(225, 245, 254, 0.8) !important;
+  color: #666 !important;
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+}
+
+/* Make sure messages below date separator have proper spacing */
+.dateSeparator + :global(.cs-message) {
+  margin-top: 8px !important;
+}

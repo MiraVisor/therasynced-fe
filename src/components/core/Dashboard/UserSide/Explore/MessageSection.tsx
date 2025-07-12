@@ -34,6 +34,7 @@ interface MessageType {
   sender: string;
   message: string;
   sentTime: string;
+  sentDate?: string;
   direction: 'incoming' | 'outgoing';
 }
 
@@ -107,6 +108,7 @@ export const MessageSection = () => {
         sender: 'Dr Lee Marshell',
         message: 'Hello! How are you doing?........',
         sentTime: '16:20',
+        sentDate: 'July 10, 2025',
         direction: 'incoming',
       },
       {
@@ -114,6 +116,7 @@ export const MessageSection = () => {
         sender: 'Dr Lee Marshell',
         message: 'Hello! How are you doing?........',
         sentTime: '16:20',
+        sentDate: 'July 10, 2025',
         direction: 'incoming',
       },
       {
@@ -121,6 +124,7 @@ export const MessageSection = () => {
         sender: 'Dr Lee Marshell',
         message: 'Hello! How are you doing?........',
         sentTime: '16:20',
+        sentDate: 'July 10, 2025',
         direction: 'incoming',
       },
       {
@@ -128,6 +132,7 @@ export const MessageSection = () => {
         sender: 'You',
         message: 'Hello! How are You? 😊',
         sentTime: '16:20',
+        sentDate: 'July 10, 2025',
         direction: 'outgoing',
       },
       {
@@ -135,6 +140,7 @@ export const MessageSection = () => {
         sender: 'Dr Lee Marshell',
         message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
         sentTime: '16:20',
+        sentDate: 'July 12, 2025',
         direction: 'incoming',
       },
       {
@@ -142,6 +148,7 @@ export const MessageSection = () => {
         sender: 'You',
         message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
         sentTime: '16:20',
+        sentDate: 'July 12, 2025',
         direction: 'outgoing',
       },
     ],
@@ -161,11 +168,19 @@ export const MessageSection = () => {
   const handleSendMessage = (text: string) => {
     if (!activeContact || !text.trim()) return;
 
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
     const newMessage: MessageType = {
       id: Date.now().toString(),
       sender: 'You',
       message: text,
-      sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      sentTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      sentDate: formattedDate,
       direction: 'outgoing',
     };
 
@@ -178,11 +193,13 @@ export const MessageSection = () => {
 
     // Simulate response after 2 seconds
     setTimeout(() => {
+      const responseTime = new Date();
       const responseMessage: MessageType = {
         id: (Date.now() + 1).toString(),
         sender: activeContact.name,
         message: `Thanks for your message! I'll get back to you soon.`,
-        sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sentTime: responseTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sentDate: formattedDate,
         direction: 'incoming',
       };
 
@@ -249,23 +266,37 @@ export const MessageSection = () => {
 
             <MessageList typingIndicator={getTypingIndicator()}>
               {activeContact &&
-                messages[activeContact.id]?.map((msg: MessageType) => (
-                  <Message
-                    key={msg.id}
-                    model={{
-                      message: msg.message,
-                      sentTime: msg.sentTime,
-                      sender: msg.sender,
-                      direction: msg.direction,
-                      position: 'single',
-                    }}
-                  >
-                    {msg.direction === 'incoming' && (
-                      <Avatar src={activeContact.avatar} name={msg.sender} />
-                    )}
-                    {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
-                  </Message>
-                ))}
+                messages[activeContact.id]?.map(
+                  (msg: MessageType, index: number, array: MessageType[]) => {
+                    // Check if this is the first message or if the date is different from the previous message
+                    const showDateSeparator =
+                      index === 0 || msg.sentDate !== array[index - 1].sentDate;
+
+                    return (
+                      <React.Fragment key={msg.id}>
+                        {showDateSeparator && msg.sentDate && (
+                          <div className={styles.dateSeparator}>
+                            <div className={styles.dateSeparatorText}>{msg.sentDate}</div>
+                          </div>
+                        )}
+                        <Message
+                          model={{
+                            message: msg.message,
+                            sentTime: msg.sentTime,
+                            sender: msg.sender,
+                            direction: msg.direction,
+                            position: 'single',
+                          }}
+                        >
+                          {msg.direction === 'incoming' && (
+                            <Avatar src={activeContact.avatar} name={msg.sender} />
+                          )}
+                          {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
+                        </Message>
+                      </React.Fragment>
+                    );
+                  },
+                )}
             </MessageList>
 
             <MessageInput
