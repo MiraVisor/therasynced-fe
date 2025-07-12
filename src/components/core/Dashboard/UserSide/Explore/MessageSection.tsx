@@ -13,6 +13,8 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import React, { useEffect, useState } from 'react';
 
+import { useMediaQuery } from '@/hooks/use-media-query';
+
 import styles from './MessageSection.module.css';
 
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
@@ -74,11 +76,12 @@ export const MessageSection = () => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 1023px)');
 
   // Handle contact selection - for mobile and tablet, show chat view
   const handleContactClick = (contact: Contact) => {
     setActiveContact(contact);
-    if (window.innerWidth < 1024) {
+    if (isMobile) {
       setShowChat(true);
     }
   };
@@ -90,15 +93,10 @@ export const MessageSection = () => {
 
   // Reset chat view when screen size changes to desktop
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setShowChat(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (!isMobile) {
+      setShowChat(false);
+    }
+  }, [isMobile]);
   // User avatar - can be made dynamic based on logged-in user
   const userAvatar = 'https://randomuser.me/api/portraits/men/1.jpg';
   const [messages, setMessages] = useState<Messages>({
@@ -234,11 +232,8 @@ export const MessageSection = () => {
                 <ConversationHeader.Back
                   onClick={handleBackToContacts}
                   className={styles.backButtonWrapper}
-                >
-                  <div className={styles.backButton}>
-                    <span>←</span>
-                  </div>
-                </ConversationHeader.Back>
+                />
+
                 <Avatar src={activeContact.avatar} name={activeContact.name} />
                 <ConversationHeader.Content
                   userName={activeContact.name}

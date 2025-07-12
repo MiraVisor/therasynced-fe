@@ -182,6 +182,8 @@
 
 .messageContainer :global(.cs-chat-container) {
   background: #f8f9fa !important;
+  width: 100% !important;
+  flex: 1 !important;
 }
 
 .messageContainer :global(.cs-chat-container .cs-conversation-header) {
@@ -189,40 +191,48 @@
   border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
   padding: 16px !important;
   box-shadow: none !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
-.messageContainer :global(.cs-chat-container .cs-conversation-header__content) {
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  color: var(--card-foreground) !important;
+/* Style for back button - hide on desktop */
+.backButtonWrapper {
+  display: none !important;
 }
 
-.messageContainer :global(.cs-chat-container .cs-conversation-header__content__info) {
-  font-size: 12px !important;
-  color: var(--muted-foreground) !important;
-  margin-top: 2px !important;
+/* Show back button only on mobile */
+@media (max-width: 1023px) {
+  .backButtonWrapper {
+    display: flex !important;
+    margin-right: 10px !important;
+  }
 }
+
 /* chatContainer */
 .messageContainer :global(.cs-message-list) {
   background: #f8f9fa !important;
   padding: 16px !important;
+  width: 100% !important;
 }
 
 .messageContainer :global(.cs-message) {
   margin-bottom: 8px !important;
   display: flex !important;
   align-items: flex-end !important;
+  width: 100% !important;
 }
 
 .messageContainer :global(.cs-message--incoming) {
   justify-content: flex-start !important;
   margin-bottom: 12px !important;
+  width: 100% !important;
 }
 
 .messageContainer :global(.cs-message--outgoing) {
   justify-content: flex-end !important;
-  max-width: 70% !important;
   margin-bottom: 12px !important;
+  width: 100% !important;
 }
 
 .messageContainer :global(.cs-message--incoming .cs-message__content) {
@@ -230,11 +240,12 @@
   color: var(--foreground) !important;
   border-radius: 18px 18px 18px 4px !important;
   padding: 12px 16px !important;
-  max-width: 70% !important;
-  margin-left: 2px !important;
+  margin-left: 12px !important; /* Increased spacing between avatar and message */
   font-size: 14px !important;
   line-height: 1.4 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  width: auto !important;
+  max-width: 70% !important; /* Adjusted for better appearance */
 }
 
 .messageContainer :global(.cs-message--outgoing .cs-message__content) {
@@ -242,12 +253,13 @@
   color: var(--primary-foreground) !important;
   border-radius: 18px 18px 4px 18px !important;
   padding: 12px 16px !important;
-  max-width: 70% !important;
-  margin-left: 2px !important;
+  margin-right: 12px !important; /* Added spacing between avatar and message */
   font-size: 14px !important;
   line-height: 1.4 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   order: 1 !important;
+  width: auto !important;
+  max-width: 70% !important; /* Adjusted for better appearance */
 }
 
 .messageContainer :global(.cs-message--incoming .cs-avatar) {
@@ -441,6 +453,12 @@
     min-width: 100% !important;
     flex: 1 !important;
   }
+
+  /* Adjust message width for smaller screens */
+  .messageContainer :global(.cs-message--incoming .cs-message__content),
+  .messageContainer :global(.cs-message--outgoing .cs-message__content) {
+    max-width: 85% !important;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -479,31 +497,6 @@
   opacity: 1 !important;
 }
 
-/* Back button styling for mobile and tablet */
-.backButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-right: 12px;
-  border-radius: 50%;
-  background: #f0f0f0;
-  border: 1px solid #e5e7eb;
-  color: #444;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  padding: 0;
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.backButton:hover {
-  background: var(--accent);
-  transform: scale(1.05);
-}
-
 /* Ensuring the back button is visible in mobile view */
 @media (max-width: 1023px) {
   .messageContainer :global(.cs-conversation-header__back) {
@@ -518,4 +511,19 @@
     visibility: visible !important;
     opacity: 1 !important;
   }
+}
+
+.conversationHeader {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  background: white !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
+}
+
+.messageContainer :global(.cs-conversation-header__content) {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--card-foreground) !important;
+  margin-left: 10px !important;
 }
