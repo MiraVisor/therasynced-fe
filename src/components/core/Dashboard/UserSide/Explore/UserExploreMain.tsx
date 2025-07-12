@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Expert } from '@/types/types';
 
@@ -119,7 +119,10 @@ const UserExploreMain = () => {
   const handleSendMessage = () => {
     // Implement send message logic
   };
-
+  const appointmentsForCalendar = useMemo(
+    () => allAppointments.map((apt) => ({ date: apt.date })),
+    [allAppointments],
+  );
   return (
     <DashboardPageWrapper
       header={
@@ -145,7 +148,7 @@ const UserExploreMain = () => {
                   <AppointmentCalendar
                     selectedDate={date || new Date()}
                     onDateChange={setDate}
-                    appointments={allAppointments.map((apt) => ({ date: apt.date }))}
+                    appointments={appointmentsForCalendar}
                   />
                 </div>
 

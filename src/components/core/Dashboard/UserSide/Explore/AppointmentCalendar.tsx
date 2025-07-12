@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 interface AppointmentDate {
   date: Date;
@@ -22,77 +22,9 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   highlightDates = [],
 }) => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date(selectedDate));
-  const [calendarDays, setCalendarDays] = useState<AppointmentDate[]>([]);
 
   // Get the month for header display
   const monthName = currentMonth.toLocaleString('default', { month: 'long' });
-
-  // Check if a date has an appointment - wrapped in useCallback to avoid dependency issues
-  const hasAppointmentOnDate = useCallback(
-    (date: Date): boolean => {
-      // Check in appointments array
-      const hasScheduled = appointments.some((appointment) => isSameDay(appointment.date, date));
-
-      // Check in highlighted dates
-      const isHighlighted = highlightDates.some((highlightDate) => isSameDay(highlightDate, date));
-
-      return hasScheduled || isHighlighted;
-    },
-    [appointments, highlightDates],
-  );
-
-  // Generate the days for the current month view
-  useEffect(() => {
-    const generateCalendarDays = () => {
-      const days: AppointmentDate[] = [];
-      const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-      const lastDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-
-      // Get the day of the week for the first day (0 = Sunday, 1 = Monday, etc.)
-      const firstDayOfWeek = firstDayOfMonth.getDay();
-
-      // Add days from the previous month to fill the first row
-      // Adjust for Monday start
-      const daysFromPreviousMonth = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-      const lastDayOfPreviousMonth = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        0,
-      );
-
-      for (let i = daysFromPreviousMonth; i > 0; i--) {
-        const date = new Date(lastDayOfPreviousMonth);
-        date.setDate(lastDayOfPreviousMonth.getDate() - i + 1);
-        days.push({
-          date,
-          hasAppointment: hasAppointmentOnDate(date),
-        });
-      }
-
-      // Add days from the current month
-      for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
-        const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
-        days.push({
-          date,
-          hasAppointment: hasAppointmentOnDate(date),
-        });
-      }
-
-      // Add days from the next month to complete the grid (up to 42 days total for 6 rows)
-      const remainingDays = 42 - days.length;
-      for (let i = 1; i <= remainingDays; i++) {
-        const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, i);
-        days.push({
-          date,
-          hasAppointment: hasAppointmentOnDate(date),
-        });
-      }
-
-      return days;
-    };
-
-    setCalendarDays(generateCalendarDays());
-  }, [currentMonth, appointments, highlightDates, hasAppointmentOnDate]);
 
   // Helper to check if two dates are the same day
   const isSameDay = (date1: Date, date2: Date): boolean => {
@@ -102,6 +34,51 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       date1.getFullYear() === date2.getFullYear()
     );
   };
+
+  // Memoized calendar days generation — prevents infinite loop
+  const calendarDays: AppointmentDate[] = useMemo(() => {
+    const hasAppointmentOnDate = (date: Date): boolean => {
+      const hasScheduled = appointments.some((appointment) => isSameDay(appointment.date, date));
+      const isHighlighted = highlightDates.some((highlightDate) => isSameDay(highlightDate, date));
+      return hasScheduled || isHighlighted;
+    };
+
+    const days: AppointmentDate[] = [];
+    const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const lastDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+    const firstDayOfWeek = firstDayOfMonth.getDay();
+    const daysFromPreviousMonth = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+    const lastDayOfPreviousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
+
+    for (let i = daysFromPreviousMonth; i > 0; i--) {
+      const date = new Date(lastDayOfPreviousMonth);
+      date.setDate(lastDayOfPreviousMonth.getDate() - i + 1);
+      days.push({
+        date,
+        hasAppointment: hasAppointmentOnDate(date),
+      });
+    }
+
+    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
+      days.push({
+        date,
+        hasAppointment: hasAppointmentOnDate(date),
+      });
+    }
+
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, i);
+      days.push({
+        date,
+        hasAppointment: hasAppointmentOnDate(date),
+      });
+    }
+
+    return days;
+  }, [currentMonth, appointments, highlightDates]);
 
   // Navigate to the previous month
   const goToPreviousMonth = () => {
@@ -162,20 +139,20 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           >
             <span
               className={`
-              flex items-center justify-center w-8 h-8 mx-auto rounded-full
-              ${isSelectedDate(day.date) ? 'bg-green-500 text-white' : ''}
-              ${day.hasAppointment && !isSelectedDate(day.date) ? 'border border-green-400 dark:border-green-500' : ''}
-            `}
+                flex items-center justify-center w-8 h-8 mx-auto rounded-full
+                ${isSelectedDate(day.date) ? 'bg-green-500 text-white' : ''}
+                ${day.hasAppointment && !isSelectedDate(day.date) ? 'border border-green-400 dark:border-green-500' : ''}
+              `}
             >
               {day.date.getDate()}
             </span>
             {day.hasAppointment && (
               <div
                 className={`
-                absolute bottom-1 left-1/2 transform -translate-x-1/2
-                w-1.5 h-1.5 rounded-full
-                ${isSelectedDate(day.date) ? 'bg-white' : 'bg-green-500'}
-              `}
+                  absolute bottom-1 left-1/2 transform -translate-x-1/2
+                  w-1.5 h-1.5 rounded-full
+                  ${isSelectedDate(day.date) ? 'bg-white' : 'bg-green-500'}
+                `}
               ></div>
             )}
           </div>
