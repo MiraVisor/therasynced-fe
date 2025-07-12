@@ -6,7 +6,7 @@
   border-radius: 8px !important;
   overflow: auto;
   box-shadow: none !important;
-  background-color: #2c0c49;
+  background-color: white;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -20,7 +20,7 @@
   overflow: hidden;
   border: none !important;
   box-shadow: none !important;
-  background-color: #2c0c49;
+  background-color: white;
   display: flex !important;
   flex-direction: row !important;
 }
@@ -192,7 +192,7 @@
 }
 
 .messageContainer :global(.cs-chat-container) {
-  background: #f8f9fa !important;
+  background: white !important;
   width: 100% !important;
   flex: 1 1 auto !important;
   min-width: 0 !important; /* Allow flexbox to shrink this element */
@@ -214,7 +214,7 @@
 }
 
 /* Show back button only on mobile */
-@media (max-width: 1023px) {
+@media (max-width: 768px) {
   .backButtonWrapper {
     display: flex !important;
     margin-right: 10px !important;
@@ -223,7 +223,7 @@
 
 /* chatContainer */
 .messageContainer :global(.cs-message-list) {
-  background: #f8f9fa !important;
+  background: white !important;
   padding: 16px !important;
   width: 100% !important;
   flex: 1 !important;
@@ -233,8 +233,9 @@
 .messageContainer :global(.cs-message) {
   margin-bottom: 8px !important;
   display: flex !important;
-  align-items: flex-end !important;
+  align-items: center !important;
   width: 100% !important;
+  padding: 5px !important;
 }
 
 .messageContainer :global(.cs-message--incoming) {
@@ -245,35 +246,38 @@
 
 .messageContainer :global(.cs-message--outgoing) {
   justify-content: flex-end !important;
+  align-items: center !important;
   margin-bottom: 12px !important;
+
   width: 100% !important;
 }
 
 .messageContainer :global(.cs-message--incoming .cs-message__content) {
-  background: #e3f2fd !important;
-  color: var(--foreground) !important;
-  border-radius: 18px 18px 18px 4px !important;
+  background: #d0f5e5 !important;
+  color: #636363 !important;
+  border-radius: 8px !important;
   padding: 12px 16px !important;
   margin-left: 12px !important; /* Increased spacing between avatar and message */
   font-size: 14px !important;
   line-height: 1.4 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
   width: auto !important;
-  max-width: 70% !important; /* Adjusted for better appearance */
+  max-width: 90% !important; /* Adjusted for better appearance */
 }
 
 .messageContainer :global(.cs-message--outgoing .cs-message__content) {
-  background: var(--primary) !important;
-  color: var(--primary-foreground) !important;
-  border-radius: 18px 18px 4px 18px !important;
+  background: #fff !important;
+  color: #636363 !important;
+  border-radius: 8px !important;
   padding: 12px 16px !important;
   margin-right: 12px !important; /* Added spacing between avatar and message */
   font-size: 14px !important;
   line-height: 1.4 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
   order: 1 !important;
   width: auto !important;
-  max-width: 70% !important; /* Adjusted for better appearance */
+  max-width: 90% !important; /* Adjusted for better appearance */
+  margin-right: -10px !important;
 }
 
 .messageContainer :global(.cs-message--incoming .cs-avatar) {
@@ -283,16 +287,17 @@
   margin-bottom: 2px !important;
   box-shadow: none !important;
   border: none !important;
+  order: 0 !important; /* Ensure avatar is on the left */
 }
 
 .messageContainer :global(.cs-message--outgoing .cs-avatar) {
   width: 32px !important;
   height: 32px !important;
-  margin-right: 2px !important;
+  margin-left: 2px !important; /* Changed from margin-right to margin-left */
   margin-bottom: 2px !important;
   box-shadow: none !important;
   border: none !important;
-  order: 0 !important;
+  order: 2 !important; /* Changed order to place avatar on the right */
 }
 
 .messageContainer :global(.cs-message__content-wrapper) {
@@ -391,6 +396,68 @@
   font-weight: 600 !important;
   color: #111827 !important;
 }
+/* Custom scrollbar styling */
+.messageContainer :global(.ps__thumb-y),
+.messageContainer :global(.ps__thumb-x) {
+  background-color: #028a51 !important;
+  border-radius: 6px !important;
+  transition: background-color 0.2s ease-in-out !important;
+}
+
+.messageContainer :global(.ps__thumb-y:hover),
+.messageContainer :global(.ps__thumb-x:hover) {
+  background-color: #017745 !important; /* Slightly darker shade for hover state */
+}
+
+.messageContainer :global(.ps__rail-y),
+.messageContainer :global(.ps__rail-x) {
+  background-color: transparent !important;
+}
+
+.messageContainer :global(.ps__rail-y:hover) > .ps__thumb-y,
+.messageContainer :global(.ps__rail-x:hover) > .ps__thumb-x {
+  width: 8px !important;
+  background-color: #017745 !important;
+}
+/* SVG icon styling with increased specificity */
+.messageContainer :global(svg:not(:root).svg-inline--fa),
+.messageContainer :global(svg:not(:host).svg-inline--fa) {
+  overflow: visible !important;
+  box-sizing: content-box !important;
+}
+
+.messageContainer :global(.svg-inline--fa) {
+  display: var(--fa-display, inline-block) !important;
+  height: 1em !important;
+  overflow: visible !important;
+  vertical-align: -0.125em !important;
+  color: #017745 !important;
+  transition: color 0.2s ease !important;
+}
+
+/* Target more specifically with !important and higher specificity */
+.messageContainer :global(.svg-inline--fa:hover),
+.messageContainer :global(.svg-inline--fa:active),
+.messageContainer :global(.svg-inline--fa:focus) {
+  color: #015d37 !important;
+}
+
+/* Force color for SVG icons in interactive elements */
+.messageContainer :global(button:hover) :global(.svg-inline--fa),
+.messageContainer :global(a:hover) :global(.svg-inline--fa) {
+  color: #015d37 !important;
+}
+
+/* Target SVG paths directly */
+.messageContainer :global(.svg-inline--fa path) {
+  transition: fill 0.2s ease !important;
+}
+
+.messageContainer :global(.svg-inline--fa:hover path),
+.messageContainer :global(button:hover .svg-inline--fa path),
+.messageContainer :global(a:hover .svg-inline--fa path) {
+  fill: #015d37 !important;
+}
 
 /* Hide default conversation header in sidebar - commented out to show Messages header */
 /* .messageContainer :global(.cs-sidebar .cs-conversation-header) {
@@ -437,7 +504,7 @@
 }
 
 /* Mobile and Tablet responsive styles for chat interface */
-@media (max-width: 1023px) {
+@media (max-width: 768px) {
   .messageContainer :global(.cs-main-container) {
     display: flex !important;
     width: 100% !important;
@@ -475,7 +542,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   /* Additional styling for the chat container wrapper to ensure it takes full available width */
   .chatContainerWrapper {
     flex: 1 1 auto !important;
@@ -533,7 +600,7 @@
   opacity: 1 !important;
 }
 /* Ensuring the back button is visible in mobile view */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   /* Additional styling for the chat container wrapper to ensure it takes full available width */
   .chatContainerWrapper {
     flex: 1 1 auto !important;

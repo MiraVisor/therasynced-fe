@@ -231,10 +231,12 @@ export const MessageSection = () => {
           <ChatContainer>
             {activeContact && (
               <ConversationHeader className={styles.conversationHeader}>
-                <ConversationHeader.Back
-                  onClick={handleBackToContacts}
-                  className={styles.backButtonWrapper}
-                />
+                {isMobile && (
+                  <ConversationHeader.Back
+                    onClick={handleBackToContacts}
+                    className={styles.backButtonWrapper}
+                  />
+                )}
 
                 <Avatar src={activeContact.avatar} name={activeContact.name} />
                 <ConversationHeader.Content
