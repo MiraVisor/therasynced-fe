@@ -152,8 +152,42 @@ export const MessageSection = () => {
         direction: 'outgoing',
       },
     ],
-    2: [],
-    3: [],
+    2: [
+      {
+        id: '5',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '6',
+        sender: 'You',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'outgoing',
+      },
+    ],
+    3: [
+      {
+        id: '5',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! How are you doing?........ 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '6',
+        sender: 'You',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'outgoing',
+      },
+    ],
   });
 
   const handleChange = (value: string) => {

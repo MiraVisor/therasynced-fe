@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-import { Calendar } from '@/components/ui/calendar';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import ExpertCard from '../Overview/ExpertCard';
 import { AppointmentCard } from './AppointmentCard';
 import MessageSection from './MessageSection';
+import { AppointmentCalendar } from './SimpleAppointmentCalendar';
 
 interface Appointment {
   expert: Expert;
@@ -63,22 +63,36 @@ const UserExploreMain = () => {
           </section>
 
           {/* Appointment Section */}
-          {/* <section className="lg:col-span-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 shadow-md border border-gray-100 dark:border-gray-700 h-[410px] relative">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-xl" />
+          <section className="lg:col-span-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-3 sm:px-4 py-3 shadow-md border border-gray-100 dark:border-gray-700 min-h-[350px] h-auto lg:h-[410px] relative overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                <div className="w-full">
+                  <AppointmentCalendar
+                    selectedDate={date || new Date()}
+                    onDateChange={setDate}
+                    appointments={[
+                      { date: selectedAppointment.date },
+                      { date: new Date('2025-07-10') },
+                      { date: new Date('2025-07-15') },
+                      { date: new Date('2025-07-18') },
+                      { date: new Date('2025-07-29') },
+                    ]}
+                  />
+                </div>
 
-                <AppointmentCard
-                  expert={selectedAppointment.expert}
-                  date={selectedAppointment.date}
-                  time={selectedAppointment.time}
-                  status={selectedAppointment.status}
-                  onReschedule={handleReschedule}
-                  onCancel={handleCancel}
-                />
+                <div className="w-full">
+                  <AppointmentCard
+                    expert={selectedAppointment.expert}
+                    date={selectedAppointment.date}
+                    time={selectedAppointment.time}
+                    status={selectedAppointment.status}
+                    onReschedule={handleReschedule}
+                    onCancel={handleCancel}
+                  />
+                </div>
               </div>
             </div>
-          </section> */}
+          </section>
         </div>
 
         {/* Messages Section */}
