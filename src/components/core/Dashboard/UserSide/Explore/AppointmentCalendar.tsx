@@ -27,6 +27,20 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   // Get the month for header display
   const monthName = currentMonth.toLocaleString('default', { month: 'long' });
 
+  // Check if a date has an appointment - wrapped in useCallback to avoid dependency issues
+  const hasAppointmentOnDate = useCallback(
+    (date: Date): boolean => {
+      // Check in appointments array
+      const hasScheduled = appointments.some((appointment) => isSameDay(appointment.date, date));
+
+      // Check in highlighted dates
+      const isHighlighted = highlightDates.some((highlightDate) => isSameDay(highlightDate, date));
+
+      return hasScheduled || isHighlighted;
+    },
+    [appointments, highlightDates],
+  );
+
   // Generate the days for the current month view
   useEffect(() => {
     const generateCalendarDays = () => {
@@ -78,18 +92,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     };
 
     setCalendarDays(generateCalendarDays());
-  }, [currentMonth, appointments, highlightDates]);
-
-  // Check if a date has an appointment
-  const hasAppointmentOnDate = (date: Date): boolean => {
-    // Check in appointments array
-    const hasScheduled = appointments.some((appointment) => isSameDay(appointment.date, date));
-
-    // Check in highlighted dates
-    const isHighlighted = highlightDates.some((highlightDate) => isSameDay(highlightDate, date));
-
-    return hasScheduled || isHighlighted;
-  };
+  }, [currentMonth, appointments, highlightDates, hasAppointmentOnDate]);
 
   // Helper to check if two dates are the same day
   const isSameDay = (date1: Date, date2: Date): boolean => {
@@ -128,22 +131,8 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
       {/* Calendar Header */}
-      <div className="flex justify-between items-center bg-green-700 text-white p-4">
-        <button
-          onClick={goToPreviousMonth}
-          className="p-1 rounded-full hover:bg-green-600 transition-colors"
-          aria-label="Previous month"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
+      <div className="flex justify-center items-center bg-green-700 text-white p-4">
         <h2 className="text-xl font-medium">{monthName}</h2>
-        <button
-          onClick={goToNextMonth}
-          className="p-1 rounded-full hover:bg-green-600 transition-colors"
-          aria-label="Next month"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
       </div>
 
       {/* Weekday Headers */}
@@ -159,22 +148,23 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       </div>
 
       {/* Calendar Days */}
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 gap-1 p-2">
         {calendarDays.map((day, index) => (
           <div
             key={index}
             onClick={() => handleSelectDate(day)}
             className={`
-              p-2 text-center border border-gray-100 dark:border-gray-700 h-12 sm:h-12 lg:h-14
-              relative cursor-pointer
+              p-2 text-center h-12 sm:h-12 lg:h-14
+              relative cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 rounded-lg
               ${!isCurrentMonth(day.date) ? 'text-gray-400 dark:text-gray-500' : ''}
-              ${isSelectedDate(day.date) ? 'bg-green-100 dark:bg-green-900' : ''}
+              ${isSelectedDate(day.date) ? 'bg-green-50 dark:bg-green-900/30' : ''}
             `}
           >
             <span
               className={`
               flex items-center justify-center w-8 h-8 mx-auto rounded-full
               ${isSelectedDate(day.date) ? 'bg-green-500 text-white' : ''}
+              ${day.hasAppointment && !isSelectedDate(day.date) ? 'border border-green-400 dark:border-green-500' : ''}
             `}
             >
               {day.date.getDate()}
@@ -183,7 +173,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               <div
                 className={`
                 absolute bottom-1 left-1/2 transform -translate-x-1/2
-                w-1 h-1 rounded-full
+                w-1.5 h-1.5 rounded-full
                 ${isSelectedDate(day.date) ? 'bg-white' : 'bg-green-500'}
               `}
               ></div>
@@ -192,45 +182,24 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         ))}
       </div>
 
-      {/* Navigation for appointments */}
-      <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700">
+      {/* Month Navigation at bottom center */}
+      <div className="flex justify-center items-center p-3 bg-gray-50 dark:bg-gray-700 gap-4">
         <button
-          className="text-sm text-green-700 dark:text-green-300 hover:underline flex items-center"
-          onClick={() => {
-            // Find previous appointment date
-            const sortedDates = appointments
-              .map((a) => a.date)
-              .sort((a, b) => a.getTime() - b.getTime());
-
-            const prevDate = sortedDates
-              .reverse()
-              .find((date) => date.getTime() < selectedDate.getTime());
-            if (prevDate) {
-              onDateChange(prevDate);
-              setCurrentMonth(new Date(prevDate.getFullYear(), prevDate.getMonth(), 1));
-            }
-          }}
+          onClick={goToPreviousMonth}
+          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          aria-label="Previous month"
         >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Previous Appointment
+          <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
+        <span className="text-sm text-gray-600 dark:text-gray-300 font-medium min-w-[100px] text-center">
+          {monthName} {currentMonth.getFullYear()}
+        </span>
         <button
-          className="text-sm text-green-700 dark:text-green-300 hover:underline flex items-center"
-          onClick={() => {
-            // Find next appointment date
-            const sortedDates = appointments
-              .map((a) => a.date)
-              .sort((a, b) => a.getTime() - b.getTime());
-
-            const nextDate = sortedDates.find((date) => date.getTime() > selectedDate.getTime());
-            if (nextDate) {
-              onDateChange(nextDate);
-              setCurrentMonth(new Date(nextDate.getFullYear(), nextDate.getMonth(), 1));
-            }
-          }}
+          onClick={goToNextMonth}
+          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          aria-label="Next month"
         >
-          Next Appointment
-          <ChevronRight className="h-4 w-4 ml-1" />
+          <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
       </div>
     </div>

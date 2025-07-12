@@ -20,7 +20,6 @@ interface AppointmentCardProps {
   status: 'confirmed' | 'pending';
   onReschedule?: () => void;
   onCancel?: () => void;
-  // New props for multiple appointments
   allAppointments?: Appointment[];
   selectedDate?: Date;
 }
@@ -35,11 +34,9 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   allAppointments = [],
   selectedDate,
 }) => {
-  // State for managing multiple appointments
   const [dateAppointments, setDateAppointments] = useState<Appointment[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Update appointments when selected date changes
   useEffect(() => {
     if (selectedDate && allAppointments.length > 0) {
       const filtered = allAppointments.filter(
@@ -56,7 +53,6 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
     }
   }, [selectedDate, allAppointments, expert, date, time, status]);
 
-  // Navigate between appointments
   const goToPrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
@@ -69,50 +65,56 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
     }
   };
 
-  // Current appointment to display
   const currentAppointment = dateAppointments[currentIndex] || { expert, date, time, status };
   const totalAppointments = dateAppointments.length;
 
   return (
-    <div className="dark:border-gray-700 rounded-xl p-2 bg-white dark:bg-gray-800 shadow-sm space-y-4">
+    <div className="relative dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm space-y-4">
+      {/* Booking counter at top-right */}
+      <span className="absolute top-4 right-4 text-sm text-gray-500">
+        {currentIndex + 1}/{totalAppointments}
+      </span>
+
+      {/* Side arrows */}
+      {totalAppointments > 1 && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={goToPrevious}
+            disabled={currentIndex === 0}
+            className="absolute -left-6 top-1/2 -translate-y-1/2 rounded-full bg-white dark:bg-gray-700 shadow p-2 border border-green-500 disabled:border-gray-300"
+          >
+            <ChevronLeft
+              className={`h-5 w-5 ${currentIndex === 0 ? 'text-gray-400' : 'text-green-800'}`}
+            />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={goToNext}
+            disabled={currentIndex === totalAppointments - 1}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-whitedark:bg-gray-700 shadow p-2 border border-green-500 disabled:border-gray-300"
+          >
+            <ChevronRight
+              className={`h-5 w-5 ${
+                currentIndex === totalAppointments - 1 ? 'text-gray-400' : 'text-green-500'
+              }`}
+            />
+          </Button>
+        </>
+      )}
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <span className="text-[16px]">
           <span className="font-semibold">Upcoming</span>{' '}
           <span className="text-green-500">Appointment</span>{' '}
-          <span className="text-gray-500 mx-2">|</span>{' '}
-          <span className="text-green-500">{totalAppointments} Bookings</span>{' '}
         </span>
-
-        {totalAppointments > 1 && (
-          <div className="flex gap-1 items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={goToPrevious}
-              disabled={currentIndex === 0}
-              className="h-8 w-8 p-0 rounded-full"
-            >
-              <ChevronLeft
-                className={`h-4 w-4 ${currentIndex === 0 ? 'text-gray-400' : 'text-green-500'}`}
-              />
-            </Button>
-            <span className="text-sm text-gray-500">
-              {currentIndex + 1}/{totalAppointments}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={goToNext}
-              disabled={currentIndex === totalAppointments - 1}
-              className="h-8 w-8 p-0 rounded-full"
-            >
-              <ChevronRight
-                className={`h-4 w-4 ${currentIndex === totalAppointments - 1 ? 'text-gray-400' : 'text-green-500'}`}
-              />
-            </Button>
-          </div>
-        )}
       </div>
+
+      {/* Expert info */}
       <div className="flex items-start gap-4">
         <Avatar className="w-12 h-12 rounded-full overflow-hidden">
           <AvatarImage
@@ -121,26 +123,23 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
           />
         </Avatar>
         <div className="flex-1">
-          <h4 className="font-semibold text-lg">
-            {dateAppointments[currentIndex]?.expert?.name || expert?.name}
-          </h4>
+          <h4 className="font-semibold text-lg">{currentAppointment.expert?.name}</h4>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {dateAppointments[currentIndex]?.expert?.specialty || expert?.specialty}
+            {currentAppointment.expert?.specialty}
           </p>
           <div className="flex gap-1 text-yellow-400 mt-1">
-            {'★'.repeat(dateAppointments[currentIndex]?.expert?.rating || expert?.rating || 0)}
-            {'☆'.repeat(
-              5 - (dateAppointments[currentIndex]?.expert?.rating || expert?.rating || 0),
-            )}
+            {'★'.repeat(currentAppointment.expert?.rating || 0)}
+            {'☆'.repeat(5 - (currentAppointment.expert?.rating || 0))}
           </div>
         </div>
       </div>
 
+      {/* Date, time, status */}
       <div className="space-y-3 py-4 border-y dark:border-gray-700">
         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
           <span className="text-lg">📅</span>
           <p className="text-sm font-medium">
-            {(dateAppointments[currentIndex]?.date || date).toLocaleDateString('en-US', {
+            {currentAppointment.date.toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
@@ -150,15 +149,16 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
         </div>
         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
           <span className="text-lg">⏰</span>
-          <p className="text-sm font-medium">{dateAppointments[currentIndex]?.time || time}</p>
+          <p className="text-sm font-medium">{currentAppointment.time}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            {dateAppointments[currentIndex]?.status || status}
+            {currentAppointment.status}
           </span>
         </div>
       </div>
 
+      {/* Actions */}
       <div className="flex gap-3">
         <Button
           variant="outline"
