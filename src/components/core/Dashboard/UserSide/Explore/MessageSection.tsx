@@ -1,314 +1,349 @@
-import { Paperclip, Send } from 'lucide-react';
-import React, { useState } from 'react';
-import { text } from 'stream/consumers';
+import {
+  Avatar,
+  ChatContainer,
+  Conversation,
+  ConversationHeader,
+  ConversationList,
+  MainContainer,
+  Message,
+  MessageInput,
+  MessageList,
+  Sidebar,
+  TypingIndicator,
+} from '@chatscope/chat-ui-kit-react';
+import React, { useEffect, useState } from 'react';
 
-import { Avatar } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Expert } from '@/types/types';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
-interface Message {
-  id: string;
-  text: string;
-  isFromUser: boolean;
-  timestamp: string;
-}
+import styles from './MessageSection.module.css';
+
+import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 
 interface Contact {
-  id: string;
+  id: number;
   name: string;
-  title: string;
-  lastMessage: string;
-  timestamp: string;
+  info: string;
+  time: string;
+  preview: string;
   avatar: string;
-  isVerified?: boolean;
+  unreadCount?: number;
 }
 
-interface MessageSectionProps {
-  onSendMessage?: (message: string) => void;
-  expert: Expert;
+interface MessageType {
+  id: string;
+  sender: string;
+  message: string;
+  sentTime: string;
+  sentDate?: string;
+  direction: 'incoming' | 'outgoing';
 }
 
-const MessageSection: React.FC<MessageSectionProps> = ({ onSendMessage, expert }) => {
-  // expert prop is received but not used in the current implementation
-  // can be used in the future to customize messages or display expert info
-  const [newMessage, setNewMessage] = useState('');
-  const [selectedContact, setSelectedContact] = useState<string>('1');
+interface Messages {
+  [key: number]: MessageType[];
+}
 
-  // Dummy contacts list to match the UI
-  const contacts: Contact[] = [
-    {
-      id: '1',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    {
-      id: '2',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    {
-      id: '3',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    {
-      id: '4',
-      name: 'Dr Lee Marshell',
-      title: 'Certified Physiotherapist',
-      lastMessage: 'Hello! How are you doing?........',
-      timestamp: '16:20',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-  ];
+const contacts: Contact[] = [
+  {
+    id: 1,
+    name: 'Dr Lee Marshell',
+    info: 'Certified Physiotherapist',
+    time: '16:20',
+    preview: 'Hello! How are you doing?',
+    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    unreadCount: 2,
+  },
+  {
+    id: 2,
+    name: 'Dr Emily Stone',
+    info: 'Certified Physiotherapist',
+    time: '16:21',
+    preview: 'How can I help you today?',
+    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+    unreadCount: 0,
+  },
+  {
+    id: 3,
+    name: 'Dr John Doe',
+    info: 'Certified Physiotherapist',
+    time: '16:22',
+    preview: 'Please share your reports.',
+    avatar: 'https://randomuser.me/api/portraits/men/55.jpg',
+    unreadCount: 1,
+  },
+];
 
-  // Mock chat messages for selected contact
-  const chatMessages: { [key: string]: Message[] } = {
-    '1': [
-      {
-        id: '1',
-        text: 'Hello! How are You? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-      {
-        id: '3',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-    ],
-    '2': [
-      {
-        id: '1',
-        text: 'Hello! How are You? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-      {
-        id: '3',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-    ],
-    '3': [
-      {
-        id: '1',
-        text: 'Hello! How are You? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-    ],
-    '4': [
-      {
-        id: '1',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: false,
-        timestamp: '',
-      },
-      {
-        id: '2',
-        text: 'Hello! I am good...how are you?? Hows everythings going? 😊',
-        isFromUser: true,
-        timestamp: '',
-      },
-    ],
-  };
+export const MessageSection = () => {
+  const [activeContact, setActiveContact] = useState<Contact>(contacts[0]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  // Use 1023px as breakpoint for tablet/mobile behavior
+  const isMobile = useMediaQuery('(max-width: 1023px)');
 
-  const currentMessages = chatMessages[selectedContact] || [];
-
-  const handleSend = () => {
-    if (newMessage.trim() && onSendMessage) {
-      onSendMessage(newMessage);
-      setNewMessage('');
+  // Handle contact selection - for mobile and tablet, show chat view
+  const handleContactClick = (contact: Contact) => {
+    setActiveContact(contact);
+    if (isMobile) {
+      setShowChat(true);
     }
   };
 
+  // Handle back button - return to contacts list on mobile/tablet
+  const handleBackToContacts = () => {
+    setShowChat(false);
+  };
+
+  // Reset chat view when screen size changes to desktop
+  useEffect(() => {
+    if (!isMobile) {
+      setShowChat(false);
+    }
+  }, [isMobile]);
+  // User avatar - can be made dynamic based on logged-in user
+  const userAvatar = 'https://randomuser.me/api/portraits/men/1.jpg';
+  const [messages, setMessages] = useState<Messages>({
+    1: [
+      {
+        id: '1',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! How are you doing?........',
+        sentTime: '16:20',
+        sentDate: 'July 10, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '2',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! How are you doing?........',
+        sentTime: '16:20',
+        sentDate: 'July 10, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '3',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! How are you doing?........',
+        sentTime: '16:20',
+        sentDate: 'July 10, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '4',
+        sender: 'You',
+        message: 'Hello! How are You? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 10, 2025',
+        direction: 'outgoing',
+      },
+      {
+        id: '5',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '6',
+        sender: 'You',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'outgoing',
+      },
+    ],
+    2: [
+      {
+        id: '5',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '6',
+        sender: 'You',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'outgoing',
+      },
+    ],
+    3: [
+      {
+        id: '5',
+        sender: 'Dr Lee Marshell',
+        message: 'Hello! How are you doing?........ 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'incoming',
+      },
+      {
+        id: '6',
+        sender: 'You',
+        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
+        sentTime: '16:20',
+        sentDate: 'July 12, 2025',
+        direction: 'outgoing',
+      },
+    ],
+  });
+
+  const handleChange = (value: string) => {
+    setCurrentMessage(value);
+    // Simulate typing indicator
+    if (value.length > 0 && !isTyping) {
+      setIsTyping(true);
+      setTimeout(() => setIsTyping(false), 3000);
+    }
+  };
+
+  const handleSendMessage = (text: string) => {
+    if (!activeContact || !text.trim()) return;
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const newMessage: MessageType = {
+      id: Date.now().toString(),
+      sender: 'You',
+      message: text,
+      sentTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      sentDate: formattedDate,
+      direction: 'outgoing',
+    };
+
+    setMessages((prev) => ({
+      ...prev,
+      [activeContact.id]: [...(prev[activeContact.id] || []), newMessage],
+    }));
+
+    setCurrentMessage('');
+
+    // Simulate response after 2 seconds
+    setTimeout(() => {
+      const responseTime = new Date();
+      const responseMessage: MessageType = {
+        id: (Date.now() + 1).toString(),
+        sender: activeContact.name,
+        message: `Thanks for your message! I'll get back to you soon.`,
+        sentTime: responseTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sentDate: formattedDate,
+        direction: 'incoming',
+      };
+
+      setMessages((prev) => ({
+        ...prev,
+        [activeContact.id]: [...(prev[activeContact.id] || []), responseMessage],
+      }));
+    }, 2000);
+  };
+
+  const getTypingIndicator = () => {
+    if (isTyping && activeContact) {
+      return <TypingIndicator content={`${activeContact.name} is typing`} />;
+    }
+    return undefined;
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 h-full flex">
-      {/* Left Panel - Messages List */}
-      <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="flex-1 overflow-y-auto">
-          {contacts.map((contact) => (
-            <div
-              key={contact.id}
-              onClick={() => setSelectedContact(contact.id)}
-              className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                selectedContact === contact.id ? 'bg-green-50 dark:bg-green-900/20' : ''
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="relative">
-                  <Avatar className="w-12 h-12">
-                    <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                        {contact.name.charAt(0)}
-                      </span>
-                    </div>
-                  </Avatar>
-                  {contact.isVerified && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-2.5 h-2.5 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                      {contact.name}
-                    </h3>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {contact.timestamp}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{contact.title}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
-                    {contact.lastMessage}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Right Panel - Chat Messages */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10">
-              <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  {contacts.find((c) => c.id === selectedContact)?.name.charAt(0)}
-                </span>
-              </div>
-            </Avatar>
-            <div>
-              <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                {contacts.find((c) => c.id === selectedContact)?.name}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {contacts.find((c) => c.id === selectedContact)?.title}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {currentMessages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.isFromUser ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className="flex items-start gap-3 max-w-[70%]">
-                {!message.isFromUser && (
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                        D
-                      </span>
-                    </div>
-                  </Avatar>
-                )}
-
-                <div
-                  className={`rounded-2xl px-4 py-2 ${
-                    message.isFromUser
-                      ? 'bg-green-500 text-white'
-                      : 'bg-green-100 dark:bg-green-900/30 text-gray-800 dark:text-gray-200'
-                  }`}
+    <div className={styles.messageContainer}>
+      <MainContainer responsive>
+        {/* Sidebar - Hidden on XS when chat is showing */}
+        <div className={showChat ? styles.hiddenOnMobile : styles.showOnMobile}>
+          <Sidebar position="left" scrollable>
+            <ConversationList>
+              {contacts.map((contact) => (
+                <Conversation
+                  key={contact.id}
+                  name={contact.name}
+                  lastSenderName={contact.info}
+                  info={contact.preview}
+                  lastActivityTime={contact.time}
+                  active={activeContact?.id === contact.id}
+                  unreadCnt={contact.unreadCount}
+                  onClick={() => handleContactClick(contact)}
                 >
-                  <p className="text-sm">{message.text}</p>
-                </div>
+                  <Avatar src={contact.avatar} name={contact.name} />
+                </Conversation>
+              ))}
+            </ConversationList>
+          </Sidebar>
+        </div>
 
-                {message.isFromUser && (
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                        Y
-                      </span>
-                    </div>
-                  </Avatar>
+        {/* Chat Container - Shown on XS when contact is selected */}
+        <div
+          className={`${!showChat ? styles.hiddenOnMobile : styles.showOnMobile} ${styles.chatContainerWrapper}`}
+        >
+          <ChatContainer>
+            {activeContact && (
+              <ConversationHeader className={styles.conversationHeader}>
+                {isMobile && (
+                  <ConversationHeader.Back
+                    onClick={handleBackToContacts}
+                    className={styles.backButtonWrapper}
+                  />
                 )}
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Message Input */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your message...."
-                className="w-full rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full"
-              >
-                <Paperclip className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </Button>
-            </div>
-            <Button
-              onClick={handleSend}
-              className="bg-green-600 hover:bg-green-700 text-white rounded-full w-12 h-12 p-0"
-              disabled={!newMessage.trim()}
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </div>
+                <Avatar src={activeContact.avatar} name={activeContact.name} />
+                <ConversationHeader.Content
+                  userName={activeContact.name}
+                  info={activeContact.info}
+                />
+              </ConversationHeader>
+            )}
+
+            <MessageList typingIndicator={getTypingIndicator()}>
+              {activeContact &&
+                messages[activeContact.id]?.map(
+                  (msg: MessageType, index: number, array: MessageType[]) => {
+                    // Check if this is the first message or if the date is different from the previous message
+                    const showDateSeparator =
+                      index === 0 || msg.sentDate !== array[index - 1].sentDate;
+
+                    return (
+                      <React.Fragment key={msg.id}>
+                        {showDateSeparator && msg.sentDate && (
+                          <div className={styles.dateSeparator}>
+                            <div className={styles.dateSeparatorText}>{msg.sentDate}</div>
+                          </div>
+                        )}
+                        <Message
+                          model={{
+                            message: msg.message,
+                            sentTime: msg.sentTime,
+                            sender: msg.sender,
+                            direction: msg.direction,
+                            position: 'single',
+                          }}
+                        >
+                          {msg.direction === 'incoming' && (
+                            <Avatar src={activeContact.avatar} name={msg.sender} />
+                          )}
+                          {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
+                        </Message>
+                      </React.Fragment>
+                    );
+                  },
+                )}
+            </MessageList>
+
+            <MessageInput
+              value={currentMessage}
+              onChange={handleChange}
+              onSend={handleSendMessage}
+              disabled={!activeContact}
+              attachButton={false}
+              placeholder="Type your Message"
+            />
+          </ChatContainer>
         </div>
-      </div>
+      </MainContainer>
     </div>
   );
 };

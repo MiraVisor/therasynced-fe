@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-open-sans: var(--font-open-sans);
+  --font-inter: var(--font-inter);
+  --font-poppins: var(--font-poppins);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --black: #000000;
@@ -69,7 +72,7 @@
   --input: #d6e5dd;
   --ring: #007745;
 
-  --background: #ffffff;
+  --background: #f9fefc;
   --foreground: #1b1c37;
   --black: #000000;
   --card: oklch(1 0 0);

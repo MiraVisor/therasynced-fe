@@ -1,0 +1,208 @@
+/* Custom Stream Chat Styles to match the design */
+.str-chat {
+  height: 100%;
+  font-family: inherit;
+}
+
+.str-chat__channel-list {
+  background: white;
+  border-right: 1px solid #e5e7eb;
+}
+
+.str-chat__channel-preview {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.str-chat__channel-preview:hover {
+  background-color: #f9fafb;
+}
+
+.str-chat__channel-preview--selected {
+  background-color: #ecfdf5 !important;
+  border-left: 3px solid #10b981;
+}
+
+.str-chat__channel-preview-title {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.str-chat__channel-preview-last-message {
+  font-size: 0.875rem;
+  color: #6b7280;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.str-chat__channel-preview-timestamp {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Message List Styles */
+.str-chat__message-list {
+  background: white;
+  padding: 1rem;
+}
+
+.str-chat__message {
+  margin-bottom: 1rem;
+}
+
+.str-chat__message--me .str-chat__message-text {
+  background-color: #10b981;
+  color: white;
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.str-chat__message--other .str-chat__message-text {
+  background-color: #ecfdf5;
+  color: #1f2937;
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+/* Message Input Styles */
+.str-chat__message-input {
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.str-chat__message-input-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.str-chat__textarea__textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  flex: 1;
+  resize: none;
+  background: white;
+}
+
+.str-chat__textarea__textarea:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.str-chat__send-button {
+  background-color: #10b981;
+  border: none;
+  border-radius: 9999px;
+  width: 3rem;
+  height: 3rem;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.str-chat__send-button:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.str-chat__send-button:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Channel Header Styles */
+.str-chat__header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.str-chat__header-title {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+/* Avatar Styles */
+.str-chat__avatar {
+  border-radius: 9999px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .str-chat__channel-list {
+    background: #1f2937;
+    border-right-color: #374151;
+  }
+
+  .str-chat__channel-preview {
+    border-bottom-color: #374151;
+  }
+
+  .str-chat__channel-preview:hover {
+    background-color: #374151;
+  }
+
+  .str-chat__channel-preview--selected {
+    background-color: #065f46 !important;
+  }
+
+  .str-chat__channel-preview-title {
+    color: #f9fafb;
+  }
+
+  .str-chat__channel-preview-last-message {
+    color: #d1d5db;
+  }
+
+  .str-chat__message-list {
+    background: #1f2937;
+  }
+
+  .str-chat__message--other .str-chat__message-text {
+    background-color: #065f46;
+    color: #f9fafb;
+  }
+
+  .str-chat__message-input {
+    background: #1f2937;
+    border-top-color: #374151;
+  }
+
+  .str-chat__textarea__textarea {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .str-chat__header {
+    background: #1f2937;
+    border-bottom-color: #374151;
+  }
+
+  .str-chat__header-title {
+    color: #f9fafb;
+  }
+}
+.str-chat__message--me .str-chat__message-text {
+  background-color: #10b981; /* Green for "me" */
+  color: white;
+}
+
+.str-chat__message--other .str-chat__message-text {
+  background-color: #ecfdf5; /* Light green for others */
+  color: #1f2937;
+}
