@@ -12,6 +12,11 @@ const Page = () => {
   const router = useRouter();
   const params = useParams();
   const doctorId = params.doctorId;
+  // Check for reschedule params in search params
+  const searchParams =
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const rescheduleBookingId = searchParams?.get('rescheduleBookingId');
+
   return (
     <DashboardPageWrapper
       header={
@@ -24,7 +29,7 @@ const Page = () => {
         </Button>
       }
     >
-      <MyBookingHome />
+      <MyBookingHome rescheduleBookingId={rescheduleBookingId} />
     </DashboardPageWrapper>
   );
 };

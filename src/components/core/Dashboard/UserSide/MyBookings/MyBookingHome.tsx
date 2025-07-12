@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { rescheduleBooking } from '@/redux/api/exploreApi';
 import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 
@@ -36,7 +37,11 @@ interface DaySchedule {
 //   avatar: '/path/to/avatar.jpg',
 // };
 
-const MyBookingHome = () => {
+interface MyBookingHomeProps {
+  rescheduleBookingId?: string | null;
+}
+
+const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) => {
   const params = useParams();
   // Fix: params.doctorId may be string or array, handle both
   const doctorId = Array.isArray(params?.doctorId) ? params.doctorId[0] : params?.doctorId;
@@ -259,13 +264,27 @@ const MyBookingHome = () => {
             if (!selectedTimeSlot) return;
             setBookingLoading(true);
             try {
-              const result = await dispatch(
-                bookAppointment({ slotId: selectedTimeSlot }) as any,
-              ).unwrap();
-              toast.success('Appointment booked successfully!');
-              // Optionally, you can redirect or reset selection here
+              if (rescheduleBookingId) {
+                // Reschedule flow
+                const result = await rescheduleBooking(rescheduleBookingId, selectedTimeSlot);
+                toast.success('Appointment rescheduled successfully!');
+                // Optionally, redirect or update UI here
+              } else {
+                // Normal booking flow
+                const result = await dispatch(
+                  bookAppointment({ slotId: selectedTimeSlot }) as any,
+                ).unwrap();
+                toast.success('Appointment booked successfully!');
+              }
             } catch (err: any) {
-              toast.error(err?.message || 'Failed to book appointment');
+              // Handle reschedule errors
+              if (err?.response?.data?.message) {
+                toast.error(err.response.data.message);
+              } else if (err?.message) {
+                toast.error(err.message);
+              } else {
+                toast.error('Failed to book or reschedule appointment');
+              }
             } finally {
               setBookingLoading(false);
             }

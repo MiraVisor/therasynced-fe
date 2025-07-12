@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getCookie, getDecodedToken, removeCookie, setCookie } from '@/lib/utils';
 import { RoleType, registerUserTypes } from '@/types/types';
 
-import { loginApi, signUpUserApi } from '../api';
+import { googleSignInApi, loginApi, signUpUserApi } from '../api/authApi';
 
 const decodedToken = typeof window !== 'undefined' ? getDecodedToken() : null;
 const initialState: {
@@ -36,6 +36,18 @@ export const signUpUser = createAsyncThunk(
       return data;
     } catch (err: any) {
       return rejectWithValue(err || 'Something went wrong');
+    }
+  },
+);
+
+export const googleSignIn = createAsyncThunk(
+  'auth/googleSignIn',
+  async (idToken: string, { rejectWithValue }) => {
+    try {
+      const response = await googleSignInApi(idToken);
+      return response?.data;
+    } catch (err: any) {
+      return rejectWithValue(err || 'Google sign-in failed');
     }
   },
 );
@@ -73,6 +85,21 @@ const authSlice = createSlice({
       })
 
       .addCase(loginUser.rejected, (state) => {
+        state.isAuthenticated = false;
+        state.token = null;
+        state.role = null;
+      })
+      .addCase(googleSignIn.fulfilled, (state, action) => {
+        const token = action.payload.token;
+        const role = action.payload.user.role;
+        state.token = token;
+        state.role = role;
+        state.isAuthenticated = true;
+        if (typeof window !== 'undefined') {
+          setCookie('token', token);
+        }
+      })
+      .addCase(googleSignIn.rejected, (state) => {
         state.isAuthenticated = false;
         state.token = null;
         state.role = null;

@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { Calendar } from '@/components/ui/calendar';
+import {
+  fetchExplorePatientBookings,
+  fetchRecentFavoriteFreelancer,
+} from '@/redux/slices/exploreSlice';
+import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
@@ -8,29 +14,37 @@ import ExpertCard from '../Overview/ExpertCard';
 import { AppointmentCard } from './AppointmentCard';
 import MessageSection from './MessageSection';
 
-interface Appointment {
-  expert: Expert;
-  date: Date;
-  time: string;
-  status: 'confirmed' | 'pending';
-}
-
 const UserExploreMain = () => {
+  const dispatch = useDispatch();
+  const { favorite, loading, bookings, bookingsLoading } = useSelector(
+    (state: RootState) => state.explore as any,
+  );
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [selectedAppointment] = useState<Appointment>({
-    expert: {
-      name: 'Dr Lee Marshall',
-      specialty: 'message therapy',
-      experience: '7+ Years of Experience',
-      rating: 4,
-      description:
-        'Experienced in deep tissue and relaxation therapy, Dr Lee helps you unwind, relieve pain, and feel your best.',
-      isFavorite: true,
-    },
-    date: new Date('2025-04-26'),
-    time: '11:58',
-    status: 'confirmed',
-  });
+
+  useEffect(() => {
+    dispatch(fetchRecentFavoriteFreelancer() as any);
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log('Redux bookings state:', bookings);
+    if (date) {
+      const formatDate = (d: Date) => d.toISOString().split('T')[0];
+      dispatch(fetchExplorePatientBookings(formatDate(date)) as any);
+    }
+  }, [dispatch, date]);
+
+  // Map API response to ExpertCard props
+  const expertCardProps: Expert | undefined = favorite?.cardInfo
+    ? {
+        id: favorite.id ?? '',
+        name: favorite.cardInfo.name ?? '',
+        specialty: favorite.cardInfo.mainService ?? '',
+        experience: favorite.cardInfo.yearsOfExperience ?? '',
+        rating: favorite.cardInfo.averageRating ?? 0,
+        description: favorite.cardInfo.title ?? '',
+        isFavorite: !!favorite.isFavorite,
+      }
+    : undefined;
 
   const handleReschedule = () => {
     // Implement reschedule logic
@@ -58,7 +72,13 @@ const UserExploreMain = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Favorite Expert Section */}
           <section className="lg:col-span-4">
-            <ExpertCard {...selectedAppointment.expert} showFavoriteText={true} />
+            {loading ? (
+              <div className="py-8 text-center">Loading favorite...</div>
+            ) : expertCardProps ? (
+              <ExpertCard {...expertCardProps} showFavoriteText={true} />
+            ) : (
+              <div className="py-8 text-center">No favorites yet</div>
+            )}
           </section>
 
           {/* Appointment Section */}
@@ -66,14 +86,9 @@ const UserExploreMain = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 shadow-md border border-gray-100 dark:border-gray-700 h-[410px]">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-xl" />
-
                 <AppointmentCard
-                  expert={selectedAppointment.expert}
-                  date={selectedAppointment.date}
-                  time={selectedAppointment.time}
-                  status={selectedAppointment.status}
-                  onReschedule={handleReschedule}
-                  onCancel={handleCancel}
+                  date={date}
+                  bookings={Array.isArray(bookings) ? bookings : bookings?.data || []}
                 />
               </div>
             </div>
@@ -84,7 +99,11 @@ const UserExploreMain = () => {
         <section className="mt-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-6">Messages</h3>
-            <MessageSection expert={selectedAppointment.expert} onSendMessage={handleSendMessage} />
+            {expertCardProps ? (
+              <MessageSection expert={expertCardProps} onSendMessage={handleSendMessage} />
+            ) : (
+              <div className="text-gray-400">No favorite expert to message</div>
+            )}
           </div>
         </section>
       </div>

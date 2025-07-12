@@ -15,6 +15,7 @@ import SignInForm from '@/components/core/authentication/SignInForm';
 import SignUpForm from '@/components/core/authentication/SignUpForm';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { signUpUser } from '@/redux/slices';
+import { googleSignIn } from '@/redux/slices/authSlice';
 
 interface ClientAuthPageProps {
   authtype: string;
@@ -67,6 +68,12 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
       .finally(() => {
         setIsSubmitting(false);
       });
+  };
+
+  // Google SSO handler (redirect to backend for Google OAuth)
+  const handleGoogleSignIn = () => {
+    // Replace with your backend's Google OAuth endpoint
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
   };
 
   const renderAuthForm = () => {
@@ -140,6 +147,8 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
                 data-tooltip-id="tooltip-google"
                 data-tooltip-content="Sign in with Google"
                 className="bg-muted dark:bg-muted text-primary p-3 rounded-xl shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-transform duration-200 hover:scale-105"
+                onClick={handleGoogleSignIn}
+                type="button"
               >
                 <FcGoogle className="w-5 h-5" />
               </button>
