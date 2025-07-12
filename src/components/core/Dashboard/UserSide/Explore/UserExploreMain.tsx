@@ -4,9 +4,9 @@ import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import ExpertCard from '../Overview/ExpertCard';
+import AppointmentCalendar from './AppointmentCalendar';
 import { AppointmentCard } from './AppointmentCard';
 import MessageSection from './MessageSection';
-import { AppointmentCalendar } from './SimpleAppointmentCalendar';
 
 interface Appointment {
   expert: Expert;
@@ -32,6 +32,81 @@ const UserExploreMain = () => {
     time: '11:58',
     status: 'confirmed',
   });
+
+  // Multiple appointments sample data
+  const [allAppointments] = useState<Appointment[]>([
+    {
+      expert: {
+        id: '1',
+        name: 'Dr Lee Marshall',
+        specialty: 'message therapy',
+        rating: 4,
+        experience: '7+ Years of Experience',
+        description: 'Experienced in deep tissue and relaxation therapy.',
+        isFavorite: true,
+      },
+      date: new Date('2025-07-10'),
+      time: '10:30',
+      status: 'confirmed',
+    },
+    {
+      expert: {
+        id: '2',
+        name: 'Dr Emily Stone',
+        specialty: 'physical therapy',
+        rating: 5,
+        experience: '10+ Years of Experience',
+        description: 'Specializes in sports injuries and rehabilitation.',
+        isFavorite: false,
+      },
+      date: new Date('2025-07-10'),
+      time: '14:45',
+      status: 'confirmed',
+    },
+    {
+      expert: {
+        id: '3',
+        name: 'Dr John Smith',
+        specialty: 'chiropractic',
+        rating: 4,
+        experience: '8+ Years of Experience',
+        description: 'Expert in spinal adjustments and posture correction.',
+        isFavorite: true,
+      },
+      date: new Date('2025-07-10'),
+      time: '17:15',
+      status: 'pending',
+    },
+    {
+      expert: {
+        id: '4',
+        name: 'Dr Sarah Johnson',
+        specialty: 'acupuncture',
+        rating: 5,
+        experience: '12+ Years of Experience',
+        description: 'Specializes in pain management and stress relief.',
+        isFavorite: false,
+      },
+      date: new Date('2025-07-15'),
+      time: '09:00',
+      status: 'confirmed',
+    },
+    // More appointments on other dates
+    {
+      expert: {
+        id: '5',
+        name: 'Dr Michael Chen',
+        specialty: 'physical therapy',
+        rating: 4,
+        experience: '9+ Years of Experience',
+        description: 'Focuses on post-surgery rehabilitation.',
+        isFavorite: false,
+      },
+      date: new Date('2025-07-18'),
+      time: '11:30',
+      status: 'confirmed',
+    },
+  ]);
 
   const handleReschedule = () => {
     // Implement reschedule logic
@@ -70,13 +145,7 @@ const UserExploreMain = () => {
                   <AppointmentCalendar
                     selectedDate={date || new Date()}
                     onDateChange={setDate}
-                    appointments={[
-                      { date: selectedAppointment.date },
-                      { date: new Date('2025-07-10') },
-                      { date: new Date('2025-07-15') },
-                      { date: new Date('2025-07-18') },
-                      { date: new Date('2025-07-29') },
-                    ]}
+                    appointments={allAppointments.map((apt) => ({ date: apt.date }))}
                   />
                 </div>
 
@@ -88,6 +157,8 @@ const UserExploreMain = () => {
                     status={selectedAppointment.status}
                     onReschedule={handleReschedule}
                     onCancel={handleCancel}
+                    allAppointments={allAppointments}
+                    selectedDate={date}
                   />
                 </div>
               </div>
