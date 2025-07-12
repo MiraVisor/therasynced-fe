@@ -54,7 +54,7 @@ const UserExploreMain = () => {
         </h2>
       }
     >
-      <div className="flex flex-col gap-0">
+      <div className="flex flex-col gap-4">
         {/* Top Grid: Favorite + Appointment */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Favorite Expert Section */}
@@ -63,8 +63,8 @@ const UserExploreMain = () => {
           </section>
 
           {/* Appointment Section */}
-          <section className="lg:col-span-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 shadow-md border border-gray-100 dark:border-gray-700 h-[410px]">
+          {/* <section className="lg:col-span-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 shadow-md border border-gray-100 dark:border-gray-700 h-[410px] relative">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-xl" />
 
@@ -78,12 +78,12 @@ const UserExploreMain = () => {
                 />
               </div>
             </div>
-          </section>
+          </section> */}
         </div>
 
         {/* Messages Section */}
-        <section className="mt-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+        <section>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 relative">
             <div className="px-6 py-3 border-b border-gray-100 dark:border-gray-700">
               <h3 className="text-lg font-semibold">Messages</h3>
             </div>

@@ -16,7 +16,7 @@
   border: none !important;
   box-shadow: none !important;
 }
-
+/* //sidebar */
 .messageContainer :global(.cs-sidebar) {
   background: var(--card) !important;
   border-right: 1px solid var(--border) !important;
@@ -202,7 +202,7 @@
   color: var(--muted-foreground) !important;
   margin-top: 2px !important;
 }
-
+/* chatContainer */
 .messageContainer :global(.cs-message-list) {
   background: #f8f9fa !important;
   padding: 16px !important;
@@ -221,6 +221,7 @@
 
 .messageContainer :global(.cs-message--outgoing) {
   justify-content: flex-end !important;
+  max-width: 70% !important;
   margin-bottom: 12px !important;
 }
 
@@ -272,7 +273,6 @@
   display: flex !important;
   align-items: flex-start !important;
   margin-left: 8px !important;
-  
 }
 
 .messageContainer :global(.cs-message-input) {
@@ -372,3 +372,150 @@
 } */
 
 /* Removed unused custom conversation classes */
+
+/* Custom conversation header styling */
+.customConversationHeader {
+  display: flex !important;
+  align-items: center !important;
+  padding: 16px !important;
+  background: white !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.conversationHeader :global(.cs-conversation-header__back) {
+  display: flex !important;
+}
+
+.headerContent {
+  flex: 1 !important;
+  margin-left: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.userName {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--card-foreground) !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.userInfo {
+  font-size: 12px !important;
+  color: var(--muted-foreground) !important;
+  margin-top: 2px !important;
+  line-height: 1.2 !important;
+}
+
+/* Mobile and Tablet responsive styles for chat interface */
+@media (max-width: 1023px) {
+  .messageContainer :global(.cs-main-container) {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Mobile/Tablet sidebar styling */
+  .hiddenOnMobile {
+    display: none !important;
+  }
+
+  .showOnMobile {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Ensure sidebar takes full width on mobile/tablet */
+  .showOnMobile :global(.cs-sidebar) {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 !important;
+  }
+
+  /* Ensure chat container takes full width on mobile/tablet */
+  .showOnMobile :global(.cs-chat-container) {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hiddenOnMobile,
+  .showOnMobile {
+    display: block !important;
+  }
+
+  /* Restore normal layout on desktop screens */
+  .messageContainer :global(.cs-main-container) {
+    display: flex !important;
+  }
+
+  .messageContainer :global(.cs-sidebar) {
+    width: 300px !important;
+    min-width: 300px !important;
+  }
+
+  .messageContainer :global(.cs-chat-container) {
+    flex: 1 !important;
+  }
+}
+
+/* Back button styling */
+.messageContainer :global(.cs-conversation-header) {
+  display: flex !important;
+  align-items: center !important;
+  padding: 16px !important;
+}
+
+.backButtonWrapper {
+  display: flex !important;
+  align-items: center !important;
+  margin-right: 10px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Back button styling for mobile and tablet */
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: 1px solid #e5e7eb;
+  color: #444;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  padding: 0;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.backButton:hover {
+  background: var(--accent);
+  transform: scale(1.05);
+}
+
+/* Ensuring the back button is visible in mobile view */
+@media (max-width: 1023px) {
+  .messageContainer :global(.cs-conversation-header__back) {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-right: 12px !important;
+  }
+
+  .messageContainer :global(.cs-button--back) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}

@@ -11,9 +11,7 @@ import {
   Sidebar,
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
-import React, { useState } from 'react';
-
-import { useIsMobile } from '@/hooks/use-mobile';
+import React, { useEffect, useState } from 'react';
 
 import styles from './MessageSection.module.css';
 
@@ -75,8 +73,32 @@ export const MessageSection = () => {
   const [activeContact, setActiveContact] = useState<Contact>(contacts[0]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(true);
-  const isMobile = useIsMobile();
+  const [showChat, setShowChat] = useState(false);
+
+  // Handle contact selection - for mobile and tablet, show chat view
+  const handleContactClick = (contact: Contact) => {
+    setActiveContact(contact);
+    if (window.innerWidth < 1024) {
+      setShowChat(true);
+    }
+  };
+
+  // Handle back button - return to contacts list on mobile/tablet
+  const handleBackToContacts = () => {
+    setShowChat(false);
+  };
+
+  // Reset chat view when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setShowChat(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   // User avatar - can be made dynamic based on logged-in user
   const userAvatar = 'https://randomuser.me/api/portraits/men/1.jpg';
   const [messages, setMessages] = useState<Messages>({
@@ -182,66 +204,80 @@ export const MessageSection = () => {
   return (
     <div className={styles.messageContainer}>
       <MainContainer responsive>
-        <Sidebar position="left" scrollable>
-          {/* <ConversationHeader>
-            <ConversationHeader.Content userName="Messages" />
-          </ConversationHeader> */}
-          <ConversationList>
-            {contacts.map((contact) => (
-              <Conversation
-                key={contact.id}
-                name={contact.name}
-                lastSenderName={contact.info}
-                info={contact.preview}
-                lastActivityTime={contact.time}
-                active={activeContact?.id === contact.id}
-                unreadCnt={contact.unreadCount}
-                onClick={() => setActiveContact(contact)}
-              >
-                <Avatar src={contact.avatar} name={contact.name} />
-              </Conversation>
-            ))}
-          </ConversationList>
-        </Sidebar>
-
-        <ChatContainer>
-          {activeContact && (
-            <ConversationHeader className={styles.conversationHeader}>
-              <Avatar src={activeContact.avatar} name={activeContact.name} />
-              <ConversationHeader.Content userName={activeContact.name} info={activeContact.info} />
-            </ConversationHeader>
-          )}
-
-          <MessageList typingIndicator={getTypingIndicator()}>
-            {activeContact &&
-              messages[activeContact.id]?.map((msg: MessageType) => (
-                <Message
-                  key={msg.id}
-                  model={{
-                    message: msg.message,
-                    sentTime: msg.sentTime,
-                    sender: msg.sender,
-                    direction: msg.direction,
-                    position: 'single',
-                  }}
+        {/* Sidebar - Hidden on XS when chat is showing */}
+        <div className={showChat ? styles.hiddenOnMobile : styles.showOnMobile}>
+          <Sidebar position="left" scrollable>
+            <ConversationList>
+              {contacts.map((contact) => (
+                <Conversation
+                  key={contact.id}
+                  name={contact.name}
+                  lastSenderName={contact.info}
+                  info={contact.preview}
+                  lastActivityTime={contact.time}
+                  active={activeContact?.id === contact.id}
+                  unreadCnt={contact.unreadCount}
+                  onClick={() => handleContactClick(contact)}
                 >
-                  {msg.direction === 'incoming' && (
-                    <Avatar src={activeContact.avatar} name={msg.sender} />
-                  )}
-                  {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
-                </Message>
+                  <Avatar src={contact.avatar} name={contact.name} />
+                </Conversation>
               ))}
-          </MessageList>
+            </ConversationList>
+          </Sidebar>
+        </div>
 
-          <MessageInput
-            value={currentMessage}
-            onChange={handleChange}
-            onSend={handleSendMessage}
-            disabled={!activeContact}
-            attachButton={false}
-            placeholder="Type your Message"
-          />
-        </ChatContainer>
+        {/* Chat Container - Shown on XS when contact is selected */}
+        <div className={!showChat ? styles.hiddenOnMobile : styles.showOnMobile}>
+          <ChatContainer>
+            {activeContact && (
+              <ConversationHeader className={styles.conversationHeader}>
+                <ConversationHeader.Back
+                  onClick={handleBackToContacts}
+                  className={styles.backButtonWrapper}
+                >
+                  <div className={styles.backButton}>
+                    <span>←</span>
+                  </div>
+                </ConversationHeader.Back>
+                <Avatar src={activeContact.avatar} name={activeContact.name} />
+                <ConversationHeader.Content
+                  userName={activeContact.name}
+                  info={activeContact.info}
+                />
+              </ConversationHeader>
+            )}
+
+            <MessageList typingIndicator={getTypingIndicator()}>
+              {activeContact &&
+                messages[activeContact.id]?.map((msg: MessageType) => (
+                  <Message
+                    key={msg.id}
+                    model={{
+                      message: msg.message,
+                      sentTime: msg.sentTime,
+                      sender: msg.sender,
+                      direction: msg.direction,
+                      position: 'single',
+                    }}
+                  >
+                    {msg.direction === 'incoming' && (
+                      <Avatar src={activeContact.avatar} name={msg.sender} />
+                    )}
+                    {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
+                  </Message>
+                ))}
+            </MessageList>
+
+            <MessageInput
+              value={currentMessage}
+              onChange={handleChange}
+              onSend={handleSendMessage}
+              disabled={!activeContact}
+              attachButton={false}
+              placeholder="Type your Message"
+            />
+          </ChatContainer>
+        </div>
       </MainContainer>
     </div>
   );
