@@ -225,7 +225,9 @@ export const MessageSection = () => {
         </div>
 
         {/* Chat Container - Shown on XS when contact is selected */}
-        <div className={!showChat ? styles.hiddenOnMobile : styles.showOnMobile}>
+        <div
+          className={`${!showChat ? styles.hiddenOnMobile : styles.showOnMobile} ${styles.chatContainerWrapper}`}
+        >
           <ChatContainer>
             {activeContact && (
               <ConversationHeader className={styles.conversationHeader}>
