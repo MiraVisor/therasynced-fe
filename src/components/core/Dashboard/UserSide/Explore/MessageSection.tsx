@@ -76,6 +76,7 @@ export const MessageSection = () => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  // Use 1023px as breakpoint for tablet/mobile behavior
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
   // Handle contact selection - for mobile and tablet, show chat view

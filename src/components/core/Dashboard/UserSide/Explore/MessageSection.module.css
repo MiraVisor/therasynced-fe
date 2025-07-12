@@ -504,7 +504,7 @@
 }
 
 /* Mobile and Tablet responsive styles for chat interface */
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .messageContainer :global(.cs-main-container) {
     display: flex !important;
     width: 100% !important;
@@ -542,7 +542,7 @@
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
   /* Additional styling for the chat container wrapper to ensure it takes full available width */
   .chatContainerWrapper {
     flex: 1 1 auto !important;
@@ -600,7 +600,7 @@
   opacity: 1 !important;
 }
 /* Ensuring the back button is visible in mobile view */
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
   /* Additional styling for the chat container wrapper to ensure it takes full available width */
   .chatContainerWrapper {
     flex: 1 1 auto !important;
