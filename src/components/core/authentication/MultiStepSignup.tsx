@@ -1,25 +1,62 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
   Chrome,
-  FileText,
   Github,
   Shield,
   Upload,
   User,
   Users,
-  X,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { DatePicker } from '@/components/common/input/DatePicker';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { genderOptions, roleOptions } from '@/config/onboardingConfig';
 import { cn } from '@/lib/utils';
+
+// Zod schema for form validation
+const signupSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
+    gender: z.string().min(1, 'Gender is required'),
+    dob: z
+      .string()
+      .min(1, 'Date of birth is required')
+      .refine((date) => {
+        if (!date) return false;
+        const selectedDate = new Date(date);
+        const today = new Date();
+        const age = today.getFullYear() - selectedDate.getFullYear();
+        const monthDiff = today.getMonth() - selectedDate.getMonth();
+        // Check if birthday has occurred this year
+        const isBirthdayPassed =
+          monthDiff > 0 || (monthDiff === 0 && today.getDate() >= selectedDate.getDate());
+        const actualAge = isBirthdayPassed ? age : age - 1;
+        return actualAge >= 18;
+      }, 'You must be at least 18 years old to register'),
+    city: z.string().min(1, 'Location is required'),
+    role: z.string().min(1, 'Role is required'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    documents: z.array(z.instanceof(File)).optional(),
+    portfolio: z.string().optional(),
+    experience: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
+
+type SignupFormData = z.infer<typeof signupSchema>;
 
 interface MultiStepSignupProps {
   onBack: () => void;
@@ -52,41 +89,31 @@ const steps = [
 
 export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiStepSignupProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    gender: 'male',
-    dob: '',
-    city: '',
-    role: 'patient',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    documents: [] as File[],
-    portfolio: '',
-    experience: '',
+
+  const {
+    register,
+    setValue,
+    getValues,
+    trigger,
+    formState: { errors },
+    watch,
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: '',
+      gender: 'male',
+      dob: '',
+      city: '',
+      role: 'patient',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      documents: [],
+      portfolio: '',
+      experience: '',
+    },
+    mode: 'onTouched',
   });
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleChange = (field: string, value: string | File[]) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setFormData((prev) => ({
-      ...prev,
-      documents: [...prev.documents, ...files],
-    }));
-  };
-
-  const removeFile = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      documents: prev.documents.filter((_, i) => i !== index),
-    }));
-  };
 
   const nextStep = () => {
     if (currentStep < steps.length) {
@@ -104,23 +131,23 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     switch (currentStep) {
       case 1:
         return (
-          formData.firstName &&
-          formData.lastName &&
-          formData.gender &&
-          formData.dob &&
-          formData.city
+          getValues('name') &&
+          getValues('gender') &&
+          getValues('dob') &&
+          getValues('city') &&
+          !errors.dob
         );
       case 2:
-        return formData.role;
+        return getValues('role');
       case 3:
         return (
-          formData.email &&
-          formData.password &&
-          formData.confirmPassword &&
-          formData.password === formData.confirmPassword
+          getValues('email') &&
+          getValues('password') &&
+          getValues('confirmPassword') &&
+          getValues('password') === getValues('confirmPassword')
         );
       case 4:
-        return formData.role !== 'freelancer' || formData.documents.length > 0;
+        return true; // All fields are optional for step 4
       default:
         return false;
     }
@@ -128,8 +155,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const handleSubmit = () => {
     const transformedData = {
-      ...formData,
-      role: formData.role.toUpperCase(),
+      ...getValues(),
+      role: getValues('role').toUpperCase(),
     };
     onSubmit(transformedData);
   };
@@ -140,29 +167,17 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
+              <div className="space-y-1 col-span-full">
                 <label className="font-[700] text-[14px] leading-[25px] font-sans text-foreground">
-                  First Name
+                  Name
                 </label>
                 <input
                   type="text"
-                  value={formData.firstName}
-                  onChange={(e) => handleChange('firstName', e.target.value)}
+                  {...register('name')}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  placeholder="Enter your first name"
+                  placeholder="Enter your name"
                 />
-              </div>
-              <div className="space-y-1">
-                <label className="font-[700] text-[14px] leading-[25px] font-sans text-foreground">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) => handleChange('lastName', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  placeholder="Enter your last name"
-                />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
               </div>
             </div>
 
@@ -178,11 +193,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                       key={option.value}
                       className={cn(
                         'flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-all duration-200 border',
-                        formData.gender === option.value
+                        watch('gender') === option.value
                           ? 'border-primary bg-white text-black shadow-md'
                           : 'border-gray-200 bg-white text-gray-700 hover:border-primary/50 hover:bg-primary/5',
                       )}
-                      onClick={() => handleChange('gender', option.value)}
+                      onClick={() => setValue('gender', option.value)}
                     >
                       <IconComponent className="h-4 w-4 mb-1" />
                       <span className="text-xs font-medium text-center">{option.label}</span>
@@ -190,24 +205,35 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                   );
                 })}
               </div>
+              {errors.gender && (
+                <p className="text-red-500 text-xs mt-1">{errors.gender.message}</p>
+              )}
             </div>
 
             <DatePicker
               title="Date of Birth"
-              onChange={(date) => handleChange('dob', date?.toISOString() ?? '')}
+              onChange={(date) => {
+                setValue('dob', date?.toISOString() ?? '');
+                trigger('dob');
+              }}
             />
+            {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob.message}</p>}
 
             <div className="space-y-1">
               <label className="font-[700] text-[14px] leading-[25px] font-sans text-foreground">
                 Location
               </label>
               <LocationDropdown
-                value={formData.city}
-                onValueChange={(value) => handleChange('city', value)}
+                value={watch('city')}
+                onValueChange={(value) => {
+                  setValue('city', value);
+                  trigger('city');
+                }}
                 placeholder="Type or select your city, town, or village"
                 searchPlaceholder="Search locations..."
                 emptyMessage="No location found."
               />
+              {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
             </div>
           </div>
         );
@@ -226,11 +252,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                     key={option.value}
                     className={cn(
                       'flex flex-col items-center justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border flex-1',
-                      formData.role === option.value
+                      watch('role') === option.value
                         ? 'border-primary bg-white text-black shadow-md'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-primary/50 hover:bg-primary/5',
                     )}
-                    onClick={() => handleChange('role', option.value)}
+                    onClick={() => setValue('role', option.value)}
                   >
                     <IconComponent className="h-5 w-5 mb-2" />
                     <span className="text-xs font-medium text-center">{option.label}</span>
@@ -238,6 +264,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 );
               })}
             </div>
+            {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role.message}</p>}
           </div>
         );
 
@@ -274,11 +301,13 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 </label>
                 <input
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
+                  {...register('email')}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Enter your email address"
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -287,11 +316,13 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 </label>
                 <input
                   type="password"
-                  value={formData.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
+                  {...register('password')}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Create a strong password"
                 />
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                )}
                 <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
               </div>
 
@@ -301,11 +332,13 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 </label>
                 <input
                   type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                  {...register('confirmPassword')}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Confirm your password"
                 />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+                )}
               </div>
             </div>
 
@@ -313,7 +346,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
               <h4 className="font-semibold text-sm mb-1">Account Summary</h4>
               <div className="text-xs space-y-0.5 text-muted-foreground">
                 <p>
-                  <strong>Name:</strong> {formData.firstName} {formData.lastName}
+                  <strong>Name:</strong> {formData.name}
                 </p>
                 <p>
                   <strong>Role:</strong> {formData.role}
@@ -327,110 +360,15 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         );
 
       case 4:
-        if (formData.role !== 'freelancer') {
-          return (
-            <div className="text-center py-6">
-              <CheckCircle className="h-10 w-10 text-primary mx-auto mb-2" />
-              <h3 className="text-base font-semibold mb-1">You&apos;re all set!</h3>
-              <p className="text-sm text-gray-600">
-                No additional documents required for your role.
-              </p>
-            </div>
-          );
-        }
-
         return (
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="font-[700] text-[14px] leading-[25px] font-sans text-foreground">
-                Upload Documents
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600 mb-1">Drop files here or click to upload</p>
-                <p className="text-xs text-gray-500 mb-2">
-                  PDF, DOC, DOCX, JPG, PNG (Max 10MB each)
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1 rounded-lg border-gray-200 hover:bg-gray-50 text-sm"
-                >
-                  Choose Files
-                </Button>
-              </div>
-            </div>
-
-            {formData.documents.length > 0 && (
-              <div className="space-y-1">
-                <label className="font-[700] text-[14px] leading-[25px] font-sans text-foreground">
-                  Uploaded Files
-                </label>
-                <div className="space-y-1">
-                  {formData.documents.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-3 w-3 text-gray-500" />
-                        <span className="text-xs font-medium">{file.name}</span>
-                        <span className="text-xs text-gray-500">
-                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                        className="text-red-500 hover:text-red-700 p-1 h-6 w-6"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="font-[700] text-[14px] leading-[25px] font-sans text-foreground">
-                Portfolio URL (Optional)
-              </label>
-              <input
-                type="url"
-                value={formData.portfolio}
-                onChange={(e) => handleChange('portfolio', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="https://your-portfolio.com"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="font-[700] text-[14px] leading-[25px] font-sans text-foreground">
-                Years of Experience
-              </label>
-              <select
-                value={formData.experience}
-                onChange={(e) => handleChange('experience', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="">Select experience level</option>
-                <option value="0-1">0-1 years</option>
-                <option value="1-3">1-3 years</option>
-                <option value="3-5">3-5 years</option>
-                <option value="5-10">5-10 years</option>
-                <option value="10+">10+ years</option>
-              </select>
-            </div>
+          <div className="flex flex-col items-center justify-center text-center py-8">
+            <CheckCircle className="h-12 w-12 text-primary mb-4" />
+            <h3 className="text-lg font-semibold mb-2">You&apos;re all set!</h3>
+            <p className="text-sm text-gray-600 max-w-md">
+              {watch('role') === 'freelancer'
+                ? 'Your profile is ready. You can add documents and additional information later from your dashboard.'
+                : 'Your account is ready to be created. Click "Complete Signup" to finish the registration process.'}
+            </p>
           </div>
         );
 
@@ -521,7 +459,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         <div className="mt-3 p-3 bg-gray-100 rounded-lg">
           <h3 className="font-semibold text-xs mb-1">Debug - Current Form Data:</h3>
           <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-20">
-            {JSON.stringify({ ...formData, currentStep }, null, 2)}
+            {JSON.stringify({ ...getValues(), currentStep }, null, 2)}
           </pre>
         </div>
       )} */}
