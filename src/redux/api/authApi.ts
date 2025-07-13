@@ -25,3 +25,9 @@ export const signUpUserApi = async (data: registerUserTypes) => {
   const response = await api.post(ENDPOINTS.auth.signup, data);
   return response.data;
 };
+
+export const googleSignInApi = async (idToken: string) => {
+  console.log('Google Sign-In API called with token:', idToken);
+  const response = await api.post('/auth/google-signin', { idToken }); // already prefixed with /api/v1
+  return response.data;
+};
