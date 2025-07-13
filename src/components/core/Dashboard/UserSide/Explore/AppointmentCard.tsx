@@ -49,8 +49,11 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   };
 
   return (
-    <div className="dark:border-gray-700 rounded-xl p-2 bg-white dark:bg-gray-800 shadow-sm space-y-6">
-      <div className="flex items-center mb-6 ">
+    <div className="relative dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm space-y-4">
+      {/* Booking counter at top-right */}
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <span className="text-[16px]">
           <span className="font-semibold">Upcoming</span>{' '}
           <span className="text-green-500">Appointment</span>{' '}
@@ -61,6 +64,8 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
           <span className="text-green-500 ml-1">→</span>
         </span>
       </div>
+
+      {/* Expert info */}
       <div className="flex items-start gap-4">
         <Avatar className="w-12 h-12 rounded-full overflow-hidden">
           <AvatarImage
@@ -94,11 +99,11 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
         </div>
         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
           <span className="text-lg">⏰</span>
-          <p className="text-sm font-medium">{time}</p>
+          {/* <p className="text-sm font-medium">{currentAppointment.time}</p> */}
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            {status}
+            {/* {currentAppointment.status} */}
           </span>
         </div>
       </div>

@@ -12,6 +12,10 @@ module.exports = {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
 
+        // Table specific colors
+        'table-row': '#292D32',
+        'table-header': '#B5B7C0',
+
         blackColor: 'var(--black)',
         card: 'var(--card)',
         'card-foreground': 'var(--card-foreground)',
@@ -67,7 +71,9 @@ module.exports = {
       },
 
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
+        'open-sans': ['var(--font-open-sans)', 'sans-serif'],
+        inter: ['var(--font-inter)', 'sans-serif'],
+        poppins: ['var(--font-poppins)', 'sans-serif'],
       },
 
       fontSize: {

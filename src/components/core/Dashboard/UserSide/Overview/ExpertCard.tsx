@@ -46,7 +46,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
   return (
     <div
-      className={`border rounded-lg px-6 py-8 flex flex-col gap-2  shadow-md relative min-w-[280px] ${
+      className={`bg-white dark:bg-gray-800 rounded-xl px-6 py-8 flex flex-col gap-2 shadow-md border border-gray-100 dark:border-gray-700 relative min-w-[280px] ${
         showFavoriteText ? 'min-h-[412px]' : 'min-h-[350px]'
       }`}
     >

@@ -1,0 +1,685 @@
+/* Custom styles for MessageSection with Chatscope */
+.messageContainer {
+  height: 509px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 8px !important;
+  overflow: auto;
+  box-shadow: none !important;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Chatscope overrides for custom styling */
+.messageContainer :global(.cs-main-container) {
+  height: 100% !important;
+  width: 100% !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: none !important;
+  background-color: white;
+  display: flex !important;
+  flex-direction: row !important;
+}
+/* //sidebar */
+.messageContainer :global(.cs-sidebar) {
+  background: var(--card) !important;
+  border-right: 1px solid var(--border) !important;
+  width: 300px !important;
+  min-width: 300px !important; /* Ensure sidebar doesn't shrink */
+  max-width: 300px !important; /* Ensure sidebar doesn't grow */
+  flex: 0 0 300px !important; /* Fixed size */
+  box-shadow: none !important;
+  overflow: auto !important;
+}
+
+.messageContainer :global(.cs-sidebar .cs-conversation-header) {
+  background: var(--card) !important;
+  /* border-bottom: 1px solid var(--border) !important; */
+  padding: 20px 16px !important;
+}
+
+.messageContainer :global(.cs-sidebar .cs-conversation-header__content) {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: var(--foreground) !important;
+}
+
+.messageContainer :global(.cs-conversation-header) {
+  background: white !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
+  padding: 16px !important;
+  box-shadow: none !important;
+}
+.messageContainer :global(.cs-conversation-header__content .cs-conversation-header__user-name) {
+  background-color: transparent !important;
+}
+.messageContainer :global(.cs-conversation-header__content .cs-conversation-header__info) {
+  background-color: transparent !important;
+}
+
+.messageContainer :global(.cs-conversation-header__content) {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--card-foreground) !important;
+}
+
+.messageContainer :global(.cs-conversation-list) {
+  background: transparent !important;
+  padding: 0 !important;
+  height: auto !important;
+  overflow: auto !important;
+}
+
+.messageContainer :global(.cs-conversation) {
+  padding: 16px !important;
+  border-bottom: none !important;
+  background: var(--card) !important;
+  transition: all 0.2s !important;
+  margin: 8px 12px !important;
+  height: 90px !important;
+  display: flex !important;
+  align-items: center !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.messageContainer :global(.cs-conversation:hover) {
+  background: var(--sidebar-accent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.messageContainer :global(.cs-conversation--active) {
+  background: var(--sidebar-accent) !important;
+  border-right: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  position: relative !important;
+  margin: 8px 12px !important;
+  border-radius: 12px !important;
+}
+
+/* Removed pseudo-element for cleaner look */
+
+.messageContainer :global(.cs-avatar) {
+  width: 48px !important;
+  height: 48px !important;
+  margin-right: 12px !important;
+  flex-shrink: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  position: relative !important;
+}
+
+/* Add verified badge positioning - only for sidebar avatars */
+.messageContainer :global(.cs-conversation .cs-avatar::after) {
+  content: '✓' !important;
+  position: absolute !important;
+  bottom: -2px !important;
+  right: -2px !important;
+  background: #1da1f2 !important;
+  color: white !important;
+  border-radius: 50% !important;
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: bold !important;
+  border: 2px solid white !important;
+}
+
+.messageContainer :global(.cs-conversation__content) {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info) {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info__name) {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--foreground) !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info__last-activity-time) {
+  font-size: 12px !important;
+  color: var(--muted-foreground) !important;
+  margin-left: 8px !important;
+  white-space: nowrap !important;
+}
+
+.messageContainer :global(.cs-conversation__content__last-sender-name) {
+  font-size: 14px !important;
+  color: var(--muted-foreground) !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.messageContainer :global(.cs-conversation__content__info__main) {
+  font-size: 14px !important;
+  color: var(--muted-foreground) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 200px !important;
+}
+
+.messageContainer :global(.cs-conversation__unread-dot) {
+  background: var(--primary) !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  border-radius: 9px !important;
+  font-size: 11px !important;
+  color: var(--primary-foreground) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 8px !important;
+}
+
+.messageContainer :global(.cs-chat-container) {
+  background: white !important;
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important; /* Allow flexbox to shrink this element */
+}
+
+.messageContainer :global(.cs-chat-container .cs-conversation-header) {
+  background: white !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
+  padding: 16px !important;
+  box-shadow: none !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Style for back button - hide on desktop */
+.backButtonWrapper {
+  display: none !important;
+}
+
+/* Show back button only on mobile */
+@media (max-width: 768px) {
+  .backButtonWrapper {
+    display: flex !important;
+    margin-right: 10px !important;
+  }
+}
+
+/* chatContainer */
+.messageContainer :global(.cs-message-list) {
+  background: white !important;
+  padding: 16px !important;
+  width: 100% !important;
+  flex: 1 !important;
+  min-width: 0 !important; /* Allow flexbox to shrink */
+}
+
+.messageContainer :global(.cs-message) {
+  margin-bottom: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 5px !important;
+}
+
+.messageContainer :global(.cs-message--incoming) {
+  justify-content: flex-start !important;
+  margin-bottom: 12px !important;
+  width: 100% !important;
+}
+
+.messageContainer :global(.cs-message--outgoing) {
+  justify-content: flex-end !important;
+  align-items: center !important;
+  margin-bottom: 12px !important;
+
+  width: 100% !important;
+}
+
+.messageContainer :global(.cs-message--incoming .cs-message__content) {
+  background: #d0f5e5 !important;
+  color: #636363 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  margin-left: 12px !important; /* Increased spacing between avatar and message */
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  width: auto !important;
+  max-width: 90% !important; /* Adjusted for better appearance */
+}
+
+.messageContainer :global(.cs-message--outgoing .cs-message__content) {
+  background: #fff !important;
+  color: #636363 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  margin-right: 12px !important; /* Added spacing between avatar and message */
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  order: 1 !important;
+  width: auto !important;
+  max-width: 90% !important; /* Adjusted for better appearance */
+  margin-right: -10px !important;
+}
+
+.messageContainer :global(.cs-message--incoming .cs-avatar) {
+  width: 32px !important;
+  height: 32px !important;
+  margin-right: 2px !important;
+  margin-bottom: 2px !important;
+  box-shadow: none !important;
+  border: none !important;
+  order: 0 !important; /* Ensure avatar is on the left */
+}
+
+.messageContainer :global(.cs-message--outgoing .cs-avatar) {
+  width: 32px !important;
+  height: 32px !important;
+  margin-left: 2px !important; /* Changed from margin-right to margin-left */
+  margin-bottom: 2px !important;
+  box-shadow: none !important;
+  border: none !important;
+  order: 2 !important; /* Changed order to place avatar on the right */
+}
+
+.messageContainer :global(.cs-message__content-wrapper) {
+  display: flex !important;
+  align-items: flex-start !important;
+  margin-left: 8px !important;
+}
+
+.messageContainer :global(.cs-message-input) {
+  background: var(--card) !important;
+  border-top: 1px solid rgba(229, 231, 235, 0.3) !important; /* Lighter border */
+  padding: 16px !important;
+  border-bottom: none !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor-wrapper) {
+  border: 1px solid rgba(229, 231, 235, 0.3) !important;
+  border-radius: 24px !important;
+  padding: 12px 16px !important;
+  background: white !important;
+  transition: all 0.2s !important;
+  box-shadow: none !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor) {
+  font-size: 14px !important;
+  outline: none !important;
+  border: none !important;
+  background: transparent !important;
+  min-height: 20px !important;
+  color: var(--foreground) !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor::placeholder) {
+  color: var(--muted-foreground) !important;
+  font-size: 14px !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor) {
+  background-color: #fff !important;
+}
+
+.messageContainer :global(.cs-message-input__content-editor-wrapper:focus-within) {
+  border-color: rgba(229, 231, 235, 0.8) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.messageContainer :global(.cs-message-input__send-button) {
+  background: var(--primary) !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  margin-left: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  color: var(--primary-foreground) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.messageContainer :global(.cs-message-input__send-button:hover) {
+  background: var(--primary) !important;
+  opacity: 0.85 !important;
+  transform: scale(1.05) !important;
+}
+
+.messageContainer :global(.cs-message-input__send-button svg) {
+  fill: var(--primary-foreground) !important;
+  color: var(--primary-foreground) !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.messageContainer :global(.cs-message-input__send-button path) {
+  fill: var(--primary-foreground) !important;
+}
+
+.messageContainer :global(.cs-typing-indicator) {
+  margin: 0 16px 16px 56px !important;
+  color: var(--muted-foreground) !important;
+  font-size: 12px !important;
+  font-style: italic !important;
+}
+
+.messageContainer :global(.cs-sidebar .cs-conversation-header) {
+  background: #f8f9fa !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 20px 16px !important;
+}
+
+.messageContainer :global(.cs-sidebar .cs-conversation-header__content) {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+/* Custom scrollbar styling */
+.messageContainer :global(.ps__thumb-y),
+.messageContainer :global(.ps__thumb-x) {
+  background-color: #028a51 !important;
+  border-radius: 6px !important;
+  transition: background-color 0.2s ease-in-out !important;
+}
+
+.messageContainer :global(.ps__thumb-y:hover),
+.messageContainer :global(.ps__thumb-x:hover) {
+  background-color: #017745 !important; /* Slightly darker shade for hover state */
+}
+
+.messageContainer :global(.ps__rail-y),
+.messageContainer :global(.ps__rail-x) {
+  background-color: transparent !important;
+}
+
+.messageContainer :global(.ps__rail-y:hover) > .ps__thumb-y,
+.messageContainer :global(.ps__rail-x:hover) > .ps__thumb-x {
+  width: 8px !important;
+  background-color: #017745 !important;
+}
+/* SVG icon styling with increased specificity */
+.messageContainer :global(svg:not(:root).svg-inline--fa),
+.messageContainer :global(svg:not(:host).svg-inline--fa) {
+  overflow: visible !important;
+  box-sizing: content-box !important;
+}
+
+.messageContainer :global(.svg-inline--fa) {
+  display: var(--fa-display, inline-block) !important;
+  height: 1em !important;
+  overflow: visible !important;
+  vertical-align: -0.125em !important;
+  color: #017745 !important;
+  transition: color 0.2s ease !important;
+}
+
+/* Target more specifically with !important and higher specificity */
+.messageContainer :global(.svg-inline--fa:hover),
+.messageContainer :global(.svg-inline--fa:active),
+.messageContainer :global(.svg-inline--fa:focus) {
+  color: #015d37 !important;
+}
+
+/* Force color for SVG icons in interactive elements */
+.messageContainer :global(button:hover) :global(.svg-inline--fa),
+.messageContainer :global(a:hover) :global(.svg-inline--fa) {
+  color: #015d37 !important;
+}
+
+/* Target SVG paths directly */
+.messageContainer :global(.svg-inline--fa path) {
+  transition: fill 0.2s ease !important;
+}
+
+.messageContainer :global(.svg-inline--fa:hover path),
+.messageContainer :global(button:hover .svg-inline--fa path),
+.messageContainer :global(a:hover .svg-inline--fa path) {
+  fill: #015d37 !important;
+}
+
+/* Hide default conversation header in sidebar - commented out to show Messages header */
+/* .messageContainer :global(.cs-sidebar .cs-conversation-header) {
+  display: none !important;
+} */
+
+/* Removed unused custom conversation classes */
+
+/* Custom conversation header styling */
+.customConversationHeader {
+  display: flex !important;
+  align-items: center !important;
+  padding: 16px !important;
+  background: white !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.conversationHeader :global(.cs-conversation-header__back) {
+  display: flex !important;
+}
+
+.headerContent {
+  flex: 1 !important;
+  margin-left: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.userName {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--card-foreground) !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.userInfo {
+  font-size: 12px !important;
+  color: var(--muted-foreground) !important;
+  margin-top: 2px !important;
+  line-height: 1.2 !important;
+}
+
+/* Mobile and Tablet responsive styles for chat interface */
+@media (max-width: 1023px) {
+  .messageContainer :global(.cs-main-container) {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Mobile/Tablet sidebar styling */
+  .hiddenOnMobile {
+    display: none !important;
+  }
+
+  .showOnMobile {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Ensure sidebar takes full width on mobile/tablet */
+  .showOnMobile :global(.cs-sidebar) {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 !important;
+  }
+
+  /* Ensure chat container takes full width on mobile/tablet */
+  .showOnMobile :global(.cs-chat-container) {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 !important;
+  }
+
+  /* Adjust message width for smaller screens */
+  .messageContainer :global(.cs-message--incoming .cs-message__content),
+  .messageContainer :global(.cs-message--outgoing .cs-message__content) {
+    max-width: 85% !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Additional styling for the chat container wrapper to ensure it takes full available width */
+  .chatContainerWrapper {
+    flex: 1 1 auto !important;
+    min-width: 0 !important; /* Critical for flex shrinking */
+    width: 100% !important;
+  }
+
+  /* Ensure the chat container itself properly fills the available space */
+  .chatContainerWrapper :global(.cs-chat-container) {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .hiddenOnMobile,
+  .showOnMobile {
+    display: block !important;
+    flex: 1 !important;
+  }
+
+  /* Wrapper for chat container needs to expand fully */
+  .showOnMobile:nth-of-type(2) {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important; /* Allow flex to shrink */
+  }
+
+  /* Restore normal layout on desktop screens */
+  .messageContainer :global(.cs-main-container) {
+    display: flex !important;
+  }
+
+  .messageContainer :global(.cs-sidebar) {
+    width: 300px !important;
+    min-width: 300px !important;
+  }
+
+  .messageContainer :global(.cs-chat-container) {
+    flex: 1 !important;
+  }
+}
+
+/* Back button styling */
+.messageContainer :global(.cs-conversation-header) {
+  display: flex !important;
+  align-items: center !important;
+  padding: 16px !important;
+}
+
+.backButtonWrapper {
+  display: flex !important;
+  align-items: center !important;
+  margin-right: 10px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+/* Ensuring the back button is visible in mobile view */
+@media (min-width: 1024px) {
+  /* Additional styling for the chat container wrapper to ensure it takes full available width */
+  .chatContainerWrapper {
+    flex: 1 1 auto !important;
+    min-width: 0 !important; /* Critical for flex shrinking */
+    width: 100% !important;
+  }
+
+  /* Ensure the chat container itself properly fills the available space */
+  .chatContainerWrapper :global(.cs-chat-container) {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .hiddenOnMobile,
+  .showOnMobile {
+    display: block !important;
+    /* Removed flex: 1 !important; */
+  }
+
+  /* Wrapper for chat container needs to expand fully */
+  .showOnMobile:nth-of-type(2) {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important; /* Allow flex to shrink */
+  }
+
+  /* Restore normal layout on desktop screens */
+  .messageContainer :global(.cs-main-container) {
+    display: flex !important;
+  }
+
+  .messageContainer :global(.cs-sidebar) {
+    width: 300px !important;
+    min-width: 300px !important;
+  }
+
+  .messageContainer :global(.cs-chat-container) {
+    flex: 1 !important;
+  }
+}
+/* Ensuring the back button is visible in mobile view */
+
+.conversationHeader {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  background: white !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
+}
+
+.messageContainer :global(.cs-conversation-header__content) {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--card-foreground) !important;
+  margin-left: 10px !important;
+}
+
+/* Date separator styling for chat */
+.dateSeparator {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 16px 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.dateSeparatorText {
+  background: rgba(225, 245, 254, 0.8) !important;
+  color: #666 !important;
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+}
+
+/* Make sure messages below date separator have proper spacing */
+.dateSeparator + :global(.cs-message) {
+  margin-top: 8px !important;
+}
