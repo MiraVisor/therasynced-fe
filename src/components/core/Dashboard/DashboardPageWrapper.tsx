@@ -21,13 +21,13 @@ export function DashboardPageWrapper({
 
   return (
     <>
-      <div className="flex flex-col gap-6 mb-1 w-full ">
+      <div className="flex flex-col gap-6 mb-1 w-full">
         <div
           className={`flex items-center ${
             !isMobile ? 'justify-between' : 'justify-between'
-          } mb-8 w-full`}
+          } mb-8 w-full border-b border-gray-200 pb-4`}
         >
-          <div className="hidden md:flex items-center gap-2">{header}</div>
+          <div className="hidden md:flex items-center gap-2 flex-grow">{header}</div>
 
           {isMobile && (
             <SidebarTrigger
