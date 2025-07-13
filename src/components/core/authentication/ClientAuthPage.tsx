@@ -3,19 +3,16 @@
 import Image from 'next/image';
 import { notFound, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FaFacebook } from 'react-icons/fa';
-import { FaApple } from 'react-icons/fa';
+import { FaApple, FaFacebook } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'react-toastify';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
-import OnboardingForm from '@/components/core/authentication/OnboardingForm';
+import MultiStepSignup from '@/components/core/authentication/MultiStepSignup';
 import SignInForm from '@/components/core/authentication/SignInForm';
-import SignUpForm from '@/components/core/authentication/SignUpForm';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { signUpUser } from '@/redux/slices';
-import { googleSignIn } from '@/redux/slices/authSlice';
 
 interface ClientAuthPageProps {
   authtype: string;
@@ -29,8 +26,6 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [currentView, setCurrentView] = useState<AuthView>(authtype as AuthView);
-  const [signUpStep, setSignUpStep] = useState(1);
-  const [signUpData, setSignUpData] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!validAuthTypes.includes(authtype)) {
@@ -47,16 +42,9 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     setCurrentView('sign-in');
   };
 
-  const handleNextStep = (data: any) => {
-    setSignUpData((prev: any) => ({ ...prev, ...data }));
-    setSignUpStep((prev) => prev + 1);
-  };
-
-  const handleFinalSubmit = (data: any) => {
-    const finalData = { ...signUpData, ...data };
-
+  const handleSignUpSubmit = (data: any) => {
     setIsSubmitting(true);
-    dispatch(signUpUser(finalData))
+    dispatch(signUpUser(data))
       .unwrap()
       .then((res) => {
         toast.success(res?.message || 'Sign-Up Successful');
@@ -76,19 +64,20 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
   };
 
+  const handleBackToSignInFromSignup = () => {
+    setCurrentView('sign-in');
+    window.history.pushState({}, '', '/authentication/sign-in');
+  };
+
   const renderAuthForm = () => {
     if (currentView === 'sign-up') {
-      if (signUpStep === 1) {
-        return <SignUpForm onNext={handleNextStep} initialValues={signUpData} />;
-      } else if (signUpStep === 2) {
-        return (
-          <OnboardingForm
-            onBack={() => setSignUpStep(1)}
-            onSubmit={handleFinalSubmit}
-            isLoading={isSubmitting}
-          />
-        );
-      }
+      return (
+        <MultiStepSignup
+          onBack={handleBackToSignInFromSignup}
+          onSubmit={handleSignUpSubmit}
+          isLoading={isSubmitting}
+        />
+      );
     }
     if (currentView === 'sign-in') return <SignInForm onForgotPassword={handleForgotPassword} />;
     if (currentView === 'forgot-password')
@@ -114,16 +103,14 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
 
         <p className="text-center text-primary mb-5">
           {currentView === 'sign-up'
-            ? signUpStep === 1
-              ? "Let's Create your THERASYNCED Account"
-              : 'Complete your profile'
+            ? "Let's Create your THERASYNCED Account"
             : currentView === 'forgot-password'
               ? 'Reset Your Password'
               : 'Login to your THERASYNCED Account'}
         </p>
 
         {/* Only show social buttons for sign-in and sign-up */}
-        {currentView !== 'forgot-password' && signUpStep === 1 && (
+        {currentView !== 'forgot-password' && currentView === 'sign-in' && (
           <>
             {/* Social Icons  */}
             <div className="flex gap-4 mb-6 justify-center">

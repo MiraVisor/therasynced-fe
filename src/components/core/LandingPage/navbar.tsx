@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { ModeToggle } from '@/components/mode-toggler';
-import { Button } from '@/components/ui/button';
 
 const navLinks = [
   { href: '#services', label: 'Our Services' },
@@ -25,7 +24,7 @@ const Navbar = () => {
 
   return (
     <header className="w-full z-50 px-4 sm:px-6 lg:px-8 py-2.5 border-b border-muted/10">
-      <div className="max-w-screen-xl mx-auto flex items-center justify-between">
+      <div className=" max-w-screen-xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center" onClick={closeMenu}>
           <Image
@@ -54,11 +53,11 @@ const Navbar = () => {
         {/* CTA + Theme Toggle */}
         <div className="flex items-center gap-4">
           <ModeToggle />
-          <Link href="/authentication/sign-in" passHref>
+          {/* <Link href="/authentication/sign-in" passHref>
             <Button className="hidden sm:inline-block text-sm font-medium tracking-wide px-6 py-1.5 rounded transition-all duration-300 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
               Get Started
             </Button>
-          </Link>
+          </Link> */}
 
           {/* Mobile Hamburger */}
           <button
@@ -89,12 +88,12 @@ const Navbar = () => {
             </Link>
           ))}
 
-          <Button
+          {/* <Button
             className="w-full mt-4 text-sm font-medium tracking-wide px-4 py-2 rounded-xl transition-all duration-300 bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/25"
             onClick={closeMenu}
           >
             Get Started
-          </Button>
+          </Button> */}
         </div>
       </div>
 

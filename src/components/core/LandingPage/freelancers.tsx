@@ -98,12 +98,12 @@ const Freelancers = () => {
                   </span>
                 </div>
                 {/* Enquire Button */}
-                <Button
+                {/* <Button
                   variant={'outline'}
                   className="w-full h-10 sm:h-12 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 font-medium text-sm sm:text-base flex items-center justify-center gap-2"
                 >
                   Enquire
-                </Button>
+                </Button> */}
               </div>
             </div>
           ))}
