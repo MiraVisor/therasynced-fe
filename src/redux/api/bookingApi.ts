@@ -1,7 +1,24 @@
 import api from '@/services/api';
 
-export const getPatientBookings = async (date?: string) => {
-  const params = date ? { date } : {};
-  const response = await api.get('/v1/booking/patient/all', { params });
+// GET /v1/booking/patient/all
+export const getPatientBookings = async (params?: { sort?: 'newest' | 'oldest' }) => {
+  const query = params?.sort ? `?sortOrder=${params.sort}` : '';
+  const response = await api.get(`/booking/patient/all${query}`);
+  return response.data;
+};
+
+// POST /v1/rate
+export const rateFreelancer = async ({
+  freelancerId,
+  rating,
+  review,
+  bookingId,
+}: {
+  freelancerId: string;
+  rating: number;
+  review: string;
+  bookingId: string;
+}) => {
+  const response = await api.post('/freelancer/rate', { freelancerId, rating, review, bookingId });
   return response.data;
 };

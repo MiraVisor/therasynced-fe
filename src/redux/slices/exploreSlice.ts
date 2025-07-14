@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { getPatientBookings, getRecentFavoriteFreelancer } from '../api/exploreApi';
+import { cancelBooking, getPatientBookings, getRecentFavoriteFreelancer } from '../api/exploreApi';
 
 export const fetchRecentFavoriteFreelancer = createAsyncThunk(
   'explore/fetchRecentFavoriteFreelancer',
@@ -22,6 +22,18 @@ export const fetchExplorePatientBookings = createAsyncThunk(
       return response.data;
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to fetch bookings');
+    }
+  },
+);
+
+export const cancelExploreBooking = createAsyncThunk(
+  'explore/cancelExploreBooking',
+  async ({ bookingId, reason }: { bookingId: string; reason?: string }, { rejectWithValue }) => {
+    try {
+      const response = await cancelBooking(bookingId, reason);
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Failed to cancel booking');
     }
   },
 );
@@ -70,6 +82,9 @@ const exploreSlice = createSlice({
           typeof action.payload === 'string'
             ? action.payload
             : (action.error?.message ?? 'Unknown error');
+      })
+      .addCase(cancelExploreBooking.fulfilled, (state, action) => {
+        // Optionally update bookings state here if needed
       });
   },
 });

@@ -66,6 +66,11 @@ const navigationLinks = {
       url: '/dashboard/my-bookings',
       icon: Calendar,
     },
+    {
+      name: 'Messages',
+      url: '/dashboard/messages',
+      icon: MessageSquare,
+    },
   ],
   FREELANCER: [
     {

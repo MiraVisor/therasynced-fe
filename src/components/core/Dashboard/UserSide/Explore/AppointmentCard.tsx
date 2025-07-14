@@ -1,44 +1,24 @@
 import { AvatarImage } from '@radix-ui/react-avatar';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 
+import NotFound from '@/components/common/NotFound';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { cancelExploreBooking } from '@/redux/slices/exploreSlice';
+
+import CancelBookingDialog from './CancelBookingDialog';
 
 export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[] }> = ({
   date,
   bookings,
 }) => {
   const router = useRouter();
-  console.log('AppointmentCard bookings prop:', bookings);
-  let booking: any = null;
-  if (Array.isArray(bookings) && bookings.length > 0) {
-    booking = bookings[0];
-    console.log('First booking:', booking);
-  }
-
-  if (!Array.isArray(bookings)) {
-    console.warn('bookings is not an array:', bookings);
-    return null;
-  }
-
-  if (Array.isArray(bookings) && bookings.length === 0) {
-    console.info('bookings is an empty array');
-    return (
-      <div className="dark:border-gray-700 rounded-xl p-2 bg-white dark:bg-gray-800 shadow-sm space-y-6 text-gray-400">
-        No upcoming appointments found for this date.
-      </div>
-    );
-  }
-
-  if (!booking) {
-    console.warn('No booking found in bookings:', bookings);
-    return null;
-  }
-
-  const expert = booking.slot?.freelancer || {};
-  const time = `${new Date(booking.slot?.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(booking.slot?.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  const status = booking.status === 'CONFIRMED' ? 'confirmed' : 'pending';
+  const dispatch = useDispatch();
+  const [cancelDialogOpen, setCancelDialogOpen] = React.useState(false);
+  const [cancelLoading, setCancelLoading] = React.useState(false);
 
   const handleReschedule = () => {
     if (booking?.slot?.freelancer?.id && booking?.id) {
@@ -47,6 +27,51 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
       );
     }
   };
+
+  const handleCancel = async (reason: string) => {
+    setCancelLoading(true);
+    try {
+      await dispatch(cancelExploreBooking({ bookingId: booking.id, reason }) as any).unwrap();
+      toast.success('Booking cancelled successfully!');
+      setCancelDialogOpen(false);
+      // Optionally refresh bookings or update UI here
+    } catch (err: any) {
+      toast.error(err || 'Failed to cancel booking');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  console.log('AppointmentCard bookings prop:', bookings);
+  let booking: any = null;
+  if (Array.isArray(bookings) && bookings.length > 0) {
+    booking = bookings[0];
+    console.log('First booking:', booking);
+  }
+
+  // Map status for display
+  const status =
+    booking?.status === 'CONFIRMED'
+      ? 'Confirmed'
+      : booking?.status === 'CANCELLED'
+        ? 'Cancelled'
+        : booking?.status;
+
+  if (!Array.isArray(bookings)) {
+    console.warn('bookings is not an array:', bookings);
+    return null;
+  }
+
+  if (!booking) {
+    return (
+      <div className="flex items-center justify-center w-full h-full min-h-[250px]">
+        <NotFound message="No upcoming appointments found for this date." />
+      </div>
+    );
+  }
+
+  const expert = booking.slot?.freelancer || {};
+  const time = `${new Date(booking.slot?.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(booking.slot?.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
   return (
     <div className="relative dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm space-y-4">
@@ -79,10 +104,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
         <div className="flex-1">
           <h4 className="font-semibold text-lg">{expert.name || 'Unknown Expert'}</h4>
           <p className="text-sm text-gray-500 dark:text-gray-400">{expert.specialty || 'N/A'}</p>
-          <div className="flex gap-1 text-yellow-400 mt-1">
-            {'★'.repeat(expert.rating || 0)}
-            {'☆'.repeat(5 - (expert.rating || 0))}
-          </div>
+          <div className="flex gap-1 text-yellow-400 mt-1">{'★'.repeat(5)}</div>
         </div>
       </div>
       <div className="space-y-3 py-4 border-y dark:border-gray-700">
@@ -99,11 +121,11 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
         </div>
         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
           <span className="text-lg">⏰</span>
-          {/* <p className="text-sm font-medium">{currentAppointment.time}</p> */}
+          <p className="text-sm font-medium">{time}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            {/* {currentAppointment.status} */}
+            {status}
           </span>
         </div>
       </div>
@@ -118,10 +140,16 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
         <Button
           variant="outline"
           className="flex-1 border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/30"
-          onClick={() => {}}
+          onClick={() => setCancelDialogOpen(true)}
         >
           Cancel
         </Button>
+        <CancelBookingDialog
+          open={cancelDialogOpen}
+          onClose={() => setCancelDialogOpen(false)}
+          onConfirm={handleCancel}
+          loading={cancelLoading}
+        />
       </div>
     </div>
   );

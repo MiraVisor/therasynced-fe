@@ -8,3 +8,6 @@ export * from './overviewSlice';
 export { default as freelancerSlice } from './overviewSlice';
 export { default as overviewSlice } from './overviewSlice';
 export { default as exploreSlice } from './exploreSlice';
+export { default as bookingSlice } from './bookingSlice';
+export { default as chatSlice } from './chatSlice';
+export * from './chatSlice';

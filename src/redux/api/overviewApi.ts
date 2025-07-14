@@ -1,7 +1,8 @@
 import api from '@/services/api';
 
-export const getAllFreelancers = async () => {
-  const response = await api.get('/freelancer/all');
+export const getAllFreelancers = async (params?: { page?: number; limit?: number }) => {
+  const query = params ? `?page=${params.page ?? 0}&limit=${params.limit ?? 10}` : '';
+  const response = await api.get(`/freelancer/all${query}`);
   return response.data;
 };
 

@@ -15,6 +15,7 @@ interface FreelancerState {
   error: string | null;
   slots?: any[];
   slotsPagination?: any;
+  total: number;
 }
 
 const initialState: FreelancerState = {
@@ -23,20 +24,17 @@ const initialState: FreelancerState = {
   error: null,
   slots: [],
   slotsPagination: undefined,
+  total: 0,
 };
 
 export const fetchFreelancers = createAsyncThunk(
-  'freelancer/fetchAll',
-  async (_, { rejectWithValue }) => {
+  'overview/fetchFreelancers',
+  async (params: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
     try {
-      const res = await getAllFreelancers();
-      if (res.success && Array.isArray(res.data)) {
-        return res.data;
-      } else {
-        return rejectWithValue('Failed to load freelancers');
-      }
+      const response = await getAllFreelancers(params);
+      return response;
     } catch (err: any) {
-      return rejectWithValue(err?.message || 'Failed to load freelancers');
+      return rejectWithValue(err?.message || 'Failed to fetch freelancers');
     }
   },
 );
@@ -123,11 +121,20 @@ const overviewSlice = createSlice({
       })
       .addCase(fetchFreelancers.fulfilled, (state, action) => {
         state.loading = false;
-        state.experts = action.payload;
+        // If page > 0, append; else, replace
+        if (action.meta.arg && action.meta.arg.page && action.meta.arg.page > 0) {
+          state.experts = [...state.experts, ...(action.payload.data || [])];
+        } else {
+          state.experts = action.payload.data || [];
+        }
+        state.total = action.payload.total || 0;
       })
       .addCase(fetchFreelancers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error =
+          typeof action.payload === 'string'
+            ? action.payload
+            : (action.error?.message ?? 'Unknown error');
       })
       .addCase(favoriteFreelancer.fulfilled, (state, action) => {
         // Set isFavorite according to API response

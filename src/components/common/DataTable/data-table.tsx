@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { ChevronDown, Search } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +45,29 @@ interface DataTableProps<TData, TValue> {
   enablePagination?: boolean;
   pageSize?: number;
   pageSizeOptions?: number[];
+  onRowClick?: (row: TData) => void;
+  sortOrder?: 'newest' | 'oldest';
+  onSortOrderChange?: (order: 'newest' | 'oldest') => void;
+}
+
+export function NoData({ message = 'No data found.' }: { message?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12">
+      <svg width="64" height="64" fill="none" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="16" fill="#F3F4F6" />
+        <path
+          d="M20 44V28a4 4 0 014-4h16a4 4 0 014 4v16"
+          stroke="#A1A1AA"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M24 36h16" stroke="#A1A1AA" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="32" cy="32" r="30" stroke="#E5E7EB" strokeWidth="4" />
+      </svg>
+      <p className="mt-6 text-lg font-semibold text-gray-500">{message}</p>
+    </div>
+  );
 }
 
 export function DataTable<TData, TValue>({
@@ -59,6 +82,9 @@ export function DataTable<TData, TValue>({
   enablePagination = true,
   pageSize = 10,
   pageSizeOptions = [5, 10, 20, 30, 40, 50],
+  onRowClick,
+  sortOrder = 'newest',
+  onSortOrderChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -117,12 +143,9 @@ export function DataTable<TData, TValue>({
           {/* Sort By Dropdown */}
           {enableSorting && (
             <Select
-              value={`${table.getState().sorting[0]?.id ?? ''}-${table.getState().sorting[0]?.desc ? 'desc' : 'asc'}`}
+              value={sortOrder}
               onValueChange={(value) => {
-                const [column, direction] = value.split('-');
-                if (column) {
-                  table.setSorting([{ id: column, desc: direction === 'desc' }]);
-                }
+                if (onSortOrderChange) onSortOrderChange(value as 'newest' | 'oldest');
               }}
             >
               <SelectTrigger className="w-[180px] border-gray-200">
@@ -192,7 +215,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="hover:bg-gray-50 border-0"
+                  className="hover:bg-gray-50 border-0 cursor-pointer"
+                  onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
@@ -206,11 +230,8 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center font-poppins font-medium text-[14px] text-table-row border-0"
-                >
-                  No results found.
+                <TableCell colSpan={columns.length} className="h-48 p-0 border-0 bg-white">
+                  <NoData message="No bookings found." />
                 </TableCell>
               </TableRow>
             )}

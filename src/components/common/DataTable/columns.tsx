@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import { ArrowUpDown } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,13 +17,17 @@ import { Button } from '@/components/ui/button';
 
 // Define the booking type based on your UI
 export type Booking = {
+  freelancerId?: string;
   id: string;
   name: string;
   date: string;
   time: string;
   email: string;
   price: number;
-  status: 'Active' | 'Inactive';
+  ratings?: number | null;
+  ratingReview?: string | null;
+  hasRating?: boolean;
+  status: 'Confirmed' | 'Cancelled' | 'Completed';
 };
 
 export const bookingColumns: ColumnDef<Booking>[] = [
@@ -98,19 +102,47 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     header: 'Status',
     cell: ({ row }) => {
       const status = row.getValue('status') as string;
+      let badgeClass = '';
+      let badgeVariant: 'default' | 'secondary' = 'default';
+      if (status === 'Confirmed') {
+        badgeClass = 'bg-green-100 text-green-800 hover:bg-green-100';
+        badgeVariant = 'default';
+      } else if (status === 'Cancelled') {
+        badgeClass = 'bg-red-100 text-red-800 hover:bg-red-100';
+        badgeVariant = 'secondary';
+      } else if (status === 'Completed') {
+        badgeClass = 'bg-purple-100 text-purple-800 hover:bg-purple-100';
+        badgeVariant = 'secondary';
+      }
       return (
-        <Badge
-          variant={status === 'Active' ? 'default' : 'secondary'}
-          className={
-            status === 'Active'
-              ? 'bg-green-100 text-green-800 hover:bg-green-100'
-              : 'bg-red-100 text-red-800 hover:bg-red-100'
-          }
-        >
+        <Badge variant={badgeVariant} className={badgeClass}>
           {status}
         </Badge>
       );
     },
+  },
+  {
+    accessorKey: 'ratings',
+    header: 'Rating',
+    cell: ({ row }) => {
+      const rating = row.original.ratings;
+      const review = row.original.ratingReview;
+      if (rating) {
+        return (
+          <div className="flex flex-col items-start">
+            <span className="flex items-center text-yellow-500 font-semibold">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i}>{i < rating ? '★' : '☆'}</span>
+              ))}
+              <span className="ml-2 text-gray-700">{rating}/5</span>
+            </span>
+            {review && <span className="text-xs text-gray-500 mt-1">&quot;{review}&quot;</span>}
+          </div>
+        );
+      }
+      return <span className="text-gray-400 italic">No rating given</span>;
+    },
+    enableSorting: false,
   },
 
   //   {
@@ -151,7 +183,7 @@ export const sampleBookings: Booking[] = [
     time: '17:00',
     email: 'jane@microsoft.com',
     price: 200,
-    status: 'Active',
+    status: 'Confirmed',
   },
   {
     id: '2',
@@ -160,7 +192,7 @@ export const sampleBookings: Booking[] = [
     time: '18:00',
     email: 'floyd@yahoo.com',
     price: 100,
-    status: 'Inactive',
+    status: 'Cancelled',
   },
   {
     id: '3',
@@ -169,7 +201,7 @@ export const sampleBookings: Booking[] = [
     time: '18:00',
     email: 'ronald@adobe.com',
     price: 300,
-    status: 'Inactive',
+    status: 'Cancelled',
   },
   {
     id: '4',
@@ -178,106 +210,16 @@ export const sampleBookings: Booking[] = [
     time: '20:00',
     email: 'marvin@tesla.com',
     price: 500,
-    status: 'Active',
+    status: 'Confirmed',
   },
   {
     id: '5',
     name: 'Jerome Bell',
     date: '05-04-2025',
-    time: '10:00',
+    time: '21:00',
     email: 'jerome@google.com',
-    price: 600,
-    status: 'Active',
-  },
-  {
-    id: '6',
-    name: 'Kathryn Murphy',
-    date: '06-04-2025',
-    time: '11:00',
-    email: 'kathryn@microsoft.com',
-    price: 700,
-    status: 'Active',
-  },
-  {
-    id: '7',
-    name: 'Jacob Jones',
-    date: '07-04-2025',
-    time: '12:00',
-    email: 'jacob@yahoo.com',
-    price: 800,
-    status: 'Active',
-  },
-  {
-    id: '8',
-    name: 'Kristin Watson',
-    date: '08-04-2025',
-    time: '13:00',
-    email: 'kristin@facebook.com',
-    price: 900,
-    status: 'Inactive',
-  },
-  {
-    id: '9',
-    name: 'Sarah Johnson',
-    date: '09-04-2025',
-    time: '14:00',
-    email: 'sarah@amazon.com',
-    price: 450,
-    status: 'Active',
-  },
-  {
-    id: '10',
-    name: 'Michael Brown',
-    date: '10-04-2025',
-    time: '15:00',
-    email: 'michael@netflix.com',
-    price: 320,
-    status: 'Active',
-  },
-  {
-    id: '11',
-    name: 'Emma Wilson',
-    date: '11-04-2025',
-    time: '16:00',
-    email: 'emma@spotify.com',
-    price: 280,
-    status: 'Inactive',
-  },
-  {
-    id: '12',
-    name: 'David Garcia',
-    date: '12-04-2025',
-    time: '17:00',
-    email: 'david@uber.com',
-    price: 650,
-    status: 'Active',
-  },
-  {
-    id: '13',
-    name: 'Lisa Anderson',
-    date: '13-04-2025',
-    time: '18:00',
-    email: 'lisa@airbnb.com',
-    price: 750,
-    status: 'Active',
-  },
-  {
-    id: '14',
-    name: 'James Martinez',
-    date: '14-04-2025',
-    time: '19:00',
-    email: 'james@twitter.com',
-    price: 420,
-    status: 'Inactive',
-  },
-  {
-    id: '15',
-    name: 'Anna Taylor',
-    date: '15-04-2025',
-    time: '20:00',
-    email: 'anna@linkedin.com',
-    price: 580,
-    status: 'Active',
+    price: 150,
+    status: 'Completed',
   },
 ];
 

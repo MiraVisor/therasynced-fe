@@ -1,349 +1,347 @@
-import {
-  Avatar,
-  ChatContainer,
-  Conversation,
-  ConversationHeader,
-  ConversationList,
-  MainContainer,
-  Message,
-  MessageInput,
-  MessageList,
-  Sidebar,
-  TypingIndicator,
-} from '@chatscope/chat-ui-kit-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
-import { useMediaQuery } from '@/hooks/use-media-query';
-
-import styles from './MessageSection.module.css';
-
-import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
-
-interface Contact {
-  id: number;
-  name: string;
-  info: string;
-  time: string;
-  preview: string;
-  avatar: string;
-  unreadCount?: number;
-}
-
-interface MessageType {
-  id: string;
-  sender: string;
-  message: string;
-  sentTime: string;
-  sentDate?: string;
-  direction: 'incoming' | 'outgoing';
-}
-
-interface Messages {
-  [key: number]: MessageType[];
-}
-
-const contacts: Contact[] = [
-  {
-    id: 1,
-    name: 'Dr Lee Marshell',
-    info: 'Certified Physiotherapist',
-    time: '16:20',
-    preview: 'Hello! How are you doing?',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    unreadCount: 2,
-  },
-  {
-    id: 2,
-    name: 'Dr Emily Stone',
-    info: 'Certified Physiotherapist',
-    time: '16:21',
-    preview: 'How can I help you today?',
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    unreadCount: 0,
-  },
-  {
-    id: 3,
-    name: 'Dr John Doe',
-    info: 'Certified Physiotherapist',
-    time: '16:22',
-    preview: 'Please share your reports.',
-    avatar: 'https://randomuser.me/api/portraits/men/55.jpg',
-    unreadCount: 1,
-  },
-];
+import DotLoader from '@/components/common/DotLoader';
+import { getDecodedToken } from '@/lib/utils';
+import { fetchChatContacts, fetchChatHistory, fetchChatThread } from '@/redux/slices/chatSlice';
+import { RootState } from '@/redux/store';
+import { connectChatSocket, disconnectChatSocket } from '@/services/chatSocket';
 
 export const MessageSection = () => {
-  const [activeContact, setActiveContact] = useState<Contact>(contacts[0]);
+  const dispatch = useDispatch();
+  const { contacts, contactsLoading, thread, threadLoading, messages, messagesLoading } =
+    useSelector((state: RootState) => state.chat);
+  const [activeContact, setActiveContact] = useState<any>(null);
   const [currentMessage, setCurrentMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  // Use 1023px as breakpoint for tablet/mobile behavior
-  const isMobile = useMediaQuery('(max-width: 1023px)');
+  const [socket, setSocket] = useState<any>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [pendingMessages, setPendingMessages] = useState<any[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Handle contact selection - for mobile and tablet, show chat view
-  const handleContactClick = (contact: Contact) => {
-    setActiveContact(contact);
-    if (isMobile) {
-      setShowChat(true);
-    }
-  };
-
-  // Handle back button - return to contacts list on mobile/tablet
-  const handleBackToContacts = () => {
-    setShowChat(false);
-  };
-
-  // Reset chat view when screen size changes to desktop
+  // Fetch contacts on mount
   useEffect(() => {
-    if (!isMobile) {
-      setShowChat(false);
-    }
-  }, [isMobile]);
-  // User avatar - can be made dynamic based on logged-in user
-  const userAvatar = 'https://randomuser.me/api/portraits/men/1.jpg';
-  const [messages, setMessages] = useState<Messages>({
-    1: [
-      {
-        id: '1',
-        sender: 'Dr Lee Marshell',
-        message: 'Hello! How are you doing?........',
-        sentTime: '16:20',
-        sentDate: 'July 10, 2025',
-        direction: 'incoming',
-      },
-      {
-        id: '2',
-        sender: 'Dr Lee Marshell',
-        message: 'Hello! How are you doing?........',
-        sentTime: '16:20',
-        sentDate: 'July 10, 2025',
-        direction: 'incoming',
-      },
-      {
-        id: '3',
-        sender: 'Dr Lee Marshell',
-        message: 'Hello! How are you doing?........',
-        sentTime: '16:20',
-        sentDate: 'July 10, 2025',
-        direction: 'incoming',
-      },
-      {
-        id: '4',
-        sender: 'You',
-        message: 'Hello! How are You? 😊',
-        sentTime: '16:20',
-        sentDate: 'July 10, 2025',
-        direction: 'outgoing',
-      },
-      {
-        id: '5',
-        sender: 'Dr Lee Marshell',
-        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
-        sentTime: '16:20',
-        sentDate: 'July 12, 2025',
-        direction: 'incoming',
-      },
-      {
-        id: '6',
-        sender: 'You',
-        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
-        sentTime: '16:20',
-        sentDate: 'July 12, 2025',
-        direction: 'outgoing',
-      },
-    ],
-    2: [
-      {
-        id: '5',
-        sender: 'Dr Lee Marshell',
-        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
-        sentTime: '16:20',
-        sentDate: 'July 12, 2025',
-        direction: 'incoming',
-      },
-      {
-        id: '6',
-        sender: 'You',
-        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
-        sentTime: '16:20',
-        sentDate: 'July 12, 2025',
-        direction: 'outgoing',
-      },
-    ],
-    3: [
-      {
-        id: '5',
-        sender: 'Dr Lee Marshell',
-        message: 'Hello! How are you doing?........ 😊',
-        sentTime: '16:20',
-        sentDate: 'July 12, 2025',
-        direction: 'incoming',
-      },
-      {
-        id: '6',
-        sender: 'You',
-        message: 'Hello! i am good...how are you?? Hows everythings going? 😊',
-        sentTime: '16:20',
-        sentDate: 'July 12, 2025',
-        direction: 'outgoing',
-      },
-    ],
-  });
+    dispatch(fetchChatContacts() as any);
+  }, [dispatch]);
 
-  const handleChange = (value: string) => {
-    setCurrentMessage(value);
-    // Simulate typing indicator
-    if (value.length > 0 && !isTyping) {
-      setIsTyping(true);
-      setTimeout(() => setIsTyping(false), 3000);
-    }
-  };
-
-  const handleSendMessage = (text: string) => {
-    if (!activeContact || !text.trim()) return;
-
-    const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-
-    const newMessage: MessageType = {
-      id: Date.now().toString(),
-      sender: 'You',
-      message: text,
-      sentTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      sentDate: formattedDate,
-      direction: 'outgoing',
+  // Connect/disconnect socket on mount/unmount
+  useEffect(() => {
+    const s = connectChatSocket();
+    setSocket(s);
+    return () => {
+      disconnectChatSocket();
     };
+  }, []);
 
-    setMessages((prev) => ({
-      ...prev,
-      [activeContact.id]: [...(prev[activeContact.id] || []), newMessage],
-    }));
-
-    setCurrentMessage('');
-
-    // Simulate response after 2 seconds
-    setTimeout(() => {
-      const responseTime = new Date();
-      const responseMessage: MessageType = {
-        id: (Date.now() + 1).toString(),
-        sender: activeContact.name,
-        message: `Thanks for your message! I'll get back to you soon.`,
-        sentTime: responseTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sentDate: formattedDate,
-        direction: 'incoming',
-      };
-
-      setMessages((prev) => ({
-        ...prev,
-        [activeContact.id]: [...(prev[activeContact.id] || []), responseMessage],
-      }));
-    }, 2000);
-  };
-
-  const getTypingIndicator = () => {
-    if (isTyping && activeContact) {
-      return <TypingIndicator content={`${activeContact.name} is typing`} />;
+  // Join thread room when thread changes
+  useEffect(() => {
+    if (socket && thread?.data?.id) {
+      socket.emit('joinThread', { threadId: thread?.data?.id });
     }
-    return undefined;
+  }, [socket, thread?.data?.id]);
+
+  // Listen for newMessage events
+  useEffect(() => {
+    if (!socket) return;
+    const handleNewMessage = (msg: any) => {
+      // Remove pending message if it matches content, sender, and close timestamp
+      setPendingMessages((prev) =>
+        prev.filter(
+          (pm) =>
+            !(
+              pm.content === msg.content &&
+              pm.senderId === msg.senderId &&
+              Math.abs(new Date(pm.createdAt).getTime() - new Date(msg.createdAt).getTime()) < 60000
+            ),
+        ),
+      );
+      dispatch({ type: 'chat/addMessage', payload: msg });
+    };
+    socket.on('newMessage', handleNewMessage);
+    return () => {
+      socket.off('newMessage', handleNewMessage);
+    };
+  }, [socket, dispatch]);
+
+  // Get userId from JWT on mount
+  useEffect(() => {
+    const decoded = getDecodedToken();
+    setUserId(decoded?.sub || null);
+  }, []);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // Handle contact selection
+  const handleContactClick = useCallback(
+    async (contact: any) => {
+      setActiveContact(contact);
+      const threadRes = await dispatch(fetchChatThread(contact.id) as any).unwrap();
+      if (threadRes?.data?.id) {
+        dispatch(fetchChatHistory(threadRes?.data?.id) as any);
+      }
+      setShowChat(true);
+    },
+    [dispatch],
+  );
+
+  // Handle message send
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentMessage.trim()) return;
+    if (!thread?.data?.id || !socket) {
+      toast.error('Message not sent');
+      return;
+    }
+    const tempId = `temp-${Date.now()}`;
+    const pendingMsg = {
+      tempId,
+      id: tempId,
+      threadId: thread.data.id,
+      senderId: userId,
+      content: currentMessage,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+    };
+    setPendingMessages((prev) => [...prev, pendingMsg]);
+    socket.emit(
+      'sendMessage',
+      { threadId: thread.data.id, senderId: userId, content: currentMessage },
+      () => {
+        setCurrentMessage('');
+      },
+    );
   };
+
+  const userAvatar = 'https://randomuser.me/api/portraits/men/1.jpg';
+
+  const allMessages = [...messages, ...pendingMessages];
 
   return (
-    <div className={styles.messageContainer}>
-      <MainContainer responsive>
-        {/* Sidebar - Hidden on XS when chat is showing */}
-        <div className={showChat ? styles.hiddenOnMobile : styles.showOnMobile}>
-          <Sidebar position="left" scrollable>
-            <ConversationList>
-              {contacts.map((contact) => (
-                <Conversation
-                  key={contact.id}
-                  name={contact.name}
-                  lastSenderName={contact.info}
-                  info={contact.preview}
-                  lastActivityTime={contact.time}
-                  active={activeContact?.id === contact.id}
-                  unreadCnt={contact.unreadCount}
-                  onClick={() => handleContactClick(contact)}
-                >
-                  <Avatar src={contact.avatar} name={contact.name} />
-                </Conversation>
-              ))}
-            </ConversationList>
-          </Sidebar>
+    <div
+      className="w-full h-[75vh] flex bg-card rounded-xl overflow-hidden"
+      style={{ fontSize: '0.8em' }}
+    >
+      {/* Sidebar */}
+      <aside className="flex flex-col min-w-[208px] max-w-[256px] w-full h-[80vh] bg-card border-r border-border">
+        <div className="px-4 py-4 border-b border-border text-lg font-semibold text-foreground sticky top-0 bg-card z-10">
+          Messages
         </div>
-
-        {/* Chat Container - Shown on XS when contact is selected */}
-        <div
-          className={`${!showChat ? styles.hiddenOnMobile : styles.showOnMobile} ${styles.chatContainerWrapper}`}
-        >
-          <ChatContainer>
-            {activeContact && (
-              <ConversationHeader className={styles.conversationHeader}>
-                {isMobile && (
-                  <ConversationHeader.Back
-                    onClick={handleBackToContacts}
-                    className={styles.backButtonWrapper}
-                  />
-                )}
-
-                <Avatar src={activeContact.avatar} name={activeContact.name} />
-                <ConversationHeader.Content
-                  userName={activeContact.name}
-                  info={activeContact.info}
+        <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 72px)' }}>
+          {/* Contact list only, do not show selected contact under heading */}
+          {contactsLoading ? (
+            <div className="p-4 text-center flex justify-center items-center">
+              <DotLoader size={14} />
+            </div>
+          ) : contacts.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground">No contacts found</div>
+          ) : (
+            contacts.map((contact: any) => (
+              <button
+                key={contact.id}
+                onClick={() => handleContactClick(contact)}
+                className={`w-full flex items-center gap-3 px-4 py-3 border-b border-border text-left hover:bg-muted transition ${activeContact?.id === contact.id ? 'bg-muted mt-8' : ''}`}
+              >
+                <img
+                  src={contact.profilePicture}
+                  alt={contact.name}
+                  className="w-10 h-10 rounded-full object-cover"
                 />
-              </ConversationHeader>
-            )}
-
-            <MessageList typingIndicator={getTypingIndicator()}>
-              {activeContact &&
-                messages[activeContact.id]?.map(
-                  (msg: MessageType, index: number, array: MessageType[]) => {
-                    // Check if this is the first message or if the date is different from the previous message
+                <div className="flex flex-col flex-1">
+                  <span className="font-medium text-base text-foreground">{contact.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {contact.cardInfo?.mainService || ''}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate">
+                    {contact.slotSummary?.lastMessage || ''}
+                  </span>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </aside>
+      {/* Chat Area */}
+      <main className="flex-1 flex flex-col h-[80vh] min-w-0 bg-card">
+        {/* Header */}
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-card sticky top-0 z-20 min-h-[72px]">
+          {activeContact ? (
+            <>
+              <img
+                src={activeContact.profilePicture}
+                alt={activeContact.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <div className="flex flex-col">
+                <span className="font-semibold text-lg text-foreground">{activeContact.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {activeContact.cardInfo?.mainService || ''}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="w-full flex flex-col items-center justify-center">
+              <div className="text-3xl font-bold text-foreground mb-2">Start a Conversation</div>
+              <div className="text-muted-foreground mb-6">
+                Select a contact from the left to begin chatting.
+              </div>
+              <svg
+                width="64"
+                height="64"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="mx-auto text-primary mb-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-3.5A7.963 7.963 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+            </div>
+          )}
+        </div>
+        {/* Messages */}
+        <div
+          className="flex-1 px-3 py-1 bg-card overflow-y-auto"
+          style={{ maxHeight: 'calc(80vh - 72px - 64px)' }}
+        >
+          {activeContact &&
+            (messagesLoading ? (
+              <div className="p-4 text-center flex justify-center items-center">
+                <DotLoader size={14} />
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="p-6 text-center text-muted-foreground">
+                No messages yet. Say hello!
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {allMessages
+                  .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                  .map((msg: any, idx: number, arr: any[]) => {
                     const showDateSeparator =
-                      index === 0 || msg.sentDate !== array[index - 1].sentDate;
-
+                      idx === 0 ||
+                      msg.createdAt?.split('T')[0] !== arr[idx - 1]?.createdAt?.split('T')[0];
+                    const isOwn = msg.senderId !== activeContact.id;
                     return (
                       <React.Fragment key={msg.id}>
-                        {showDateSeparator && msg.sentDate && (
-                          <div className={styles.dateSeparator}>
-                            <div className={styles.dateSeparatorText}>{msg.sentDate}</div>
+                        {showDateSeparator && msg.createdAt && (
+                          <div className="flex justify-center my-2">
+                            <span className="bg-blue-50 text-gray-600 text-xs px-3 py-1 rounded-lg font-medium shadow-none">
+                              {new Date(msg.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
                         )}
-                        <Message
-                          model={{
-                            message: msg.message,
-                            sentTime: msg.sentTime,
-                            sender: msg.sender,
-                            direction: msg.direction,
-                            position: 'single',
-                          }}
+                        <div
+                          className={`flex items-end ${isOwn ? 'justify-end' : 'justify-start'}`}
                         >
-                          {msg.direction === 'incoming' && (
-                            <Avatar src={activeContact.avatar} name={msg.sender} />
+                          {!isOwn && (
+                            <img
+                              src={activeContact.profilePicture}
+                              alt={msg.sender?.name}
+                              className="w-8 h-8 rounded-full mr-2 object-cover"
+                            />
                           )}
-                          {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
-                        </Message>
+                          <div
+                            className={`relative max-w-[85%] min-w-[60px] px-6 py-1 rounded-full text-base whitespace-pre-line break-words shadow-sm flex items-center ${isOwn ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground border border-border'}`}
+                            style={{ boxShadow: isOwn ? '0 2px 8px rgba(0,0,0,0.04)' : undefined }}
+                          >
+                            <span className="flex-1">{msg.content}</span>
+                            <span
+                              className={`text-xs ml-4 whitespace-nowrap ${isOwn ? 'text-white' : 'text-muted-foreground'}`}
+                            >
+                              {new Date(msg.createdAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                            {isOwn && (
+                              <span className="ml-2 flex items-center">
+                                {msg.status === 'pending' ? (
+                                  <svg
+                                    className="animate-spin h-4 w-4 text-white/80"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8v8z"
+                                    ></path>
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    className="h-4 w-4 text-white/80"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          {isOwn && (
+                            <img
+                              src={userAvatar}
+                              alt="You"
+                              className="w-8 h-8 rounded-full ml-2 object-cover"
+                            />
+                          )}
+                        </div>
                       </React.Fragment>
                     );
-                  },
-                )}
-            </MessageList>
-
-            <MessageInput
-              value={currentMessage}
-              onChange={handleChange}
-              onSend={handleSendMessage}
-              disabled={!activeContact}
-              attachButton={false}
-              placeholder="Type your Message"
-            />
-          </ChatContainer>
+                  })}
+                <div ref={messagesEndRef} />
+              </div>
+            ))}
         </div>
-      </MainContainer>
+        {/* Typing Field */}
+        {activeContact && (
+          <form
+            onSubmit={handleSendMessage}
+            className="px-6 border-t border-border bg-card flex items-center min-h-[64px]"
+          >
+            <input
+              type="text"
+              value={currentMessage}
+              onChange={(e) => setCurrentMessage(e.target.value)}
+              placeholder="Type your Message"
+              className="flex-1 rounded-full border border-border px-4 py-2 text-base bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="ml-3 px-4 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition"
+              disabled={!currentMessage.trim() || threadLoading}
+            >
+              Send
+            </button>
+          </form>
+        )}
+      </main>
     </div>
   );
 };

@@ -16,6 +16,7 @@ export interface Expert {
   rating: number;
   description: string;
   isFavorite?: boolean;
+  imageUrl?: string;
 }
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 
