@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
 import { SearchBar } from '../SearchBar';
@@ -36,6 +36,11 @@ const AdminHome = () => {
   const handleReviewApplication = (_id: number) => {
     // Handle application review - would typically connect to an API
   };
+
+  const [selectedMonth, setSelectedMonth] = useState<typeof mockChartData.defaultMonth>(
+    mockChartData.defaultMonth,
+  );
+  const chart = mockChartData.data[selectedMonth as keyof typeof mockChartData.data];
 
   return (
     <DashboardPageWrapper
@@ -94,7 +99,14 @@ const AdminHome = () => {
         </div>
 
         {/* Revenue Chart */}
-        <RevenueChart month={mockChartData.month} />
+        <RevenueChart
+          month={selectedMonth}
+          months={mockChartData.months}
+          onMonthChange={setSelectedMonth}
+          xLabels={chart.xLabels}
+          profitData={chart.profitData}
+          lossData={chart.lossData}
+        />
       </div>
     </DashboardPageWrapper>
   );
