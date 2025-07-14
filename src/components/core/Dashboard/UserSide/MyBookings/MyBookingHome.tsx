@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Divide, Moon, Star, Sun } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Moon, Star, Sun } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
