@@ -120,22 +120,40 @@ const FinancePage = () => {
         </div>
 
         {/* Transactions List - Takes 1/3 of the space */}
-        <div className="bg-white rounded-lg p-6 shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Total Transaction</h3>
-
-          <div className="overflow-auto max-h-[340px] pr-2">
+        <div
+          className="bg-white rounded-[14px] border border-gray-200 shadow-md"
+          style={{ height: 553, opacity: 1 }}
+        >
+          <h3 className="text-[20px] font-semibold mb-4 px-6 pt-6 pb-2 text-[#202224]/70">
+            Total Transaction
+          </h3>
+          <div className="border-t border-gray-300 mx-6 mb-2" />
+          <div className="overflow-auto pr-2" style={{ maxHeight: 470 }}>
             {sampleTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex justify-between items-center py-4 border-b border-gray-100"
+                className="flex justify-between items-center border-b border-gray-200 mx-6 py-4"
               >
-                <div>
-                  <div className="font-medium">{transaction.therapist}</div>
-                  <div className="text-sm text-gray-500">
+                <div className="flex flex-col justify-center ">
+                  <div
+                    className="text-[16px] font-semibold leading-none text-[#202224]/70"
+                    style={{ height: 22 }}
+                  >
+                    {transaction.therapist}
+                  </div>
+                  <div
+                    className="text-[12px] font-normal leading-none mt-1 text-[#202224]/70"
+                    style={{ height: 22 }}
+                  >
                     {transaction.date} | {transaction.session}
                   </div>
                 </div>
-                <div className="font-medium">${transaction.amount}</div>
+                <div
+                  className="text-[16px] font-semibold text-right leading-none text-[#202224]/70"
+                  style={{ height: 22 }}
+                >
+                  ${transaction.amount}
+                </div>
               </div>
             ))}
           </div>
