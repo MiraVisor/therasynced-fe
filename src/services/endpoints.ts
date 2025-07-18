@@ -4,6 +4,9 @@ export const ENDPOINTS = {
     logout: '/auth/logout',
     profile: '/auth/profile',
     signup: '/auth/signup',
+    forgotPassword: '/auth/forgot-password',
+    resetPassword: (token: string) => `/auth/reset-password/${token}`,
+    verifyEmailLink: '/auth/verify-email-link',
   },
   products: {
     list: '/products',

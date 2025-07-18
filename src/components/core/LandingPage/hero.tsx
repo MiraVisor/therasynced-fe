@@ -3,6 +3,7 @@
 import { ArrowRight } from 'lucide-react';
 // import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 
@@ -37,10 +38,12 @@ const Hero = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-[90vw] xs:max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none items-center justify-center">
-            <Button className="w-full sm:w-auto lg:w-52 lg:h-12 px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg bg-primary hover:bg-primary/90 shadow-md hover:shadow-primary/25 lg:hover:scale-105 transition-all duration-300 group flex items-center justify-center gap-2">
-              Book Now
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </Button>
+            <Link href="/authentication/sign-in" passHref>
+              <Button className="w-full sm:w-auto lg:w-52 lg:h-12 px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg bg-primary hover:bg-primary/90 shadow-md hover:shadow-primary/25 lg:hover:scale-105 transition-all duration-300 group flex items-center justify-center gap-2">
+                Start Your Journey
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:translate-x-1" />
+              </Button>
+            </Link>
             {/* <Button
               variant="outline"
               className="w-full sm:w-auto lg:w-52 lg:h-12 px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg border-2 border-white/20 hover:bg-white/10 text-white shadow-sm lg:hover:scale-105 transition-all duration-300"
