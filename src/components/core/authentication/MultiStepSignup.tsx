@@ -212,9 +212,17 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     onSubmit(transformedData);
   };
 
+  const handleGoogleSignIn = () => {
+    // Replace with your backend's Google OAuth endpoint
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
+  };
+
   const handleOAuthSignup = (provider: string) => {
     console.log(`Signing up with ${provider}`);
     // TODO: Implement OAuth signup and redirect to dashboard
+    if (provider === 'google') {
+      handleGoogleSignIn();
+    }
   };
 
   const handleAuthMethodSelect = (method: 'email' | 'oauth') => {

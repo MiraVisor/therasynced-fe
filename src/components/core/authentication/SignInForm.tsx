@@ -54,9 +54,17 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
     }
   };
 
+  const handleGoogleSignIn = () => {
+    // Replace with your backend's Google OAuth endpoint
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
+  };
+
   const handleOAuthLogin = (provider: string) => {
     // TODO: Implement OAuth login
     console.log(`Logging in with ${provider}`);
+    if (provider === 'google') {
+      handleGoogleSignIn();
+    }
   };
 
   return (

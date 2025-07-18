@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -58,8 +58,6 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
         setIsSubmitting(false);
       });
   };
-
-  // Google SSO handler (redirect to backend for Google OAuth)
 
   const handleBackToSignInFromSignup = () => {
     setCurrentView('sign-in');
