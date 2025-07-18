@@ -30,19 +30,19 @@ const UserOverview = dynamicImport(
 );
 
 function DashboardContent() {
-  const [userRole, setUserRole] = useState<RoleType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userRole, setUserRole] = useState<RoleType | null>(null);
 
   useEffect(() => {
-    // Dynamically import and use the auth hook only on client side
-    import('@/redux/hooks/useAppHooks').then(({}) => {
-      // For now, we'll use a simple approach to get the role
-      // In a real implementation, you might want to use a more sophisticated approach
-      const storedRole = typeof window !== 'undefined' ? localStorage.getItem('userRole') : null;
-      setUserRole((storedRole as RoleType) || ROLES.PATIENT);
+    // Get role from cookie token using the getDecodedToken utility
+    import('@/lib/utils').then(({ getDecodedToken }) => {
+      const decodedToken = getDecodedToken();
+      setUserRole(decodedToken?.role as RoleType);
       setIsLoading(false);
     });
   }, []);
+
+  console.log('userRole', userRole);
 
   if (isLoading || !userRole) {
     return <div>Loading...</div>;
