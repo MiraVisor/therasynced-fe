@@ -21,7 +21,7 @@ export type Therapist = {
 };
 
 // Column definitions for therapists table
-export const therapistColumns: ColumnDef<Therapist>[] = [
+const therapistColumns: ColumnDef<Therapist>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => {
@@ -150,7 +150,7 @@ export const therapistColumns: ColumnDef<Therapist>[] = [
 ];
 
 // Sample data for therapists
-export const sampleTherapists: Therapist[] = [
+const sampleTherapists: Therapist[] = [
   {
     id: '1',
     name: 'Sarah Johnson',

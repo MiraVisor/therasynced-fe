@@ -22,7 +22,7 @@ export type Booking = {
 };
 
 // Column definitions
-export const bookingColumns: ColumnDef<Booking>[] = [
+const bookingColumns: ColumnDef<Booking>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
@@ -91,7 +91,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
 ];
 
 // Sample data for bookings based on the UI
-export const sampleBookings: Booking[] = [
+const sampleBookings: Booking[] = [
   {
     id: '00001',
     patient: 'Christine Brooks',

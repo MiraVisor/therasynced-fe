@@ -14,6 +14,7 @@ import {
 import React, { useEffect, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { Expert } from '@/types/types';
 
 import styles from './MessageSection.module.css';
 
@@ -40,6 +41,11 @@ interface MessageType {
 
 interface Messages {
   [key: number]: MessageType[];
+}
+
+interface MessageSectionProps {
+  expert?: Expert;
+  onSendMessage?: () => void;
 }
 
 const contacts: Contact[] = [
@@ -72,7 +78,7 @@ const contacts: Contact[] = [
   },
 ];
 
-export const MessageSection = () => {
+export const MessageSection = ({ expert, onSendMessage }: MessageSectionProps) => {
   const [activeContact, setActiveContact] = useState<Contact>(contacts[0]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);

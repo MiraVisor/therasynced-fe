@@ -48,7 +48,7 @@ const financeStats = [
 ];
 
 // Sample data for transactions
-export const sampleTransactions: Transaction[] = [
+const sampleTransactions: Transaction[] = [
   {
     id: '1',
     therapist: 'Sarah Johnson',
