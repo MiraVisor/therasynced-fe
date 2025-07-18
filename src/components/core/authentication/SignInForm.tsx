@@ -18,13 +18,11 @@ const formSchema = z.object({
     .min(1, 'Email is required')
     .email('Please enter a valid email address')
     .max(100, 'Email cannot exceed 100 characters'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /^(?=.*[a-z])(?=.*\d)[a-z\d]{8,}$/,
-      'Password must include lowercase and number, and be at least 8 characters',
-    ),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  // .regex(
+  //   /^(?=.*[a-z])(?=.*\d)[a-z\d]{8,}$/,
+  //   'Password must include lowercase and number, and be at least 8 characters',
+  // ),
 });
 
 type FormData = z.infer<typeof formSchema>;
