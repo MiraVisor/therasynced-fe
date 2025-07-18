@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getCookie, getDecodedToken, removeCookie, setCookie } from '@/lib/utils';
 import { RoleType, registerUserTypes } from '@/types/types';
 
-import { googleSignInApi, loginApi, signUpUserApi } from '../api/authApi';
+import { googleSignInApi, loginApi, signUpUserApi, verifyEmailLinkApi } from '../api/authApi';
 
 const decodedToken = typeof window !== 'undefined' ? getDecodedToken() : null;
 const initialState: {
@@ -35,6 +35,18 @@ export const signUpUser = createAsyncThunk(
       const data = await signUpUserApi(credentials);
       return data;
     } catch (err: any) {
+      return rejectWithValue(err || 'Something went wrong');
+    }
+  },
+);
+
+export const verifyEmailLinkUser = createAsyncThunk(
+  'auth/verifyEmailLinkUser',
+  async (token: string, { rejectWithValue }) => {
+    try {
+      const response = await verifyEmailLinkApi({ token });
+      return response?.data;
+    } catch (err: unknown) {
       return rejectWithValue(err || 'Something went wrong');
     }
   },
@@ -100,6 +112,24 @@ const authSlice = createSlice({
         }
       })
       .addCase(googleSignIn.rejected, (state) => {
+        state.isAuthenticated = false;
+        state.token = null;
+        state.role = null;
+      })
+      .addCase(verifyEmailLinkUser.pending, () => {})
+      .addCase(verifyEmailLinkUser.fulfilled, (state, action) => {
+        const token = action.payload.data.token;
+        const role = action.payload.data.user.role;
+
+        state.token = token;
+        state.role = role;
+        state.isAuthenticated = true;
+
+        if (typeof window !== 'undefined') {
+          setCookie('token', token);
+        }
+      })
+      .addCase(verifyEmailLinkUser.rejected, (state) => {
         state.isAuthenticated = false;
         state.token = null;
         state.role = null;

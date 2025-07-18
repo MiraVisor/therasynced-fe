@@ -22,6 +22,7 @@ export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 export enum ROLES {
   PATIENT = 'PATIENT',
   FREELANCER = 'FREELANCER',
+  TEAM = 'TEAM',
   ADMIN = 'ADMIN',
 }
 

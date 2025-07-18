@@ -1,5 +1,7 @@
 import { Circle, Mars, Transgender, User, UserCog, Users, Venus } from 'lucide-react';
 
+import { ROLES } from '@/types/types';
+
 export interface GenderOption {
   value: string;
   label: string;
@@ -20,9 +22,9 @@ export const genderOptions: GenderOption[] = [
 ];
 
 export const roleOptions: RoleOption[] = [
-  { value: 'patient', label: 'Patient', icon: User },
-  { value: 'team', label: 'Team', icon: Users },
-  { value: 'freelancer', label: 'Freelancer', icon: UserCog },
+  { value: ROLES.PATIENT, label: 'Patient', icon: User },
+  { value: ROLES.TEAM, label: 'Team', icon: Users },
+  { value: ROLES.FREELANCER, label: 'Freelancer', icon: UserCog },
 ];
 
 // Irish cities, towns, and villages (deduplicated)
