@@ -1,8 +1,7 @@
 'use client';
 
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { resetPasswordApi } from '@/redux/api/authApi';
@@ -12,9 +11,7 @@ interface ResetPasswordFormProps {
 }
 
 const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn }) => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const [token, setToken] = useState<string | null>(null);
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,6 +20,13 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    // Get search params only on client side
+    const searchParams = new URLSearchParams(window.location.search);
+    const tokenParam = searchParams.get('token');
+    setToken(tokenParam);
+  }, []);
 
   // Handle password reset
   const handleResetPassword = async (e: React.FormEvent) => {

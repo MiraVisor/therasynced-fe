@@ -1,5 +1,4 @@
-'use client';
-
+// 'use client';
 import UserExploreMain from '@/components/core/Dashboard/UserSide/Explore/UserExploreMain';
 
 const ExplorePage = () => {

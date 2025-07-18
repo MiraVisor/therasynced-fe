@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import ResetPasswordForm from '@/components/core/authentication/ResetPasswordForm';
 
-export default function ResetPasswordPage() {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+function ResetPasswordContent() {
   const handleBackToSignIn = () => {
     window.location.href = '/authentication/signin';
   };
@@ -25,7 +29,18 @@ export default function ResetPasswordPage() {
 
         {/* Reset Password Form */}
         <div className="bg-white py-8 px-6 shadow-xl rounded-2xl border border-gray-100">
-          <ResetPasswordForm onBackToSignIn={handleBackToSignIn} />
+          <Suspense
+            fallback={
+              <div className="space-y-8">
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold text-gray-900">Loading...</h2>
+                  <p className="text-sm text-gray-600">Please wait while we load the reset form.</p>
+                </div>
+              </div>
+            }
+          >
+            <ResetPasswordForm onBackToSignIn={handleBackToSignIn} />
+          </Suspense>
         </div>
 
         {/* Footer */}
@@ -35,4 +50,8 @@ export default function ResetPasswordPage() {
       </div>
     </div>
   );
+}
+
+export default function ResetPasswordPage() {
+  return <ResetPasswordContent />;
 }

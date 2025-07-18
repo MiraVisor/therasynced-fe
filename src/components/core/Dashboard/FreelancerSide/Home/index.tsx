@@ -1,3 +1,5 @@
+'use client';
+
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import Charts from './Charts';
 import Stats from './Stats';
