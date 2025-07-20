@@ -13,7 +13,7 @@ const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminS
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-full">
-      <LoadingSpinner />
+      <LoadingSpinner size="lg" />
     </div>
   ),
 });
@@ -24,7 +24,7 @@ const FreelancerHome = dynamicImport(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
-        <LoadingSpinner />
+        <LoadingSpinner size="lg" />
       </div>
     ),
   },
@@ -36,7 +36,7 @@ const UserHome = dynamicImport(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
-        <LoadingSpinner />
+        <LoadingSpinner size="lg" />
       </div>
     ),
   },
@@ -60,7 +60,7 @@ function DashboardContent() {
   if (isLoading || !userRole) {
     return (
       <div className="flex items-center justify-center h-full">
-        <LoadingSpinner />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -82,7 +82,11 @@ export default function DashboardHome() {
   }, []);
 
   if (!isClient) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
   return <DashboardContent />;

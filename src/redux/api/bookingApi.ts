@@ -15,3 +15,27 @@ export const cancelBooking = async (bookingId: string) => {
   const response = await api.delete(`/booking/${bookingId}/cancel`);
   return response.data;
 };
+
+// Freelancer booking history
+export const getFreelancerBookings = async () => {
+  const response = await api.get('/booking/freelancer/today');
+  return response.data;
+};
+
+// Update booking status - This endpoint doesn't exist yet, but keeping for future implementation
+export const updateBookingStatus = async (bookingId: string, status: string) => {
+  const response = await api.patch(`/booking/${bookingId}/status`, { status });
+  return response.data;
+};
+
+// Update booking notes
+export const updateBookingNotes = async (bookingId: string, notes: string) => {
+  const response = await api.patch(`/booking/${bookingId}/notes`, { notes });
+  return response.data;
+};
+
+// Reschedule booking
+export const rescheduleBooking = async (bookingId: string, newSlotId: string) => {
+  const response = await api.post('/booking/reschedule', { bookingId, newSlotId });
+  return response.data;
+};

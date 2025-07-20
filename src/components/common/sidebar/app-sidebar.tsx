@@ -79,13 +79,18 @@ const navigationLinks = {
       icon: Calendar,
     },
     {
+      name: 'Slot Management',
+      url: '/dashboard/slots',
+      icon: Calendar,
+    },
+    {
       name: 'Messages',
       url: '/dashboard/messages',
       icon: MessageSquare,
     },
     {
       name: 'Services',
-      url: '/dashboard/serivces',
+      url: '/dashboard/services',
       icon: Users,
     },
     {

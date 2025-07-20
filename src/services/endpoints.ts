@@ -8,19 +8,38 @@ export const ENDPOINTS = {
     resetPassword: (token: string) => `/auth/reset-password/${token}`,
     verifyEmailLink: '/auth/verify-email-link',
   },
-  products: {
-    list: '/products',
-    get: (id: string) => `/products/${id}`,
-    create: '/products',
-    update: (id: string) => `/products/${id}`,
-    delete: (id: string) => `/products/${id}`,
+  // Slot management
+  slots: {
+    create: '/slot/create',
+    list: '/slot/list',
+    update: (id: string) => `/slot/${id}`,
+    delete: (id: string) => `/slot/${id}`,
+    freelancer: (id: string) => `/slot/freelancer/${id}/available`,
   },
-  orders: {
-    list: '/orders',
-    get: (id: string) => `/orders/${id}`,
-    create: '/orders',
-    update: (id: string) => `/orders/${id}`,
-    cancel: (id: string) => `/orders/${id}/cancel`,
+  // Service management
+  services: {
+    create: '/service/create',
+    list: '/service',
+    update: (id: string) => `/service/${id}`,
+    delete: (id: string) => `/service/${id}`,
+  },
+  // Location management
+  locations: {
+    create: '/location/create',
+    list: '/location',
+    update: (id: string) => `/location/${id}`,
+    delete: (id: string) => `/location/${id}`,
+  },
+  // Booking management
+  bookings: {
+    create: '/booking/create',
+    reschedule: '/booking/reschedule',
+    cancel: '/booking/cancel',
+    updateNotes: (id: string) => `/booking/${id}/notes`,
+    history: {
+      admin: '/booking/history/admin',
+      freelancer: '/booking/history/freelancer',
+    },
   },
 } as const;
 

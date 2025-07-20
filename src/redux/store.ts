@@ -1,7 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import { appointmentSlice, authSlice, calendarSlice, exploreSlice, overviewSlice } from './slices';
-import bookingSlice from './slices/bookingSlice';
+import {
+  appointmentSlice,
+  authSlice,
+  bookingSlice,
+  calendarSlice,
+  exploreSlice,
+  overviewSlice,
+  serviceSlice,
+  slotReducer,
+} from './slices';
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +19,8 @@ export const store = configureStore({
     overview: overviewSlice,
     explore: exploreSlice,
     booking: bookingSlice,
+    slot: slotReducer,
+    service: serviceSlice,
   },
 });
 
