@@ -21,8 +21,8 @@ const FreelancerHome = dynamicImport(
   },
 );
 
-const UserOverview = dynamicImport(
-  () => import('@/components/core/Dashboard/UserSide/Overview/UserOverviewMain'),
+const UserHome = dynamicImport(
+  () => import('@/components/core/Dashboard/UserSide/Explore/UserExploreMain'),
   {
     ssr: false,
     loading: () => <div>Loading...</div>,
@@ -50,7 +50,7 @@ function DashboardContent() {
 
   return (
     <>
-      {userRole === ROLES.PATIENT && <UserOverview />}
+      {userRole === ROLES.PATIENT && <UserHome />}
       {userRole === ROLES.FREELANCER && <FreelancerHome />}
       {userRole === ROLES.ADMIN && <AdminHome />}
     </>
