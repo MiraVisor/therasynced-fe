@@ -1,8 +1,8 @@
 // 'use client';
-import UserOverview from '@/components/core/Dashboard/UserSide/Overview/UserOverviewMain';
+import UserOverviewMain from '@/components/core/Dashboard/UserSide/Overview/UserOverviewMain';
 
 const ExplorePage = () => {
-  return <UserOverview />;
+  return <UserOverviewMain />;
 };
 
 export default ExplorePage;

@@ -12,7 +12,7 @@ export interface Expert {
   id: string;
   name: string;
   specialty: string;
-  experience: string;
+  yearsOfExperience: string;
   rating: number;
   description: string;
   isFavorite?: boolean;

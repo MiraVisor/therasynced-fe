@@ -6,8 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { ModeToggle } from '@/components/mode-toggler';
-
 const navLinks = [
   { href: '#services', label: 'Our Services' },
   { href: '#features', label: 'Why Us' },
@@ -52,7 +50,7 @@ const Navbar = () => {
 
         {/* CTA + Theme Toggle */}
         <div className="flex items-center gap-4">
-          <ModeToggle />
+          {/* <ModeToggle /> */}
           {/* <Link href="/authentication/sign-in" passHref>
             <Button className="hidden sm:inline-block text-sm font-medium tracking-wide px-6 py-1.5 rounded transition-all duration-300 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
               Get Started

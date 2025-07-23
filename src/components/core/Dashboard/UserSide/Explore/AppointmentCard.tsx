@@ -2,11 +2,12 @@ import { AvatarImage } from '@radix-ui/react-avatar';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[] }> = ({
-  date,
   bookings,
 }) => {
   const router = useRouter();
@@ -25,9 +26,19 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   if (Array.isArray(bookings) && bookings.length === 0) {
     console.info('bookings is an empty array');
     return (
-      <div className="dark:border-gray-700 rounded-xl p-2 bg-white dark:bg-gray-800 shadow-sm space-y-6 text-gray-400">
-        No upcoming appointments found for this date.
-      </div>
+      <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
+        <CardContent className="flex items-center justify-center h-64">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto">
+              <span className="text-2xl">📅</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No appointments</h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-md">
+              No upcoming appointments found for this date.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -49,80 +60,117 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   };
 
   return (
-    <div className="relative dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm space-y-4">
-      {/* Booking counter at top-right */}
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <span className="text-[16px]">
-          <span className="font-semibold">Upcoming</span>{' '}
-          <span className="text-green-500">Appointment</span>{' '}
-          <span className="text-gray-500 mx-2">|</span>{' '}
-          <span className="text-green-500">
+    <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
+            Upcoming Appointment
+          </CardTitle>
+          <Badge variant="secondary" className="text-xs">
             {Array.isArray(bookings) ? bookings.length : 0} Bookings
-          </span>{' '}
-          <span className="text-green-500 ml-1">→</span>
-        </span>
-      </div>
-
-      {/* Expert info */}
-      <div className="flex items-start gap-4">
-        <Avatar className="w-12 h-12 rounded-full overflow-hidden">
-          <AvatarImage
-            src={
-              expert.avatarUrl ||
-              `https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=faces&fit=crop&w=200&q=80`
-            }
-            className="w-full h-full object-cover"
-          />
-        </Avatar>
-        <div className="flex-1">
-          <h4 className="font-semibold text-lg">{expert.name || 'Unknown Expert'}</h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{expert.specialty || 'N/A'}</p>
-          <div className="flex gap-1 text-yellow-400 mt-1">
-            {'★'.repeat(expert.rating || 0)}
-            {'☆'.repeat(5 - (expert.rating || 0))}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Expert info */}
+        <div className="flex items-start gap-4">
+          <Avatar className="h-16 w-16">
+            <AvatarImage
+              src={
+                expert.avatarUrl ||
+                `https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=faces&fit=crop&w=200&q=80`
+              }
+              className="w-full h-full object-cover"
+            />
+            <AvatarFallback className="text-lg font-bold">
+              {expert.name ? expert.name.charAt(0).toUpperCase() : 'E'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 space-y-2">
+            <div>
+              <h4 className="font-bold text-lg text-gray-900 dark:text-white">
+                {expert.name || 'Unknown Expert'}
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                {expert.specialty || 'N/A'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <span
+                  key={i}
+                  className={`text-sm ${
+                    i < (expert.rating || 0) ? 'text-yellow-400' : 'text-gray-300'
+                  }`}
+                >
+                  ★
+                </span>
+              ))}
+              <span className="text-xs text-gray-500 ml-1">({expert.rating || 0})</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="space-y-3 py-4 border-y dark:border-gray-700">
-        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-          <span className="text-lg">📅</span>
-          <p className="text-sm font-medium">
-            {new Date(booking.slot?.startTime).toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
+
+        {/* Appointment details */}
+        <div className="space-y-3 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+              <span className="text-sm">📅</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {new Date(booking.slot?.startTime).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+              <span className="text-sm">⏰</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{time}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+              <span className="text-sm">✓</span>
+            </div>
+            <Badge
+              variant={status === 'confirmed' ? 'default' : 'secondary'}
+              className={`text-xs ${
+                status === 'confirmed'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+              }`}
+            >
+              {status}
+            </Badge>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-          <span className="text-lg">⏰</span>
-          {/* <p className="text-sm font-medium">{currentAppointment.time}</p> */}
+
+        {/* Action buttons */}
+        <div className="flex gap-3 pt-2">
+          <Button
+            variant="outline"
+            onClick={handleReschedule}
+            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+          >
+            Reschedule
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+            onClick={() => {}}
+          >
+            Cancel
+          </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            {/* {currentAppointment.status} */}
-          </span>
-        </div>
-      </div>
-      <div className="flex gap-3">
-        <Button
-          variant="outline"
-          onClick={handleReschedule}
-          className="flex-1 border-2 hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          Reschedule
-        </Button>
-        <Button
-          variant="outline"
-          className="flex-1 border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/30"
-          onClick={() => {}}
-        >
-          Cancel
-        </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

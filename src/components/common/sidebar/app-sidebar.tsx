@@ -215,9 +215,9 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                       : 'data-[state=open]:text-foreground/90',
                   )}
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
+                  <Avatar className="h-16 w-16">
                     <AvatarImage />
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                    <AvatarFallback className="text-lg font-bold">CN</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">Mehad Nadeem</span>
@@ -237,9 +237,9 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
+                    <Avatar className="h-16 w-16">
                       <AvatarImage />
-                      <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                      <AvatarFallback className="text-lg font-bold">CN</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">Mehad Nadeem</span>

@@ -1,9 +1,10 @@
-import { useDispatch, useSelector } from 'react-redux';
 import type { TypedUseSelectorHook } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { AppDispatch, RootState } from '@/redux/store';
 
-import { loginUser, logout } from '../slices';
+import { loginUser } from '../slices';
+import { logout } from '../slices/authSlice';
 
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 export const useAppDispatch = () => useDispatch<AppDispatch>();

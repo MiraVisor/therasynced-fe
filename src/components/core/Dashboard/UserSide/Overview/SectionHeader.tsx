@@ -1,12 +1,16 @@
-import React from 'react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
-export const SectionHeader: React.FC = () => (
-  <div className="mb-6">
-    <h2 className="text-2xl font-semibold">
-      Meet Our <span className="text-green-600">Experts</span>
-    </h2>
-    <p className="text-green-600 text-sm mt-1">
-      Heal and relax under the care of certified therapists dedicated to your well-being.
-    </p>
-  </div>
-);
+export const SectionHeader = () => {
+  return (
+    <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          Featured Healthcare Experts
+        </CardTitle>
+        <p className="text-gray-600 dark:text-gray-300">
+          Connect with qualified professionals who are ready to help you on your wellness journey
+        </p>
+      </CardHeader>
+    </Card>
+  );
+};

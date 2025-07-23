@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
   fetchExplorePatientBookings,
   fetchRecentFavoriteFreelancer,
@@ -15,50 +18,72 @@ import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import { AppointmentCard } from './AppointmentCard';
 import MessageSection from './MessageSection';
 
-// Create a simple FavoriteExpertCard component to avoid circular imports
-const FavoriteExpertCard: React.FC<{ expert?: Expert }> = ({ expert }) => {
-  if (!expert) {
+// Create a modern FavoriteExpertCard component
+
+// Remove Card usage for FavoriteExpertCard and make it a simple, responsive, centered section
+const FavoriteExpertSection: React.FC<{ expert?: Expert; loading: boolean }> = ({
+  expert,
+  loading,
+}) => {
+  if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl px-6 py-8 flex flex-col gap-2 shadow-md border border-gray-100 dark:border-gray-700 relative min-w-[280px] min-h-[412px]">
-        <h3 className="text-lg font-semibold mb-6">
-          Your <span className="text-primary">Favorites</span>
-        </h3>
-        <div className="py-8 text-center">No favorites yet</div>
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
       </div>
     );
   }
-
+  if (!expert) {
+    return (
+      <section className="flex flex-col items-center justify-center w-full py-8">
+        <h2 className="text-xl font-bold mb-2 text-center">Your Favorite Expert</h2>
+        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+          <span className="text-2xl">💙</span>
+        </div>
+        <p className="text-gray-500 text-center">No favorites yet</p>
+        <p className="text-sm text-gray-400 text-center mt-2">
+          Start exploring and add your favorite experts
+        </p>
+      </section>
+    );
+  }
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl px-6 py-8 flex flex-col gap-2 shadow-md border border-gray-100 dark:border-gray-700 relative min-w-[280px] min-h-[412px]">
-      <h3 className="text-lg font-semibold mb-6">
-        Your <span className="text-primary">Favorites</span>
-      </h3>
-      <div className="flex items-center gap-3">
-        <div className="flex gap-2">
-          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-            <span className="text-lg font-semibold">{expert.name.charAt(0)}</span>
+    <section className="flex flex-col items-center justify-center w-full py-8">
+      <h2 className="text-xl font-bold mb-2 text-center">Your Favorite Expert</h2>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center text-xl font-bold">
+            {expert.name.charAt(0)}
           </div>
-          <div className="flex flex-col justify-center gap-2">
-            <div className="font-inter font-semibold text-base16">{expert.name}</div>
-            <div className="font-inter font-medium text-base14 text-[#525252]">
-              {expert.specialty}
-            </div>
-            <div className="font-inter font-medium text-base14 text-[#525252]">
-              {expert.experience}
-            </div>
-            <div className="flex items-center gap-0.5 mt-1 text-[20px]">
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
+        </div>
+        <div className="flex flex-col items-start">
+          <h3 className="font-bold text-lg text-gray-900 dark:text-white">{expert.name}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{expert.specialty}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+              {expert.yearsOfExperience} years
+            </span>
+            <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
-                <span key={i} className={i < expert.rating ? 'text-yellow-400' : 'text-gray-300'}>
+                <span
+                  key={i}
+                  className={`text-sm ${i < expert.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                >
                   ★
                 </span>
               ))}
+              <span className="text-xs text-gray-500 ml-1">({expert.rating})</span>
             </div>
           </div>
         </div>
-        <button className="absolute top-3 right-5 text-xl text-[#FF2D87]">♥</button>
       </div>
-      <div className="text-sm text-[#525252] mt-2 mb-3">{expert.description}</div>
-    </div>
+      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed text-center max-w-md mb-4">
+        {expert.description}
+      </p>
+      <Button className="w-full max-w-xs bg-green-600 hover:bg-green-700 text-white">
+        Book Appointment
+      </Button>
+    </section>
   );
 };
 
@@ -85,7 +110,7 @@ const UserExploreMain = () => {
         id: favorite.id ?? '',
         name: favorite.cardInfo.name ?? '',
         specialty: favorite.cardInfo.mainService ?? '',
-        experience: favorite.cardInfo.yearsOfExperience ?? '',
+        yearsOfExperience: favorite.cardInfo.yearsOfExperience ?? '',
         rating: favorite.cardInfo.averageRating ?? 0,
         description: favorite.cardInfo.title ?? '',
         isFavorite: !!favorite.isFavorite,
@@ -96,55 +121,91 @@ const UserExploreMain = () => {
     // Implement send message logic
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <DashboardPageWrapper
       header={
-        <h2 className="text-xl font-semibold">
-          Hi Nadeem! 👋{' '}
-          <span className="text-green-600">Here&apos;s what&apos;s happening today.</span>
-        </h2>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            Welcome back, ! 👋
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Here&apos;s what&apos;s happening today and your upcoming appointments
+          </p>
+        </div>
       }
     >
-      <div className="flex flex-col gap-4">
-        {/* Top Grid: Favorite + Appointment */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Favorite Expert Section */}
-          <section className="lg:col-span-4">
-            {loading ? (
-              <div className="py-8 text-center">Loading favorite...</div>
-            ) : expertCardProps ? (
-              <FavoriteExpertCard expert={expertCardProps} />
-            ) : (
-              <div className="py-8 text-center">No favorites yet</div>
-            )}
-          </section>
-
-          {/* Appointment Section */}
-          <section className="lg:col-span-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 shadow-md border border-gray-100 dark:border-gray-700 h-[410px]">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-xl" />
-
-                <AppointmentCard
-                  date={date}
-                  bookings={Array.isArray(bookings) ? bookings : bookings?.data || []}
-                />
+      <div className="flex flex-col items-center w-full px-2 sm:px-6 lg:px-0 max-w-3xl mx-auto space-y-8">
+        {/* Favorite Expert Section - Centered and Responsive */}
+        <FavoriteExpertSection expert={expertCardProps} loading={loading} />
+        {/* Appointment Section - keep as is for now, but can be refactored similarly if needed */}
+        <div className="w-full">
+          <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Schedule & Appointments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      className="rounded-xl"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <AppointmentCard
+                    date={date}
+                    bookings={Array.isArray(bookings) ? bookings : bookings?.data || []}
+                  />
+                </div>
               </div>
-            </div>
-          </section>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Messages Section */}
-        <section className="mt-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-6">Messages</h3>
-            {expertCardProps ? (
-              <MessageSection expert={expertCardProps} onSendMessage={handleSendMessage} />
-            ) : (
-              <div className="text-gray-400">No favorite expert to message</div>
-            )}
-          </div>
-        </section>
+        {/* Messages Section - keep as is for now */}
+        <div className="w-full">
+          <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Messages
+              </CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Stay connected with your favorite experts
+              </p>
+            </CardHeader>
+            <CardContent>
+              {expertCardProps ? (
+                <MessageSection expert={expertCardProps} onSendMessage={handleSendMessage} />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center mb-4">
+                    <span className="text-2xl">💬</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    No messages yet
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md">
+                    Add a favorite expert to start messaging and stay connected with your healthcare
+                    providers
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardPageWrapper>
   );

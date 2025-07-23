@@ -275,7 +275,7 @@ export const MessageSection = ({ expert, onSendMessage }: MessageSectionProps) =
                   unreadCnt={contact.unreadCount}
                   onClick={() => handleContactClick(contact)}
                 >
-                  <Avatar src={contact.avatar} name={contact.name} />
+                  <Avatar className="h-16 w-16" src={contact.avatar} name={contact.name} />
                 </Conversation>
               ))}
             </ConversationList>
@@ -296,7 +296,11 @@ export const MessageSection = ({ expert, onSendMessage }: MessageSectionProps) =
                   />
                 )}
 
-                <Avatar src={activeContact.avatar} name={activeContact.name} />
+                <Avatar
+                  className="h-16 w-16"
+                  src={activeContact.avatar}
+                  name={activeContact.name}
+                />
                 <ConversationHeader.Content
                   userName={activeContact.name}
                   info={activeContact.info}
@@ -329,9 +333,15 @@ export const MessageSection = ({ expert, onSendMessage }: MessageSectionProps) =
                           }}
                         >
                           {msg.direction === 'incoming' && (
-                            <Avatar src={activeContact.avatar} name={msg.sender} />
+                            <Avatar
+                              className="h-16 w-16"
+                              src={activeContact.avatar}
+                              name={msg.sender}
+                            />
                           )}
-                          {msg.direction === 'outgoing' && <Avatar src={userAvatar} name="You" />}
+                          {msg.direction === 'outgoing' && (
+                            <Avatar className="h-16 w-16" src={userAvatar} name="You" />
+                          )}
                         </Message>
                       </React.Fragment>
                     );

@@ -3,6 +3,7 @@
 import dynamicImport from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { ROLES, RoleType } from '@/types/types';
 
 export const dynamic = 'force-dynamic';
@@ -10,14 +11,22 @@ export const dynamic = 'force-dynamic';
 // Dynamically import components that use Redux to prevent SSR issues
 const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminSide/AdminHome'), {
   ssr: false,
-  loading: () => <div>Loading...</div>,
+  loading: () => (
+    <div className="flex items-center justify-center h-full">
+      <LoadingSpinner />
+    </div>
+  ),
 });
 
 const FreelancerHome = dynamicImport(
   () => import('@/components/core/Dashboard/FreelancerSide/Home'),
   {
     ssr: false,
-    loading: () => <div>Loading...</div>,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
+      </div>
+    ),
   },
 );
 
@@ -25,7 +34,11 @@ const UserHome = dynamicImport(
   () => import('@/components/core/Dashboard/UserSide/Explore/UserExploreMain'),
   {
     ssr: false,
-    loading: () => <div>Loading...</div>,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
+      </div>
+    ),
   },
 );
 
@@ -45,7 +58,11 @@ function DashboardContent() {
   console.log('userRole', userRole);
 
   if (isLoading || !userRole) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
