@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { loginUser } from '@/redux/slices';
+import { loginUser } from '@/redux/slices/authSlice';
 
 const formSchema = z.object({
   email: z
