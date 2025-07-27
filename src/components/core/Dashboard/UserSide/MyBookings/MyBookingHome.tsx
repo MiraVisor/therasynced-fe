@@ -62,13 +62,6 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
     ? bookings.find((booking: any) => booking.id === rescheduleBookingId)
     : null;
 
-  // Debug logging
-  if (rescheduleBookingId) {
-    console.log('Reschedule Booking ID:', rescheduleBookingId);
-    console.log('All bookings:', bookings);
-    console.log('Current booking found:', currentBooking);
-  }
-
   // Fetch user profile on component mount
   useEffect(() => {
     if (!userProfile) {

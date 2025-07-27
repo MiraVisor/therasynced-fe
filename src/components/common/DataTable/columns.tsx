@@ -321,7 +321,6 @@ const BookingActions = ({ booking }: { booking: Booking }) => {
 
   const handleReschedule = () => {
     const url = `/dashboard/doctors/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}`;
-    console.log('Navigating to reschedule:', url);
     router.push(url);
   };
 

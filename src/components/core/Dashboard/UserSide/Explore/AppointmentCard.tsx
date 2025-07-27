@@ -11,20 +11,16 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   bookings,
 }) => {
   const router = useRouter();
-  console.log('AppointmentCard bookings prop:', bookings);
   let booking: any = null;
   if (Array.isArray(bookings) && bookings.length > 0) {
     booking = bookings[0];
-    console.log('First booking:', booking);
   }
 
   if (!Array.isArray(bookings)) {
-    console.warn('bookings is not an array:', bookings);
     return null;
   }
 
   if (Array.isArray(bookings) && bookings.length === 0) {
-    console.info('bookings is an empty array');
     return (
       <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
         <CardContent className="flex items-center justify-center h-64">
@@ -43,7 +39,6 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   }
 
   if (!booking) {
-    console.warn('No booking found in bookings:', bookings);
     return null;
   }
 

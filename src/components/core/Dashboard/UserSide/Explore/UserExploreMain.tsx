@@ -97,7 +97,6 @@ const UserExploreMain = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log('Redux bookings state:', bookings);
     if (date) {
       const formatDate = (d: Date) => d.toISOString().split('T')[0];
       dispatch(fetchExplorePatientBookings(formatDate(date)) as any);

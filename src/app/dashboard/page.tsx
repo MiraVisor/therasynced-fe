@@ -55,8 +55,6 @@ function DashboardContent() {
     });
   }, []);
 
-  console.log('userRole', userRole);
-
   if (isLoading || !userRole) {
     return (
       <div className="flex items-center justify-center h-full">

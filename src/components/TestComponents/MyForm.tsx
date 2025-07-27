@@ -26,7 +26,7 @@ type FormData = z.infer<typeof formSchema>;
 
 const MyForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -42,9 +42,7 @@ const MyForm = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
-    console.log('Form Submitted..:', data);
-    console.log('api error...', apiError);
+  const onSubmit: SubmitHandler<FormData> = async () => {
     // Simulate API submission
     // await new Promise((resolve) => setTimeout(resolve, 1000));
   };
@@ -72,7 +70,6 @@ const MyForm = () => {
         };
         reset(newData);
       } catch (error) {
-        console.error('Failed to fetch data:', error);
         setApiError('Failed to load user data. Please try again.');
       } finally {
         setIsLoading(false);

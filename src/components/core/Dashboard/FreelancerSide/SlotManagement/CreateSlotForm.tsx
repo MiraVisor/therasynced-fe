@@ -84,13 +84,6 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       endTime: new Date(slot.endTime).toISOString(),
     }));
 
-    console.log('Original slots:', timeSlots);
-    console.log('Formatted slots:', formattedSlots);
-    console.log('Final payload:', {
-      ...formData,
-      slots: formattedSlots,
-    });
-
     try {
       // Close dialog immediately for better UX
       onSuccess?.();

@@ -59,7 +59,6 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 
   const handleOAuthLogin = (provider: string) => {
     // TODO: Implement OAuth login
-    console.log(`Logging in with ${provider}`);
     if (provider === 'google') {
       handleGoogleSignIn();
     }

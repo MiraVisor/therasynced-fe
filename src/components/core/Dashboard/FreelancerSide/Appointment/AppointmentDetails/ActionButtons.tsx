@@ -70,7 +70,6 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
 
   const handleReportUser = () => {
     // TODO: Implement report user functionality
-    console.log('Report user:', appointment.clientName);
     toast.success('User reported successfully', {
       position: 'top-right',
       autoClose: 3000,

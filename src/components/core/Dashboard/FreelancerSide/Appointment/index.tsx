@@ -56,7 +56,6 @@ const generateTimeSlots = () => {
       });
     }
   }
-  console.log('Generated time slots:', slots); // Debug log
   return slots;
 };
 
@@ -101,14 +100,7 @@ const Appointments = () => {
     loadAppointments(); // Restore API call
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    console.log(
-      'Time slots generated:',
-      timeSlots.length,
-      'slots from',
-      timeSlots[0]?.start,
-      'to',
-      timeSlots[timeSlots.length - 1]?.start,
-    );
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 

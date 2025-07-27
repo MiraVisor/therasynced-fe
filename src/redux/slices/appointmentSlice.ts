@@ -117,7 +117,6 @@ export const appointmentSlice = createSlice({
         // The backend returns { success, message, data, pagination, meta }
         // We need to map the booking data to appointment format
         const bookings = action.payload.data || [];
-        console.log('bookings', bookings);
         const appointments = bookings.map((booking: any) => ({
           id: booking.id,
           title:
