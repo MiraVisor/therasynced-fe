@@ -72,7 +72,7 @@ export const updateAppointmentStatus = createAsyncThunk(
 // Cancel appointment
 export const cancelAppointment = createAsyncThunk(
   'appointment/cancel',
-  async ({ bookingId }: { bookingId: string; reason?: string }, { rejectWithValue }) => {
+  async ({ bookingId, reason }: { bookingId: string; reason?: string }, { rejectWithValue }) => {
     try {
       const response = await bookingApi.cancelBooking(bookingId, reason);
       return { bookingId, data: response };

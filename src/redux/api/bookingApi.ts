@@ -12,8 +12,8 @@ export const getBookingById = async (bookingId: string) => {
   return response.data;
 };
 
-export const cancelBooking = async (bookingId: string) => {
-  const response = await api.delete(`/booking/${bookingId}/cancel`);
+export const cancelBooking = async (bookingId: string, reason?: string) => {
+  const response = await api.delete(`/booking/${bookingId}/cancel`, { params: { reason } });
   return response.data;
 };
 

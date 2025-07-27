@@ -14,7 +14,7 @@ import {
 export const store = configureStore({
   reducer: {
     auth: authSlice,
-    appoinment: appointmentSlice,
+    appointment: appointmentSlice,
     calendar: calendarSlice,
     overview: overviewSlice,
     explore: exploreSlice,
