@@ -73,13 +73,13 @@ const navigationLinks = {
       url: '/dashboard',
       icon: Home,
     },
+    // {
+    //   name: 'Appointments',
+    //   url: '/dashboard/appointments',
+    //   icon: Calendar,
+    // },
     {
-      name: 'Appointments',
-      url: '/dashboard/appointments',
-      icon: Calendar,
-    },
-    {
-      name: 'Slot Management',
+      name: 'Bookings',
       url: '/dashboard/slots',
       icon: Calendar,
     },

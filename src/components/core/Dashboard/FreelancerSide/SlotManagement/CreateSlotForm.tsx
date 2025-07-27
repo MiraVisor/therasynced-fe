@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -160,14 +160,6 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
-        <CardTitle className="flex items-center gap-3 text-xl">
-          <div className="p-2 bg-emerald-100 rounded-lg">
-            <Clock className="h-6 w-6 text-emerald-600" />
-          </div>
-          Schedule Availability
-        </CardTitle>
-      </CardHeader>
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Location Type Selection */}

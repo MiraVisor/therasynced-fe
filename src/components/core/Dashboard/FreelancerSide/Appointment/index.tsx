@@ -34,7 +34,7 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
 import {
   cancelAppointment,
-  fetchFreelancerAppointments,
+  fetchFreelancerAppointmentsByDate,
   updateAppointmentNotes,
 } from '@/redux/slices/appointmentSlice';
 import { RootState } from '@/redux/store';
@@ -153,7 +153,7 @@ const Appointments = () => {
   };
 
   const loadAppointments = () => {
-    dispatch(fetchFreelancerAppointments() as any); // Restore API call
+    dispatch(fetchFreelancerAppointmentsByDate(format(currentDate, 'yyyy-MM-dd')) as any); // Restore API call
   };
 
   const handleCancelAppointment = async () => {

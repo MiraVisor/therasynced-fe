@@ -79,6 +79,9 @@ export interface Slot {
   id: string;
   freelancerId: string;
   freelancerName?: string;
+  profilePicture?: string | null;
+  averageRating?: number;
+  numberOfRatings?: number;
   locationType: LocationType;
   location?: {
     id: string;
@@ -86,7 +89,7 @@ export interface Slot {
     address: string;
     type: 'OFFICE' | 'CLINIC';
     additionalFee: number;
-  };
+  } | null;
   startTime: string;
   endTime: string;
   duration: number;
@@ -94,6 +97,22 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
+  booking?: {
+    id: string;
+    status: string;
+    totalAmount: number;
+    clientAddress?: string | null;
+    notes?: string | null;
+    client: {
+      id: string;
+      name: string;
+      email: string;
+      profilePicture?: string | null;
+    };
+    services: any[];
+    createdAt: string;
+    updatedAt: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

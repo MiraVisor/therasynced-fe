@@ -1,5 +1,6 @@
 import api from '@/services/api';
 
+//TODO: add these to endpoint file
 export const getPatientBookings = async (date?: string) => {
   const params = date ? { date } : {};
   const response = await api.get('/booking/patient/all', { params });
@@ -18,7 +19,7 @@ export const cancelBooking = async (bookingId: string) => {
 
 // Freelancer booking history
 export const getFreelancerBookings = async () => {
-  const response = await api.get('/booking/freelancer/today');
+  const response = await api.get('/booking/freelancer/all');
   return response.data;
 };
 
@@ -37,5 +38,12 @@ export const updateBookingNotes = async (bookingId: string, notes: string) => {
 // Reschedule booking
 export const rescheduleBooking = async (bookingId: string, newSlotId: string) => {
   const response = await api.post('/booking/reschedule', { bookingId, newSlotId });
+  return response.data;
+};
+
+export const getFreelancerAppointmentsByDate = async (date: string) => {
+  const response = await api.get('/booking/freelancer/appointments-by-date', {
+    params: { date },
+  });
   return response.data;
 };

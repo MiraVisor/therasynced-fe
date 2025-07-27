@@ -29,6 +29,18 @@ export const fetchFreelancerAppointments = createAsyncThunk(
   },
 );
 
+export const fetchFreelancerAppointmentsByDate = createAsyncThunk(
+  'appointment/fetchFreelancerAppointmentsByDate',
+  async (date: string, { rejectWithValue }) => {
+    try {
+      const response = await bookingApi.getFreelancerAppointmentsByDate(date);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch appointments');
+    }
+  },
+);
+
 export const updateAppointmentNotes = createAsyncThunk(
   'appointment/updateNotes',
   async (
@@ -60,7 +72,7 @@ export const updateAppointmentStatus = createAsyncThunk(
 // Cancel appointment
 export const cancelAppointment = createAsyncThunk(
   'appointment/cancel',
-  async ({ bookingId, reason }: { bookingId: string; reason?: string }, { rejectWithValue }) => {
+  async ({ bookingId }: { bookingId: string; reason?: string }, { rejectWithValue }) => {
     try {
       const response = await bookingApi.cancelBooking(bookingId, reason);
       return { bookingId, data: response };
@@ -105,6 +117,7 @@ export const appointmentSlice = createSlice({
         // The backend returns { success, message, data, pagination, meta }
         // We need to map the booking data to appointment format
         const bookings = action.payload.data || [];
+        console.log('bookings', bookings);
         const appointments = bookings.map((booking: any) => ({
           id: booking.id,
           title:
@@ -147,6 +160,30 @@ export const appointmentSlice = createSlice({
         if (appointment) {
           appointment.notes = action.payload.notes;
         }
+      })
+      .addCase(fetchFreelancerAppointmentsByDate.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const bookings = action.payload.data || [];
+        const appointments = bookings.map((booking: any) => ({
+          id: booking.id,
+          title: booking.services.map((s: any) => s.name).join(', '),
+          start: booking.slot.startTime,
+          end: booking.slot.endTime,
+          status: booking.status,
+          clientName: booking.client.name,
+          description: booking.notes || '',
+          location: booking.slot.location?.name || booking.slot.locationType,
+          notes: booking.notes || '',
+        }));
+        state.appointments = appointments;
+      })
+      .addCase(fetchFreelancerAppointmentsByDate.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchFreelancerAppointmentsByDate.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
       });
   },
 });

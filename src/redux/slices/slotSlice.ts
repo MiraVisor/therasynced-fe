@@ -129,6 +129,10 @@ const slotSlice = createSlice({
         const tempSlots = action.meta.arg.slots.map((slot, index) => ({
           id: `temp-${Date.now()}-${index}`,
           freelancerId: '', // Will be filled by backend
+          freelancerName: 'Loading...',
+          profilePicture: null,
+          averageRating: 0,
+          numberOfRatings: 0,
           locationType: action.meta.arg.locationType,
           location: action.meta.arg.locationId
             ? {
@@ -145,6 +149,7 @@ const slotSlice = createSlice({
           basePrice: action.meta.arg.basePrice,
           status: 'AVAILABLE' as const,
           notes: action.meta.arg.notes,
+          booking: null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
@@ -172,7 +177,31 @@ const slotSlice = createSlice({
       })
       .addCase(fetchSlots.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.slots = action.payload.data;
+        // Handle the new response structure with freelancer details and booking info
+        const slots = action.payload.data || [];
+
+        // Transform the slots to match our expected structure
+        const transformedSlots = slots.map((slot: any) => ({
+          id: slot.id,
+          freelancerId: slot.freelancerId,
+          freelancerName: slot.freelancerName,
+          profilePicture: slot.profilePicture,
+          averageRating: slot.averageRating,
+          numberOfRatings: slot.numberOfRatings,
+          locationType: slot.locationType,
+          location: slot.location || undefined,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          duration: slot.duration,
+          basePrice: slot.basePrice,
+          status: slot.status,
+          notes: slot.notes,
+          booking: slot.booking || null,
+          createdAt: slot.createdAt,
+          updatedAt: slot.updatedAt,
+        }));
+
+        state.slots = transformedSlots;
         state.pagination = action.payload.pagination || null;
       })
       .addCase(fetchSlots.rejected, (state, action) => {
