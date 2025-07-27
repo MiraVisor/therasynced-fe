@@ -94,8 +94,8 @@ const navigationLinks = {
       icon: Users,
     },
     {
-      name: 'Finance & Analytics',
-      url: '/dashboard/finance',
+      name: 'Analytics',
+      url: '/dashboard/analytics',
       icon: BarChart,
     },
   ],
