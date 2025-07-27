@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { verifyEmailLinkUser } from '@/redux/slices';
+import { verifyEmailLinkUser } from '@/redux/slices/authSlice';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
