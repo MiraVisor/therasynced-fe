@@ -23,6 +23,11 @@ export const getFreelancerSlots = async (params: {
   return response.data;
 };
 
+export const reserveSlot = async (slotId: string) => {
+  const response = await api.post('/slot/reserve', { slotId });
+  return response.data;
+};
+
 export const createBooking = async (data: {
   slotId: string;
   serviceIds?: string[];
@@ -31,5 +36,15 @@ export const createBooking = async (data: {
   notes?: string;
 }) => {
   const response = await api.post('/booking/create', data);
+  return response.data;
+};
+
+export const getFreelancerServices = async (freelancerId: string) => {
+  const response = await api.get(`/freelancer/${freelancerId}/services`);
+  return response.data;
+};
+
+export const getUserProfile = async () => {
+  const response = await api.get('/user/profile');
   return response.data;
 };

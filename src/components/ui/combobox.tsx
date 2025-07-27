@@ -60,7 +60,6 @@ export function Combobox({
                   key={option.value}
                   value={option.value}
                   onSelect={() => {
-                    console.log('Selected:', option.value);
                     onValueChange(option.value);
                     setOpen(false);
                   }}

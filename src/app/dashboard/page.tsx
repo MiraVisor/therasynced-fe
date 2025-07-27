@@ -3,6 +3,7 @@
 import dynamicImport from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { ROLES, RoleType } from '@/types/types';
 
 export const dynamic = 'force-dynamic';
@@ -10,22 +11,34 @@ export const dynamic = 'force-dynamic';
 // Dynamically import components that use Redux to prevent SSR issues
 const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminSide/AdminHome'), {
   ssr: false,
-  loading: () => <div>Loading...</div>,
+  loading: () => (
+    <div className="flex items-center justify-center h-full">
+      <LoadingSpinner size="lg" />
+    </div>
+  ),
 });
 
 const FreelancerHome = dynamicImport(
   () => import('@/components/core/Dashboard/FreelancerSide/Home'),
   {
     ssr: false,
-    loading: () => <div>Loading...</div>,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" />
+      </div>
+    ),
   },
 );
 
-const UserOverview = dynamicImport(
-  () => import('@/components/core/Dashboard/UserSide/Overview/UserOverviewMain'),
+const UserHome = dynamicImport(
+  () => import('@/components/core/Dashboard/UserSide/Explore/UserExploreMain'),
   {
     ssr: false,
-    loading: () => <div>Loading...</div>,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" />
+      </div>
+    ),
   },
 );
 
@@ -42,15 +55,17 @@ function DashboardContent() {
     });
   }, []);
 
-  console.log('userRole', userRole);
-
   if (isLoading || !userRole) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
   return (
     <>
-      {userRole === ROLES.PATIENT && <UserOverview />}
+      {userRole === ROLES.PATIENT && <UserHome />}
       {userRole === ROLES.FREELANCER && <FreelancerHome />}
       {userRole === ROLES.ADMIN && <AdminHome />}
     </>
@@ -65,7 +80,11 @@ export default function DashboardHome() {
   }, []);
 
   if (!isClient) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
   return <DashboardContent />;
