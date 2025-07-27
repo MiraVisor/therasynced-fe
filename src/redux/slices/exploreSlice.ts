@@ -16,9 +16,9 @@ export const fetchRecentFavoriteFreelancer = createAsyncThunk(
 
 export const fetchExplorePatientBookings = createAsyncThunk(
   'explore/fetchExplorePatientBookings',
-  async (date: string | undefined, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await getPatientBookings(date);
+      const response = await getPatientBookings();
       return response.data;
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to fetch bookings');
