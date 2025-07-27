@@ -85,7 +85,7 @@ const getDistinctColors = (count: number) => {
 
 const Appointments = () => {
   const dispatch = useDispatch();
-  const { appointments, isLoading } = useSelector((state: RootState) => state.appoinment);
+  const { appointments, isLoading } = useSelector((state: RootState) => state.appointment);
 
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);

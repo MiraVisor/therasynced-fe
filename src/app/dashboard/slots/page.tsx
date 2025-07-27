@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DatePicker } from '@/components/common/input/DatePicker';
@@ -47,12 +47,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { deleteSlot, fetchSlots } from '@/redux/slices/slotSlice';
 import { RootState } from '@/redux/store';
 import { LocationType, Slot } from '@/types/types';
 
 const SlotsPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { slots, isLoading, isCreating } = useSelector((state: RootState) => state.slot);
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);

@@ -59,8 +59,8 @@ export const fetchBookingById = createAsyncThunk(
   },
 );
 
-export const cancelBooking = createAsyncThunk(
-  'booking/cancelBooking',
+export const cancelUserBooking = createAsyncThunk(
+  'booking/cancelUserBooking',
   async (bookingId: string, { rejectWithValue }) => {
     try {
       const res = await cancelBookingApi(bookingId);
@@ -121,18 +121,20 @@ const bookingSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(cancelBooking.pending, (state) => {
+      .addCase(cancelUserBooking.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(cancelBooking.fulfilled, (state, action) => {
+      .addCase(cancelUserBooking.fulfilled, (state, action) => {
         state.loading = false;
-        // Remove or update the cancelled booking in the list
-        state.bookings = state.bookings.map((b) =>
-          b.id === action.payload.bookingId ? { ...b, status: 'CANCELLED' } : b,
+        const bookingIndex = state.bookings.findIndex(
+          (booking) => booking.id === action.payload.bookingId,
         );
+        if (bookingIndex !== -1) {
+          state.bookings[bookingIndex].status = 'CANCELLED';
+        }
       })
-      .addCase(cancelBooking.rejected, (state, action) => {
+      .addCase(cancelUserBooking.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -141,4 +143,5 @@ const bookingSlice = createSlice({
 
 export const { clearBookings, clearCurrentBooking, setSelectedBooking, clearSelectedBooking } =
   bookingSlice.actions;
+
 export default bookingSlice.reducer;

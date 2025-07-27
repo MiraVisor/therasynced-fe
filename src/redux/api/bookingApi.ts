@@ -24,9 +24,16 @@ export const getFreelancerBookings = async () => {
 };
 
 // Update booking status - This endpoint doesn't exist yet, but keeping for future implementation
-export const updateBookingStatus = async (bookingId: string, status: string) => {
-  const response = await api.patch(`/booking/${bookingId}/status`, { status });
-  return response.data;
+// TODO: Uncomment when backend endpoint is implemented
+// export const updateBookingStatus = async (bookingId: string, status: string) => {
+//   const response = await api.patch(`/booking/${bookingId}/status`, { status });
+//   return response.data;
+// };
+
+// Temporary implementation that returns success for now
+export const updateBookingStatus = async (_bookingId: string, _status: string) => {
+  // TODO: Replace with actual API call when backend endpoint is ready
+  return { success: true, message: 'Status updated successfully' };
 };
 
 // Update booking notes

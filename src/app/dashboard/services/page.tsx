@@ -2,7 +2,7 @@
 
 import { Edit, Eye, EyeOff, Package, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import {
   createServiceAsync,
   deleteServiceAsync,
@@ -38,7 +39,7 @@ const ServiceForm = ({
   onSuccess: () => void;
   onCancel: () => void;
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { isCreating, isUpdating } = useSelector((state: RootState) => state.service);
 
   const [formData, setFormData] = useState({
@@ -354,7 +355,7 @@ const createServiceColumns = (
 ];
 
 const ServicesPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { services, isLoading, isDeleting } = useSelector((state: RootState) => state.service);
 
   const [showCreateForm, setShowCreateForm] = useState(false);

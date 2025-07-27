@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CreateServiceDto } from '@/types/types';
+import { CreateServiceDto, LocationType } from '@/types/types';
 
 interface CreateServiceFormProps {
   onSuccess?: () => void;
@@ -30,7 +30,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
     description: '',
     additionalPrice: 0,
     duration: undefined,
-    locationTypes: ['VIRTUAL'],
+    locationTypes: ['VIRTUAL' as LocationType],
     tags: [],
     requiresEquipment: false,
   });
@@ -71,7 +71,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
     });
   };
 
-  const toggleLocationType = (locationType: 'HOME' | 'OFFICE' | 'VIRTUAL' | 'CLINIC') => {
+  const toggleLocationType = (locationType: LocationType) => {
     const currentTypes = formData.locationTypes;
     const newTypes = currentTypes.includes(locationType)
       ? currentTypes.filter((type) => type !== locationType)
@@ -203,11 +203,11 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
                 <div
                   key={locationType}
                   className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                    formData.locationTypes.includes(locationType)
+                    formData.locationTypes.includes(locationType as LocationType)
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
-                  onClick={() => toggleLocationType(locationType)}
+                  onClick={() => toggleLocationType(locationType as LocationType)}
                 >
                   <div className="text-center">
                     <div className="text-2xl mb-2">{getLocationTypeIcon(locationType)}</div>
@@ -215,7 +215,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
                       {getLocationTypeLabel(locationType)}
                     </div>
                   </div>
-                  {formData.locationTypes.includes(locationType) && (
+                  {formData.locationTypes.includes(locationType as LocationType) && (
                     <div className="absolute top-2 right-2">
                       <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                     </div>

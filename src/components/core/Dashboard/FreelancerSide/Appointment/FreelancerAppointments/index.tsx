@@ -53,7 +53,7 @@ interface CalendarFilters {
 const FreelancerAppointments = () => {
   const dispatch = useDispatch();
   const { selectedDate, calendarView, filters } = useSelector((state: RootState) => state.calendar);
-  const appointments = useSelector((state: RootState) => state.appoinment.appointments);
+  const appointments = useSelector((state: RootState) => state.appointment.appointments);
   const [, setIsTyping] = useState(false);
   const isMobile = useMediaQuery('(max-width: 1024px)');
 

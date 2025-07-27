@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -31,8 +31,9 @@ import {
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import {
-  cancelBooking,
+  cancelUserBooking,
   clearSelectedBooking,
   fetchUserBookings,
   setSelectedBooking,
@@ -40,7 +41,7 @@ import {
 import { RootState } from '@/redux/store';
 
 export default function MyBookingsPage() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const { bookings, loading, error, selectedBooking } = useSelector(
     (state: RootState) => state.booking,
@@ -196,7 +197,7 @@ export default function MyBookingsPage() {
   const confirmCancel = async () => {
     if (!cancelingId) return;
     try {
-      await dispatch(cancelBooking(cancelingId) as any).unwrap();
+      await dispatch(cancelUserBooking(cancelingId) as any).unwrap();
       toast.success('Booking cancelled successfully!');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to cancel booking');
