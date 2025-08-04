@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Calendar, Clock, Heart, Plus, Star } from 'lucide-react';
+import { Calendar, Clock, Heart, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -9,110 +9,22 @@ import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import {
+  fetchAllFavoriteFreelancers,
   fetchExplorePatientBookings,
-  fetchRecentFavoriteFreelancer,
 } from '@/redux/slices/exploreSlice';
+import { fetchFreelancers } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
-
-// Simple Favorite Expert Card
-const FavoriteExpertCard: React.FC<{ expert?: Expert; loading: boolean }> = ({
-  expert,
-  loading,
-}) => {
-  if (loading) {
-    return (
-      <Card className="h-full">
-        <CardContent className="p-6">
-          <div className="text-center py-8">
-            <div className="animate-pulse">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200"></div>
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-3/4 mx-auto"></div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!expert) {
-    return (
-      <Card className="h-full">
-        <CardContent className="p-6">
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <Heart className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-              No Favorites Yet
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              Save your favorite experts for quick access
-            </p>
-            <Button variant="outline" className="w-full">
-              <Plus className="w-4 h-4 mr-2" />
-              Explore Experts
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="h-full">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Favorite Expert</h3>
-          <Button variant="ghost" size="sm">
-            <Heart className="w-5 h-5 text-red-500 fill-current" />
-          </Button>
-        </div>
-
-        {/* Expert Info */}
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-xl font-bold text-primary">{expert.name.charAt(0)}</span>
-          </div>
-          <div className="flex-1">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              {expert.name}
-            </h4>
-            <p className="text-gray-600 dark:text-gray-400 mb-2">{expert.specialty}</p>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${i < expert.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-500">({expert.rating}.0)</span>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm line-clamp-2">
-          {expert.description}
-        </p>
-
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="text-xs">
-            {expert.experience} years
-          </Badge>
-          <Button size="sm" className="bg-primary hover:bg-primary/90">
-            Book Session
-            <ArrowRight className="w-3 h-3 ml-1" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+import ExpertCard from '../Overview/ExpertCard';
 
 // Simple Appointment Section
 const AppointmentSection: React.FC<{
@@ -244,12 +156,9 @@ const StatsSection: React.FC<{ bookings: any[] }> = ({ bookings }) => {
     }).length || 0;
 
   return (
-    <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0">
+    <Card className=" border-0">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-3 text-xl font-bold text-gray-900 dark:text-white">
-          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-            <Calendar className="w-5 h-5 text-green-600" />
-          </div>
           Your Session Overview
         </CardTitle>
       </CardHeader>
@@ -323,16 +232,92 @@ const StatsSection: React.FC<{ bookings: any[] }> = ({ bookings }) => {
             <div className="text-sm text-gray-600 dark:text-gray-400">Sessions scheduled ahead</div>
           </div>
         </div>
+      </CardContent>
+    </Card>
+  );
+};
 
-        {/* Quick Action */}
-        <div className="mt-6 flex justify-center">
-          <Button
-            variant="outline"
-            className="h-auto p-4 flex items-center gap-2 bg-white dark:bg-gray-800"
+// Favorites Carousel Section
+const FavoritesSection: React.FC<{ favorites: Expert[]; loading: boolean }> = ({
+  favorites,
+  loading,
+}) => {
+  if (loading) {
+    return (
+      <Card className="h-full">
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <div className="animate-pulse">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-3/4 mx-auto"></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!favorites || favorites.length === 0) {
+    return (
+      <Card className="h-full">
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <Heart className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+              No Favorites Yet
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
+              Save your favorite experts for quick access
+            </p>
+            <Button variant="outline" className="w-full">
+              <Plus className="w-4 h-4 mr-2" />
+              Explore Experts
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="w-5 h-5 text-red-500" />
+            Your Favorites
+          </CardTitle>
+          {favorites.length > 1 && (
+            <span className="text-sm text-gray-500">{favorites.length} favorites</span>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="relative px-6 pb-6">
+          <Carousel
+            opts={{
+              align: 'center',
+              loop: true,
+            }}
+            className="w-full"
           >
-            <Plus className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium">Book New Session</span>
-          </Button>
+            <CarouselContent className="mx-12">
+              {favorites.map((expert) => (
+                <CarouselItem key={expert.id} className="px-12 basis-full">
+                  <ExpertCard {...expert} showFavoriteText={false} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {favorites.length > 1 && (
+              <>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </>
+            )}
+          </Carousel>
         </div>
       </CardContent>
     </Card>
@@ -341,14 +326,20 @@ const StatsSection: React.FC<{ bookings: any[] }> = ({ bookings }) => {
 
 const UserExploreMain = () => {
   const dispatch = useDispatch();
-  const { favorite, loading, bookings, bookingsLoading } = useSelector(
+  const { favorites, loading, bookings, bookingsLoading } = useSelector(
     (state: RootState) => state.explore as any,
   );
+  const { experts: allExperts } = useSelector((state: RootState) => state.overview);
   const [date, setDate] = useState<Date | undefined>(new Date());
 
-  // Fetch favorite expert
+  // Fetch all favorite freelancers
   useEffect(() => {
-    dispatch(fetchRecentFavoriteFreelancer() as any);
+    dispatch(fetchAllFavoriteFreelancers() as any);
+  }, [dispatch]);
+
+  // Fetch all freelancers as fallback
+  useEffect(() => {
+    dispatch(fetchFreelancers() as any);
   }, [dispatch]);
 
   // Fetch all bookings once on component mount
@@ -361,18 +352,45 @@ const UserExploreMain = () => {
     setDate(newDate);
   };
 
-  // Map API response to Expert type
-  const expertCardProps: Expert | undefined = favorite?.cardInfo
-    ? {
-        id: favorite.id ?? '',
-        name: favorite.cardInfo.name ?? '',
-        specialty: favorite.cardInfo.mainService ?? '',
-        experience: favorite.cardInfo.yearsOfExperience ?? '',
-        rating: favorite.cardInfo.averageRating ?? 0,
-        description: favorite.cardInfo.title ?? '',
-        isFavorite: !!favorite.isFavorite,
-      }
-    : undefined;
+  // Map API response to Expert type - now handling multiple favorites
+  let favoritesList: Expert[] = [];
+
+  // First try to use the favorites from the explore slice
+  if (favorites && favorites.length > 0) {
+    favoritesList = favorites
+      .map((favorite: any) => {
+        if (!favorite?.cardInfo) return null;
+
+        return {
+          id: favorite.id ?? '',
+          name: favorite.cardInfo.name ?? '',
+          specialty: favorite.cardInfo.mainService ?? '',
+          experience: favorite.cardInfo.yearsOfExperience ?? '',
+          rating: favorite.cardInfo.averageRating ?? 0,
+          description: favorite.cardInfo.title ?? '',
+          isFavorite: !!favorite.isFavorite,
+          // Add additional properties that ExpertCard expects
+          services: favorite.services || [],
+          location: favorite.location || 'Online',
+          languages: favorite.languages || ['English'],
+          sessionTypes: favorite.sessionTypes || ['online', 'office'],
+          pricing: favorite.pricing || {
+            online: { min: 80, max: 120 },
+            office: { min: 100, max: 150 },
+            home: { min: 120, max: 180 },
+          },
+          availableSlots: favorite.availableSlots || 0,
+          nextAvailableSlot: favorite.nextAvailableSlot,
+          cardInfo: favorite.cardInfo,
+        };
+      })
+      .filter(Boolean);
+  }
+
+  // Fallback: use favorite experts from the overview slice
+  if (favoritesList.length === 0 && allExperts && allExperts.length > 0) {
+    favoritesList = allExperts.filter((expert: any) => expert.isFavorite).slice(0, 3); // Limit to 3 favorites for the carousel
+  }
 
   // Handle booking data - properly map the API response structure
   const allBookings = bookings?.data || bookings || [];
@@ -444,7 +462,7 @@ const UserExploreMain = () => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Favorite Expert Section */}
           <div className="xl:col-span-1">
-            <FavoriteExpertCard expert={expertCardProps} loading={loading} />
+            <FavoritesSection favorites={favoritesList} loading={loading} />
           </div>
 
           {/* Appointment Section */}

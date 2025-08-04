@@ -53,7 +53,7 @@ interface CalendarFilters {
 const FreelancerAppointments = () => {
   const dispatch = useDispatch();
   const { selectedDate, calendarView, filters } = useSelector((state: RootState) => state.calendar);
-  const appointments = useSelector((state: RootState) => state.appoinment.appointments);
+  const appointments = useSelector((state: RootState) => state.appointment.appointments);
   const [, setIsTyping] = useState(false);
   const isMobile = useMediaQuery('(max-width: 1024px)');
 
@@ -140,14 +140,14 @@ const FreelancerAppointments = () => {
                 handleSelectEvent(calendarEvent);
               }}
               view={calendarView}
-              selectedDate={selectedDate}
+              selectedDate={new Date(selectedDate)}
             />
           ) : (
             <CalendarWrapper
               localizer={localizer}
               events={calendarEvents}
               view={calendarView}
-              date={selectedDate}
+              date={new Date(selectedDate)}
               onView={(newView: View) => dispatch(setCalendarView(newView))}
               onNavigate={(date: Date) => dispatch(setSelectedDate(date))}
               onSelectEvent={handleSelectEvent}

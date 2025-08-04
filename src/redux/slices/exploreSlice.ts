@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { getPatientBookings, getRecentFavoriteFreelancer } from '../api/exploreApi';
+import {
+  getAllFavoriteFreelancers,
+  getPatientBookings,
+  getRecentFavoriteFreelancer,
+} from '../api/exploreApi';
 
 export const fetchRecentFavoriteFreelancer = createAsyncThunk(
   'explore/fetchRecentFavoriteFreelancer',
@@ -10,6 +14,18 @@ export const fetchRecentFavoriteFreelancer = createAsyncThunk(
       return response.data;
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to fetch favorite freelancer');
+    }
+  },
+);
+
+export const fetchAllFavoriteFreelancers = createAsyncThunk(
+  'explore/fetchAllFavoriteFreelancers',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getAllFavoriteFreelancers();
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Failed to fetch favorite freelancers');
     }
   },
 );
@@ -28,6 +44,7 @@ export const fetchExplorePatientBookings = createAsyncThunk(
 
 const initialState = {
   favorite: null as any, // allow null or API object
+  favorites: [] as any[], // array of favorite freelancers
   loading: false,
   error: null as string | null,
   bookings: [],
@@ -55,6 +72,22 @@ const exploreSlice = createSlice({
             ? action.payload
             : (action.error?.message ?? 'Unknown error');
         state.favorite = null;
+      })
+      .addCase(fetchAllFavoriteFreelancers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllFavoriteFreelancers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.favorites = action.payload ?? [];
+      })
+      .addCase(fetchAllFavoriteFreelancers.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          typeof action.payload === 'string'
+            ? action.payload
+            : (action.error?.message ?? 'Unknown error');
+        state.favorites = [];
       })
       .addCase(fetchExplorePatientBookings.pending, (state) => {
         state.bookingsLoading = true;

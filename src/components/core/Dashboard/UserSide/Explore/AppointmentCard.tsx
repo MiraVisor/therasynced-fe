@@ -6,7 +6,6 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
 export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[] }> = ({
-  date,
   bookings,
 }) => {
   const router = useRouter();
@@ -37,13 +36,11 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   }
 
   const expert = booking.slot?.freelancer || {};
-  const time = `${new Date(booking.slot?.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(booking.slot?.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  const status = booking.status === 'CONFIRMED' ? 'confirmed' : 'pending';
 
   const handleReschedule = () => {
     if (booking?.slot?.freelancer?.id && booking?.id) {
       router.push(
-        `/dashboard/doctors/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}`,
+        `/dashboard/freelancer/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}`,
       );
     }
   };

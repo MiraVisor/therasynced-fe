@@ -8,9 +8,6 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { verifyEmailLinkUser } from '@/redux/slices';
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
-
 export default function VerifyEmailPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();

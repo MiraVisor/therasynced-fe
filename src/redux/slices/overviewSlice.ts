@@ -15,6 +15,8 @@ interface FreelancerState {
   error: string | null;
   slots?: any[];
   slotsPagination?: any;
+  socketConnected: boolean;
+  reservedSlots: string[]; // Track reserved slot IDs
 }
 
 const initialState: FreelancerState = {
@@ -23,6 +25,8 @@ const initialState: FreelancerState = {
   error: null,
   slots: [],
   slotsPagination: undefined,
+  socketConnected: false,
+  reservedSlots: [],
 };
 
 export const fetchFreelancers = createAsyncThunk(
@@ -114,7 +118,110 @@ export const bookAppointment = createAsyncThunk(
 const overviewSlice = createSlice({
   name: 'overview',
   initialState,
-  reducers: {},
+  reducers: {
+    setSocketConnected: (state, action) => {
+      state.socketConnected = action.payload;
+    },
+    updateSlotStatus: (state, action) => {
+      const { slotId, status, isBooked, statusInfo } = action.payload;
+      if (state.slots) {
+        state.slots = state.slots.map((slot) =>
+          slot.id === slotId ? { ...slot, status, isBooked, statusInfo } : slot,
+        );
+      }
+    },
+    updateMultipleSlots: (state, action) => {
+      const updatedSlots = action.payload;
+      if (state.slots) {
+        state.slots = state.slots.map((slot) => {
+          const updatedSlot = updatedSlots.find((s: any) => s.id === slot.id);
+          return updatedSlot ? { ...slot, ...updatedSlot } : slot;
+        });
+      }
+    },
+    reserveSlot: (state, action) => {
+      const { slotId, reserved, statusInfo } = action.payload;
+      if (state.slots) {
+        state.slots = state.slots.map((slot) =>
+          slot.id === slotId
+            ? {
+                ...slot,
+                isBooked: false, // Reservations are not booked, they're just reserved
+                status: reserved ? 'RESERVED' : 'AVAILABLE',
+                statusInfo: statusInfo || {
+                  status: reserved ? 'RESERVED' : 'AVAILABLE',
+                  isAvailable: !reserved,
+                  isReserved: reserved,
+                  isBooked: false,
+                  canBeReserved: !reserved,
+                  statusMessage: reserved ? 'Reserved by you' : 'Available for booking',
+                },
+              }
+            : slot,
+        );
+      }
+
+      // Track reserved slots
+      if (reserved) {
+        if (!state.reservedSlots.includes(slotId)) {
+          state.reservedSlots.push(slotId);
+        }
+      } else {
+        state.reservedSlots = state.reservedSlots.filter((id) => id !== slotId);
+      }
+    },
+    confirmSlotReservation: (state, action) => {
+      const { slotId, statusInfo } = action.payload;
+      if (state.slots) {
+        state.slots = state.slots.map((slot) =>
+          slot.id === slotId
+            ? {
+                ...slot,
+                status: 'RESERVED',
+                isBooked: false, // Reservations are not booked
+                statusInfo: statusInfo || {
+                  status: 'RESERVED',
+                  isAvailable: false,
+                  isReserved: true,
+                  isBooked: false,
+                  canBeReserved: false,
+                  statusMessage: 'Reserved by you',
+                },
+              }
+            : slot,
+        );
+      }
+
+      // Add to reserved slots if not already there
+      if (!state.reservedSlots.includes(slotId)) {
+        state.reservedSlots.push(slotId);
+      }
+    },
+    releaseSlotReservation: (state, action) => {
+      const { slotId } = action.payload;
+      if (state.slots) {
+        state.slots = state.slots.map((slot) =>
+          slot.id === slotId ? { ...slot, status: 'AVAILABLE', isBooked: false } : slot,
+        );
+      }
+
+      // Remove from reserved slots
+      state.reservedSlots = state.reservedSlots.filter((id) => id !== slotId);
+    },
+    clearReservedSlots: (state) => {
+      state.reservedSlots = [];
+    },
+    removeSlotFromAvailable: (state, action) => {
+      const { slotId } = action.payload;
+      if (state.slots) {
+        state.slots = state.slots.map((slot) =>
+          slot.id === slotId ? { ...slot, isBooked: true, status: 'BOOKED' } : slot,
+        );
+      }
+      // Remove from reserved slots if it was reserved
+      state.reservedSlots = state.reservedSlots.filter((id) => id !== slotId);
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchFreelancers.pending, (state) => {
@@ -141,10 +248,40 @@ const overviewSlice = createSlice({
         state.slots = action.payload.slots;
         state.slotsPagination = action.payload.pagination;
       })
+      .addCase(bookAppointment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(bookAppointment.fulfilled, (state, action) => {
-        // Optionally, you can update state with the new booking info here
+        state.loading = false;
+        // Optionally update slots to mark the booked slot as unavailable
+        if (state.slots) {
+          state.slots = state.slots.map((slot) =>
+            slot.id === action.payload.slotId
+              ? { ...slot, isBooked: true, status: 'BOOKED' }
+              : slot,
+          );
+        }
+
+        // Remove from reserved slots if it was reserved
+        state.reservedSlots = state.reservedSlots.filter((id) => id !== action.payload.slotId);
+      })
+      .addCase(bookAppointment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
+
+export const {
+  setSocketConnected,
+  updateSlotStatus,
+  updateMultipleSlots,
+  reserveSlot,
+  confirmSlotReservation,
+  releaseSlotReservation,
+  clearReservedSlots,
+  removeSlotFromAvailable,
+} = overviewSlice.actions;
 
 export default overviewSlice.reducer;

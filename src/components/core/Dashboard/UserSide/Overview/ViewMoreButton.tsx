@@ -1,11 +1,32 @@
+import { ArrowRight, Users } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
 
-export const ViewMoreButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => (
-  <div className="flex justify-center mt-8">
-    <Button className="bg-green-700 hover:bg-green-800 text-white px-8" onClick={onClick}>
-      View more
-    </Button>
-  </div>
-);
+interface ViewMoreButtonProps {
+  onClick?: () => void;
+  totalCount?: number;
+  displayedCount?: number;
+}
+
+export const ViewMoreButton: React.FC<ViewMoreButtonProps> = ({
+  onClick,
+  totalCount = 0,
+  displayedCount = 0,
+}) => {
+  const remainingCount = totalCount - displayedCount;
+
+  return (
+    <div className="flex justify-center pt-8">
+      <Button
+        variant="outline"
+        className="border-primary/20 text-primary hover:bg-primary/5 px-8 py-3 h-auto"
+        onClick={onClick}
+      >
+        <Users className="w-4 h-4 mr-2" />
+        View {remainingCount > 0 ? `${remainingCount} More` : 'All'} Therapists
+        <ArrowRight className="w-4 h-4 ml-2" />
+      </Button>
+    </div>
+  );
+};

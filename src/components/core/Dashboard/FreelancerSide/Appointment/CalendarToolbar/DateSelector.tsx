@@ -54,7 +54,7 @@ export const DateSelector = () => {
         </div>
         <ShadcnCalendar
           mode="single"
-          selected={selectedDate}
+          selected={new Date(selectedDate)}
           onSelect={handleDateSelect}
           className="rounded-md border"
         />

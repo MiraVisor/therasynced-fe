@@ -5,8 +5,6 @@ import { useEffect, useState } from 'react';
 
 import { ROLES, RoleType } from '@/types/types';
 
-export const dynamic = 'force-dynamic';
-
 // Dynamically import components that use Redux to prevent SSR issues
 const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminSide/AdminHome'), {
   ssr: false,

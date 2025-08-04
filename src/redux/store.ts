@@ -1,14 +1,24 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import { appointmentSlice, authSlice, calendarSlice, exploreSlice, overviewSlice } from './slices';
+import {
+  appointmentSlice,
+  authSlice,
+  bookingSlice,
+  calendarSlice,
+  exploreSlice,
+  freelancerSlice,
+  overviewSlice,
+} from './slices';
 
 export const store = configureStore({
   reducer: {
     auth: authSlice,
-    appoinment: appointmentSlice,
+    appointment: appointmentSlice,
+    booking: bookingSlice,
     calendar: calendarSlice,
     overview: overviewSlice,
     explore: exploreSlice,
+    freelancer: freelancerSlice,
   },
 });
 

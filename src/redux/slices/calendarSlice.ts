@@ -4,7 +4,7 @@ import { addDays, addMonths, addWeeks, subDays, subMonths, subWeeks } from 'date
 import { Appointment, AppointmentFilters, View } from '@/types/types';
 
 interface CalendarState {
-  selectedDate: Date;
+  selectedDate: string; // Store as ISO string instead of Date object
   calendarView: View;
   filters: AppointmentFilters;
   selectedEvent: Appointment | null;
@@ -12,14 +12,14 @@ interface CalendarState {
 }
 
 const initialState: CalendarState = {
-  selectedDate: new Date(),
+  selectedDate: new Date().toISOString(), // Convert to ISO string
   calendarView: 'month',
   filters: {
     hideCompleted: false,
     hideCancelled: false,
     showOnlyUpcoming: false,
     showOnlyPast: false,
-    selectedDate: new Date(),
+    selectedDate: new Date().toISOString(), // Convert to ISO string
   },
   selectedEvent: null,
   isEventDialogOpen: false,
@@ -30,42 +30,67 @@ const calendarSlice = createSlice({
   initialState,
   reducers: {
     setSelectedDate: (state, action: PayloadAction<Date>) => {
-      state.selectedDate = action.payload;
+      state.selectedDate = action.payload.toISOString(); // Convert to ISO string
     },
     navigateToNext: (state) => {
+      const currentDate = new Date(state.selectedDate);
+      let newDate: Date;
+
       switch (state.calendarView) {
         case 'month':
-          state.selectedDate = addMonths(state.selectedDate, 1);
+          newDate = addMonths(currentDate, 1);
           break;
         case 'week':
-          state.selectedDate = addWeeks(state.selectedDate, 1);
+          newDate = addWeeks(currentDate, 1);
           break;
         case 'day':
-          state.selectedDate = addDays(state.selectedDate, 1);
+          newDate = addDays(currentDate, 1);
           break;
+        default:
+          newDate = currentDate;
       }
+
+      state.selectedDate = newDate.toISOString(); // Convert to ISO string
     },
     navigateToPrev: (state) => {
+      const currentDate = new Date(state.selectedDate);
+      let newDate: Date;
+
       switch (state.calendarView) {
         case 'month':
-          state.selectedDate = subMonths(state.selectedDate, 1);
+          newDate = subMonths(currentDate, 1);
           break;
         case 'week':
-          state.selectedDate = subWeeks(state.selectedDate, 1);
+          newDate = subWeeks(currentDate, 1);
           break;
         case 'day':
-          state.selectedDate = subDays(state.selectedDate, 1);
+          newDate = subDays(currentDate, 1);
           break;
+        default:
+          newDate = currentDate;
       }
+
+      state.selectedDate = newDate.toISOString(); // Convert to ISO string
     },
     navigateToToday: (state) => {
-      state.selectedDate = new Date();
+      state.selectedDate = new Date().toISOString(); // Convert to ISO string
     },
     setCalendarView: (state, action: PayloadAction<View>) => {
       state.calendarView = action.payload;
     },
     setFilters: (state, action: PayloadAction<Partial<CalendarState['filters']>>) => {
-      state.filters = { ...state.filters, ...action.payload };
+      // Handle date conversion for selectedDate in filters
+      const updatedFilters = { ...action.payload };
+      if (
+        updatedFilters.selectedDate &&
+        typeof updatedFilters.selectedDate === 'object' &&
+        'toISOString' in updatedFilters.selectedDate &&
+        typeof (updatedFilters.selectedDate as any).toISOString === 'function'
+      ) {
+        updatedFilters.selectedDate = (updatedFilters.selectedDate as any).toISOString();
+      }
+
+      state.filters = { ...state.filters, ...updatedFilters };
     },
     setSelectedEvent: (state, action: PayloadAction<Appointment | null>) => {
       state.selectedEvent = action.payload;
