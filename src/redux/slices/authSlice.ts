@@ -5,16 +5,30 @@ import { RoleType, registerUserTypes } from '@/types/types';
 
 import { googleSignInApi, loginApi, signUpUserApi, verifyEmailLinkApi } from '../api/authApi';
 
-const decodedToken = typeof window !== 'undefined' ? getDecodedToken() : null;
-const initialState: {
-  isAuthenticated: boolean;
-  token: string | null;
-  role: RoleType | null;
-} = {
-  isAuthenticated: typeof window !== 'undefined' && !!getCookie('token'),
-  token: typeof window !== 'undefined' ? getCookie('token') : null,
-  role: (decodedToken?.role as RoleType) ?? null,
+const getInitialState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      isAuthenticated: false,
+      token: null,
+      role: null,
+    };
+  }
+
+  const decodedToken = getDecodedToken();
+  const token = getCookie('token');
+
+  // Check if token is valid and not expired
+  const isTokenValid =
+    decodedToken && decodedToken.exp && decodedToken.exp > Math.floor(Date.now() / 1000);
+
+  return {
+    isAuthenticated: !!token && !!isTokenValid,
+    token: isTokenValid ? token : null,
+    role: isTokenValid ? (decodedToken?.role as RoleType) : null,
+  };
 };
+
+const initialState = getInitialState();
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',

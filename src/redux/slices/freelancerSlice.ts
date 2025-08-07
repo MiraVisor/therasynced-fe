@@ -12,6 +12,14 @@ interface FreelancerState {
   favoriteFreelancers: Freelancer[];
   loading: boolean;
   error: string | null;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 const initialState: FreelancerState = {
@@ -19,15 +27,16 @@ const initialState: FreelancerState = {
   favoriteFreelancers: [],
   loading: false,
   error: null,
+  pagination: undefined,
 };
 
 export const fetchFreelancers = createAsyncThunk(
   'freelancer/fetchAll',
-  async (_, { rejectWithValue }) => {
+  async (params: { limit?: number; page?: number } | undefined, { rejectWithValue }) => {
     try {
-      const res = await getAllFreelancers();
-      if (res.success && Array.isArray(res.data)) {
-        return res.data;
+      const res = await getAllFreelancers(params);
+      if (res.success && res.data && Array.isArray(res.data)) {
+        return res;
       } else {
         return rejectWithValue('Failed to load freelancers');
       }
@@ -69,9 +78,11 @@ const freelancerSlice = createSlice({
       })
       .addCase(fetchFreelancers.fulfilled, (state, action) => {
         state.loading = false;
-        state.freelancers = action.payload;
+        // Access the data property from the paginated response
+        state.freelancers = action.payload.data;
+        state.pagination = action.payload.meta?.pagination;
         // Update favorite freelancers
-        state.favoriteFreelancers = action.payload.filter((f: Freelancer) => f.isFavorite);
+        state.favoriteFreelancers = action.payload.data.filter((f: Freelancer) => f.isFavorite);
       })
       .addCase(fetchFreelancers.rejected, (state, action) => {
         state.loading = false;

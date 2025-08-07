@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { Expert } from '@/types/types';
+import { Freelancer } from '@/types/types';
 
 import {
   createBooking,
@@ -10,13 +10,23 @@ import {
 } from '../api/overviewApi';
 
 interface FreelancerState {
-  experts: Expert[];
+  experts: Freelancer[];
   loading: boolean;
   error: string | null;
   slots?: any[];
   slotsPagination?: any;
   socketConnected: boolean;
   reservedSlots: string[]; // Track reserved slot IDs
+  // Pagination state
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  } | null;
+  loadingMore: boolean;
 }
 
 const initialState: FreelancerState = {
@@ -27,20 +37,50 @@ const initialState: FreelancerState = {
   slotsPagination: undefined,
   socketConnected: false,
   reservedSlots: [],
+  pagination: null,
+  loadingMore: false,
 };
 
 export const fetchFreelancers = createAsyncThunk(
   'freelancer/fetchAll',
-  async (_, { rejectWithValue }) => {
+  async (
+    params: { page?: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
+    { rejectWithValue },
+  ) => {
     try {
-      const res = await getAllFreelancers();
+      const res = await getAllFreelancers(params);
       if (res.success && Array.isArray(res.data)) {
-        return res.data;
+        return {
+          data: res.data,
+          pagination: res.pagination,
+        };
       } else {
         return rejectWithValue('Failed to load freelancers');
       }
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to load freelancers');
+    }
+  },
+);
+
+export const loadMoreFreelancers = createAsyncThunk(
+  'freelancer/loadMore',
+  async (
+    params: { page: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' },
+    { rejectWithValue },
+  ) => {
+    try {
+      const res = await getAllFreelancers(params);
+      if (res.success && Array.isArray(res.data)) {
+        return {
+          data: res.data,
+          pagination: res.pagination,
+        };
+      } else {
+        return rejectWithValue('Failed to load more freelancers');
+      }
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Failed to load more freelancers');
     }
   },
 );
@@ -230,10 +270,24 @@ const overviewSlice = createSlice({
       })
       .addCase(fetchFreelancers.fulfilled, (state, action) => {
         state.loading = false;
-        state.experts = action.payload;
+        state.experts = action.payload.data;
+        state.pagination = action.payload.pagination;
       })
       .addCase(fetchFreelancers.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(loadMoreFreelancers.pending, (state) => {
+        state.loadingMore = true;
+        state.error = null;
+      })
+      .addCase(loadMoreFreelancers.fulfilled, (state, action) => {
+        state.loadingMore = false;
+        state.experts = [...state.experts, ...action.payload.data];
+        state.pagination = action.payload.pagination;
+      })
+      .addCase(loadMoreFreelancers.rejected, (state, action) => {
+        state.loadingMore = false;
         state.error = action.payload as string;
       })
       .addCase(favoriteFreelancer.fulfilled, (state, action) => {

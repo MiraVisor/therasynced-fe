@@ -80,7 +80,7 @@ export default function EmailVerificationForm({
               className="text-xs text-primary hover:text-primary/80 hover:underline font-medium transition-all duration-200 flex items-center gap-2 mx-auto"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Sign Up
+              Back to Sign In
             </button>
           </div>
         </div>

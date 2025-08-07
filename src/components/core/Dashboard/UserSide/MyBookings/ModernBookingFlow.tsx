@@ -49,7 +49,7 @@ import { isSlotAvailable } from '@/utils/slotUtils';
 // Form validation schemas
 const serviceSchema = z.object({
   serviceIds: z.array(z.string()).optional(),
-  sessionDuration: z.enum(['30', '45', '60', '90']),
+  // sessionDuration: z.enum(['30', '45', '60', '90']),
 });
 
 const detailsSchema = z.object({
@@ -89,7 +89,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
   // Form states
   const serviceForm = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
-    defaultValues: { serviceIds: [], sessionDuration: '60' },
+    defaultValues: { serviceIds: [] },
   });
 
   const detailsForm = useForm<DetailsFormData>({
@@ -389,9 +389,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
                                 <SelectItem value={service.id}>
                                   <div className="flex items-center justify-between w-full">
                                     <span>{service.name}</span>
-                                    <span className="text-primary font-medium">
-                                      €{service.additionalPrice}
-                                    </span>
                                   </div>
                                 </SelectItem>
                                 <SelectItem value="">
@@ -405,9 +402,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
                           <div className="ml-8 space-y-2">
                             <p className="text-sm text-gray-600">{service.description}</p>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-primary">
-                                €{service.additionalPrice}
-                              </span>
                               <div className="flex gap-1">
                                 {service.locationTypes?.map((type: string, idx: number) => (
                                   <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded">
@@ -456,7 +450,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
               </div>
 
               {/* Session Duration */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <Label className="text-base font-medium">Session Duration</Label>
                 <Select
                   value={serviceForm.watch('sessionDuration')}
@@ -473,7 +467,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
               {/* Service Summary */}
               {(serviceForm?.watch('serviceIds')?.length ?? 0) > 0 && (
@@ -485,28 +479,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
                       return (
                         <div key={serviceId} className="flex items-center justify-between text-sm">
                           <span>{service?.name || 'Unknown Service'}</span>
-                          <span className="font-medium text-primary">
-                            €{service?.additionalPrice || 0}
-                          </span>
                         </div>
                       );
                     })}
-                  </div>
-                  <div className="border-t pt-2">
-                    <div className="flex items-center justify-between font-medium">
-                      <span>Total:</span>
-                      <span className="text-primary">
-                        €
-                        {serviceForm
-                          ?.watch('serviceIds')
-                          ?.reduce((total: number, serviceId: string) => {
-                            const service = therapist?.services?.find(
-                              (s: any) => s.id === serviceId,
-                            );
-                            return total + (service?.additionalPrice || 0);
-                          }, 0) || 0}
-                      </span>
-                    </div>
                   </div>
                 </div>
               )}
@@ -990,10 +965,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
                         : 'General Session'}
                     </p>
                   </div>
-                  <div>
+                  {/* <div>
                     <span className="text-gray-600">Duration:</span>
                     <p className="font-medium">{serviceForm?.watch('sessionDuration')} minutes</p>
-                  </div>
+                  </div> */}
                   <div>
                     <span className="text-gray-600">Date:</span>
                     <p className="font-medium">
@@ -1056,7 +1031,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ rescheduleBooking
                             const service = therapist?.services?.find(
                               (s: any) => s.id === serviceId,
                             );
-                            return total + (service?.additionalPrice || 0);
+                            return total + (service?.price || 0);
                           }, 0) || 0}
                       </span>
                     </div>

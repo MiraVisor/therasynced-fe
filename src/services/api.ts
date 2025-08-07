@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
-import { getCookie } from '@/lib/utils';
-import { setRole } from '@/redux/slices/authSlice';
+import { getCookie, removeCookie } from '@/lib/utils';
+import { logout, setRole } from '@/redux/slices';
 import { store } from '@/redux/store';
 
 const api = axios.create({
@@ -14,9 +14,14 @@ const api = axios.create({
 // Request Interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Don't add Authorization header for authentication endpoints
+    const isAuthEndpoint = config.url?.startsWith('/auth/');
+
+    if (!isAuthEndpoint) {
+      const token = getCookie('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -35,7 +40,22 @@ api.interceptors.response.use(
   (error) => {
     // Handle unauthorized access
     if (error.response?.status === 401) {
-      store.dispatch(setRole(null));
+      // Only clear token and redirect for non-auth endpoints
+      const isAuthEndpoint = error.config?.url?.startsWith('/auth/');
+
+      if (!isAuthEndpoint) {
+        // Clear invalid token and logout user
+        removeCookie('token');
+        store.dispatch(logout());
+
+        // Only redirect if we're not already on an auth page
+        if (
+          typeof window !== 'undefined' &&
+          !window.location.pathname.includes('/authentication')
+        ) {
+          window.location.href = '/authentication/sign-in';
+        }
+      }
     }
     return Promise.reject({
       message: error.response?.data?.message || 'Something went wrong',

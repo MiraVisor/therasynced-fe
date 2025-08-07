@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import freelancerService, { Freelancer } from '@/services/freelancerService';
 
-export const useFreelancers = () => {
+export const useFreelancers = (params?: { limit?: number; page?: number }) => {
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +12,7 @@ export const useFreelancers = () => {
       setLoading(true);
       setError(null);
 
-      const response = await freelancerService.getAllFreelancers();
+      const response = await freelancerService.getAllFreelancers(params);
 
       if (response.success) {
         setFreelancers(response.data);
@@ -24,7 +24,7 @@ export const useFreelancers = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [params]);
 
   const toggleFavorite = useCallback(async (freelancerId: string) => {
     try {

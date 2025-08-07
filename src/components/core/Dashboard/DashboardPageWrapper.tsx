@@ -3,7 +3,6 @@
 import { Bell } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
-import { ModeToggle } from '@/components/mode-toggler';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -43,7 +42,7 @@ export function DashboardPageWrapper({
           )}
 
           <div className="flex items-center gap-4">
-            <ModeToggle />
+            {/* <ModeToggle /> */}
             <Button variant={'outline'} className="h-10 w-10 p-0">
               <Bell className="h-5 w-5" />
             </Button>

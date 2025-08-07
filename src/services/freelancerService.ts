@@ -57,8 +57,8 @@ export interface Freelancer {
 // API Functions
 export const freelancerService = {
   // Get all freelancers (future slots only)
-  getAllFreelancers: async () => {
-    const response = await api.get(ENDPOINTS.freelancer.all);
+  getAllFreelancers: async (params?: { limit?: number; page?: number }) => {
+    const response = await api.get(ENDPOINTS.freelancer.all, { params });
     return response.data;
   },
 

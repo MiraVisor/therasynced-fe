@@ -3,6 +3,7 @@
 import dynamicImport from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
+import { getDecodedToken } from '@/lib/utils';
 import { ROLES, RoleType } from '@/types/types';
 
 // Dynamically import components that use Redux to prevent SSR issues
@@ -28,22 +29,38 @@ const UserExplore = dynamicImport(
 );
 
 function DashboardContent() {
-  const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<RoleType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get role from cookie token using the getDecodedToken utility
-    import('@/lib/utils').then(({ getDecodedToken }) => {
-      const decodedToken = getDecodedToken();
-      setUserRole(decodedToken?.role as RoleType);
-      setIsLoading(false);
-    });
+    // Get role from token
+    const decodedToken = getDecodedToken();
+    setUserRole(decodedToken?.role as RoleType);
+    setIsLoading(false);
   }, []);
 
   console.log('userRole', userRole);
 
-  if (isLoading || !userRole) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading user data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userRole) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading user role...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -63,7 +80,14 @@ export default function DashboardHome() {
   }, []);
 
   if (!isClient) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return <DashboardContent />;

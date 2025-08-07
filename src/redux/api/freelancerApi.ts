@@ -1,9 +1,17 @@
 import api from '@/services/api';
-import { ApiResponse, Freelancer } from '@/types/types';
+import { ApiResponse, Freelancer, PaginatedResponse, PaginationDto } from '@/types/types';
 
-export const getAllFreelancers = async (): Promise<ApiResponse<Freelancer[]>> => {
-  const response = await api.get('/freelancers');
-  return response.data;
+export const getAllFreelancers = async (
+  params?: PaginationDto,
+): Promise<PaginatedResponse<Freelancer>> => {
+  const response = await api.get('/freelancer/all', { params });
+  // The backend returns { data, pagination } directly
+  // We need to wrap it in the expected format for the frontend
+  return {
+    success: true,
+    data: response.data.data,
+    pagination: response.data.pagination,
+  };
 };
 
 export const favoriteFreelancer = async (

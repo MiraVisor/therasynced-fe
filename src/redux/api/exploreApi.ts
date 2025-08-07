@@ -10,8 +10,9 @@ export const getAllFavoriteFreelancers = async () => {
   return response.data;
 };
 
-export const getPatientBookings = async () => {
-  const response = await api.get('/booking/patient/all');
+export const getPatientBookings = async (date?: string) => {
+  const params = date ? { date } : {};
+  const response = await api.get('/booking/patient/all', { params });
   return response.data;
 };
 

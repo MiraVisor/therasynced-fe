@@ -1,8 +1,34 @@
 import api from '@/services/api';
+import { Freelancer, PaginatedResponse } from '@/types/types';
 
-export const getAllFreelancers = async () => {
-  const response = await api.get('/freelancer/all');
-  return response.data;
+export const getAllFreelancers = async (params?: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}): Promise<PaginatedResponse<Freelancer>> => {
+  console.log('API call params:', params);
+  const response = await api.get('/freelancer/all', { params });
+  console.log('Raw API response:', response.data);
+  console.log('Meta object:', response.data.meta);
+
+  // The backend returns data in a different format
+  // We need to extract pagination from meta or construct it
+  const result = {
+    success: true,
+    data: response.data.data,
+    pagination: response.data.pagination ||
+      response.data.meta?.pagination || {
+        page: params?.page || 1,
+        limit: params?.limit || 2,
+        total: response.data.data.length, // This is just the current page count
+        totalPages: 1, // We'll need to get this from the backend
+        hasNext: false, // We'll need to get this from the backend
+        hasPrev: false,
+      },
+  };
+  console.log('Processed API response:', result);
+  return result;
 };
 
 export const favoriteFreelancer = async (freelancerId: string) => {

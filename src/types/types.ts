@@ -156,7 +156,7 @@ export interface Freelancer {
   city: string;
   isActive: boolean;
   isFavorite?: boolean;
-  favoritedAt?: string;
+  // Remove favoritedAt as it's not returned by the backend
   cardInfo: {
     name: string;
     title: string;
@@ -186,15 +186,21 @@ export interface Freelancer {
   services: Array<{
     id: string;
     name: string;
-    description: string;
+    description?: string;
     additionalPrice: number;
-    duration: number;
+    duration?: number;
+    tags: string[];
+    isActive: boolean;
+    locationTypes: string[];
+    requiresEquipment: boolean;
   }>;
   locations: Array<{
     id: string;
     name: string;
     address: string;
     type: string;
+    additionalFee: number;
+    isActive: boolean;
   }>;
   createdAt: string;
   updatedAt: string;
