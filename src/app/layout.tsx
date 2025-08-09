@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Open_Sans, Poppins } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 
+import SocketConnectionTest from '@/components/debug/SocketConnectionTest';
 import { ThemeProvider } from '@/components/theme-provider';
 import { StoreProvider } from '@/redux/StoreProvider';
 
@@ -110,7 +111,7 @@ export default function RootLayout({
       >
         <StoreProvider>
           <ToastContainer />
-
+          <SocketConnectionTest />
           <ThemeProvider attribute="class">{children}</ThemeProvider>
         </StoreProvider>
       </body>

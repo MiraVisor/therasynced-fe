@@ -5,6 +5,11 @@ export const getRecentFavoriteFreelancer = async () => {
   return response.data;
 };
 
+export const getAllFavoriteFreelancers = async () => {
+  const response = await api.get('/freelancer/favorite/all');
+  return response.data;
+};
+
 export const getPatientBookings = async (date?: string) => {
   const params = date ? { date } : {};
   const response = await api.get('/booking/patient/all', { params });

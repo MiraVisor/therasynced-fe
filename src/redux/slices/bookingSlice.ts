@@ -61,9 +61,9 @@ export const fetchBookingById = createAsyncThunk(
 
 export const cancelUserBooking = createAsyncThunk(
   'booking/cancelUserBooking',
-  async (bookingId: string, { rejectWithValue }) => {
+  async ({ bookingId, reason }: { bookingId: string; reason: string }, { rejectWithValue }) => {
     try {
-      const res = await cancelBookingApi(bookingId);
+      const res = await cancelBookingApi({ bookingId, reason });
       if (res.success) {
         return { bookingId };
       } else {

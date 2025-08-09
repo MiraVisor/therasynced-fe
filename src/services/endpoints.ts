@@ -40,7 +40,20 @@ export const ENDPOINTS = {
       admin: '/booking/history/admin',
       freelancer: '/booking/history/freelancer',
     },
+    patientAll: '/booking/patient/all',
+    patientHistory: '/booking/patient/history',
+    freelancerFuture: '/booking/freelancer/future',
+    freelancerHistory: '/booking/freelancer/history',
+    freelancerToday: '/booking/freelancer/today',
+    freelancerByDate: '/booking/freelancer/appointments-by-date',
+    adminHistory: '/booking/history/admin',
   },
-} as const;
+  freelancer: {
+    all: '/freelancer/all',
+    favorite: '/freelancer/favorite',
+    favoriteAll: '/freelancer/favorite/all',
+    recentFavorite: '/freelancer/favorite/recent',
+  },
+};
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;

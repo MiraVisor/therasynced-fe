@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { updateAppointmentStatus } from '@/redux/slices/appointmentSlice';
+import { updateAppointment } from '@/redux/slices/appointmentSlice';
 import { closeEventDialog } from '@/redux/slices/calendarSlice';
 import { Appointment } from '@/types/types';
 
@@ -56,7 +56,7 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
     }
 
     const previousStatus = appointment.status;
-    dispatch(updateAppointmentStatus({ bookingId: appointment.id, status: newStatus }));
+    dispatch(updateAppointment({ bookingId: appointment.id, status: newStatus }));
     dispatch(closeEventDialog());
 
     toast.success(
@@ -64,9 +64,7 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
         <span>Appointment status updated to {newStatus.toLowerCase()}</span>
         <button
           onClick={() => {
-            dispatch(
-              updateAppointmentStatus({ bookingId: appointment.id, status: previousStatus }),
-            );
+            dispatch(updateAppointment({ bookingId: appointment.id, status: previousStatus }));
             toast.dismiss();
           }}
           className="text-sm text-primary hover:text-primary/80 font-medium"

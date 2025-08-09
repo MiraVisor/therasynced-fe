@@ -4,9 +4,8 @@ import dynamicImport from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { getDecodedToken } from '@/lib/utils';
 import { ROLES, RoleType } from '@/types/types';
-
-export const dynamic = 'force-dynamic';
 
 // Dynamically import components that use Redux to prevent SSR issues
 const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminSide/AdminHome'), {
@@ -30,7 +29,7 @@ const FreelancerHome = dynamicImport(
   },
 );
 
-const UserHome = dynamicImport(
+const UserExplore = dynamicImport(
   () => import('@/components/core/Dashboard/UserSide/Explore/UserExploreMain'),
   {
     ssr: false,
@@ -43,29 +42,41 @@ const UserHome = dynamicImport(
 );
 
 function DashboardContent() {
-  const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<RoleType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get role from cookie token using the getDecodedToken utility
-    import('@/lib/utils').then(({ getDecodedToken }) => {
-      const decodedToken = getDecodedToken();
-      setUserRole(decodedToken?.role as RoleType);
-      setIsLoading(false);
-    });
+    // Get role from token
+    const decodedToken = getDecodedToken();
+    setUserRole(decodedToken?.role as RoleType);
+    setIsLoading(false);
   }, []);
 
-  if (isLoading || !userRole) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <LoadingSpinner size="lg" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading user data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userRole) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading user role...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      {userRole === ROLES.PATIENT && <UserHome />}
+      {userRole === ROLES.PATIENT && <UserExplore />}
       {userRole === ROLES.FREELANCER && <FreelancerHome />}
       {userRole === ROLES.ADMIN && <AdminHome />}
     </>
@@ -81,8 +92,11 @@ export default function DashboardHome() {
 
   if (!isClient) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <LoadingSpinner size="lg" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }

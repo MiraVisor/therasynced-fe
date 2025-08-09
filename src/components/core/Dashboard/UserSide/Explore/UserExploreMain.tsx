@@ -1,123 +1,461 @@
 'use client';
 
+import { Calendar, CheckCircle, Clock, Clock as ClockIcon, Heart, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import LoadingSpinner from '@/components/ui/loading-spinner';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/redux/hooks/useAppHooks';
+import {
+  fetchAllFavoriteFreelancers,
   fetchExplorePatientBookings,
-  fetchRecentFavoriteFreelancer,
 } from '@/redux/slices/exploreSlice';
+import { fetchFreelancers } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
-import { AppointmentCard } from './AppointmentCard';
-import MessageSection from './MessageSection';
+import ExpertCard from '../Overview/ExpertCard';
 
-// Create a modern FavoriteExpertCard component
+// Simple Stats Section
+const StatsSection: React.FC<{ bookings: any[] }> = ({ bookings }) => {
+  const totalSessions = bookings?.length || 0;
+  const upcomingSessions =
+    bookings?.filter((booking: any) => {
+      const bookingDate = new Date(booking.slot?.startTime);
+      const now = new Date();
+      return bookingDate > now;
+    }).length || 0;
+  const completedSessions =
+    bookings?.filter((booking: any) => {
+      const bookingDate = new Date(booking.slot?.startTime);
+      const now = new Date();
+      return bookingDate < now;
+    }).length || 0;
 
-// Remove Card usage for FavoriteExpertCard and make it a simple, responsive, centered section
-const FavoriteExpertSection: React.FC<{ expert?: Expert; loading: boolean }> = ({
-  expert,
-  loading,
-}) => {
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-  if (!expert) {
-    return (
-      <section className="flex flex-col items-center justify-center w-full py-8">
-        <h2 className="text-xl font-bold mb-2 text-center">Your Favorite Expert</h2>
-        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-          <span className="text-2xl">💙</span>
-        </div>
-        <p className="text-gray-500 text-center">No favorites yet</p>
-        <p className="text-sm text-gray-400 text-center mt-2">
-          Start exploring and add your favorite experts
-        </p>
-      </section>
-    );
-  }
   return (
-    <section className="flex flex-col items-center justify-center w-full py-8">
-      <h2 className="text-xl font-bold mb-2 text-center">Your Favorite Expert</h2>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="relative">
-          <div className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center text-xl font-bold">
-            {expert.name.charAt(0)}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+            <Users className="w-5 h-5 text-blue-600" />
           </div>
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
+          <div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalSessions}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Total Sessions</div>
+          </div>
         </div>
-        <div className="flex flex-col items-start">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white">{expert.name}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{expert.specialty}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
-              {expert.yearsOfExperience} years
-            </span>
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <span
-                  key={i}
-                  className={`text-sm ${i < expert.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                >
-                  ★
-                </span>
-              ))}
-              <span className="text-xs text-gray-500 ml-1">({expert.rating})</span>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {completedSessions}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+            <ClockIcon className="w-5 h-5 text-orange-600" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {upcomingSessions}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Upcoming</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Appointment Section with API Integration
+const AppointmentSection: React.FC<{
+  date: Date | undefined;
+  onDateChange: (date: Date | undefined) => void;
+  bookings: any[];
+  loading: boolean;
+  getExpertName: (booking: any) => string;
+  getBookingTime: (booking: any) => string;
+  getBookingDuration: (booking: any) => string;
+  getBookingLocation: (booking: any) => string;
+}> = ({
+  date,
+  onDateChange,
+  bookings,
+  loading,
+  getExpertName,
+  getBookingTime,
+  getBookingDuration,
+  getBookingLocation,
+}) => {
+  return (
+    <Card className="border border-gray-200 dark:border-gray-700">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+          Your Schedule
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Calendar */}
+          <div>
+            <CalendarComponent
+              mode="single"
+              selected={date}
+              onSelect={onDateChange}
+              className="rounded-lg border border-gray-200 dark:border-gray-700"
+            />
+          </div>
+          {/* Appointments List */}
+          <div>
+            <div className="mb-4">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                {date
+                  ? date.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  : 'Select a date'}
+              </h4>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {loading
+                  ? 'Loading appointments...'
+                  : `${bookings.length} session${bookings.length !== 1 ? 's' : ''} scheduled`}
+              </div>
+            </div>
+
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                        <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : bookings.length > 0 ? (
+                bookings.map((booking, index) => (
+                  <div
+                    key={booking.id || index}
+                    className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border-l-4 border-primary"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-gray-900 dark:text-white">
+                        {getExpertName(booking)}
+                      </h5>
+                      <Badge variant="outline" className="text-xs">
+                        {booking.status || 'Confirmed'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Clock className="w-3 h-3" />
+                      <span>{getBookingTime(booking)}</span>
+                      <span>•</span>
+                      <span>{getBookingDuration(booking)}</span>
+                      <span>•</span>
+                      <span>{getBookingLocation(booking)}</span>
+                    </div>
+                    {booking?.totalAmount && (
+                      <div className="text-sm font-medium text-primary mt-1">
+                        €{booking.totalAmount}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p className="mb-3">No appointments scheduled</p>
+                  <Button variant="outline" size="sm">
+                    Book New Session
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
-      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed text-center max-w-md mb-4">
-        {expert.description}
-      </p>
-      <Button className="w-full max-w-xs bg-green-600 hover:bg-green-700 text-white">
-        Book Appointment
-      </Button>
-    </section>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Enhanced Favorites Section with Responsive Carousel
+const FavoritesSection: React.FC<{ favorites: Expert[]; loading: boolean }> = ({
+  favorites,
+  loading,
+}) => {
+  const [api, setApi] = useState<any>();
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    api.on('select', () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  if (loading) {
+    return (
+      <Card className="border border-gray-200 dark:border-gray-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+            <Heart className="w-5 h-5 text-red-500" />
+            Favorites
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!favorites || favorites.length === 0) {
+    return (
+      <Card className="border border-gray-200 dark:border-gray-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+            <Heart className="w-5 h-5 text-red-500" />
+            Favorites
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+              <Heart className="w-6 h-6 text-gray-400" />
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Save your favorite experts for quick access
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border border-gray-200 dark:border-gray-700">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+          <Heart className="w-5 h-5 text-red-500" />
+          Favorites
+          {favorites.length > 1 && (
+            <span className="text-sm font-normal text-gray-500">({favorites.length})</span>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="relative">
+          {/* Carousel Container */}
+          <div className="px-6 pb-6">
+            <Carousel
+              setApi={setApi}
+              opts={{
+                align: 'start',
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {favorites.map((expert) => (
+                  <CarouselItem
+                    key={expert.id}
+                    className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-full"
+                  >
+                    <div className="p-1">
+                      <ExpertCard {...expert} showFavoriteText={false} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+
+              {/* Navigation Arrows */}
+              {favorites.length > 1 && (
+                <>
+                  <CarouselPrevious className="absolute -left-3 top-1/2 -translate-y-1/2 hidden md:flex" />
+                  <CarouselNext className="absolute -right-3 top-1/2 -translate-y-1/2 hidden md:flex" />
+                </>
+              )}
+            </Carousel>
+          </div>
+
+          {/* Interactive Indicators */}
+          {favorites.length > 1 && (
+            <div className="flex justify-center gap-1 mt-4 pb-4">
+              {favorites.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === current ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                  onClick={() => api?.scrollTo(index)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
 const UserExploreMain = () => {
   const dispatch = useDispatch();
-  const { favorite, loading, bookings } = useSelector((state: RootState) => state.explore as any);
+  const { isAuthenticated } = useAuth();
+  const { favorites, loading, bookings, bookingsLoading } = useSelector(
+    (state: RootState) => state.explore as any,
+  );
+  const { experts: allExperts } = useSelector((state: RootState) => state.overview);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [calendarLoading, setCalendarLoading] = useState(false);
 
+  // Fetch data on component mount only if authenticated
   useEffect(() => {
-    dispatch(fetchRecentFavoriteFreelancer() as any);
-  }, [dispatch]);
+    if (!isAuthenticated) return;
 
-  useEffect(() => {
-    if (date) {
-      const formatDate = (d: Date) => d.toISOString().split('T')[0];
-      dispatch(fetchExplorePatientBookings(formatDate(date)) as any);
-    }
-  }, [dispatch, date]);
+    dispatch(fetchAllFavoriteFreelancers() as any);
+    dispatch(fetchFreelancers({ limit: 6 }) as any);
+    // Fetch bookings for current date on mount
+    const currentDate = new Date().toISOString().split('T')[0];
+    dispatch(fetchExplorePatientBookings(currentDate) as any);
+  }, [dispatch, isAuthenticated]);
 
-  // Map API response to ExpertCard props
-  const expertCardProps: Expert | undefined = favorite?.cardInfo
-    ? {
-        id: favorite.id ?? '',
-        name: favorite.cardInfo.name ?? '',
-        specialty: favorite.cardInfo.mainService ?? '',
-        yearsOfExperience: favorite.cardInfo.yearsOfExperience ?? '',
-        rating: favorite.cardInfo.averageRating ?? 0,
-        description: favorite.cardInfo.title ?? '',
-        isFavorite: !!favorite.isFavorite,
+  // Handle date change with API integration
+  const handleDateChange = async (newDate: Date | undefined) => {
+    setDate(newDate);
+
+    if (newDate && isAuthenticated) {
+      setCalendarLoading(true);
+      try {
+        // Format date as YYYY-MM-DD for API
+        const formattedDate = newDate.toISOString().split('T')[0];
+        // Dispatch API call for the selected date
+        await dispatch(fetchExplorePatientBookings(formattedDate) as any);
+      } catch (error) {
+        console.error('Error fetching appointments for date:', error);
+      } finally {
+        setCalendarLoading(false);
       }
-    : undefined;
+    }
+  };
 
-  const handleSendMessage = () => {
-    // Implement send message logic
+  // Process favorites data
+  let favoritesList: Expert[] = [];
+  if (favorites && favorites.length > 0) {
+    favoritesList = favorites
+      .map((favorite: any) => {
+        if (!favorite?.cardInfo) return null;
+        return {
+          id: favorite.id ?? '',
+          name: favorite.cardInfo.name ?? '',
+          specialty: favorite.cardInfo.mainService ?? '',
+          experience: favorite.cardInfo.yearsOfExperience ?? '',
+          rating: favorite.cardInfo.averageRating ?? 0,
+          description: favorite.cardInfo.title ?? '',
+          isFavorite: !!favorite.isFavorite,
+          services: favorite.services || [],
+          location: favorite.location || 'Online',
+          languages: favorite.languages || ['English'],
+          sessionTypes: favorite.sessionTypes || ['online', 'office'],
+          pricing: favorite.pricing || {
+            online: { min: 80, max: 120 },
+            office: { min: 100, max: 150 },
+            home: { min: 120, max: 180 },
+          },
+          availableSlots: favorite.availableSlots || 0,
+          nextAvailableSlot: favorite.nextAvailableSlot,
+          cardInfo: favorite.cardInfo,
+        };
+      })
+      .filter(Boolean);
+  }
+
+  // Fallback to overview experts
+  if (favoritesList.length === 0 && allExperts && allExperts.length > 0) {
+    favoritesList = allExperts
+      .filter((expert: any) => expert.isFavorite)
+      .slice(0, 3) as unknown as Expert[];
+  }
+
+  // Process bookings data
+  const allBookings = bookings?.data || bookings || [];
+  const bookingData = allBookings.filter((booking: any) => {
+    if (!date || !booking?.slot?.startTime) return false;
+    const bookingDate = new Date(booking.slot.startTime);
+    const selectedDate = new Date(date);
+    return (
+      bookingDate.getFullYear() === selectedDate.getFullYear() &&
+      bookingDate.getMonth() === selectedDate.getMonth() &&
+      bookingDate.getDate() === selectedDate.getDate()
+    );
+  });
+
+  // Helper functions
+  const formatTime = (isoString: string) => {
+    return new Date(isoString).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const getExpertName = (booking: any) => {
+    return booking?.slot?.freelancer?.name || booking?.expertName;
+  };
+
+  const getBookingTime = (booking: any) => {
+    return booking?.slot?.startTime ? formatTime(booking.slot.startTime) : '';
+  };
+
+  const getBookingDuration = (booking: any) => {
+    return booking?.slot?.duration ? `${booking.slot.duration} min` : '';
+  };
+
+  const getBookingLocation = (booking: any) => {
+    return booking?.slot?.locationType === 'OFFICE'
+      ? 'Office'
+      : booking?.slot?.location === 'ONLINE'
+        ? 'Online'
+        : booking?.slot?.location === 'HOME'
+          ? 'Home'
+          : 'Virtual';
   };
 
   if (loading) {
@@ -131,79 +469,38 @@ const UserExploreMain = () => {
   return (
     <DashboardPageWrapper
       header={
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-            Welcome back, ! 👋
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Here&apos;s what&apos;s happening today and your upcoming appointments
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back! 👋</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Here&apos;s your health journey overview
           </p>
         </div>
       }
     >
-      <div className="flex flex-col items-center w-full px-2 sm:px-6 lg:px-0 max-w-3xl mx-auto space-y-8">
-        {/* Favorite Expert Section - Centered and Responsive */}
-        <FavoriteExpertSection expert={expertCardProps} loading={loading} />
-        {/* Appointment Section - keep as is for now, but can be refactored similarly if needed */}
-        <div className="w-full">
-          <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                Schedule & Appointments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      className="rounded-xl"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <AppointmentCard
-                    date={date}
-                    bookings={Array.isArray(bookings) ? bookings : bookings?.data || []}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        {/* Messages Section - keep as is for now */}
-        <div className="w-full">
-          <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                Messages
-              </CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Stay connected with your favorite experts
-              </p>
-            </CardHeader>
-            <CardContent>
-              {expertCardProps ? (
-                <MessageSection expert={expertCardProps} onSendMessage={handleSendMessage} />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center mb-4">
-                    <span className="text-2xl">💬</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    No messages yet
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                    Add a favorite expert to start messaging and stay connected with your healthcare
-                    providers
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      <div className="space-y-6">
+        {/* Stats Section */}
+        <StatsSection bookings={allBookings} />
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Favorites Section */}
+          <div className="xl:col-span-1">
+            <FavoritesSection favorites={favoritesList} loading={loading} />
+          </div>
+
+          {/* Schedule Section */}
+          <div className="xl:col-span-2">
+            <AppointmentSection
+              date={date}
+              onDateChange={handleDateChange}
+              bookings={bookingData}
+              loading={calendarLoading || bookingsLoading}
+              getExpertName={getExpertName}
+              getBookingTime={getBookingTime}
+              getBookingDuration={getBookingDuration}
+              getBookingLocation={getBookingLocation}
+            />
+          </div>
         </div>
       </div>
     </DashboardPageWrapper>

@@ -5,9 +5,6 @@ import { Suspense } from 'react';
 
 import ResetPasswordForm from '@/components/core/authentication/ResetPasswordForm';
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
-
 function ResetPasswordContent() {
   const handleBackToSignIn = () => {
     window.location.href = '/authentication/signin';

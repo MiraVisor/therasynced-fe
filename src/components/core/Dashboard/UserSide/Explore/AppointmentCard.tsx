@@ -1,4 +1,5 @@
 import { AvatarImage } from '@radix-ui/react-avatar';
+import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -43,13 +44,11 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   }
 
   const expert = booking.slot?.freelancer || {};
-  const time = `${new Date(booking.slot?.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(booking.slot?.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  const status = booking.status === 'CONFIRMED' ? 'confirmed' : 'pending';
 
   const handleReschedule = () => {
     if (booking?.slot?.freelancer?.id && booking?.id) {
       router.push(
-        `/dashboard/doctors/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}`,
+        `/dashboard/freelancer/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}`,
       );
     }
   };
@@ -128,7 +127,9 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
               <span className="text-sm">⏰</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{time}</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {format(new Date(booking.slot?.startTime), 'HH:mm')}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">

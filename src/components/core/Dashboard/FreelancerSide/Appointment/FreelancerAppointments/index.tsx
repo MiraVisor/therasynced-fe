@@ -140,14 +140,14 @@ const FreelancerAppointments = () => {
                 handleSelectEvent(calendarEvent);
               }}
               view={calendarView}
-              selectedDate={selectedDate}
+              selectedDate={new Date(selectedDate)}
             />
           ) : (
             <CalendarWrapper
               localizer={localizer}
               events={calendarEvents}
               view={calendarView}
-              date={selectedDate}
+              date={new Date(selectedDate)}
               onView={(newView: View) => dispatch(setCalendarView(newView))}
               onNavigate={(date: Date) => dispatch(setSelectedDate(date))}
               onSelectEvent={handleSelectEvent}

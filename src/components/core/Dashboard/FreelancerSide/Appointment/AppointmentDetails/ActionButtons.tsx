@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { updateAppointmentStatus } from '@/redux/slices/appointmentSlice';
+import { updateAppointment } from '@/redux/slices';
 import { closeEventDialog } from '@/redux/slices/calendarSlice';
 import { Appointment } from '@/types/types';
 
@@ -41,7 +41,7 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
     }
 
     const previousStatus = appointment.status;
-    dispatch(updateAppointmentStatus({ bookingId: appointment.id, status: 'CANCELLED' }));
+    dispatch(updateAppointment({ bookingId: appointment.id, status: 'CANCELLED' }));
     dispatch(closeEventDialog());
 
     toast.success(
@@ -49,9 +49,7 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
         <span>Appointment cancelled successfully</span>
         <button
           onClick={() => {
-            dispatch(
-              updateAppointmentStatus({ bookingId: appointment.id, status: previousStatus }),
-            );
+            dispatch(updateAppointment({ bookingId: appointment.id, status: previousStatus }));
             toast.dismiss();
           }}
           className="text-sm text-primary hover:text-primary/80 font-medium"

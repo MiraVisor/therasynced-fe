@@ -14,8 +14,40 @@ export interface Expert {
   specialty: string;
   yearsOfExperience: string;
   rating: number;
+  reviews: number;
   description: string;
   isFavorite?: boolean;
+  // Additional properties for profile dialog
+  profilePicture?: string;
+  services?: any[];
+  location?: string;
+  languages?: string[];
+  education?: any[];
+  certifications?: any[];
+  sessionTypes?: string[];
+  pricing?: {
+    online: { min: number; max: number };
+    office: { min: number; max: number };
+    home: { min: number; max: number };
+  };
+  // Additional data from API
+  email?: string;
+  gender?: string;
+  city?: string;
+  isEmailVerified?: boolean;
+  isActive?: boolean;
+  authProvider?: string;
+  // Slot information
+  slots?: any[];
+  slotSummary?: any;
+  // Favorites information
+  favoritedBy?: any[];
+  // Card info
+  cardInfo?: any;
+  // Available slots count
+  availableSlots?: number;
+  totalSlots?: number;
+  nextAvailableSlot?: any;
 }
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 
@@ -61,7 +93,7 @@ export interface AppointmentFilters {
   hideCancelled: boolean;
   showOnlyUpcoming: boolean;
   showOnlyPast: boolean;
-  selectedDate: Date;
+  selectedDate: string; // Store as ISO string for Redux serialization
 }
 
 export interface AppointmentState {
@@ -240,6 +272,106 @@ export interface Location {
   type: 'OFFICE' | 'CLINIC';
   additionalFee: number;
   freelancerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Booking {
+  id: string;
+  slotId: string;
+  clientId: string;
+  status: 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED';
+  totalAmount: number;
+  createdById: string;
+  createdByRole: string;
+  cancelledById?: string;
+  cancelledReason?: string;
+  rescheduledFromId?: string;
+  slot: {
+    id: string;
+    startTime: string;
+    endTime: string;
+    duration: number;
+    basePrice: number;
+    locationType: string;
+    freelancer: {
+      id: string;
+      name: string;
+      email: string;
+      profilePicture?: string;
+    };
+    location?: {
+      id: string;
+      name: string;
+      address: string;
+      type: string;
+    };
+  };
+  services: Array<{
+    id: string;
+    name: string;
+    description: string;
+    additionalPrice: number;
+    duration: number;
+  }>;
+  client: {
+    id: string;
+    name: string;
+    email: string;
+    profilePicture?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Freelancer {
+  id: string;
+  name: string;
+  email: string;
+  profilePicture?: string;
+  city: string;
+  isActive: boolean;
+  isFavorite?: boolean;
+  favoritedAt?: string;
+  cardInfo: {
+    name: string;
+    title: string;
+    mainService: string;
+    yearsOfExperience: string;
+    country: string;
+    averageRating: number;
+    patientStories: number;
+    initials: string;
+  };
+  slotSummary?: {
+    nextAvailable: {
+      id: string;
+      startTime: string;
+      endTime: string;
+      status: string;
+    } | null;
+    totalSlots: number;
+    availableSlots: number;
+  };
+  slots: Array<{
+    id: string;
+    startTime: string;
+    endTime: string;
+    status: string;
+  }>;
+  services: Array<{
+    id: string;
+    name: string;
+    description: string;
+    additionalPrice: number;
+    duration: number;
+  }>;
+  locations: Array<{
+    id: string;
+    name: string;
+    address: string;
+    type: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

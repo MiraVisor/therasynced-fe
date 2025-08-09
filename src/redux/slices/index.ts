@@ -20,8 +20,8 @@ export {
   cancelAppointment,
   fetchFreelancerAppointments,
   fetchFreelancerAppointmentsByDate,
+  updateAppointment,
   updateAppointmentNotes,
-  updateAppointmentStatus,
 } from './appointmentSlice';
 
 export {
@@ -39,3 +39,5 @@ export {
   fetchFreelancerSlots,
   fetchUserProfile,
 } from './overviewSlice';
+
+export { logout, setRole } from './authSlice';
