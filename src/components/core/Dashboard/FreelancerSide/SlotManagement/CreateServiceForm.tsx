@@ -1,6 +1,6 @@
 'use client';
 
-import { Euro, Package } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -28,7 +28,6 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
   const [formData, setFormData] = useState<CreateServiceDto>({
     name: '',
     description: '',
-    additionalPrice: 0,
     duration: undefined,
     locationTypes: ['VIRTUAL' as LocationType],
     tags: [],
@@ -40,7 +39,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || formData.additionalPrice <= 0) {
+    if (!formData.name) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -55,10 +54,10 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
   };
 
   const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+    if (newTag.trim() && !formData.tags?.includes(newTag.trim())) {
       setFormData({
         ...formData,
-        tags: [...formData.tags, newTag.trim()],
+        tags: [...(formData.tags || []), newTag.trim()],
       });
       setNewTag('');
     }
@@ -67,7 +66,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
   const removeTag = (tagToRemove: string) => {
     setFormData({
       ...formData,
-      tags: formData.tags.filter((tag) => tag !== tagToRemove),
+      tags: formData.tags?.filter((tag) => tag !== tagToRemove),
     });
   };
 
@@ -147,52 +146,30 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
             />
           </div>
 
-          {/* Pricing and Duration */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">Additional Price</Label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Euro className="h-5 w-5 text-gray-400" />
-                </div>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.additionalPrice}
-                  onChange={(e) =>
-                    setFormData({ ...formData, additionalPrice: parseFloat(e.target.value) })
-                  }
-                  placeholder="25.00"
-                  className="pl-10 h-12 text-lg"
-                />
-              </div>
-              <p className="text-sm text-gray-500">Additional fee on top of base slot price</p>
-            </div>
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">Extended Duration (Optional)</Label>
-              <Select
-                value={formData.duration?.toString() || 'none'}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    duration: value === 'none' ? undefined : parseInt(value),
-                  })
-                }
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="No extension" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No extension</SelectItem>
-                  <SelectItem value="15">+15 minutes</SelectItem>
-                  <SelectItem value="30">+30 minutes</SelectItem>
-                  <SelectItem value="45">+45 minutes</SelectItem>
-                  <SelectItem value="60">+1 hour</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-gray-500">Optional time extension for this service</p>
-            </div>
+          {/* Duration */}
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">Extended Duration (Optional)</Label>
+            <Select
+              value={formData.duration?.toString() || 'none'}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  duration: value === 'none' ? undefined : parseInt(value),
+                })
+              }
+            >
+              <SelectTrigger className="h-12">
+                <SelectValue placeholder="No extension" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No extension</SelectItem>
+                <SelectItem value="15">+15 minutes</SelectItem>
+                <SelectItem value="30">+30 minutes</SelectItem>
+                <SelectItem value="45">+45 minutes</SelectItem>
+                <SelectItem value="60">+1 hour</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-gray-500">Optional time extension for this service</p>
           </div>
 
           {/* Location Types */}
@@ -240,9 +217,9 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
                 Add
               </Button>
             </div>
-            {formData.tags.length > 0 && (
+            {formData.tags && formData.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
-                {formData.tags.map((tag) => (
+                {formData.tags?.map((tag) => (
                   <Badge
                     key={tag}
                     variant="secondary"
@@ -289,7 +266,6 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
               <p>
                 • <strong>{formData.name || 'Service Name'}</strong>
               </p>
-              <p>• Additional price: €{formData.additionalPrice}</p>
               <p>
                 • Available at:{' '}
                 {formData.locationTypes.map((type) => getLocationTypeLabel(type)).join(', ')}

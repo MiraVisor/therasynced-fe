@@ -121,12 +121,11 @@ export interface Service {
   id: string;
   name: string;
   description?: string;
-  additionalPrice: number;
   duration?: number;
-  tags: string[];
+  tags?: string[];
   isActive: boolean;
   locationTypes: LocationType[];
-  requiresEquipment: boolean;
+  requiresEquipment?: boolean;
   freelancerId: string;
   createdAt: string;
   updatedAt: string;
@@ -147,18 +146,10 @@ export interface CreateSlotDto {
 export interface CreateServiceDto {
   name: string;
   description?: string;
-  additionalPrice: number;
   duration?: number;
   locationTypes: LocationType[];
-  tags: string[];
-  requiresEquipment: boolean;
-}
-
-export interface CreateLocationDto {
-  name: string;
-  address: string;
-  type: 'OFFICE' | 'CLINIC';
-  additionalFee: number;
+  tags?: string[];
+  requiresEquipment?: boolean;
 }
 
 export interface CreateBookingDto {
@@ -171,7 +162,7 @@ export interface CreateBookingDto {
 // Backend DTOs matching the controller structure
 export interface CreateSlotsDto {
   locationType: LocationType;
-  locationId?: string;
+  locationId?: string; // Added to support location selection
   basePrice: number;
   duration: number;
   slots: Array<{
@@ -184,12 +175,12 @@ export interface CreateSlotsDto {
 export interface UpdateSlotDto {
   id: string;
   locationType?: LocationType;
-  locationId?: string;
-  basePrice?: number;
-  duration?: number;
   startTime?: string;
   endTime?: string;
-  notes?: string;
+  status?: string;
+  additionalFee?: boolean;
+  feeAmount?: string;
+  feeName?: string;
 }
 
 export interface ReserveSlotDto {
@@ -220,4 +211,35 @@ export interface ApiResponse<T = any> {
     timestamp: string;
     path: string;
   };
+}
+
+// Booking DTOs to match backend
+export interface CreateBookingDto {
+  slotId: string;
+  serviceIds?: string[];
+  clientAddress?: string;
+  notes?: string;
+}
+
+export interface RescheduleBookingDto {
+  bookingId: string;
+  newSlotId: string;
+  reason?: string;
+}
+
+export interface CancelBookingDto {
+  bookingId: string;
+  reason?: string;
+}
+
+// Location types to match backend
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  type: 'OFFICE' | 'CLINIC';
+  additionalFee: number;
+  freelancerId: string;
+  createdAt: string;
+  updatedAt: string;
 }

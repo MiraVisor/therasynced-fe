@@ -45,7 +45,6 @@ const ServiceForm = ({
   const [formData, setFormData] = useState({
     name: service?.name || '',
     description: service?.description || '',
-    additionalPrice: service?.additionalPrice || 0,
     duration: service?.duration || undefined,
     locationTypes: service?.locationTypes || [LocationType.VIRTUAL],
     tags: service?.tags || [],
@@ -55,7 +54,7 @@ const ServiceForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || formData.additionalPrice <= 0) {
+    if (!formData.name) {
       return;
     }
 
@@ -69,17 +68,6 @@ const ServiceForm = ({
     } catch (error) {
       // Error handling is done in the slice
     }
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData({ ...formData, tags: [...formData.tags, newTag.trim()] });
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setFormData({ ...formData, tags: formData.tags.filter((tag) => tag !== tagToRemove) });
   };
 
   const toggleLocationType = (type: LocationType) => {
@@ -131,41 +119,16 @@ const ServiceForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Additional Price (€)
+              Duration (minutes)
             </label>
             <Input
               type="number"
               min="0"
               step="0.01"
-              value={formData.additionalPrice}
-              onChange={(e) =>
-                setFormData({ ...formData, additionalPrice: parseFloat(e.target.value) })
-              }
+              value={formData.duration}
+              onChange={(e) => setFormData({ ...formData, duration: parseFloat(e.target.value) })}
               placeholder="25.00"
             />
-            <p className="text-xs text-gray-500 mt-1">Additional fee for this service</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Duration Extension
-            </label>
-            <select
-              value={formData.duration || 'none'}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  duration: e.target.value === 'none' ? undefined : parseInt(e.target.value),
-                })
-              }
-              className="w-full p-3 border border-gray-300 rounded-md"
-            >
-              <option value="none">No extension</option>
-              <option value="15">+15 minutes</option>
-              <option value="30">+30 minutes</option>
-              <option value="45">+45 minutes</option>
-              <option value="60">+1 hour</option>
-            </select>
           </div>
         </div>
 
@@ -197,7 +160,7 @@ const ServiceForm = ({
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
           <div className="flex gap-2 mb-2">
             <Input
@@ -235,7 +198,7 @@ const ServiceForm = ({
           <label htmlFor="requiresEquipment" className="text-sm text-gray-700">
             Requires special equipment
           </label>
-        </div>
+        </div> */}
       </div>
 
       <div className="flex justify-end gap-3">
@@ -268,17 +231,10 @@ const createServiceColumns = (
     ),
   },
   {
-    accessorKey: 'additionalPrice',
-    header: 'Price',
-    cell: ({ row }: any) => (
-      <div className="font-medium text-green-600">€{row.original.additionalPrice}</div>
-    ),
-  },
-  {
     accessorKey: 'duration',
     header: 'Duration',
     cell: ({ row }: any) => (
-      <div>{row.original.duration ? `+${row.original.duration} min` : 'No extension'}</div>
+      <div>{row.original.duration ? `${row.original.duration} min` : 'No extension'}</div>
     ),
   },
   {
@@ -298,24 +254,6 @@ const createServiceColumns = (
             {type}
           </span>
         ))}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'tags',
-    header: 'Tags',
-    cell: ({ row }: any) => (
-      <div className="flex flex-wrap gap-1">
-        {row.original.tags.slice(0, 2).map((tag: string) => (
-          <Badge key={tag} variant="outline" className="text-xs">
-            {tag}
-          </Badge>
-        ))}
-        {row.original.tags.length > 2 && (
-          <Badge variant="outline" className="text-xs">
-            +{row.original.tags.length - 2}
-          </Badge>
-        )}
       </div>
     ),
   },
@@ -462,10 +400,12 @@ const ServicesPage = () => {
         {/* Services DataTable */}
         <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
           <CardHeader className="flex flex-row items-center justify-end space-y-0 pb-4">
-            <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add Service
-            </Button>
+            {services.length > 0 && (
+              <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add Service
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             {services.length === 0 ? (

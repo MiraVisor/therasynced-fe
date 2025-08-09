@@ -57,24 +57,24 @@ export const updateAppointmentNotes = createAsyncThunk(
 );
 
 // Update appointment status
-export const updateAppointmentStatus = createAsyncThunk(
-  'appointment/updateStatus',
-  async ({ bookingId, status }: { bookingId: string; status: string }, { rejectWithValue }) => {
-    try {
-      const response = await bookingApi.updateBookingStatus(bookingId, status);
-      return { bookingId, status, data: response };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update status');
-    }
-  },
-);
+// export const updateAppointmentStatus = createAsyncThunk(
+//   'appointment/updateStatus',
+//   async ({ bookingId, status }: { bookingId: string; status: string }, { rejectWithValue }) => {
+//     try {
+//       const response = await bookingApi.updateBookingStatus(bookingId, status);
+//       return { bookingId, status, data: response };
+//     } catch (error: any) {
+//       return rejectWithValue(error.response?.data?.message || 'Failed to update status');
+//     }
+//   },
+// );
 
 // Cancel appointment
 export const cancelAppointment = createAsyncThunk(
   'appointment/cancel',
-  async ({ bookingId, reason }: { bookingId: string; reason?: string }, { rejectWithValue }) => {
+  async ({ bookingId }: { bookingId: string }, { rejectWithValue }) => {
     try {
-      const response = await bookingApi.cancelBooking(bookingId, reason);
+      const response = await bookingApi.cancelBooking({ bookingId });
       return { bookingId, data: response };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to cancel appointment');
@@ -138,12 +138,12 @@ export const appointmentSlice = createSlice({
         state.error = action.payload as string;
       })
       // Update status
-      .addCase(updateAppointmentStatus.fulfilled, (state, action) => {
-        const appointment = state.appointments.find((apt) => apt.id === action.payload.bookingId);
-        if (appointment) {
-          appointment.status = action.payload.status as any;
-        }
-      })
+      // .addCase(updateAppointmentStatus.fulfilled, (state, action) => {
+      //   const appointment = state.appointments.find((apt) => apt.id === action.payload.bookingId);
+      //   if (appointment) {
+      //     appointment.status = action.payload.status as any;
+      //   }
+      // })
       // Cancel appointment
       .addCase(cancelAppointment.fulfilled, (state, action) => {
         const appointment = state.appointments.find((apt) => apt.id === action.payload.bookingId);

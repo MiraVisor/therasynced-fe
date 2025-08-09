@@ -476,24 +476,26 @@ const SlotsPage = () => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              onClick={() => setShowCreateSlotForm(true)}
-              disabled={isCreating}
-              className="h-11 px-6"
-            >
-              {isCreating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-5 w-5 mr-2" />
-                  Add Availability
-                </>
-              )}
-            </Button>
+          <div className="flex items-center justify-center gap-4">
+            {slots.length > 0 && (
+              <Button
+                onClick={() => setShowCreateSlotForm(true)}
+                disabled={isCreating}
+                className="h-11 px-6"
+              >
+                {isCreating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Availability
+                  </>
+                )}
+              </Button>
+            )}
 
             <div className="text-center sm:text-right">
               <div className="text-sm text-gray-500">Today</div>
