@@ -15,6 +15,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import {
@@ -337,19 +338,17 @@ const FavoritesSection: React.FC<{ favorites: Expert[]; loading: boolean }> = ({
 
 const UserExploreMain = () => {
   const dispatch = useDispatch();
+  const { isAuthenticated } = useAuth();
   const { favorites, loading, bookings, bookingsLoading } = useSelector(
     (state: RootState) => state.explore as any,
   );
   const { experts: allExperts } = useSelector((state: RootState) => state.overview);
-  const { isAuthenticated } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [calendarLoading, setCalendarLoading] = useState(false);
 
   // Fetch data on component mount only if authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
-      return; // Don't make API calls if not authenticated
-    }
+    if (!isAuthenticated) return;
 
     dispatch(fetchAllFavoriteFreelancers() as any);
     dispatch(fetchFreelancers({ limit: 6 }) as any);
@@ -362,7 +361,7 @@ const UserExploreMain = () => {
   const handleDateChange = async (newDate: Date | undefined) => {
     setDate(newDate);
 
-    if (newDate) {
+    if (newDate && isAuthenticated) {
       setCalendarLoading(true);
       try {
         // Format date as YYYY-MM-DD for API
@@ -458,6 +457,14 @@ const UserExploreMain = () => {
           ? 'Home'
           : 'Virtual';
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <DashboardPageWrapper

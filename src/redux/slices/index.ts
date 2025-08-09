@@ -1,31 +1,43 @@
-// Export actions and thunks from each slice
-export * from './appointmentSlice';
 export { default as appointmentSlice } from './appointmentSlice';
-
-export * from './authSlice';
 export { default as authSlice } from './authSlice';
-
-// Export booking slice
 export { default as bookingSlice } from './bookingSlice';
-
-export * from './calendarSlice';
 export { default as calendarSlice } from './calendarSlice';
-
-export * from './exploreSlice';
 export { default as exploreSlice } from './exploreSlice';
+export { default as overviewSlice } from './overviewSlice';
+export { default as serviceSlice } from './serviceSlice';
+export { default as slotReducer } from './slotSlice';
 
-// Export freelancer slice
-export { default as freelancerSlice } from './freelancerSlice';
-
-// Export overview slice
+// Named exports for async thunks and actions
 export {
-  clearReservedSlots,
-  confirmSlotReservation,
-  default as overviewSlice,
-  releaseSlotReservation,
-  removeSlotFromAvailable,
-  reserveSlot,
-  setSocketConnected,
-  updateMultipleSlots,
-  updateSlotStatus,
+  cancelUserBooking,
+  clearSelectedBooking,
+  fetchBookingById,
+  fetchUserBookings,
+  setSelectedBooking,
+} from './bookingSlice';
+
+export {
+  cancelAppointment,
+  fetchFreelancerAppointments,
+  fetchFreelancerAppointmentsByDate,
+  updateAppointment,
+  updateAppointmentNotes,
+} from './appointmentSlice';
+
+export {
+  createServiceAsync,
+  deleteServiceAsync,
+  fetchServices,
+  updateServiceAsync,
+} from './serviceSlice';
+
+export { createSlot, deleteSlot, fetchSlots, updateSlot } from './slotSlice';
+
+export {
+  bookAppointment,
+  fetchFreelancerServices,
+  fetchFreelancerSlots,
+  fetchUserProfile,
 } from './overviewSlice';
+
+export { logout, setRole } from './authSlice';

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import freelancerService, { Freelancer } from '@/services/freelancerService';
+import freelancerService from '@/services/freelancerService';
+import { Freelancer } from '@/types/types';
 
 export const useFreelancers = (params?: { limit?: number; page?: number }) => {
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);

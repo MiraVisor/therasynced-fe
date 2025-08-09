@@ -1,12 +1,12 @@
 import api from '@/services/api';
-import { Freelancer, PaginatedResponse } from '@/types/types';
+import { ApiResponse, Expert } from '@/types/types';
 
 export const getAllFreelancers = async (params?: {
   page?: number;
   limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-}): Promise<PaginatedResponse<Freelancer>> => {
+}): Promise<ApiResponse<Expert[]>> => {
   console.log('API call params:', params);
   const response = await api.get('/freelancer/all', { params });
   console.log('Raw API response:', response.data);
@@ -26,6 +26,7 @@ export const getAllFreelancers = async (params?: {
         hasNext: false, // We'll need to get this from the backend
         hasPrev: false,
       },
+    meta: response.data.meta,
   };
   console.log('Processed API response:', result);
   return result;
@@ -49,6 +50,11 @@ export const getFreelancerSlots = async (params: {
   return response.data;
 };
 
+export const reserveSlot = async (slotId: string) => {
+  const response = await api.post('/slot/reserve', { slotId });
+  return response.data;
+};
+
 export const createBooking = async (data: {
   slotId: string;
   serviceIds?: string[];
@@ -57,5 +63,15 @@ export const createBooking = async (data: {
   notes?: string;
 }) => {
   const response = await api.post('/booking/create', data);
+  return response.data;
+};
+
+export const getFreelancerServices = async (freelancerId: string) => {
+  const response = await api.get(`/freelancer/${freelancerId}/services`);
+  return response.data;
+};
+
+export const getUserProfile = async () => {
+  const response = await api.get('/user/profile');
   return response.data;
 };

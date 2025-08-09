@@ -76,14 +76,12 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
   // Map API freelancer to Expert type for UI
   return {
     id: freelancer.id,
-    name: freelancer.name || cardInfo.name || 'Unknown',
-    specialty: cardInfo.mainService || primaryService || 'Therapy',
-    experience: `${yearsOfExperience}+ years`,
+    name: freelancer.name || cardInfo.name,
+    specialty: cardInfo.mainService || primaryService,
+    yearsOfExperience: yearsOfExperience.toString(),
     rating: rating,
-    description:
-      freelancer.description ||
-      cardInfo.title ||
-      'Professional therapist dedicated to helping clients achieve mental wellness.',
+    reviews: freelancer.favoritedBy?.length || 0,
+    description: freelancer.description || cardInfo.title,
     isFavorite: freelancer.isFavorite ?? false,
     // Additional data for profile dialog
     profilePicture: freelancer.profilePicture,

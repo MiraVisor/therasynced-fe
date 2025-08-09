@@ -17,7 +17,7 @@ export const getPatientBookings = async (date?: string) => {
 };
 
 export const rescheduleBooking = async (bookingId: string, newSlotId: string) => {
-  const response = await api.patch('/v1/booking/reschedule', {
+  const response = await api.patch('/booking/reschedule', {
     bookingId,
     newSlotId,
   });

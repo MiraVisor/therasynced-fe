@@ -1,16 +1,19 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { Freelancer } from '@/types/types';
+import { Expert } from '@/types/types';
 
 import {
   createBooking,
   favoriteFreelancer as favoriteFreelancerApi,
   getAllFreelancers,
+  getFreelancerServices,
   getFreelancerSlots,
+  getUserProfile,
+  reserveSlot as reserveSlotApi,
 } from '../api/overviewApi';
 
 interface FreelancerState {
-  experts: Freelancer[];
+  experts: Expert[];
   loading: boolean;
   error: string | null;
   slots?: any[];
@@ -91,10 +94,9 @@ export const favoriteFreelancer = createAsyncThunk(
     try {
       const res = await favoriteFreelancerApi(freelancerId);
       if (res.success) {
-        // Return both id and favorited status from API
         return { freelancerId, favorited: res.data.favorited };
       } else {
-        return rejectWithValue('Failed to favorite freelancer');
+        return rejectWithValue(res.message || 'Failed to favorite freelancer');
       }
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to favorite freelancer');
@@ -130,6 +132,22 @@ export const fetchFreelancerSlots = createAsyncThunk(
   },
 );
 
+export const reserveSlotAction = createAsyncThunk(
+  'overview/reserveSlot',
+  async (slotId: string, { rejectWithValue }) => {
+    try {
+      const res = await reserveSlotApi(slotId);
+      if (res.success) {
+        return res.data;
+      } else {
+        return rejectWithValue(res.message || 'Failed to reserve slot');
+      }
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Failed to reserve slot');
+    }
+  },
+);
+
 export const bookAppointment = createAsyncThunk(
   'overview/bookAppointment',
   async (
@@ -151,6 +169,38 @@ export const bookAppointment = createAsyncThunk(
       }
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to book appointment');
+    }
+  },
+);
+
+export const fetchUserProfile = createAsyncThunk(
+  'overview/fetchUserProfile',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await getUserProfile();
+      if (res.success) {
+        return res.data;
+      } else {
+        return rejectWithValue(res.message || 'Failed to load user profile');
+      }
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Failed to load user profile');
+    }
+  },
+);
+
+export const fetchFreelancerServices = createAsyncThunk(
+  'overview/fetchFreelancerServices',
+  async (freelancerId: string, { rejectWithValue }) => {
+    try {
+      const res = await getFreelancerServices(freelancerId);
+      if (res.success && Array.isArray(res.data)) {
+        return res.data;
+      } else {
+        return rejectWithValue('Failed to load services');
+      }
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Failed to load services');
     }
   },
 );
@@ -271,7 +321,7 @@ const overviewSlice = createSlice({
       .addCase(fetchFreelancers.fulfilled, (state, action) => {
         state.loading = false;
         state.experts = action.payload.data;
-        state.pagination = action.payload.pagination;
+        state.pagination = action.payload.pagination || null;
       })
       .addCase(fetchFreelancers.rejected, (state, action) => {
         state.loading = false;
@@ -284,7 +334,7 @@ const overviewSlice = createSlice({
       .addCase(loadMoreFreelancers.fulfilled, (state, action) => {
         state.loadingMore = false;
         state.experts = [...state.experts, ...action.payload.data];
-        state.pagination = action.payload.pagination;
+        state.pagination = action.payload.pagination || null;
       })
       .addCase(loadMoreFreelancers.rejected, (state, action) => {
         state.loadingMore = false;
@@ -292,7 +342,7 @@ const overviewSlice = createSlice({
       })
       .addCase(favoriteFreelancer.fulfilled, (state, action) => {
         // Set isFavorite according to API response
-        state.experts = state.experts.map((expert) =>
+        state.experts = state.experts.map((expert: Expert) =>
           expert.id === action.payload.freelancerId
             ? { ...expert, isFavorite: action.payload.favorited }
             : expert,

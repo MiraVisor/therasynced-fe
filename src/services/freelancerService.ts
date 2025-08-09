@@ -2,57 +2,6 @@ import api from './api';
 import { ENDPOINTS } from './endpoints';
 
 // Types
-export interface Freelancer {
-  id: string;
-  name: string;
-  email: string;
-  profilePicture?: string;
-  city: string;
-  isActive: boolean;
-  isFavorite?: boolean;
-  favoritedAt?: string;
-  cardInfo: {
-    name: string;
-    title: string;
-    mainService: string;
-    yearsOfExperience: string;
-    country: string;
-    averageRating: number;
-    patientStories: number;
-    initials: string;
-  };
-  slotSummary?: {
-    nextAvailable: {
-      id: string;
-      startTime: string;
-      endTime: string;
-      status: string;
-    } | null;
-    totalSlots: number;
-    availableSlots: number;
-  };
-  slots: Array<{
-    id: string;
-    startTime: string;
-    endTime: string;
-    status: string;
-  }>;
-  services: Array<{
-    id: string;
-    name: string;
-    description: string;
-    additionalPrice: number;
-    duration: number;
-  }>;
-  locations: Array<{
-    id: string;
-    name: string;
-    address: string;
-    type: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
 
 // API Functions
 export const freelancerService = {

@@ -2,15 +2,15 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
+import { reserveSlot } from '@/redux/api/overviewApi';
 import {
   clearReservedSlots,
   confirmSlotReservation,
   releaseSlotReservation,
-  reserveSlot,
   setSocketConnected,
   updateMultipleSlots,
   updateSlotStatus,
-} from '@/redux/slices';
+} from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import socketService from '@/services/socketService';
 
@@ -96,7 +96,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
       if (isOurReservation) {
         // We reserved this slot - update our tracking
-        dispatch(reserveSlot({ slotId, reserved: true, statusInfo }));
+        dispatch(reserveSlot(slotId) as any);
       } else {
         // Someone else reserved this slot - show notification
         toast.info('A slot you were viewing has been reserved by another user.', {

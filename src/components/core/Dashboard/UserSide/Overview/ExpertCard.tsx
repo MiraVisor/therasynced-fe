@@ -32,7 +32,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   id,
   name,
   specialty,
-  experience,
+  yearsOfExperience,
   rating,
   description,
   isFavorite = false,
@@ -144,7 +144,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                     variant="secondary"
                     className="text-sm bg-primary/10 text-primary border-primary/20 px-3 py-1"
                   >
-                    {experience}
+                    {yearsOfExperience}
                   </Badge>
                 </div>
               </div>
@@ -273,7 +273,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                     <span className="text-gray-600 font-medium">({rating?.toFixed(1)})</span>
                   </div>
                   <span className="text-gray-500">•</span>
-                  <span className="text-gray-600">{experience}</span>
+                  <span className="text-gray-600">{yearsOfExperience}</span>
                   {cardInfo?.patientStories && (
                     <>
                       <span className="text-gray-500">•</span>
