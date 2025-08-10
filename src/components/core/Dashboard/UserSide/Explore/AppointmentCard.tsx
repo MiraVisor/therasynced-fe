@@ -47,8 +47,20 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
 
   const handleReschedule = () => {
     if (booking?.slot?.freelancer?.id && booking?.id) {
+      // Pass minimal freelancer data for rescheduling
+      const freelancerData = {
+        id: booking.slot.freelancer.id,
+        name: booking.slot.freelancer.name || 'Unknown',
+        specialty: 'Therapist',
+        rating: 0,
+        reviews: 0,
+        yearsOfExperience: '0+ years',
+        description: '',
+        services: [],
+      };
+
       router.push(
-        `/dashboard/freelancer/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}`,
+        `/dashboard/freelancer/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}&data=${encodeURIComponent(JSON.stringify(freelancerData))}`,
       );
     }
   };

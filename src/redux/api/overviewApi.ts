@@ -1,6 +1,14 @@
 import api from '@/services/api';
 import { ApiResponse, Expert } from '@/types/types';
 
+import {
+  changeEmail,
+  changePassword,
+  deleteProfile,
+  getProfile,
+  updateProfile,
+} from './profileApi';
+
 export const getAllFreelancers = async (params?: {
   page?: number;
   limit?: number;
@@ -71,7 +79,11 @@ export const getFreelancerServices = async (freelancerId: string) => {
   return response.data;
 };
 
-export const getUserProfile = async () => {
-  const response = await api.get('/user/profile');
-  return response.data;
+// Re-export profile functions for backward compatibility
+export {
+  changeEmail,
+  deleteProfile,
+  getProfile as getUserProfile,
+  changePassword as updatePassword,
+  updateProfile as updateUserProfile,
 };

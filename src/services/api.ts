@@ -32,8 +32,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     // Update role from server response if available
-    if (response.data?.user?.role) {
-      store.dispatch(setRole(response.data.user.role));
+    if (response.data?.data?.user?.role) {
+      store.dispatch(setRole(response.data.data.user.role));
     }
     return response;
   },

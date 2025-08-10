@@ -2,12 +2,25 @@ export const ENDPOINTS = {
   auth: {
     login: '/auth/login',
     logout: '/auth/logout',
-    profile: '/auth/profile',
     signup: '/auth/signup',
     forgotPassword: '/auth/forgot-password',
     resetPassword: (token: string) => `/auth/reset-password/${token}`,
     verifyEmailLink: '/auth/verify-email-link',
+    googleSignIn: '/auth/google-signin',
+    sendVerificationEmail: '/auth/send-verification-email',
   },
+  profile: {
+    get: '/profile',
+    update: '/profile',
+    changePassword: '/profile/change-password',
+    changeEmail: '/profile/change-email',
+    delete: '/profile',
+  },
+  // User management
+  // user: {
+  //   profile: '/profile',
+  //   password: '/user/password',
+  // },
   // Slot management
   slots: {
     create: '/slot/create',

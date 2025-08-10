@@ -8,9 +8,8 @@ import {
   getAllFreelancers,
   getFreelancerServices,
   getFreelancerSlots,
-  getUserProfile,
-  reserveSlot as reserveSlotApi,
 } from '../api/overviewApi';
+import { getProfile } from '../api/profileApi';
 
 interface FreelancerState {
   experts: Expert[];
@@ -136,12 +135,8 @@ export const reserveSlotAction = createAsyncThunk(
   'overview/reserveSlot',
   async (slotId: string, { rejectWithValue }) => {
     try {
-      const res = await reserveSlotApi(slotId);
-      if (res.success) {
-        return res.data;
-      } else {
-        return rejectWithValue(res.message || 'Failed to reserve slot');
-      }
+      const res = reserveSlot(slotId);
+      return res;
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to reserve slot');
     }
@@ -177,12 +172,8 @@ export const fetchUserProfile = createAsyncThunk(
   'overview/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await getUserProfile();
-      if (res.success) {
-        return res.data;
-      } else {
-        return rejectWithValue(res.message || 'Failed to load user profile');
-      }
+      const res = await getProfile();
+      return res;
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to load user profile');
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -21,6 +21,7 @@ interface MyBookingHomeProps {
 
 const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) => {
   const params = useParams();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
   const freelancerId = Array.isArray(params?.freelancerId)
@@ -28,6 +29,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
     : params?.freelancerId;
   const { slots } = useSelector((state: RootState) => state.overview);
   const [showModernFlow, setShowModernFlow] = useState(true);
+  const [freelancer, setFreelancer] = useState<Expert | null>(null);
 
   useEffect(() => {
     if (freelancerId) {
@@ -43,20 +45,50 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
     }
   }, [dispatch, freelancerId]);
 
-  // Extract freelancer info from API data
-  const firstSlot = slots && slots.length > 0 ? slots[0] : null;
+  // Get freelancer data from URL params or fallback to slot data
+  useEffect(() => {
+    const dataParam = searchParams.get('data');
+    if (dataParam) {
+      try {
+        const freelancerData = JSON.parse(decodeURIComponent(dataParam));
+        setFreelancer(freelancerData);
+      } catch (error) {
+        console.error('Failed to parse freelancer data from URL:', error);
+        // Fallback to slot data
+        const firstSlot = slots && slots.length > 0 ? slots[0] : null;
+        if (firstSlot) {
+          setFreelancer({
+            id: firstSlot.freelancerId,
+            name: firstSlot.freelancerName || 'Unknown',
+            specialty: 'Therapist',
+            rating: firstSlot.averageRating || 0,
+            reviews: firstSlot.numberOfRatings || 0,
+            yearsOfExperience: '0+ years',
+            description: '',
+            profilePicture: firstSlot.profilePicture,
+          } as Expert);
+        }
+      }
+    } else {
+      // Fallback to slot data if no URL data
+      const firstSlot = slots && slots.length > 0 ? slots[0] : null;
+      if (firstSlot) {
+        setFreelancer({
+          id: firstSlot.freelancerId,
+          name: firstSlot.freelancerName || 'Unknown',
+          specialty: 'Therapist',
+          rating: firstSlot.averageRating || 0,
+          reviews: firstSlot.numberOfRatings || 0,
+          yearsOfExperience: '0+ years',
+          description: '',
+          profilePicture: firstSlot.profilePicture,
+        } as Expert);
+      }
+    }
+  }, [searchParams, slots]);
 
-  const freelancer = firstSlot?.freelancer as Expert;
-
-  if (!freelancer || !firstSlot) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading therapist information...</p>
-        </div>
-      </div>
-    );
+  if (!freelancer) {
+    return <div>No freelancer data available</div>;
   }
 
   return (
@@ -97,7 +129,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
 
       {/* Booking Flow */}
       {showModernFlow ? (
-        <ModernBookingFlow rescheduleBookingId={rescheduleBookingId} />
+        <ModernBookingFlow rescheduleBookingId={rescheduleBookingId} freelancerData={freelancer} />
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-600 mb-4">Classic booking view is being updated...</p>

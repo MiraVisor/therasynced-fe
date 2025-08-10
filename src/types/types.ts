@@ -8,6 +8,120 @@ export interface registerUserTypes {
   dob: string;
   city: string;
 }
+
+// New DTOs to match backend
+export interface SignUpDto {
+  name: string;
+  email: string;
+  role: string;
+  password: string;
+  profilePicture?: string;
+  gender: string;
+  dob: string;
+  city: string;
+}
+
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface ResetPasswordDto {
+  newPassword: string;
+}
+
+export interface VerifyEmailLinkDto {
+  token: string;
+}
+
+export interface GoogleSignInDto {
+  idToken: string;
+}
+
+export interface ChangeEmailDto {
+  newEmail: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface UpdateProfileDto {
+  name?: string;
+  city?: string;
+  gender?: string;
+  dob?: string;
+}
+
+// Backend response types
+export interface BackendResponse<T = any> {
+  success: boolean;
+  message: string;
+  data: T;
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+export interface BackendProfileResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      gender: string;
+      profilePicture?: string;
+      role: string;
+      dob: string;
+      city: string;
+      isEmailVerified: boolean;
+      authProvider: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    freelancerData?: any;
+  };
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+export interface BackendAuthResponse {
+  success: boolean;
+  message: string;
+  data: {
+    success: boolean;
+    message: string;
+    data: {
+      token: string;
+      user: {
+        id: string;
+        email: string;
+        name: string;
+        role: string;
+        authProvider?: string;
+      };
+    };
+    meta: {
+      code: number;
+      status: string;
+    };
+  };
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
 export interface Expert {
   id: string;
   name: string;
@@ -239,6 +353,17 @@ export interface ApiResponse<T = any> {
     hasNext: boolean;
     hasPrev: boolean;
   };
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+// Updated to match backend response structure
+export interface BackendApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data: T;
   meta: {
     timestamp: string;
     path: string;
