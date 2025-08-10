@@ -9,7 +9,7 @@ import EmailVerificationForm from '@/components/core/authentication/EmailVerific
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
 import SignInForm from '@/components/core/authentication/SignInForm';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { signUpUser } from '@/redux/slices';
+import { signUpUser } from '@/redux/slices/authSlice';
 
 import MultiStepSignup from './MultiStepSignup';
 

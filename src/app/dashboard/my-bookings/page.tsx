@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fetchBookings } from '@/redux/slices/bookingSlice';
+import { fetchUserBookings } from '@/redux/slices/bookingSlice';
 import { RootState } from '@/redux/store';
 import { Booking } from '@/types/types';
 
@@ -239,7 +239,7 @@ const BookingFilters = ({
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem>All Status</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="upcoming">Upcoming</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -259,11 +259,11 @@ export default function MyBookingsPage() {
 
   // Fetch bookings on component mount
   useEffect(() => {
-    dispatch(fetchBookings({ includePast: true }) as any);
+    dispatch(fetchUserBookings({ date: new Date().toISOString() }) as any);
   }, [dispatch]);
 
   // Filter bookings based on search and status
-  const filteredBookings = bookings.filter((booking) => {
+  const filteredBookings = bookings.filter((booking: Booking) => {
     const matchesSearch =
       booking.slot.freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (booking.services.length > 0 &&
@@ -329,7 +329,7 @@ export default function MyBookingsPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <Button
               variant="outline"
-              onClick={() => dispatch(fetchBookings({ includePast: true }) as any)}
+              onClick={() => dispatch(fetchUserBookings({ date: new Date().toISOString() }) as any)}
             >
               Try Again
             </Button>

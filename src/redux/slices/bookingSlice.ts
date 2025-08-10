@@ -1,36 +1,38 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { Booking, CancelBookingDto, CreateBookingDto } from '@/types/types';
-
 import {
   cancelBooking as cancelBookingApi,
-  createBooking as createBookingApi,
+  getBookingById,
   getPatientBookings,
 } from '../api/bookingApi';
 
 interface BookingState {
-  bookings: Booking[];
+  bookings: any[];
+  currentBooking: any | null;
+  selectedBooking: any | null;
   loading: boolean;
   error: string | null;
-  meta?: any;
+  pagination?: any;
 }
 
 const initialState: BookingState = {
   bookings: [],
+  currentBooking: null,
+  selectedBooking: null,
   loading: false,
   error: null,
-  meta: undefined,
+  pagination: null,
 };
 
-export const fetchBookings = createAsyncThunk(
-  'booking/fetchAll',
-  async (params: { includePast?: boolean; pagination?: any }, { rejectWithValue }) => {
+export const fetchUserBookings = createAsyncThunk(
+  'booking/fetchUserBookings',
+  async ({ date }: { date?: string }, { rejectWithValue }) => {
     try {
-      const res = await getPatientBookings(params);
+      const res = await getPatientBookings(date);
       if (res.success && Array.isArray(res.data)) {
         return {
           bookings: res.data,
-          meta: res.meta,
+          pagination: res.pagination,
         };
       } else {
         return rejectWithValue('Failed to load bookings');
@@ -41,31 +43,31 @@ export const fetchBookings = createAsyncThunk(
   },
 );
 
-export const createBooking = createAsyncThunk(
-  'booking/create',
-  async (data: CreateBookingDto, { rejectWithValue }) => {
+export const fetchBookingById = createAsyncThunk(
+  'booking/fetchBookingById',
+  async (bookingId: string, { rejectWithValue }) => {
     try {
-      const res = await createBookingApi(data);
+      const res = await getBookingById(bookingId);
       if (res.success) {
         return res.data;
       } else {
-        return rejectWithValue(res.message || 'Failed to create booking');
+        return rejectWithValue('Failed to load booking details');
       }
     } catch (err: any) {
-      return rejectWithValue(err?.message || 'Failed to create booking');
+      return rejectWithValue(err?.message || 'Failed to load booking details');
     }
   },
 );
 
-export const cancelBooking = createAsyncThunk(
-  'booking/cancel',
-  async (data: CancelBookingDto, { rejectWithValue }) => {
+export const cancelUserBooking = createAsyncThunk(
+  'booking/cancelUserBooking',
+  async ({ bookingId, reason }: { bookingId: string; reason: string }, { rejectWithValue }) => {
     try {
-      const res = await cancelBookingApi(data);
+      const res = await cancelBookingApi({ bookingId, reason });
       if (res.success) {
-        return { bookingId: data.bookingId };
+        return { bookingId };
       } else {
-        return rejectWithValue(res.message || 'Failed to cancel booking');
+        return rejectWithValue('Failed to cancel booking');
       }
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to cancel booking');
@@ -77,51 +79,69 @@ const bookingSlice = createSlice({
   name: 'booking',
   initialState,
   reducers: {
-    clearError: (state) => {
-      state.error = null;
-    },
     clearBookings: (state) => {
       state.bookings = [];
-      state.meta = undefined;
+      state.error = null;
+    },
+    clearCurrentBooking: (state) => {
+      state.currentBooking = null;
+      state.error = null;
+    },
+    setSelectedBooking: (state, action) => {
+      state.selectedBooking = action.payload;
+    },
+    clearSelectedBooking: (state) => {
+      state.selectedBooking = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchBookings.pending, (state) => {
+      .addCase(fetchUserBookings.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchBookings.fulfilled, (state, action) => {
+      .addCase(fetchUserBookings.fulfilled, (state, action) => {
         state.loading = false;
         state.bookings = action.payload.bookings;
-        state.meta = action.payload.meta;
+        state.pagination = action.payload.pagination;
       })
-      .addCase(fetchBookings.rejected, (state, action) => {
+      .addCase(fetchUserBookings.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(createBooking.pending, (state) => {
+      .addCase(fetchBookingById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createBooking.fulfilled, (state, action) => {
+      .addCase(fetchBookingById.fulfilled, (state, action) => {
         state.loading = false;
-        // Add new booking to the list
-        state.bookings.unshift(action.payload);
+        state.currentBooking = action.payload;
       })
-      .addCase(createBooking.rejected, (state, action) => {
+      .addCase(fetchBookingById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(cancelBooking.fulfilled, (state, action) => {
-        // Update booking status to cancelled
-        state.bookings = state.bookings.map((booking) =>
-          booking.id === action.payload.bookingId ? { ...booking, status: 'CANCELLED' } : booking,
+      .addCase(cancelUserBooking.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelUserBooking.fulfilled, (state, action) => {
+        state.loading = false;
+        const bookingIndex = state.bookings.findIndex(
+          (booking) => booking.id === action.payload.bookingId,
         );
+        if (bookingIndex !== -1) {
+          state.bookings[bookingIndex].status = 'CANCELLED';
+        }
+      })
+      .addCase(cancelUserBooking.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError, clearBookings } = bookingSlice.actions;
+export const { clearBookings, clearCurrentBooking, setSelectedBooking, clearSelectedBooking } =
+  bookingSlice.actions;
 
 export default bookingSlice.reducer;

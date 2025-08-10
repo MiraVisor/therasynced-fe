@@ -3,20 +3,29 @@
 import dynamicImport from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { getDecodedToken } from '@/lib/utils';
 import { ROLES, RoleType } from '@/types/types';
 
 // Dynamically import components that use Redux to prevent SSR issues
 const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminSide/AdminHome'), {
   ssr: false,
-  loading: () => <div>Loading...</div>,
+  loading: () => (
+    <div className="flex items-center justify-center h-full">
+      <LoadingSpinner size="lg" />
+    </div>
+  ),
 });
 
 const FreelancerHome = dynamicImport(
   () => import('@/components/core/Dashboard/FreelancerSide/Home'),
   {
     ssr: false,
-    loading: () => <div>Loading...</div>,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" />
+      </div>
+    ),
   },
 );
 
@@ -24,7 +33,11 @@ const UserExplore = dynamicImport(
   () => import('@/components/core/Dashboard/UserSide/Explore/UserExploreMain'),
   {
     ssr: false,
-    loading: () => <div>Loading...</div>,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" />
+      </div>
+    ),
   },
 );
 
@@ -38,8 +51,6 @@ function DashboardContent() {
     setUserRole(decodedToken?.role as RoleType);
     setIsLoading(false);
   }, []);
-
-  console.log('userRole', userRole);
 
   if (isLoading) {
     return (

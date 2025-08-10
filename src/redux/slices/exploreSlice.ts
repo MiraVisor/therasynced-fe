@@ -23,6 +23,7 @@ export const fetchAllFavoriteFreelancers = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getAllFavoriteFreelancers();
+      console.log(response.data);
       return response.data;
     } catch (err: any) {
       return rejectWithValue(err?.message || 'Failed to fetch favorite freelancers');

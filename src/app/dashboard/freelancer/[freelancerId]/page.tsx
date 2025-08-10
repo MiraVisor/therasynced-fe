@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronLeft } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import MyBookingHome from '@/components/core/Dashboard/UserSide/MyBookings/MyBookingHome';
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 
 const Page = () => {
   const router = useRouter();
-  const params = useParams();
 
   // Check for reschedule params in search params
   const searchParams =

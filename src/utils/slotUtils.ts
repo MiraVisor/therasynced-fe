@@ -1,21 +1,37 @@
 // Utility functions for slot management
 
 export const isSlotAvailable = (slot: any): boolean => {
+  if (!slot) return false;
+
   // Check for new statusInfo structure first
   if (slot.statusInfo) {
     return slot.statusInfo.isAvailable === true;
   }
 
-  // Fallback to old structure for backward compatibility
+  // Check if explicitly booked
+  if (slot.status === 'BOOKED' || slot.booking !== null || slot.isBooked === true) {
+    return false;
+  }
+
+  // Check if reserved by others (but not by current user)
+  if (slot.status === 'RESERVED') {
+    return false; // For safety, treat reserved as unavailable
+  }
+
+  // Consider available if status is AVAILABLE or not explicitly blocked
   return (
-    slot.status === 'AVAILABLE' ||
-    slot.status === 'available' ||
-    slot.isBooked === false ||
-    slot.isBooked === null ||
-    slot.isBooked === undefined ||
-    slot.booked === false ||
-    slot.booked === null ||
-    slot.booked === undefined
+    slot.status === 'AVAILABLE' || slot.status === 'available' || (!slot.isBooked && !slot.booking)
+  );
+};
+
+// Helper function to format date safely without timezone issues
+const formatDateForAPI = (date: Date): string => {
+  return (
+    date.getFullYear() +
+    '-' +
+    String(date.getMonth() + 1).padStart(2, '0') +
+    '-' +
+    String(date.getDate()).padStart(2, '0')
   );
 };
 
@@ -24,7 +40,7 @@ export const groupSlotsByDate = (slots: any[]): { [date: string]: any[] } => {
 
   slots?.forEach((slot: any) => {
     if (isSlotAvailable(slot)) {
-      const date = new Date(slot.startTime).toISOString().split('T')[0];
+      const date = formatDateForAPI(new Date(slot.startTime));
       if (!slotsByDate[date]) slotsByDate[date] = [];
       slotsByDate[date].push(slot);
     }
@@ -43,7 +59,7 @@ export const formatSlotTime = (startTime: string): string => {
 
 export const formatSlotDate = (date: string): string => {
   const dateObj = new Date(date);
-  const isToday = date === new Date().toISOString().split('T')[0];
+  const isToday = date === formatDateForAPI(new Date());
 
   if (isToday) {
     return 'Today';

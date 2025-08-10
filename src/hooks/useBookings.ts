@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import bookingService, { Booking, PaginationDto } from '@/services/bookingService';
+import bookingService from '@/services/bookingService';
+import { Booking, PaginationDto } from '@/types/types';
 
 interface UseBookingsOptions {
   includePast?: boolean;

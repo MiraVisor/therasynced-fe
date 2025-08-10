@@ -8,12 +8,127 @@ export interface registerUserTypes {
   dob: string;
   city: string;
 }
+
+// New DTOs to match backend
+export interface SignUpDto {
+  name: string;
+  email: string;
+  role: string;
+  password: string;
+  profilePicture?: string;
+  gender: string;
+  dob: string;
+  city: string;
+}
+
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface ResetPasswordDto {
+  newPassword: string;
+}
+
+export interface VerifyEmailLinkDto {
+  token: string;
+}
+
+export interface GoogleSignInDto {
+  idToken: string;
+}
+
+export interface ChangeEmailDto {
+  newEmail: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface UpdateProfileDto {
+  name?: string;
+  city?: string;
+  gender?: string;
+  dob?: string;
+}
+
+// Backend response types
+export interface BackendResponse<T = any> {
+  success: boolean;
+  message: string;
+  data: T;
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+export interface BackendProfileResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      gender: string;
+      profilePicture?: string;
+      role: string;
+      dob: string;
+      city: string;
+      isEmailVerified: boolean;
+      authProvider: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    freelancerData?: any;
+  };
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+export interface BackendAuthResponse {
+  success: boolean;
+  message: string;
+  data: {
+    success: boolean;
+    message: string;
+    data: {
+      token: string;
+      user: {
+        id: string;
+        email: string;
+        name: string;
+        role: string;
+        authProvider?: string;
+      };
+    };
+    meta: {
+      code: number;
+      status: string;
+    };
+  };
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
 export interface Expert {
   id: string;
   name: string;
   specialty: string;
-  experience: string;
+  yearsOfExperience: string;
   rating: number;
+  reviews: number;
   description: string;
   isFavorite?: boolean;
   // Additional properties for profile dialog
@@ -66,17 +181,24 @@ export type FreelancerStatCardType = {
   percentageNumber: number;
 };
 
-export type AppointmentStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
+export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+
+export enum LocationType {
+  HOME = 'HOME',
+  OFFICE = 'OFFICE',
+  VIRTUAL = 'VIRTUAL',
+  CLINIC = 'CLINIC',
+}
 
 export interface Appointment {
   id: string;
   title: string;
   start: string;
   end: string;
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   clientName: string;
   description?: string;
-  location: string;
+  location: LocationType;
   notes: string;
 }
 
@@ -98,7 +220,187 @@ export interface AppointmentState {
 
 export type View = 'month' | 'week' | 'work_week' | 'day' | 'agenda';
 
-// Booking Types
+// Slot-related types
+export interface Slot {
+  id: string;
+  freelancerId: string;
+  freelancerName?: string;
+  profilePicture?: string | null;
+  averageRating?: number;
+  numberOfRatings?: number;
+  locationType: LocationType;
+  location?: {
+    id: string;
+    name: string;
+    address: string;
+    type: 'OFFICE' | 'CLINIC';
+    additionalFee: number;
+  } | null;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  basePrice: number;
+  status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
+  reservedUntil?: string;
+  notes?: string;
+  booking?: {
+    id: string;
+    status: string;
+    totalAmount: number;
+    clientAddress?: string | null;
+    notes?: string | null;
+    client: {
+      id: string;
+      name: string;
+      email: string;
+      profilePicture?: string | null;
+    };
+    services: any[];
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  duration?: number;
+  tags?: string[];
+  isActive: boolean;
+  locationTypes: LocationType[];
+  requiresEquipment?: boolean;
+  freelancerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSlotDto {
+  locationType: LocationType;
+  locationId?: string;
+  basePrice: number;
+  duration: number;
+  slots: Array<{
+    startTime: string;
+    endTime: string;
+  }>;
+  notes?: string;
+}
+
+export interface CreateServiceDto {
+  name: string;
+  description?: string;
+  duration?: number;
+  locationTypes: LocationType[];
+  tags?: string[];
+  requiresEquipment?: boolean;
+}
+
+export interface CreateBookingDto {
+  slotId: string;
+  serviceIds?: string[];
+  clientAddress?: string;
+  notes?: string;
+}
+
+// Backend DTOs matching the controller structure
+export interface CreateSlotsDto {
+  locationType: LocationType;
+  locationId?: string; // Added to support location selection
+  basePrice: number;
+  duration: number;
+  slots: Array<{
+    startTime: string;
+    endTime: string;
+  }>;
+  notes?: string;
+}
+
+export interface UpdateSlotDto {
+  id: string;
+  locationType?: LocationType;
+  startTime?: string;
+  endTime?: string;
+  status?: string;
+  additionalFee?: boolean;
+  feeAmount?: string;
+  feeName?: string;
+}
+
+export interface ReserveSlotDto {
+  slotId: string;
+  reservedUntil: string;
+}
+
+export interface PaginationDto {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  message?: string;
+  data: T;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+// Updated to match backend response structure
+export interface BackendApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data: T;
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+// Booking DTOs to match backend
+export interface CreateBookingDto {
+  slotId: string;
+  serviceIds?: string[];
+  clientAddress?: string;
+  notes?: string;
+}
+
+export interface RescheduleBookingDto {
+  bookingId: string;
+  newSlotId: string;
+  reason?: string;
+}
+
+export interface CancelBookingDto {
+  bookingId: string;
+  reason?: string;
+}
+
+// Location types to match backend
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  type: 'OFFICE' | 'CLINIC';
+  additionalFee: number;
+  freelancerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Booking {
   id: string;
   slotId: string;
@@ -147,7 +449,6 @@ export interface Booking {
   updatedAt: string;
 }
 
-// Freelancer Types
 export interface Freelancer {
   id: string;
   name: string;
@@ -156,7 +457,7 @@ export interface Freelancer {
   city: string;
   isActive: boolean;
   isFavorite?: boolean;
-  // Remove favoritedAt as it's not returned by the backend
+  favoritedAt?: string;
   cardInfo: {
     name: string;
     title: string;
@@ -186,96 +487,16 @@ export interface Freelancer {
   services: Array<{
     id: string;
     name: string;
-    description?: string;
+    description: string;
     additionalPrice: number;
-    duration?: number;
-    tags: string[];
-    isActive: boolean;
-    locationTypes: string[];
-    requiresEquipment: boolean;
+    duration: number;
   }>;
   locations: Array<{
     id: string;
     name: string;
     address: string;
     type: string;
-    additionalFee: number;
-    isActive: boolean;
   }>;
   createdAt: string;
   updatedAt: string;
-}
-
-// Slot Types
-export interface Slot {
-  id: string;
-  freelancerId: string;
-  locationType: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  basePrice: number;
-  notes?: string;
-  status: 'AVAILABLE' | 'RESERVED' | 'BOOKED';
-  reservedUntil?: string;
-}
-
-// API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  meta?: {
-    code: number;
-    status: string;
-    timestamp: string;
-    path: string;
-    [key: string]: any;
-  };
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean;
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-  meta?: {
-    code: number;
-    status: string;
-    timestamp: string;
-    path: string;
-    [key: string]: any;
-  };
-}
-
-// Pagination Types
-export interface PaginationDto {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-// Booking Action Types
-export interface CreateBookingDto {
-  slotId: string;
-  serviceIds?: string[];
-  clientAddress?: string;
-  notes?: string;
-}
-
-export interface CancelBookingDto {
-  bookingId: string;
-  reason: string;
-}
-
-export interface RescheduleBookingDto {
-  bookingId: string;
-  newSlotId: string;
 }
