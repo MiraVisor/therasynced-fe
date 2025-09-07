@@ -366,8 +366,8 @@ class SocketService {
       baseSocketUrl + '/realtime',
       // Try base URL with /api/v1 (in case it's needed)
       baseSocketUrl + '/api/v1',
-      // Try base URL with /api/v1/slots
-      baseSocketUrl + '/api/v1/slots',
+      // Try base URL with /slots
+      baseSocketUrl + '/slots',
     ];
 
     endpoints.forEach((endpoint, index) => {

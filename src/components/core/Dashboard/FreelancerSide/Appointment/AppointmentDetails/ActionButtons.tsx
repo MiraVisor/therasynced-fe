@@ -1,5 +1,4 @@
 import { Flag } from 'lucide-react';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import {
@@ -14,7 +13,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { updateAppointmentStatus } from '@/redux/slices/appointmentSlice';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { updateAppointment } from '@/redux/slices';
 import { closeEventDialog } from '@/redux/slices/calendarSlice';
 import { Appointment } from '@/types/types';
 
@@ -23,7 +23,7 @@ interface ActionButtonsProps {
 }
 
 export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const isCancelled = appointment.status === 'CANCELLED';
   const isCompleted = appointment.status === 'COMPLETED';
 
@@ -41,7 +41,7 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
     }
 
     const previousStatus = appointment.status;
-    dispatch(updateAppointmentStatus({ id: appointment.id, status: 'CANCELLED' }));
+    dispatch(updateAppointment({ bookingId: appointment.id, status: 'CANCELLED' }));
     dispatch(closeEventDialog());
 
     toast.success(
@@ -49,7 +49,7 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
         <span>Appointment cancelled successfully</span>
         <button
           onClick={() => {
-            dispatch(updateAppointmentStatus({ id: appointment.id, status: previousStatus }));
+            dispatch(updateAppointment({ bookingId: appointment.id, status: previousStatus }));
             toast.dismiss();
           }}
           className="text-sm text-primary hover:text-primary/80 font-medium"
@@ -70,7 +70,6 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
 
   const handleReportUser = () => {
     // TODO: Implement report user functionality
-    console.log('Report user:', appointment.clientName);
     toast.success('User reported successfully', {
       position: 'top-right',
       autoClose: 3000,

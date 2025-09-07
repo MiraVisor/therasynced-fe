@@ -15,6 +15,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import {
@@ -337,36 +338,51 @@ const FavoritesSection: React.FC<{ favorites: Expert[]; loading: boolean }> = ({
 
 const UserExploreMain = () => {
   const dispatch = useDispatch();
+  const { isAuthenticated } = useAuth();
   const { favorites, loading, bookings, bookingsLoading } = useSelector(
     (state: RootState) => state.explore as any,
   );
   const { experts: allExperts } = useSelector((state: RootState) => state.overview);
-  const { isAuthenticated } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [calendarLoading, setCalendarLoading] = useState(false);
 
   // Fetch data on component mount only if authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
-      return; // Don't make API calls if not authenticated
-    }
+    if (!isAuthenticated) return;
 
     dispatch(fetchAllFavoriteFreelancers() as any);
     dispatch(fetchFreelancers({ limit: 6 }) as any);
-    // Fetch bookings for current date on mount
-    const currentDate = new Date().toISOString().split('T')[0];
-    dispatch(fetchExplorePatientBookings(currentDate) as any);
+    // Fetch bookings for current date on mount - use timezone-safe formatting
+    const currentDate = new Date();
+    const formattedCurrentDate =
+      currentDate.getFullYear() +
+      '-' +
+      String(currentDate.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(currentDate.getDate()).padStart(2, '0');
+    dispatch(fetchExplorePatientBookings(formattedCurrentDate) as any);
   }, [dispatch, isAuthenticated]);
+
+  // Helper function to format date safely without timezone issues
+  const formatDateForAPI = (date: Date): string => {
+    return (
+      date.getFullYear() +
+      '-' +
+      String(date.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(date.getDate()).padStart(2, '0')
+    );
+  };
 
   // Handle date change with API integration
   const handleDateChange = async (newDate: Date | undefined) => {
     setDate(newDate);
 
-    if (newDate) {
+    if (newDate && isAuthenticated) {
       setCalendarLoading(true);
       try {
-        // Format date as YYYY-MM-DD for API
-        const formattedDate = newDate.toISOString().split('T')[0];
+        // Format date as YYYY-MM-DD for API using timezone-safe method
+        const formattedDate = formatDateForAPI(newDate);
         // Dispatch API call for the selected date
         await dispatch(fetchExplorePatientBookings(formattedDate) as any);
       } catch (error) {
@@ -381,28 +397,35 @@ const UserExploreMain = () => {
   let favoritesList: Expert[] = [];
   if (favorites && favorites.length > 0) {
     favoritesList = favorites
-      .map((favorite: any) => {
+      .map((favorite: Expert) => {
         if (!favorite?.cardInfo) return null;
         return {
           id: favorite.id ?? '',
           name: favorite.cardInfo.name ?? '',
           specialty: favorite.cardInfo.mainService ?? '',
-          experience: favorite.cardInfo.yearsOfExperience ?? '',
+          yearsOfExperience: favorite.cardInfo.yearsOfExperience ?? 'N/A',
           rating: favorite.cardInfo.averageRating ?? 0,
-          description: favorite.cardInfo.title ?? '',
+          reviews: favorite.cardInfo.patientStories ?? 0,
+          description:
+            favorite.description ?? favorite.cardInfo.title ?? 'No description available',
           isFavorite: !!favorite.isFavorite,
           services: favorite.services || [],
-          location: favorite.location || 'Online',
+          location: favorite.city || favorite.cardInfo.country || 'Online',
           languages: favorite.languages || ['English'],
           sessionTypes: favorite.sessionTypes || ['online', 'office'],
-          pricing: favorite.pricing || {
-            online: { min: 80, max: 120 },
-            office: { min: 100, max: 150 },
-            home: { min: 120, max: 180 },
-          },
-          availableSlots: favorite.availableSlots || 0,
-          nextAvailableSlot: favorite.nextAvailableSlot,
+          pricing: favorite.pricing,
+          availableSlots: favorite.slotSummary?.availableSlots || favorite.availableSlots || 0,
+          totalSlots: favorite.slotSummary?.totalSlots || 0,
+          nextAvailableSlot: favorite.slotSummary?.nextAvailable || favorite.nextAvailableSlot,
           cardInfo: favorite.cardInfo,
+          profilePicture: favorite.profilePicture,
+          email: favorite.email,
+          gender: favorite.gender,
+          city: favorite.city,
+          isEmailVerified: favorite.isEmailVerified,
+          isActive: favorite.isActive,
+          authProvider: favorite.authProvider,
+          slots: favorite.slots || [],
         };
       })
       .filter(Boolean);
@@ -458,6 +481,14 @@ const UserExploreMain = () => {
           ? 'Home'
           : 'Virtual';
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <DashboardPageWrapper

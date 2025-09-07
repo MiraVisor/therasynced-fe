@@ -24,7 +24,7 @@ export function DashboardPageWrapper({
         <div
           className={`flex items-center ${
             !isMobile ? 'justify-between' : 'justify-between'
-          } mb-8 w-full border-b border-gray-200 pb-4`}
+          } mb-8 w-full `}
         >
           <div className="hidden md:flex items-center gap-2 flex-grow">{header}</div>
 

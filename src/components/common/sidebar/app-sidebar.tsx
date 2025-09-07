@@ -1,18 +1,14 @@
 'use client';
 
 import {
-  BadgeCheck,
   BarChart,
-  Bell,
   Calendar,
-  ChevronsUpDown,
-  CreditCard,
   FileText,
   Home,
   LogOut,
   Map,
   MessageSquare,
-  Sparkles,
+  Settings,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -20,16 +16,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -39,7 +26,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
+  useSidebar,
 } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
@@ -66,6 +56,11 @@ const navigationLinks = {
       url: '/dashboard/my-bookings',
       icon: Calendar,
     },
+    {
+      name: 'Account',
+      url: '/dashboard/account',
+      icon: Settings,
+    },
   ],
   FREELANCER: [
     {
@@ -73,9 +68,14 @@ const navigationLinks = {
       url: '/dashboard',
       icon: Home,
     },
+    // {
+    //   name: 'Appointments',
+    //   url: '/dashboard/appointments',
+    //   icon: Calendar,
+    // },
     {
-      name: 'Appointments',
-      url: '/dashboard/appointments',
+      name: 'Bookings',
+      url: '/dashboard/slots',
       icon: Calendar,
     },
     {
@@ -85,13 +85,18 @@ const navigationLinks = {
     },
     {
       name: 'Services',
-      url: '/dashboard/serivces',
+      url: '/dashboard/services',
       icon: Users,
     },
     {
-      name: 'Finance & Analytics',
-      url: '/dashboard/finance',
+      name: 'Analytics',
+      url: '/dashboard/analytics',
       icon: BarChart,
+    },
+    {
+      name: 'Account',
+      url: '/dashboard/account',
+      icon: Settings,
     },
   ],
   ADMIN: [
@@ -120,6 +125,11 @@ const navigationLinks = {
       url: '/dashboard/finance',
       icon: Wallet,
     },
+    {
+      name: 'Account',
+      url: '/dashboard/account',
+      icon: Settings,
+    },
   ],
 };
 
@@ -129,15 +139,11 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
+  const { state } = useSidebar();
   const links = userRole ? navigationLinks[userRole] : [];
 
   const handleNavigation = (url: string) => {
     router.push(url);
-  };
-
-  const handleLogout = () => {
-    logout();
-    router.push('/authentication/sign-in');
   };
 
   return (
@@ -199,152 +205,29 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className={cn(
-                    'hover:bg-accent active:bg-accent/50',
-                    'data-[state=open]:bg-accent mx-auto',
-                    'data-[state=open]:border data-[state=open]:border-primary',
-                    resolvedTheme === 'dark'
-                      ? 'data-[state=open]:text-foreground'
-                      : 'data-[state=open]:text-foreground/90',
-                  )}
-                >
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage />
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Mehad Nadeem</span>
-                    <span className="truncate text-xs text-muted-foreground/70">xyz@gmail.com</span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4 text-muted-foreground/70" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className={cn(
-                  'w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg ml-1',
-                  resolvedTheme === 'dark' ? 'bg-background' : 'bg-background',
-                )}
-                side={isMobile ? 'bottom' : 'right'}
-                align="end"
-                sideOffset={4}
+
+      <SidebarFooter className="mt-auto">
+        <SidebarSeparator />
+        <div className="p-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => {
+                  logout();
+                  router.push('/authentication/sign-in');
+                }}
+                variant="ghost"
+                className="w-full gap-2"
               >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage />
-                      <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">Mehad Nadeem</span>
-                      <span className="truncate text-xs text-muted-foreground/70">
-                        xyz@gmail.com
-                      </span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator
-                  className={cn(resolvedTheme === 'dark' ? 'bg-border/40' : 'bg-border/20')}
-                />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    className={cn(
-                      'hover:!bg-bg-accent/50',
-                      resolvedTheme === 'dark'
-                        ? 'hover:!text-foreground'
-                        : 'hover:!text-foreground/90',
-                    )}
-                  >
-                    <Sparkles
-                      className={cn(
-                        'mr-2 size-4',
-                        resolvedTheme === 'dark'
-                          ? 'text-muted-foreground/70'
-                          : 'text-muted-foreground/80',
-                      )}
-                    />
-                    Upgrade to Pro
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator
-                  className={cn(resolvedTheme === 'dark' ? 'bg-border/40' : 'bg-border/20')}
-                />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    className={cn(
-                      'hover:!bg-bg-accent/50',
-                      resolvedTheme === 'dark'
-                        ? 'hover:!text-foreground'
-                        : 'hover:!text-foreground/90',
-                    )}
-                  >
-                    <BadgeCheck
-                      className={cn(
-                        'mr-2 size-4',
-                        resolvedTheme === 'dark'
-                          ? 'text-muted-foreground/70'
-                          : 'text-muted-foreground/80',
-                      )}
-                    />
-                    Account
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className={cn(
-                      'hover:!bg-bg-accent/50',
-                      resolvedTheme === 'dark'
-                        ? 'hover:!text-foreground'
-                        : 'hover:!text-foreground/90',
-                    )}
-                  >
-                    <CreditCard
-                      className={cn(
-                        'mr-2 size-4',
-                        resolvedTheme === 'dark'
-                          ? 'text-muted-foreground/70'
-                          : 'text-muted-foreground/80',
-                      )}
-                    />
-                    Billing
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className={cn(
-                      'hover:!bg-bg-accent/50',
-                      resolvedTheme === 'dark'
-                        ? 'hover:!text-foreground'
-                        : 'hover:!text-foreground/90',
-                    )}
-                  >
-                    <Bell
-                      className={cn(
-                        'mr-2 size-4',
-                        resolvedTheme === 'dark'
-                          ? 'text-muted-foreground/70'
-                          : 'text-muted-foreground/80',
-                      )}
-                    />
-                    Notifications
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className={cn(
-                    'text-destructive hover:!bg-destructive hover:!text-destructive-foreground',
-                  )}
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 size-4" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
+                <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center" hidden={state !== 'collapsed' || isMobile}>
+              <p>Sign Out</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

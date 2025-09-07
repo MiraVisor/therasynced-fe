@@ -6,6 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+
 const navLinks = [
   { href: '#services', label: 'Our Services' },
   { href: '#features', label: 'Why Us' },
@@ -51,11 +53,11 @@ const Navbar = () => {
         {/* CTA + Theme Toggle */}
         <div className="flex items-center gap-4">
           {/* <ModeToggle /> */}
-          {/* <Link href="/authentication/sign-in" passHref>
-            <Button className="hidden sm:inline-block text-sm font-medium tracking-wide px-6 py-1.5 rounded transition-all duration-300 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
+          <Link href="/authentication/sign-in" passHref>
+            <Button className="w-full hidden sm:flex sm:w-auto lg:w-52 lg:h-12 px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg bg-primary hover:bg-primary/90 shadow-md hover:shadow-primary/25 lg:hover:scale-105 transition-all duration-300 group items-center justify-center gap-2">
               Get Started
             </Button>
-          </Link> */}
+          </Link>
 
           {/* Mobile Hamburger */}
           <button
@@ -86,12 +88,12 @@ const Navbar = () => {
             </Link>
           ))}
 
-          {/* <Button
-            className="w-full mt-4 text-sm font-medium tracking-wide px-4 py-2 rounded-xl transition-all duration-300 bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/25"
+          <Button
+            className="w-full sm:w-auto lg:w-52 lg:h-12 px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg bg-primary hover:bg-primary/90 shadow-md hover:shadow-primary/25 lg:hover:scale-105 transition-all duration-300 group flex items-center justify-center gap-2"
             onClick={closeMenu}
           >
             Get Started
-          </Button> */}
+          </Button>
         </div>
       </div>
 

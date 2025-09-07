@@ -218,7 +218,6 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   };
 
   const handleOAuthSignup = (provider: string) => {
-    console.log(`Signing up with ${provider}`);
     // TODO: Implement OAuth signup and redirect to dashboard
     if (provider === 'google') {
       handleGoogleSignIn();
@@ -229,7 +228,6 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     setAuthMethod(method);
     if (method === 'oauth') {
       // For OAuth, we can proceed directly or handle it differently
-      console.log('OAuth selected');
     }
   };
 

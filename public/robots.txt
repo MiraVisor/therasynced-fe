@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://therasynced.com/sitemap.xml
+
+# Disallow admin areas
+Disallow: /dashboard/
+Disallow: /authentication/

@@ -35,7 +35,7 @@ export const loginUser = createAsyncThunk(
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const response = await loginApi(credentials);
-      return response?.data;
+      return response;
     } catch (err: unknown) {
       return rejectWithValue(err || 'Something went wrong');
     }
@@ -59,7 +59,7 @@ export const verifyEmailLinkUser = createAsyncThunk(
   async (token: string, { rejectWithValue }) => {
     try {
       const response = await verifyEmailLinkApi({ token });
-      return response?.data;
+      return response;
     } catch (err: unknown) {
       return rejectWithValue(err || 'Something went wrong');
     }
@@ -71,7 +71,7 @@ export const googleSignIn = createAsyncThunk(
   async (idToken: string, { rejectWithValue }) => {
     try {
       const response = await googleSignInApi(idToken);
-      return response?.data;
+      return response;
     } catch (err: any) {
       return rejectWithValue(err || 'Google sign-in failed');
     }
@@ -98,8 +98,8 @@ const authSlice = createSlice({
     builder
       .addCase(loginUser.pending, () => {})
       .addCase(loginUser.fulfilled, (state, action) => {
-        const token = action.payload.data.token;
-        const role = action.payload.data.user.role;
+        const token = action.payload.data.data.token;
+        const role = action.payload.data.data.user.role;
 
         state.token = token;
         state.role = role;
@@ -116,8 +116,8 @@ const authSlice = createSlice({
         state.role = null;
       })
       .addCase(googleSignIn.fulfilled, (state, action) => {
-        const token = action.payload.token;
-        const role = action.payload.user.role;
+        const token = action.payload.data.data.token;
+        const role = action.payload.data.data.user.role;
         state.token = token;
         state.role = role;
         state.isAuthenticated = true;
@@ -131,17 +131,12 @@ const authSlice = createSlice({
         state.role = null;
       })
       .addCase(verifyEmailLinkUser.pending, () => {})
-      .addCase(verifyEmailLinkUser.fulfilled, (state, action) => {
-        const token = action.payload.data.token;
-        const role = action.payload.data.user.role;
-
-        state.token = token;
-        state.role = role;
-        state.isAuthenticated = true;
-
-        if (typeof window !== 'undefined') {
-          setCookie('token', token);
-        }
+      .addCase(verifyEmailLinkUser.fulfilled, (state) => {
+        // Email verification doesn't return token, just mark as verified
+        // The user will need to login separately
+        state.isAuthenticated = false;
+        state.token = null;
+        state.role = null;
       })
       .addCase(verifyEmailLinkUser.rejected, (state) => {
         state.isAuthenticated = false;

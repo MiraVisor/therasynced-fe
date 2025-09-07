@@ -1,4 +1,3 @@
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import {
@@ -8,7 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { updateAppointmentStatus } from '@/redux/slices/appointmentSlice';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { updateAppointment } from '@/redux/slices/appointmentSlice';
 import { closeEventDialog } from '@/redux/slices/calendarSlice';
 import { Appointment } from '@/types/types';
 
@@ -18,13 +18,16 @@ interface StatusUpdateProps {
 
 const statusOptions = [
   { value: 'PENDING', label: 'Pending' },
+  { value: 'CONFIRMED', label: 'Confirmed' },
   { value: 'COMPLETED', label: 'Completed' },
 ] as const;
 
-const getStatusLabel = (status: 'PENDING' | 'COMPLETED' | 'CANCELLED') => {
+const getStatusLabel = (status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED') => {
   switch (status) {
     case 'PENDING':
       return 'Pending';
+    case 'CONFIRMED':
+      return 'Confirmed';
     case 'COMPLETED':
       return 'Completed';
     case 'CANCELLED':
@@ -35,11 +38,11 @@ const getStatusLabel = (status: 'PENDING' | 'COMPLETED' | 'CANCELLED') => {
 };
 
 export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const isCancelled = appointment.status === 'CANCELLED';
   const isCompleted = appointment.status === 'COMPLETED';
 
-  const handleStatusChange = (newStatus: 'PENDING' | 'COMPLETED') => {
+  const handleStatusChange = (newStatus: 'PENDING' | 'CONFIRMED' | 'COMPLETED') => {
     if (isCancelled) {
       toast.error('Cannot update a cancelled appointment', {
         position: 'top-right',
@@ -53,7 +56,7 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
     }
 
     const previousStatus = appointment.status;
-    dispatch(updateAppointmentStatus({ id: appointment.id, status: newStatus }));
+    dispatch(updateAppointment({ bookingId: appointment.id, status: newStatus }));
     dispatch(closeEventDialog());
 
     toast.success(
@@ -61,7 +64,7 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
         <span>Appointment status updated to {newStatus.toLowerCase()}</span>
         <button
           onClick={() => {
-            dispatch(updateAppointmentStatus({ id: appointment.id, status: previousStatus }));
+            dispatch(updateAppointment({ bookingId: appointment.id, status: previousStatus }));
             toast.dismiss();
           }}
           className="text-sm text-primary hover:text-primary/80 font-medium"

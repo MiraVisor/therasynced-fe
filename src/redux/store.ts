@@ -5,18 +5,20 @@ import authSlice from './slices/authSlice';
 import bookingSlice from './slices/bookingSlice';
 import calendarSlice from './slices/calendarSlice';
 import exploreSlice from './slices/exploreSlice';
-import freelancerSlice from './slices/freelancerSlice';
 import overviewSlice from './slices/overviewSlice';
+import serviceSlice from './slices/serviceSlice';
+import slotReducer from './slices/slotSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authSlice,
     appointment: appointmentSlice,
-    booking: bookingSlice,
     calendar: calendarSlice,
     overview: overviewSlice,
     explore: exploreSlice,
-    freelancer: freelancerSlice,
+    booking: bookingSlice,
+    slot: slotReducer,
+    service: serviceSlice,
   },
 });
 

@@ -80,7 +80,7 @@ const freelancerSlice = createSlice({
         state.loading = false;
         // Access the data property from the paginated response
         state.freelancers = action.payload.data;
-        state.pagination = action.payload.meta?.pagination;
+        state.pagination = action.payload.pagination;
         // Update favorite freelancers
         state.favoriteFreelancers = action.payload.data.filter((f: Freelancer) => f.isFavorite);
       })

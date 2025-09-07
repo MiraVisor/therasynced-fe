@@ -40,9 +40,9 @@ export const AppointmentHeader = ({ appointment }: AppointmentHeaderProps) => {
         </div>
         <Badge
           variant="secondary"
-          className={`text-sm font-medium ${statusColors[appointment.status]}`}
+          className={`text-sm font-medium ${statusColors[appointment.status as keyof typeof statusColors]}`}
         >
-          {getStatusLabel(appointment.status)}
+          {getStatusLabel(appointment.status as 'PENDING' | 'COMPLETED' | 'CANCELLED')}
         </Badge>
       </div>
       <Separator />

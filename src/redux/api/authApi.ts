@@ -4,20 +4,6 @@ import { registerUserTypes } from '@/types/types';
 
 export const loginApi = async (data: { email: string; password: string }) => {
   const response = await api.post(ENDPOINTS.auth.login, data);
-
-  // const userDetails = {
-  //   token: response?.data.data?.access_token,
-  //   name: response?.data.data?.name,
-  //   address: response?.data.data?.address,
-  //   email: response?.data.data?.email,
-  //   contactNumber: response?.data.data?.contactNumber,
-  //   profilePic: response?.data.data?.profilePic,
-  //   subscription: response?.data.data?.subscription,
-  // };
-
-  // localStorage.setItem("userDetails", JSON.stringify(userDetails));
-  // localStorage.setItem("token", response?.data.data?.access_token);
-
   return response.data;
 };
 
@@ -42,7 +28,11 @@ export const verifyEmailLinkApi = async (data: { token: string }) => {
 };
 
 export const googleSignInApi = async (idToken: string) => {
-  console.log('Google Sign-In API called with token:', idToken);
-  const response = await api.post('/auth/google-signin', { idToken }); // already prefixed with /api/v1
+  const response = await api.post(ENDPOINTS.auth.googleSignIn, { idToken });
+  return response.data;
+};
+
+export const sendVerificationEmailApi = async (data: { email: string }) => {
+  const response = await api.post(ENDPOINTS.auth.sendVerificationEmail, data);
   return response.data;
 };
