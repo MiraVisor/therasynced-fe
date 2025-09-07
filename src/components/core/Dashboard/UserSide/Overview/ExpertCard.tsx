@@ -1,15 +1,4 @@
-import {
-  Building,
-  Calendar,
-  CheckCircle,
-  Clock,
-  Heart,
-  Home,
-  MapPin,
-  Star,
-  User,
-  Video,
-} from 'lucide-react';
+import { Calendar, CheckCircle, Heart, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -94,113 +83,56 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   };
 
   // Get the lowest price for quick display
-  const getLowestPrice = () => {
-    // Check if we have services with pricing
-    if (services && services.length > 0) {
-      const servicePrices = services
-        .map((service) => service.additionalPrice || service.price || service.basePrice)
-        .filter((price) => price !== null && price !== undefined && price > 0);
-
-      if (servicePrices.length > 0) {
-        return Math.min(...servicePrices);
-      }
-    }
-
-    // Fallback to pricing object if no services with prices
-    if (pricing) {
-      const prices = [pricing.online?.min, pricing.office?.min, pricing.home?.min].filter(Boolean);
-      return prices.length > 0 ? Math.min(...prices) : 'N/A';
-    }
-
-    // If no pricing information available at all, return N/A
-    return 'N/A';
-  };
 
   // Check if we have a valid price to display
-  const hasValidPrice = () => {
-    const price = getLowestPrice();
-    return price !== 'N/A' && typeof price === 'number';
-  };
 
   // Get session type icons
-  const getSessionTypeIcon = (type: string) => {
-    switch (type) {
-      case 'online':
-        return <Video className="w-4 h-4" />;
-      case 'office':
-        return <Building className="w-4 h-4" />;
-      case 'home':
-        return <Home className="w-4 h-4" />;
-      default:
-        return <Video className="w-4 h-4" />;
-    }
-  };
 
   // Get freelancer info from the available props
   const freelancerName = name || cardInfo?.name || 'Unknown';
   const freelancerSpecialty =
     services?.[0]?.name || cardInfo?.mainService || specialty || 'General';
-  const freelancerDescription = description || 'No description available.';
 
   return (
     <>
-      <Card className="group hover:shadow-xl transition-all duration-300 border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 hover:border-primary/30 h-full flex flex-col">
-        <CardHeader className="pb-4 lg:pb-6 px-4 lg:px-6">
+      <Card className="group  transition-all duration-300 border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 hover:border-primary/30 h-full flex flex-col">
+        <CardHeader className="pb-3 px-4">
           {showFavoriteText && (
-            <h3 className="text-base lg:text-lg font-semibold mb-3 lg:mb-4 text-gray-900 dark:text-white">
+            <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-white">
               Your <span className="text-primary">Favorites</span>
             </h3>
           )}
 
           <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3 lg:gap-5 flex-1 min-w-0">
-              <Avatar className="w-10 h-10 lg:w-12 lg:h-12 rounded-full border-2 border-primary/20 group-hover:border-primary/40 transition-colors flex-shrink-0">
-                <AvatarFallback className="text-lg lg:text-xl font-semibold bg-primary/10 text-primary">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <Avatar className="w-10 h-10 rounded-full border-2 border-primary group-hover:border-primary/40 transition-colors flex-shrink-0">
+                <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
                   {freelancerName.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0 space-y-2 lg:space-y-3">
-                <div>
-                  <h4 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-1 lg:mb-2 truncate group-hover:text-primary transition-colors">
-                    {freelancerName}
-                  </h4>
-                  <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                    <User className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
-                    <span className="truncate">{freelancerSpecialty}</span>
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 lg:w-4 lg:h-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs lg:text-sm text-gray-600 font-medium">
-                      ({rating?.toFixed(1)})
-                    </span>
-                    {cardInfo?.patientStories && (
-                      <span className="text-xs lg:text-sm text-gray-500 hidden lg:inline">
-                        • {cardInfo.patientStories} reviews
-                      </span>
-                    )}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-1 truncate transition-colors">
+                  {freelancerName}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                  {freelancerSpecialty}
+                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                      />
+                    ))}
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className="text-xs lg:text-sm bg-primary/10 text-primary border-primary/20 px-2 lg:px-3 py-1"
-                  >
-                    {yearsOfExperience}
-                  </Badge>
+                  <span className="text-xs text-gray-600 font-medium">({rating?.toFixed(1)})</span>
                 </div>
               </div>
             </div>
 
             <button
-              className={`p-2 lg:p-3 rounded-full transition-all duration-200 hover:scale-110 flex-shrink-0 ${
+              className={`p-2 rounded-full transition-all duration-200 hover:scale-110 flex-shrink-0 ${
                 isFavorite
                   ? 'text-red-500 bg-red-50 dark:bg-red-900/20'
                   : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
@@ -208,98 +140,39 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               onClick={handleFavorite}
               aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             >
-              <Heart className={`w-5 h-5 lg:w-6 lg:h-6 ${isFavorite ? 'fill-current' : ''}`} />
+              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
             </button>
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0 pb-4 lg:pb-6 px-4 lg:px-6 flex-1 flex flex-col">
-          <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 mb-4 lg:mb-6 line-clamp-3 leading-relaxed">
-            {freelancerDescription}
-          </p>
-
-          {/* Quick Info Row */}
-          <div className="flex items-center justify-between text-xs lg:text-sm text-gray-500 dark:text-gray-400 mb-4 lg:mb-6">
-            <div className="flex items-center gap-1 lg:gap-2">
-              <MapPin className="w-3 h-3 lg:w-4 lg:h-4" />
-              <span className="truncate max-w-[80px] lg:max-w-none">
-                {cardInfo?.country || location}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 lg:gap-2">
-              <Clock className="w-3 h-3 lg:w-4 lg:h-4" />
-              <span className="font-medium text-green-600 dark:text-green-400">
-                {availableSlots || 0} slots
-              </span>
-            </div>
-          </div>
-
-          {/* Session Types */}
-          {sessionTypes.length > 0 && (
-            <div className="flex flex-wrap gap-1 lg:gap-2 mb-4 lg:mb-6">
-              {sessionTypes.slice(0, 2).map((type, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-1 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs lg:text-sm"
-                >
-                  {getSessionTypeIcon(type)}
-                  <span className="capitalize font-medium hidden lg:inline">{type}</span>
-                  <span className="capitalize font-medium lg:hidden">{type.charAt(0)}</span>
-                </div>
-              ))}
-              {sessionTypes.length > 2 && (
-                <div className="px-2 lg:px-3 py-1.5 lg:py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs lg:text-sm text-gray-500">
-                  +{sessionTypes.length - 2}
+        <CardContent className="pt-0 pb-4 px-4 flex-1 flex flex-col">
+          {/* Price and Actions */}
+          <div className="mt-auto space-y-3">
+            <div className="flex items-center justify-between">
+              {(availableSlots || 0) > 0 && (
+                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                  <CheckCircle className="w-3 h-3" />
+                  <span className="font-medium">{availableSlots || 0} slots</span>
                 </div>
               )}
             </div>
-          )}
 
-          {/* Price and Actions */}
-          <div className="mt-auto space-y-3 lg:space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-baseline gap-1 lg:gap-2">
-                {hasValidPrice() ? (
-                  <>
-                    <span className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                      €{getLowestPrice()}
-                    </span>
-                    <span className="text-xs lg:text-sm text-gray-500">per session</span>
-                  </>
-                ) : (
-                  <span className="text-lg lg:text-xl font-medium text-gray-500 dark:text-gray-400">
-                    Price on request
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-2 lg:gap-3">
+            <div className="flex flex-col md:flex-row gap-2">
               <Button
                 variant="outline"
-                className="flex-1 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40 h-9 lg:h-11 text-xs lg:text-sm"
+                className="flex-1 border-primary text-primary  h-9 text-sm"
                 onClick={handleViewProfile}
               >
-                <span className="hidden lg:inline">View Profile</span>
-                <span className="lg:hidden">Profile</span>
+                View Profile
               </Button>
               <Button
-                className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 lg:h-11 text-xs lg:text-sm"
+                className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
                 onClick={handleBookNow}
               >
-                <Calendar className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                <span className="hidden lg:inline">Book Now</span>
-                <span className="lg:hidden">Book</span>
+                Book Now
+                <Calendar className="w-4 h-4 ml-1" />
               </Button>
             </div>
-
-            {/* Availability Badge */}
-            {(availableSlots || 0) > 0 && (
-              <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 lg:px-3 py-1.5 lg:py-2 rounded-lg">
-                <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4" />
-                <span className="font-medium">Available today</span>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -316,7 +189,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           <div className="space-y-4 lg:space-y-6">
             {/* Profile Header */}
             <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
-              <Avatar className="w-16 h-16 lg:w-12 lg:h-12 rounded-full border-2 border-primary/20 mx-auto lg:mx-0">
+              <Avatar className="w-16 h-16 lg:w-12 lg:h-12 rounded-full border-2 border-primary mx-auto lg:mx-0">
                 <AvatarFallback className="text-2xl lg:text-2xl font-semibold bg-primary/10 text-primary">
                   {name.charAt(0)}
                 </AvatarFallback>
@@ -463,7 +336,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
             <div className="flex flex-col lg:flex-row gap-2 lg:gap-3 pt-4">
               <Button
                 variant="outline"
-                className="flex-1 h-10 lg:h-11 text-sm"
+                className="flex-1 h-10 lg:h-11 text-sm border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
                 onClick={() => setShowProfileDialog(false)}
               >
                 Close
@@ -475,8 +348,8 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                   handleBookNow();
                 }}
               >
-                <Calendar className="w-4 h-4 mr-2" />
                 Book Session
+                <Calendar className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>

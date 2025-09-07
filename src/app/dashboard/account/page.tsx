@@ -2,8 +2,6 @@
 
 import {
   ArrowRight,
-  BadgeCheck,
-  Bell,
   ChevronDown,
   ChevronUp,
   CreditCard,
@@ -48,6 +46,7 @@ import {
 } from '@/components/ui/select';
 import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
+import { ROLES } from '@/types/types';
 
 interface UserProfile {
   id?: string;
@@ -71,6 +70,8 @@ export default function AccountPage() {
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const { role, logout } = useAuth();
+
+  console.log(role);
 
   const [formData, setFormData] = useState<UserProfile>({
     name: '',
@@ -334,7 +335,7 @@ export default function AccountPage() {
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Shield },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
+    // { id: 'notifications', label: 'Notifications', icon: Bell },
     ...(showBilling ? [{ id: 'billing', label: 'Billing', icon: CreditCard }] : []),
     { id: 'help', label: 'Help & Support', icon: HelpCircle },
   ];
@@ -357,7 +358,7 @@ export default function AccountPage() {
               placeholder="Enter your full name"
               value={formData.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500"
+              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
               disabled={isProfileLoading || isLoading}
             />
           </div>
@@ -372,20 +373,28 @@ export default function AccountPage() {
               placeholder="Enter your email"
               value={formData.email || ''}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed"
+              className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
               disabled
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="role" className="text-sm font-medium text-gray-700">
-              User Role
+              Role
             </Label>
             <Input
               id="role"
-              placeholder="User role"
-              value={formData.role || ''}
-              className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed"
+              placeholder="Role"
+              value={
+                formData.role === ROLES.PATIENT
+                  ? 'User'
+                  : formData.role === ROLES.FREELANCER
+                    ? 'Freelancer'
+                    : formData.role === ROLES.ADMIN
+                      ? 'Admin'
+                      : 'Unknown'
+              }
+              className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
               disabled
             />
             <p className="text-xs text-gray-500">Role cannot be changed</p>
@@ -416,7 +425,7 @@ export default function AccountPage() {
               value={formData.gender || ''}
               onValueChange={(value) => handleInputChange('gender', value)}
             >
-              <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500">
+              <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors">
                 <SelectValue placeholder="Select your gender" />
               </SelectTrigger>
               <SelectContent>
@@ -445,9 +454,9 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row gap-3 pt-6">
           <Button
-            className="bg-green-600 hover:bg-green-700 text-white h-11 px-6 w-full sm:w-auto"
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
             onClick={handleProfileUpdate}
             disabled={isLoading || isProfileLoading}
           >
@@ -468,7 +477,7 @@ export default function AccountPage() {
   const renderAccountSection = () => (
     <div className="space-y-8">
       {/* Account Status */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
+      {/* <div className="bg-white border border-gray-200 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Account Status</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -507,14 +516,20 @@ export default function AccountPage() {
           <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
             <div className="flex items-center gap-3 mb-2">
               <BadgeCheck className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">User Role</span>
+              <span className="text-sm font-medium text-gray-700">Role</span>
             </div>
             <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-              {role || 'Unknown'}
+              {role?.toUpperCase() === 'PATIENT'
+                ? 'User'
+                : role?.toString() === ROLES.FREELANCER
+                  ? 'Freelancer'
+                  : role?.toString() === ROLES.ADMIN
+                    ? 'Admin'
+                    : 'Unknown'}
             </Badge>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Email Management */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
@@ -528,11 +543,11 @@ export default function AccountPage() {
               id="newEmail"
               type="email"
               placeholder="Enter new email address"
-              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500"
+              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
             />
           </div>
           <Button
-            className="bg-green-600 hover:bg-green-700 text-white h-11 px-6"
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6"
             onClick={() => {
               const newEmail = (document.getElementById('newEmail') as HTMLInputElement)?.value;
               if (newEmail) {
@@ -566,7 +581,7 @@ export default function AccountPage() {
                   placeholder="Enter current password"
                   value={passwordData.currentPassword}
                   onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                  className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 pr-10"
+                  className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors pr-10"
                 />
                 <Button
                   type="button"
@@ -590,7 +605,7 @@ export default function AccountPage() {
                 placeholder="Enter new password"
                 value={passwordData.newPassword}
                 onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
               />
             </div>
           </div>
@@ -605,12 +620,12 @@ export default function AccountPage() {
               placeholder="Confirm new password"
               value={passwordData.confirmPassword}
               onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500"
+              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
             />
           </div>
 
           <Button
-            className="bg-green-600 hover:bg-green-700 text-white h-11 px-6 w-full sm:w-auto"
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
             onClick={handlePasswordUpdate}
             disabled={isLoading}
           >
@@ -629,13 +644,13 @@ export default function AccountPage() {
             Once you delete your account, there is no going back. Please be certain.
           </p>
           <Button
+            className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
             variant="destructive"
             size="sm"
             onClick={() => toast.info('Account deletion coming soon')}
-            className="bg-red-600 hover:bg-red-700"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
             Delete Account
+            <Trash2 className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -725,7 +740,7 @@ export default function AccountPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => toast.info('Payment method functionality coming soon')}
-                className="border-gray-300 hover:bg-gray-50"
+                className="border-primary"
               >
                 Add Payment Method
               </Button>
@@ -756,11 +771,11 @@ export default function AccountPage() {
             <h4 className="text-lg font-medium text-gray-900 mb-3">Need Help?</h4>
             <p className="text-gray-600 mb-6">Contact our admin team for personalized assistance</p>
             <Button
-              className="bg-green-600 hover:bg-green-700 text-white h-12 px-8"
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-12 px-8"
               onClick={() => toast.info('Contact admin functionality coming soon')}
             >
-              <Mail className="h-4 w-4 mr-2" />
               Contact Admin
+              <Mail className="h-4 w-4 ml-2" />
             </Button>
           </div>
 
@@ -856,7 +871,10 @@ export default function AccountPage() {
           <p className="text-red-600 mb-6">
             We couldn&apos;t load your profile information. Please try again.
           </p>
-          <Button onClick={loadUserProfile} className="bg-red-600 hover:bg-red-700 text-white">
+          <Button
+            onClick={loadUserProfile}
+            className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 text-white"
+          >
             Retry Loading Profile
           </Button>
         </div>

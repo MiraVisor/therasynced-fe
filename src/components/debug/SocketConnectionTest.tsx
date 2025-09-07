@@ -43,7 +43,7 @@ const SocketConnectionTest = () => {
     return (
       <button
         onClick={() => setIsVisible(true)}
-        className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50"
+        className="fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50 hover:bg-primary/90"
       >
         Test Socket
       </button>
@@ -104,14 +104,14 @@ const SocketConnectionTest = () => {
       <div className="mt-4 space-y-2">
         <button
           onClick={handleConnect}
-          className="w-full bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+          className="w-full bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 disabled:opacity-50"
         >
           Connect
         </button>
 
         <button
           onClick={handleDisconnect}
-          className="w-full bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+          className="w-full bg-destructive text-white px-3 py-1 rounded text-sm hover:bg-destructive/90 disabled:opacity-50"
         >
           Disconnect
         </button>
@@ -125,14 +125,14 @@ const SocketConnectionTest = () => {
 
         <button
           onClick={handleTestEndpoints}
-          className="w-full bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+          className="w-full bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 disabled:opacity-50"
         >
           Test All Endpoints
         </button>
 
         <button
           onClick={handleTestBasicConnection}
-          className="w-full bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600"
+          className="w-full bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90 disabled:opacity-50"
         >
           Test Basic Connection
         </button>

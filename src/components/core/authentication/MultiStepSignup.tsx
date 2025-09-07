@@ -680,7 +680,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         <Button
           variant="outline"
           onClick={currentStep === 1 ? onBack : prevStep}
-          className="h-10 px-3 sm:px-4 rounded-lg border-gray-200 text-gray-700 hover:bg-gray-50 transition-all duration-200 font-medium shadow-sm text-sm"
+          className="h-10 px-3 sm:px-4 rounded-lg transition-all duration-200 font-medium shadow-sm text-sm"
         >
           <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
           <span className="hidden sm:inline">
@@ -693,7 +693,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
           <Button
             onClick={nextStep}
             disabled={!isStepValid()}
-            className="h-10 px-3 sm:px-4 rounded-lg font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm text-sm"
+            className="h-10 px-3 sm:px-4 rounded-lg font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 shadow-sm text-sm"
           >
             <span className="hidden sm:inline">
               {currentStep === 6 && authMethod === 'oauth' ? 'Continue with Google' : 'Continue'}
@@ -709,7 +709,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
           <Button
             onClick={handleSubmit}
             disabled={!isStepValid() || isLoading}
-            className="h-10 px-3 sm:px-4 rounded-lg font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm text-sm"
+            className="h-10 px-3 sm:px-4 rounded-lg font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 shadow-sm text-sm"
             isLoading={isLoading}
           >
             <span className="hidden sm:inline">Complete Signup</span>

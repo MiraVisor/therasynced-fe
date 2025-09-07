@@ -226,7 +226,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
           <Button
             type="submit"
             disabled={isCreating || !startTime || !endTime}
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white"
           >
             {isCreating ? 'Creating...' : 'Create Time Slot'}
           </Button>

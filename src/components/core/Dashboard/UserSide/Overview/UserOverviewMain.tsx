@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useAuth } from '@/redux/hooks/useAppHooks';
@@ -294,7 +295,7 @@ const UserOverview = () => {
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <Button
               onClick={() => dispatch(fetchFreelancers({ page: 1, limit: 12 }) as any)}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               Try Again
             </Button>
@@ -312,7 +313,11 @@ const UserOverview = () => {
                 ? `No therapists match your search for ${searchQuery}`
                 : 'Try adjusting your search criteria or filters'}
             </p>
-            <Button onClick={() => setSearchQuery('')} variant="outline">
+            <Button
+              onClick={() => setSearchQuery('')}
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
+            >
               Clear Search
             </Button>
           </div>
@@ -331,8 +336,8 @@ const UserOverview = () => {
                   </div>
                 ) : (
                   <div className="text-center">
-                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <LoadingSpinner size="md" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                       Loading more therapists...
                     </p>
                   </div>

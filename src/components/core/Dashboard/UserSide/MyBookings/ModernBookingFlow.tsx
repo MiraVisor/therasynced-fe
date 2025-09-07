@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { rescheduleBooking } from '@/redux/api/exploreApi';
@@ -34,7 +35,6 @@ import { getFreelancerServices } from '@/redux/api/overviewApi';
 import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
-import { isSlotAvailable } from '@/utils/slotUtils';
 
 // Form validation schemas
 const serviceSchema = z.object({
@@ -78,7 +78,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [datePage, setDatePage] = useState(0);
   const [loadingMoreSlots, setLoadingMoreSlots] = useState(false);
-  const [showDebugger] = useState(false);
+  const [] = useState(false);
   const [freelancerServices, setFreelancerServices] = useState<any[]>([]);
 
   // Form states
@@ -468,7 +468,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     >
                       {loadingMoreSlots ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                          <LoadingSpinner size="sm" className="mr-2" />
                           Loading...
                         </>
                       ) : (
@@ -572,167 +572,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                 </div>
               )}
             </div>
-
-            {/* Debug Info */}
-            {showDebugger && (
-              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h4 className="text-sm font-semibold mb-2">Debug Information:</h4>
-                <div className="text-xs space-y-2">
-                  {/* Basic Info */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>Selected Date: {selectedDate || 'None'}</div>
-                    <div>Selected Time: {selectedTime || 'None'}</div>
-                    <div>Reserved Slots: {reservedSlots.length}</div>
-                    <div>Socket Connected: {isConnected ? 'Yes' : 'No'}</div>
-                    <div>Total Slots: {slots?.length || 0}</div>
-                    <div>
-                      Available Slots:{' '}
-                      {slots?.filter((slot: any) => isSlotAvailable(slot)).length || 0}
-                    </div>
-                  </div>
-
-                  {/* Slot Status Breakdown */}
-                  <div className="mt-3">
-                    <div className="font-medium mb-1">Slot Status Breakdown:</div>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div>
-                        Available:{' '}
-                        {slots?.filter((s: any) => s.statusInfo?.isAvailable).length || 0}
-                      </div>
-                      <div>
-                        Reserved: {slots?.filter((s: any) => s.statusInfo?.isReserved).length || 0}
-                      </div>
-                      <div>
-                        Booked: {slots?.filter((s: any) => s.statusInfo?.isBooked).length || 0}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Selected Slot Details */}
-                {selectedTime && (
-                  <div className="mt-3">
-                    <div className="font-medium mb-1">Selected Slot Details:</div>
-                    {(() => {
-                      const selectedSlot = slots?.find((s: any) => s.id === selectedTime);
-                      if (selectedSlot) {
-                        return (
-                          <div className="bg-white dark:bg-gray-700 p-2 rounded text-xs">
-                            <div>ID: {selectedSlot.id}</div>
-                            <div>Status: {selectedSlot.status}</div>
-                            {selectedSlot.statusInfo && (
-                              <>
-                                <div>Status Info:</div>
-                                <div className="ml-2">
-                                  <div>
-                                    • Available:{' '}
-                                    {selectedSlot.statusInfo.isAvailable ? 'Yes' : 'No'}
-                                  </div>
-                                  <div>
-                                    • Reserved: {selectedSlot.statusInfo.isReserved ? 'Yes' : 'No'}
-                                  </div>
-                                  <div>
-                                    • Booked: {selectedSlot.statusInfo.isBooked ? 'Yes' : 'No'}
-                                  </div>
-                                  <div>
-                                    • Can Be Reserved:{' '}
-                                    {selectedSlot.statusInfo.canBeReserved ? 'Yes' : 'No'}
-                                  </div>
-                                  {selectedSlot.statusInfo.reservedUntil && (
-                                    <div>
-                                      • Reserved Until:{' '}
-                                      {new Date(
-                                        selectedSlot.statusInfo.reservedUntil,
-                                      ).toLocaleString()}
-                                    </div>
-                                  )}
-                                  <div>• Message: {selectedSlot.statusInfo.statusMessage}</div>
-                                </div>
-                              </>
-                            )}
-                            <div>Is Booked: {selectedSlot.isBooked ? 'Yes' : 'No'}</div>
-                            <div>Start: {new Date(selectedSlot.startTime).toLocaleString()}</div>
-                            <div>End: {new Date(selectedSlot.endTime).toLocaleString()}</div>
-                            <div>
-                              Duration:{' '}
-                              {Math.round(
-                                (new Date(selectedSlot.endTime).getTime() -
-                                  new Date(selectedSlot.startTime).getTime()) /
-                                  60000,
-                              )}
-                              min
-                            </div>
-                            <div>Price: ${selectedSlot.price || 'N/A'}</div>
-                            <div>Is Reserved: {isSlotReserved(selectedSlot.id) ? 'Yes' : 'No'}</div>
-                          </div>
-                        );
-                      }
-                      return <div className="text-red-500">Selected slot not found in data</div>;
-                    })()}
-                  </div>
-                )}
-
-                {/* Reserved Slots List */}
-                {reservedSlots.length > 0 && (
-                  <div className="mt-3">
-                    <div className="font-medium mb-1">Reserved Slots ({reservedSlots.length}):</div>
-                    <div className="max-h-20 overflow-y-auto">
-                      {reservedSlots.map((slotId: string, index: number) => {
-                        const slot = slots?.find((s: any) => s.id === slotId);
-                        return (
-                          <div
-                            key={slotId}
-                            className="text-xs bg-yellow-50 dark:bg-yellow-900/20 p-1 rounded mb-1"
-                          >
-                            {index + 1}. {slotId} -{' '}
-                            {slot ? new Date(slot.startTime).toLocaleTimeString() : 'Unknown time'}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Recent Slot Events */}
-                <div className="mt-3">
-                  <div className="font-medium mb-1">Slot Availability Check:</div>
-                  <div className="text-xs">
-                    {selectedTime &&
-                      (() => {
-                        const slot = slots?.find((s: any) => s.id === selectedTime);
-                        if (slot) {
-                          const isAvailable = isSlotAvailable(slot);
-                          return (
-                            <div
-                              className={`p-2 rounded ${isAvailable ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}
-                            >
-                              <div>Slot Available: {isAvailable ? '✅ Yes' : '❌ No'}</div>
-                              <div>Status: {slot.status}</div>
-                              {slot.statusInfo && (
-                                <>
-                                  <div>Status Message: {slot.statusInfo.statusMessage}</div>
-                                  <div>
-                                    Can Be Reserved: {slot.statusInfo.canBeReserved ? 'Yes' : 'No'}
-                                  </div>
-                                  {slot.statusInfo.reservedUntil && (
-                                    <div>
-                                      Reserved Until:{' '}
-                                      {new Date(slot.statusInfo.reservedUntil).toLocaleString()}
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                              <div>Is Booked: {slot.isBooked ? 'Yes' : 'No'}</div>
-                              <div>Is Reserved: {isSlotReserved(slot.id) ? 'Yes' : 'No'}</div>
-                            </div>
-                          );
-                        }
-                        return <div className="text-red-500">Slot not found</div>;
-                      })()}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         );
 
@@ -885,11 +724,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
             <div className="max-w-3xl mx-auto space-y-6">
               {/* Appointment Summary Card */}
-              <Card className="border-2 border-primary/20 bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/10">
+              <Card className="border-2 border-primary bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/10">
                 <CardContent className="p-8">
                   {/* Therapist Info */}
                   <div className="flex items-center gap-4 mb-6">
-                    <Avatar className="w-16 h-16 border-3 border-primary/20">
+                    <Avatar className="w-16 h-16 border-3 border-primary">
                       <AvatarImage src={therapist?.avatar} />
                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
                         {therapist?.name?.charAt(0) || 'T'}
@@ -1061,18 +900,15 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   if (!therapist) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading therapist information...</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header with Progress - Airbnb/Booking.com style */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+    <div className="min-h-screen">
+      {/* Header with Progress */}
+      <div className="">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Back Button */}
@@ -1087,23 +923,23 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
               </Button>
             )}
 
-            {/* Progress Indicator - Booking.com style */}
+            {/* Simple Progress Indicator */}
             <div className="flex-1 max-w-md mx-auto px-8">
               <div className="flex items-center justify-between text-sm">
                 {steps.map((step, index) => (
                   <div key={step.id} className="flex items-center">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
                         currentStep >= step.id
                           ? 'bg-primary text-white'
                           : 'bg-gray-200 text-gray-500'
                       }`}
                     >
-                      {currentStep > step.id ? <CheckCircle className="w-4 h-4" /> : step.id}
+                      {step.id}
                     </div>
                     {index < steps.length - 1 && (
                       <div
-                        className={`w-12 h-0.5 mx-2 transition-all ${
+                        className={`w-12 h-0.5 mx-2 ${
                           currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
                         }`}
                       />
@@ -1148,125 +984,136 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
           {/* Right Column - Booking Summary (Airbnb-style sidebar) */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
-              {/* Therapist Info */}
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                <Avatar className="w-16 h-16 border-2 border-gray-200">
-                  <AvatarImage src={therapist?.avatar} />
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                    {therapist?.name?.charAt(0) || 'T'}
-                  </div>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                    {therapist?.name}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">{therapist?.specialty}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{therapist?.rating?.toFixed(1)}</span>
-                    <span className="text-sm text-gray-500">({therapist?.reviews} reviews)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Booking Details */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white">Your booking</h4>
-
-                {/* Date & Time */}
-                {selectedDate && selectedTime && (
-                  <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {new Date(selectedDate).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
-                            new Date(
-                              slotsByDate[selectedDate].find(
-                                (s) => s.id === selectedTime,
-                              )!.startTime,
-                            ).toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit',
-                              hour12: true,
-                            })}
-                        </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              {currentStep !== steps.length && (
+                <>
+                  {/* Therapist Info */}
+                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <Avatar className="w-16 h-16 border-2 border-gray-200">
+                      <AvatarImage src={therapist?.avatar} />
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+                        {therapist?.name?.charAt(0) || 'T'}
+                      </div>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                        {therapist?.name}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400">{therapist?.specialty}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium">{therapist?.rating?.toFixed(1)}</span>
+                        <span className="text-sm text-gray-500">
+                          ({therapist?.reviews} reviews)
+                        </span>
                       </div>
                     </div>
-                    {currentStep === 1 && (
-                      <Button variant="ghost" size="sm" className="text-primary">
-                        Edit
-                      </Button>
-                    )}
                   </div>
-                )}
 
-                {/* Services */}
-                {(serviceForm?.watch('serviceIds')?.length ?? 0) > 0 && (
-                  <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">Services</div>
-                        <div className="text-sm text-gray-500">
-                          {serviceForm
-                            .watch('serviceIds')
-                            ?.map((id: string) => {
-                              const service = therapist?.services?.find((s: any) => s.id === id);
-                              return service?.name;
-                            })
-                            .join(', ')}
+                  {/* Booking Details */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Your booking</h4>
+
+                    {/* Date & Time */}
+                    {selectedDate && selectedTime && (
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {new Date(selectedDate).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
+                                new Date(
+                                  slotsByDate[selectedDate].find(
+                                    (s) => s.id === selectedTime,
+                                  )!.startTime,
+                                ).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true,
+                                })}
+                            </div>
+                          </div>
+                        </div>
+                        {currentStep === 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary hover:bg-primary/5"
+                          >
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Services */}
+                    {(serviceForm?.watch('serviceIds')?.length ?? 0) > 0 && (
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              Services
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {serviceForm
+                                .watch('serviceIds')
+                                ?.map((id: string) => {
+                                  const service = therapist?.services?.find(
+                                    (s: any) => s.id === id,
+                                  );
+                                  return service?.name;
+                                })
+                                .join(', ')}
+                            </div>
+                          </div>
+                        </div>
+                        {currentStep === 2 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary hover:bg-primary/5"
+                          >
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Price */}
+                    {selectedTime && (
+                      <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                            Total
+                          </span>
+                          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                            €
+                            {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)
+                              ?.basePrice || 0}
+                          </span>
                         </div>
                       </div>
-                    </div>
-                    {currentStep === 2 && (
-                      <Button variant="ghost" size="sm" className="text-primary">
-                        Edit
-                      </Button>
                     )}
                   </div>
-                )}
-
-                {/* Price */}
-                {selectedTime && (
-                  <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Total
-                      </span>
-                      <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                        €
-                        {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)?.basePrice ||
-                          0}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </>
+              )}
 
               {/* Complete Booking Button */}
               {currentStep === steps.length && (
                 <Button
                   onClick={handleCompleteBooking}
                   disabled={bookingLoading}
-                  className="w-full mt-6 bg-primary hover:bg-primary/90 py-3 text-base font-semibold rounded-lg"
+                  className="w-full mt-6 bg-primary hover:bg-primary/90 disabled:opacity-50 py-3 text-base font-semibold rounded-lg text-white"
                 >
-                  {bookingLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Confirming...
-                    </>
-                  ) : (
-                    'Confirm and book'
-                  )}
+                  {bookingLoading ? <>Confirming...</> : 'Confirm and book'}
                 </Button>
               )}
 

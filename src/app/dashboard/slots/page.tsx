@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 import {
   addDays,
   eachDayOfInterval,
@@ -13,22 +14,17 @@ import {
   AlertCircle,
   Building,
   Calendar,
-  CalendarDays,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
   Clock,
-  Edit,
   Home,
-  MapPin,
   MessageCircle,
   Plus,
-  Stethoscope,
   Trash2,
   Video,
   XCircle,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -36,16 +32,10 @@ import { toast } from 'react-toastify';
 import { DatePicker } from '@/components/common/input/DatePicker';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { CreateSlotForm } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/CreateSlotForm';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { DialogFooter, DialogHeader } from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { deleteSlot, fetchSlots } from '@/redux/slices/slotSlice';
@@ -122,36 +112,6 @@ const SlotsPage = () => {
 
   const selectedDateSlots = getSlotsForDate(selectedDate);
 
-  const getLocationIcon = (locationType: LocationType) => {
-    switch (locationType) {
-      case LocationType.VIRTUAL:
-        return <Video className="h-4 w-4 text-purple-500" />;
-      case LocationType.HOME:
-        return <Home className="h-4 w-4 text-orange-500" />;
-      case LocationType.OFFICE:
-        return <Building className="h-4 w-4 text-blue-500" />;
-      case LocationType.CLINIC:
-        return <Stethoscope className="h-4 w-4 text-green-500" />;
-      default:
-        return <MapPin className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getLocationLabel = (locationType: LocationType) => {
-    switch (locationType) {
-      case LocationType.VIRTUAL:
-        return 'Virtual';
-      case LocationType.HOME:
-        return 'Home Visit';
-      case LocationType.OFFICE:
-        return 'Office';
-      case LocationType.CLINIC:
-        return 'Clinic';
-      default:
-        return 'Unknown';
-    }
-  };
-
   const getStatusBadge = (slot: Slot) => {
     switch (slot.status) {
       case 'BOOKED':
@@ -186,209 +146,64 @@ const SlotsPage = () => {
   const renderSlotCard = (slot: Slot) => {
     const slotDate = new Date(slot.startTime);
     const client = slot.booking?.client;
-    const clientInitials = client?.name
-      ? client.name
-          .split(' ')
-          .map((n) => n[0])
-          .join('')
-          .slice(0, 2)
-      : '';
+
+    const getStatusColor = () => {
+      switch (slot.status) {
+        case 'BOOKED':
+          return 'border-l-green-500 bg-green-50/30';
+        case 'AVAILABLE':
+          return 'border-l-blue-500 bg-blue-50/30';
+        case 'RESERVED':
+          return 'border-l-yellow-500 bg-yellow-50/30';
+        case 'CANCELLED':
+          return 'border-l-red-500 bg-red-50/30';
+        default:
+          return 'border-l-gray-500 bg-gray-50/30';
+      }
+    };
 
     return (
       <Card
         key={slot.id}
-        className="mb-4 border-0 shadow-lg rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-gray-50/50 hover:shadow-xl transition-all duration-300"
+        className={`mb-3 border border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md transition-all duration-200 ${getStatusColor()} border-l-4`}
       >
-        <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-            {/* Time and Status Section */}
-            <div className="flex flex-row lg:flex-col items-center lg:items-start justify-between lg:justify-start min-w-[120px] lg:min-w-[120px]">
-              <div className="flex flex-col items-center lg:items-start">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
-                  {format(slotDate, 'HH:mm')}
-                </div>
-                <div className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
-                  {slot.duration} minutes
-                </div>
-                <div className="mb-2 sm:mb-3">{getStatusBadge(slot)}</div>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            {/* Left Side - Time & Status */}
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <div className="text-xl font-bold text-gray-900">{format(slotDate, 'HH:mm')}</div>
+                <div className="text-sm text-gray-500">{slot.duration}min</div>
               </div>
-              <div className="flex items-center gap-2 text-base sm:text-lg font-bold text-green-600 lg:mt-auto">
-                €{slot.basePrice}
+
+              <div className="h-8 w-px bg-gray-200"></div>
+
+              <div className="flex flex-col">
+                <div className="mb-1">{getStatusBadge(slot)}</div>
+                <div className="flex items-center gap-1 text-sm text-gray-600">
+                  {slot.locationType === LocationType.VIRTUAL ? (
+                    <>
+                      <Video className="h-4 w-4" /> Online
+                    </>
+                  ) : slot.locationType === LocationType.HOME ? (
+                    <>
+                      <Home className="h-4 w-4" /> Home Visit
+                    </>
+                  ) : (
+                    <>
+                      <Building className="h-4 w-4" /> Office
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Main Content Section */}
-            <div className="flex-1">
-              {/* Location and Details */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4">
-                <div className="flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-2 bg-gray-100 rounded-lg w-fit">
-                  {getLocationIcon(slot.locationType)}
-                  <span className="text-xs sm:text-sm font-medium text-gray-700">
-                    {getLocationLabel(slot.locationType)}
-                  </span>
-                </div>
-                {slot.location?.name && (
-                  <div className="text-xs sm:text-sm text-gray-600">at {slot.location.name}</div>
-                )}
+            {/* Right Side - Price & Actions */}
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-lg font-bold text-primary">€{slot.basePrice}</div>
               </div>
 
-              {/* Client Information (if booked) */}
-              {slot.status === 'BOOKED' && client && (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 sm:p-4 mb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                    {client.profilePicture ? (
-                      <Image
-                        src={client.profilePicture}
-                        alt={client.name}
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-green-200"
-                        width={48}
-                        height={48}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-bold text-sm sm:text-lg">
-                        {clientInitials}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
-                        Booked by {client.name}
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-600 truncate">
-                        {client.email}
-                      </div>
-                      {slot.booking?.clientAddress && (
-                        <div className="text-xs sm:text-sm text-gray-500 mt-1 truncate">
-                          📍 {slot.booking.clientAddress}
-                        </div>
-                      )}
-                    </div>
-                    <Button variant="outline" size="sm" className="bg-white w-full sm:w-auto">
-                      <MessageCircle className="h-4 w-4 mr-2" /> Message
-                    </Button>
-                  </div>
-                  {slot.booking?.notes && (
-                    <div className="mt-3 p-2 sm:p-3 bg-white rounded-lg border border-green-100">
-                      <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                        Client Notes:
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-600">{slot.booking.notes}</div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Cancelled Booking Information (if slot has a cancelled booking) */}
-              {slot.booking && slot.booking.status === 'CANCELLED' && client && (
-                <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-3 sm:p-4 mb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                    {client.profilePicture ? (
-                      <Image
-                        src={client.profilePicture}
-                        alt={client.name}
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-red-200 opacity-75"
-                        width={48}
-                        height={48}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-red-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm sm:text-lg opacity-75">
-                        {clientInitials}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm sm:text-lg font-semibold text-gray-900 opacity-75 truncate">
-                        Cancelled by {client.name}
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-600 opacity-75 truncate">
-                        {client.email}
-                      </div>
-                      {slot.booking?.clientAddress && (
-                        <div className="text-xs sm:text-sm text-gray-500 mt-1 opacity-75 truncate">
-                          📍 {slot.booking.clientAddress}
-                        </div>
-                      )}
-                      <div className="text-xs sm:text-sm text-red-600 font-medium mt-1">
-                        Cancelled on {format(new Date(slot.booking.updatedAt), 'MMM d, yyyy')}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
-                        <XCircle className="h-3 w-3" /> Cancelled
-                      </span>
-                    </div>
-                  </div>
-                  {slot.booking?.notes && (
-                    <div className="mt-3 p-2 sm:p-3 bg-white rounded-lg border border-red-100 opacity-75">
-                      <div className="text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                        Client Notes:
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-600">{slot.booking.notes}</div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Status Messages */}
-              {slot.status === 'AVAILABLE' && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 sm:p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-semibold text-blue-900">
-                        No bookings yet
-                      </div>
-                      <div className="text-xs sm:text-sm text-blue-700">
-                        You&apos;re available for this time slot!
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {slot.status === 'RESERVED' && (
-                <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-3 sm:p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                      <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-semibold text-yellow-900">
-                        Reserved
-                      </div>
-                      <div className="text-xs sm:text-sm text-yellow-700">
-                        Someone is about to book this slot
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {slot.status === 'CANCELLED' && (
-                <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-3 sm:p-4 opacity-75">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-100 flex items-center justify-center">
-                      <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-semibold text-red-900">Cancelled</div>
-                      <div className="text-xs sm:text-sm text-red-700">This slot was cancelled</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Actions Section */}
-            <div className="flex flex-row lg:flex-col gap-2 sm:gap-3 lg:items-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCreateSlotForm(true)}
-                className="flex-1 lg:flex-none lg:w-auto"
-              >
-                <Edit className="h-4 w-4 mr-2" /> Edit
-              </Button>
               <Button
                 variant="destructive"
                 size="sm"
@@ -396,12 +211,54 @@ const SlotsPage = () => {
                   setSelectedSlot(slot);
                   setShowDeleteDialog(true);
                 }}
-                className="flex-1 lg:flex-none lg:w-auto"
+                className="h-8 w-8 p-0 shrink-0"
               >
-                <Trash2 className="h-4 w-4 mr-2" /> Cancel
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
+
+          {/* Client Info Row - Only for booked slots */}
+          {slot.status === 'BOOKED' && client && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10 rounded-full border-2 border-primary group-hover:border-primary/40 transition-colors flex-shrink-0">
+                  <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
+                    {client.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 truncate">{client.name}</div>
+                  <div className="text-xs text-gray-500 truncate">{client.email}</div>
+                </div>
+                {slot.booking?.notes && (
+                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                    <MessageCircle className="h-3 w-3 text-blue-600" />
+                  </div>
+                )}
+              </div>
+
+              {slot.booking?.notes && (
+                <div className="mt-2 p-2 bg-gray-50 rounded-lg">
+                  <div className="text-xs text-gray-600">
+                    <strong>Notes:</strong> {slot.booking.notes}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Cancelled booking info */}
+          {slot.status === 'CANCELLED' && slot.booking && (
+            <div className="mt-3 pt-3 border-t border-gray-100 opacity-60">
+              <div className="flex items-center gap-2">
+                <XCircle className="h-4 w-4 text-red-500" />
+                <div className="text-sm text-gray-600">
+                  Cancelled on {format(new Date(slot.booking.updatedAt), 'MMM d')}
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -485,7 +342,7 @@ const SlotsPage = () => {
               >
                 {isCreating ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <LoadingSpinner size="sm" className="mr-2" />
                     Creating...
                   </>
                 ) : (
@@ -496,13 +353,6 @@ const SlotsPage = () => {
                 )}
               </Button>
             )}
-
-            <div className="text-center sm:text-right">
-              <div className="text-sm text-gray-500">Today</div>
-              <div className="text-base sm:text-lg font-semibold text-gray-900">
-                {format(new Date(), 'MMM d, yyyy')}
-              </div>
-            </div>
           </div>
         </div>
 

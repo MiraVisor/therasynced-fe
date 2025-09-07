@@ -9,6 +9,7 @@ import { StatsCard } from '@/components/core/Dashboard/AdminSide/Cards/StatsCard
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePatientBookings } from '@/hooks/useBookings';
 import { Booking } from '@/types/types';
@@ -196,7 +197,7 @@ const RealBookingsPage = () => {
     return (
       <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Bookings</h2>}>
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading bookings...</div>
+          <LoadingSpinner size="lg" />
         </div>
       </DashboardPageWrapper>
     );

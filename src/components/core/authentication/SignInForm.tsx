@@ -79,7 +79,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
           <Button
             variant="outline"
             onClick={() => handleOAuthLogin('google')}
-            className="w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-sm font-medium transition-all duration-200 shadow-sm"
+            className="w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm"
           >
             <Chrome className="h-4 w-4" />
             Continue with Google

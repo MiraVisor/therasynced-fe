@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar, Clock, Filter, MapPin, Search, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -9,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
   Select,
   SelectContent,
@@ -252,6 +254,7 @@ const BookingFilters = ({
 };
 
 export default function MyBookingsPage() {
+  const router = useRouter();
   const dispatch = useDispatch();
   const { bookings, loading, error } = useSelector((state: RootState) => state.booking);
   const [searchTerm, setSearchTerm] = useState('');
@@ -286,6 +289,8 @@ export default function MyBookingsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  console.log(filteredBookings);
+
   return (
     <DashboardPageWrapper
       header={
@@ -297,47 +302,69 @@ export default function MyBookingsPage() {
         </div>
       }
     >
-      <div className="space-y-6">
-        {/* Stats Section */}
-        <BookingStats bookings={bookings} />
+      {/* Loading State */}
+      {loading && (
+        <div className="flex h-full items-center justify-center ">
+          <LoadingSpinner size="lg" />
+        </div>
+      )}
 
-        {/* Filters Section */}
-        <BookingFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-        />
-
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading your bookings...</p>
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <Calendar className="w-8 h-8 text-red-600" />
           </div>
-        )}
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Error loading bookings
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <Button
+            variant="outline"
+            onClick={() => dispatch(fetchUserBookings({ date: new Date().toISOString() }) as any)}
+          >
+            Try Again
+          </Button>
+        </div>
+      )}
 
-        {/* Error State */}
-        {error && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-              <Calendar className="w-8 h-8 text-red-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Error loading bookings
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
-            <Button
-              variant="outline"
-              onClick={() => dispatch(fetchUserBookings({ date: new Date().toISOString() }) as any)}
-            >
-              Try Again
-            </Button>
+      {/* Empty State - Only show when no bookings at all */}
+      {!loading && !error && bookings.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <Calendar className="w-8 h-8 text-gray-400" />
           </div>
-        )}
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            No bookings found
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            You don&apos;t have any bookings yet
+          </p>
+          <Button
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
+            onClick={() => router.push('/dashboard/explore')}
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Book New Session'}
+          </Button>
+        </div>
+      )}
 
-        {/* Bookings Grid */}
-        {!loading && !error && (
+      {/* Main Content - Show when there are bookings */}
+      {!loading && !error && bookings.length > 0 && (
+        <div className="space-y-6">
+          {/* Stats Section */}
+          <BookingStats bookings={bookings} />
+
+          {/* Filters Section */}
+          <BookingFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+          />
+
+          {/* Bookings Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredBookings.length > 0 ? (
               filteredBookings.map((booking) => <BookingCard key={booking.id} booking={booking} />)
@@ -347,19 +374,26 @@ export default function MyBookingsPage() {
                   <Calendar className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  No bookings found
+                  No bookings match your filters
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  {searchTerm || statusFilter
-                    ? 'Try adjusting your search or filter criteria'
-                    : "You don't have any bookings yet"}
+                  Try adjusting your search or filter criteria
                 </p>
-                <Button variant="outline">Book New Session</Button>
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('');
+                  }}
+                >
+                  Clear Filters
+                </Button>
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </DashboardPageWrapper>
   );
 }

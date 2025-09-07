@@ -115,7 +115,7 @@ const Feedback = () => {
             <CarouselContent className="-ml-4">
               {feedbackData.map((feedback) => (
                 <CarouselItem key={feedback.id} className="pl-4 basis-full lg:basis-1/2">
-                  <div className="flex flex-col lg:flex-row w-full gap-6 p-5 sm:p-6 lg:p-8 rounded-xl border border-black/25 dark:border-neutral-600 bg-white dark:bg-neutral-900 shadow-md transition-all duration-300 hover:shadow-lg hover:border-primary/20 dark:hover:border-primary/20 min-h-[260px] h-full">
+                  <div className="flex flex-col lg:flex-row w-full gap-6 p-5 sm:p-6 lg:p-8 rounded-xl border border-black/25 dark:border-neutral-600 bg-white dark:bg-neutral-900 shadow-md transition-all duration-300 hover:shadow-lg hover:border-primary dark:hover:border-primary min-h-[260px] h-full">
                     {/* Image on the left */}
                     <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-lg overflow-hidden shrink-0 mx-auto lg:mx-0">
                       <Image

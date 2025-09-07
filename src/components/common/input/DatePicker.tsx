@@ -36,7 +36,7 @@ export function DatePicker({ title, value, onChange }: DatePickerProps) {
         <PopoverTrigger asChild>
           <button
             className={cn(
-              'flex w-full justify-between items-center rounded-md border border-gray-200 bg-white px-3 py-2 text-left text-sm font-normal text-muted-foreground bg-background text-foreground h-[40px] focus:outline-none focus:ring-2 focus:ring-blue-500',
+              'flex w-full justify-between items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-sm font-normal text-foreground h-11 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors',
               !date && 'text-gray-400',
             )}
           >

@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar, CheckCircle, Clock, Clock as ClockIcon, Heart, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -46,7 +47,7 @@ const StatsSection: React.FC<{ bookings: any[] }> = ({ bookings }) => {
     }).length || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-1 gap-4 mb-6">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
@@ -110,6 +111,7 @@ const AppointmentSection: React.FC<{
   getBookingDuration,
   getBookingLocation,
 }) => {
+  const router = useRouter();
   return (
     <Card className="border border-gray-200 dark:border-gray-700">
       <CardHeader className="pb-4">
@@ -193,8 +195,12 @@ const AppointmentSection: React.FC<{
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p className="mb-3">No appointments scheduled</p>
-                  <Button variant="outline" size="sm">
-                    Book New Session
+                  <Button
+                    className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
+                    onClick={() => router.push('/dashboard/explore')}
+                    disabled={loading}
+                  >
+                    {loading ? 'Loading...' : 'Book New Session'}
                   </Button>
                 </div>
               )}
@@ -297,9 +303,9 @@ const FavoritesSection: React.FC<{ favorites: Expert[]; loading: boolean }> = ({
                 {favorites.map((expert) => (
                   <CarouselItem
                     key={expert.id}
-                    className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-full"
+                    className="pl-2 lg:pl-4 basis-full lg:basis-1/2 lg:basis-full"
                   >
-                    <div className="p-1">
+                    <div className="lg:px-12">
                       <ExpertCard {...expert} showFavoriteText={false} />
                     </div>
                   </CarouselItem>
@@ -494,37 +500,34 @@ const UserExploreMain = () => {
     <DashboardPageWrapper
       header={
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back! 👋</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Here&apos;s your health journey overview
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome! 👋</h1>
         </div>
       }
     >
       <div className="space-y-6">
         {/* Stats Section */}
-        <StatsSection bookings={allBookings} />
+        <div className="grid xl:grid-cols-2 grid-cols-1 gap-4 mb-6">
+          <StatsSection bookings={allBookings} />
+          <FavoritesSection favorites={favoritesList} loading={loading} />
+        </div>
+        <AppointmentSection
+          date={date}
+          onDateChange={handleDateChange}
+          bookings={bookingData}
+          loading={calendarLoading || bookingsLoading}
+          getExpertName={getExpertName}
+          getBookingTime={getBookingTime}
+          getBookingDuration={getBookingDuration}
+          getBookingLocation={getBookingLocation}
+        />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Favorites Section */}
-          <div className="xl:col-span-1">
-            <FavoritesSection favorites={favoritesList} loading={loading} />
-          </div>
+          <div className="xl:col-span-1"></div>
 
           {/* Schedule Section */}
-          <div className="xl:col-span-2">
-            <AppointmentSection
-              date={date}
-              onDateChange={handleDateChange}
-              bookings={bookingData}
-              loading={calendarLoading || bookingsLoading}
-              getExpertName={getExpertName}
-              getBookingTime={getBookingTime}
-              getBookingDuration={getBookingDuration}
-              getBookingLocation={getBookingLocation}
-            />
-          </div>
+          <div className="xl:col-span-2"></div>
         </div>
       </div>
     </DashboardPageWrapper>

@@ -108,7 +108,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
       {/* Calendar Header */}
-      <div className="flex justify-center items-center bg-green-700 text-white p-4">
+      <div className="flex justify-center items-center bg-primary text-white p-4">
         <h2 className="text-xl font-medium">{monthName}</h2>
       </div>
 

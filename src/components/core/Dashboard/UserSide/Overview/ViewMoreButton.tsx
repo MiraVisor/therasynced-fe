@@ -20,7 +20,7 @@ export const ViewMoreButton: React.FC<ViewMoreButtonProps> = ({
     <div className="flex justify-center pt-8">
       <Button
         variant="outline"
-        className="border-primary/20 text-primary hover:bg-primary/5 px-8 py-3 h-auto"
+        className="border-primary text-primary hover:bg-primary/5 px-8 py-3 h-auto"
         onClick={onClick}
       >
         <Users className="w-4 h-4 mr-2" />

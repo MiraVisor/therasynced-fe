@@ -199,7 +199,7 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarFallback className="text-lg font-bold">
-                      {freelancer?.name?.charAt(0) || 'H'}
+                      {freelancer?.name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">

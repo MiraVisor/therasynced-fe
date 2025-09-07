@@ -4,9 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -94,10 +92,10 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   return (
     <div className="space-y-6">
       {/* Therapist Header */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0">
+      {/* <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-4">
-            <Avatar className="w-16 h-16 border-2 border-primary/20">
+            <Avatar className="w-16 h-16 border-2 border-primary">
               <AvatarImage src={freelancer.profilePicture} />
               <AvatarFallback className="text-lg font-semibold text-primary">
                 {freelancer.name.charAt(0)}
@@ -119,13 +117,13 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
             <Button
               variant="outline"
               onClick={() => setShowModernFlow(!showModernFlow)}
-              className="text-primary border-primary/20 hover:bg-primary/5"
+              className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
             >
               {showModernFlow ? 'Show Classic View' : 'Show Modern Flow'}
             </Button>
           </div>
         </CardHeader>
-      </Card>
+      </Card> */}
 
       {/* Booking Flow */}
       {showModernFlow ? (
@@ -133,7 +131,12 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-600 mb-4">Classic booking view is being updated...</p>
-          <Button onClick={() => setShowModernFlow(true)}>Use Modern Booking Flow</Button>
+          <Button
+            className="bg-primary hover:bg-primary/90 text-white"
+            onClick={() => setShowModernFlow(true)}
+          >
+            Use Modern Booking Flow
+          </Button>
         </div>
       )}
     </div>
