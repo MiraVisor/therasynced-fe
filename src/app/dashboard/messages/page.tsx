@@ -12,7 +12,7 @@ import {
   User,
   Video,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 
@@ -65,6 +65,12 @@ const MessagesPage = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showChat, setShowChat] = useState(false);
   const [lastFetchedConversationId, setLastFetchedConversationId] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Function to scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Contacts are now loaded globally in the dashboard layout
 
@@ -104,6 +110,14 @@ const MessagesPage = () => {
     leaveConversation,
     lastFetchedConversationId,
   ]);
+
+  // Scroll to bottom when messages are loaded or updated
+  useEffect(() => {
+    if (!isLoadingMessages && selectedContact?.conversationId) {
+      // Small delay to ensure DOM is updated
+      setTimeout(scrollToBottom, 100);
+    }
+  }, [messages, isLoadingMessages, selectedContact?.conversationId]);
 
   // Transform backend contacts to match original UI format
   const transformedContacts: Contact[] = contacts.map((contact) => ({
@@ -165,6 +179,8 @@ const MessagesPage = () => {
       ).unwrap();
 
       setNewMessage('');
+      // Scroll to bottom after sending message
+      setTimeout(scrollToBottom, 100);
     } catch (error: any) {
       toast.error(error.message || 'Failed to send message');
     }
@@ -393,6 +409,8 @@ const MessagesPage = () => {
                       </div>
                     ))
                   )}
+                  {/* Invisible element to scroll to */}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Message Input */}
