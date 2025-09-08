@@ -15,7 +15,9 @@ import {
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar,
@@ -33,6 +35,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
+import { selectTotalUnreadCount } from '@/redux/slices/chatSlice';
+import { RootState } from '@/redux/store';
 import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -55,6 +59,11 @@ const navigationLinks = {
       name: 'My Bookings',
       url: '/dashboard/my-bookings',
       icon: Calendar,
+    },
+    {
+      name: 'Messages',
+      url: '/dashboard/messages',
+      icon: MessageSquare,
     },
     {
       name: 'Account',
@@ -141,6 +150,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const { logout } = useAuth();
   const { state } = useSidebar();
   const links = userRole ? navigationLinks[userRole] : [];
+  const totalUnreadCount = useSelector(selectTotalUnreadCount);
 
   const handleNavigation = (url: string) => {
     router.push(url);
@@ -198,6 +208,14 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                       )}
                     />
                     <span className="text-sm font-medium">{item.name}</span>
+                    {item.name === 'Messages' && totalUnreadCount > 0 && (
+                      <Badge
+                        variant="destructive"
+                        className="ml-auto h-5 min-w-5 flex items-center justify-center px-1 text-xs"
+                      >
+                        {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                      </Badge>
+                    )}
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>

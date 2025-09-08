@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
+import { ChatProvider } from '@/components/providers/ChatProvider';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { getDecodedToken } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
@@ -76,11 +77,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full">
-        <AppSidebar userRole={userRole} />
-        <main className="flex-1 overflow-y-auto p-8 w-full bg-dashboard">{children}</main>
-      </div>
-    </SidebarProvider>
+    <ChatProvider>
+      <SidebarProvider>
+        <div className="flex h-screen w-full">
+          <AppSidebar userRole={userRole} />
+          <main className="flex-1 overflow-y-auto p-8 w-full bg-dashboard">{children}</main>
+        </div>
+      </SidebarProvider>
+    </ChatProvider>
   );
 }

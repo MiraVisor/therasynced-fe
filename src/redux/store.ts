@@ -4,6 +4,7 @@ import appointmentSlice from './slices/appointmentSlice';
 import authSlice from './slices/authSlice';
 import bookingSlice from './slices/bookingSlice';
 import calendarSlice from './slices/calendarSlice';
+import chatSlice from './slices/chatSlice';
 import exploreSlice from './slices/exploreSlice';
 import overviewSlice from './slices/overviewSlice';
 import serviceSlice from './slices/serviceSlice';
@@ -14,6 +15,7 @@ export const store = configureStore({
     auth: authSlice,
     appointment: appointmentSlice,
     calendar: calendarSlice,
+    chat: chatSlice,
     overview: overviewSlice,
     explore: exploreSlice,
     booking: bookingSlice,

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Chrome, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -11,6 +11,8 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { loginUser } from '@/redux/slices/authSlice';
+
+import GoogleSignInButton from './GoogleSignInButton';
 
 const formSchema = z.object({
   email: z
@@ -52,18 +54,6 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Replace with your backend's Google OAuth endpoint
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
-  };
-
-  const handleOAuthLogin = (provider: string) => {
-    // TODO: Implement OAuth login
-    if (provider === 'google') {
-      handleGoogleSignIn();
-    }
-  };
-
   return (
     <div className="h-[600px] flex flex-col">
       {/* Header */}
@@ -76,14 +66,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
       <div className="flex-1 flex flex-col justify-center">
         {/* OAuth Options */}
         <div className="space-y-3 mb-4">
-          <Button
-            variant="outline"
-            onClick={() => handleOAuthLogin('google')}
-            className="w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-sm font-medium transition-all duration-200 shadow-sm"
-          >
-            <Chrome className="h-4 w-4" />
-            Continue with Google
-          </Button>
+          <GoogleSignInButton />
         </div>
 
         <div className="relative mb-6">
