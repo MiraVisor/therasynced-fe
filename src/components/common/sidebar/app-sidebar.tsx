@@ -15,6 +15,7 @@ import {
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,9 +33,9 @@ import {
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
-import useChat from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
+import { selectTotalUnreadCount } from '@/redux/slices/chatSlice';
 import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -148,9 +149,10 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const { logout } = useAuth();
   const { state } = useSidebar();
   const links = userRole ? navigationLinks[userRole] : [];
+  const totalUnreadCount = useSelector(selectTotalUnreadCount);
 
   // Get unread message count for notification badge
-  const { totalUnreadCount } = useChat();
+  // const { totalUnreadCount: chatTotalUnreadCount } = useChat();
 
   const handleNavigation = (url: string) => {
     router.push(url);
@@ -216,6 +218,14 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                       )}
                     </div>
                     <span className="text-sm font-medium">{item.name}</span>
+                    {item.name === 'Messages' && totalUnreadCount > 0 && (
+                      <Badge
+                        variant="destructive"
+                        className="ml-auto h-5 min-w-5 flex items-center justify-center px-1 text-xs"
+                      >
+                        {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                      </Badge>
+                    )}
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>

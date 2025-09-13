@@ -1,33 +1,59 @@
 import api from '@/services/api';
-import {
-  GetContactsResponse,
-  GetMessagesResponse,
-  SendMessageData,
-  SendMessageResponse,
-} from '@/services/chatService';
-import { ENDPOINTS } from '@/services/endpoints';
 
-export const getContactsApi = async (): Promise<GetContactsResponse> => {
-  const response = await api.get(ENDPOINTS.chat.contacts);
-  return response.data;
+export interface ChatContact {
+  id: string;
+  name: string;
+  email: string;
+  profilePicture?: string;
+  conversationId: string;
+  lastMessage?: {
+    content: string;
+    createdAt: string;
+    isFromMe: boolean;
+    isRead: boolean;
+  };
+  unreadCount: number;
+  lastAppointment?: {
+    id: string;
+    status: string;
+    createdAt: string;
+  };
+}
+
+export interface Message {
+  id: string;
+  content: string;
+  createdAt: string;
+  isRead: boolean;
+  sender: {
+    id: string;
+    name: string;
+    profilePicture?: string;
+  };
+}
+
+export interface SendMessageData {
+  recipientId: string;
+  content: string;
+}
+
+export interface GetMessagesData {
+  conversationId: string;
+  page?: number;
+  limit?: number;
+}
+
+export const getChatContactsApi = async (): Promise<ChatContact[]> => {
+  const response = await api.get('/chat/contacts');
+  return response.data.data;
 };
 
-export const sendMessageApi = async (data: SendMessageData): Promise<SendMessageResponse> => {
-  const response = await api.post(ENDPOINTS.chat.send, data);
-  return response.data;
+export const sendMessageApi = async (data: SendMessageData): Promise<Message> => {
+  const response = await api.post('/chat/send', data);
+  return response.data.data;
 };
 
-export const getMessagesApi = async (
-  conversationId: string,
-  page: number = 1,
-  limit: number = 50,
-): Promise<GetMessagesResponse> => {
-  const response = await api.get(
-    `${ENDPOINTS.chat.messages}?conversationId=${conversationId}&page=${page}&limit=${limit}`,
-  );
-  return response.data;
-};
-
-export const markMessageAsReadApi = async (messageId: string): Promise<void> => {
-  await api.post(ENDPOINTS.chat.markRead(messageId));
+export const getMessagesApi = async (data: GetMessagesData): Promise<Message[]> => {
+  const response = await api.get('/chat/messages', { params: data });
+  return response.data.data;
 };
