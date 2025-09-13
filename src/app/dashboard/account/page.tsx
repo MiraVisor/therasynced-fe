@@ -913,7 +913,7 @@ export default function AccountPage() {
       </div>
 
       {/* Content Section */}
-      <div className="bg-gray-50 rounded-xl p-8">
+      <div className="bg-gray-50 rounded-xl">
         {activeSection === 'profile' && renderProfileSection()}
         {activeSection === 'account' && renderAccountSection()}
         {activeSection === 'notifications' && renderNotificationsSection()}

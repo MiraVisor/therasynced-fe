@@ -90,8 +90,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
   // Get freelancer info from the available props
   const freelancerName = name || cardInfo?.name || 'Unknown';
-  const freelancerSpecialty =
-    services?.[0]?.name || cardInfo?.mainService || specialty || 'General';
 
   return (
     <>
@@ -114,9 +112,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-1 truncate transition-colors">
                   {freelancerName}
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                  {freelancerSpecialty}
-                </p>
                 <div className="flex items-center gap-2 mt-2">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
@@ -145,18 +140,9 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0 pb-4 px-4 flex-1 flex flex-col">
+        <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
           {/* Price and Actions */}
           <div className="mt-auto space-y-3">
-            <div className="flex items-center justify-between">
-              {(availableSlots || 0) > 0 && (
-                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-3 h-3" />
-                  <span className="font-medium">{availableSlots || 0} slots</span>
-                </div>
-              )}
-            </div>
-
             <div className="flex flex-col md:flex-row gap-2">
               <Button
                 variant="outline"
@@ -247,9 +233,9 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 </h4>
                 <div className="space-y-2 lg:space-y-3">
                   {services.slice(0, 4).map((service: any, index: number) => (
-                    <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 lg:p-3">
+                    <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-lg ">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-xs lg:text-sm">{service.name}</span>
+                        <span className=" text-xs lg:text-sm">{service.name}</span>
                       </div>
                       {service.description && (
                         <p className="text-xs text-gray-600 line-clamp-2">{service.description}</p>
@@ -283,7 +269,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 </h4>
                 <div className="flex gap-1 lg:gap-2">
                   {languages.map((lang: string, index: number) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
+                    <Badge key={index} variant="outline" className="text-xs">
                       {lang}
                     </Badge>
                   ))}
@@ -321,12 +307,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                         })}
                       </p>
                     </div>
-                    <Badge
-                      variant="secondary"
-                      className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 self-start lg:self-auto"
-                    >
-                      Available
-                    </Badge>
                   </div>
                 </div>
               </div>

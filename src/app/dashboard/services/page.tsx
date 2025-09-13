@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
@@ -29,6 +28,44 @@ import {
 import { RootState } from '@/redux/store';
 import { LocationType, Service } from '@/types/types';
 
+// Toggle Switch Component
+const ToggleSwitch = ({
+  checked,
+  onChange,
+  disabled,
+  label,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+  label?: string;
+}) => (
+  <label
+    className={`inline-flex items-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+  >
+    {label && <span className="mr-3 text-sm font-medium text-gray-700">{label}</span>}
+    <span className="relative">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        disabled={disabled}
+        className="sr-only"
+      />
+      <span
+        className={`block w-12 h-6 rounded-full transition-colors duration-200 border-2 ${
+          checked ? 'bg-green-500 border-green-500' : 'bg-gray-200 border-gray-300'
+        } ${disabled ? 'opacity-50' : ''}`}
+      ></span>
+      <span
+        className={`absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 shadow-sm ${
+          checked ? 'translate-x-6' : 'translate-x-0'
+        }`}
+      ></span>
+    </span>
+  </label>
+);
+
 // Service Form Component
 const ServiceForm = ({
   service,
@@ -49,6 +86,7 @@ const ServiceForm = ({
     locationTypes: service?.locationTypes || [LocationType.VIRTUAL],
     tags: service?.tags || [],
     requiresEquipment: service?.requiresEquipment || false,
+    ...(service && { isActive: service.isActive }),
   });
   const [newTag, setNewTag] = useState('');
 
@@ -123,11 +161,12 @@ const ServiceForm = ({
             </label>
             <Input
               type="number"
-              min="0"
-              step="0.01"
+              min="10"
+              step="1"
+              defaultValue={'10'}
               value={formData.duration}
               onChange={(e) => setFormData({ ...formData, duration: parseFloat(e.target.value) })}
-              placeholder="25.00"
+              placeholder="25"
             />
           </div>
         </div>
@@ -199,6 +238,37 @@ const ServiceForm = ({
             Requires special equipment
           </label>
         </div> */}
+        {service && (
+          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <label className="block text-sm font-medium text-gray-700 mb-3">Service Status</label>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-3 h-3 rounded-full ${formData.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
+                  ></div>
+                  <div>
+                    <p
+                      className={`text-sm font-medium ${formData.isActive ? 'text-green-700' : 'text-gray-600'}`}
+                    >
+                      {formData.isActive ? 'Active' : 'Inactive'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formData.isActive
+                        ? 'Service is visible to clients'
+                        : 'Service is hidden from clients'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <ToggleSwitch
+                checked={formData.isActive}
+                onChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                disabled={isCreating || isUpdating}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end gap-3">
@@ -243,14 +313,7 @@ const createServiceColumns = (
     cell: ({ row }: any) => (
       <div className="flex flex-wrap gap-1">
         {row.original.locationTypes.map((type: LocationType) => (
-          <span
-            key={type}
-            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md text-xs"
-          >
-            {type === LocationType.VIRTUAL && '💻'}
-            {type === LocationType.HOME && '🏠'}
-            {type === LocationType.OFFICE && '🏢'}
-            {type === LocationType.CLINIC && '🏥'}
+          <span key={type} className="inline-flex items-center">
             {type}
           </span>
         ))}
@@ -261,9 +324,9 @@ const createServiceColumns = (
     accessorKey: 'isActive',
     header: 'Status',
     cell: ({ row }: any) => (
-      <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-        {row.original.isActive ? 'Active' : 'Inactive'}
-      </Badge>
+      <div className="flex items-center gap-2">
+        <span>{row.original.isActive ? 'Active' : 'Inactive'}</span>
+      </div>
     ),
   },
   {
@@ -302,6 +365,7 @@ const ServicesPage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [togglingActiveId, setTogglingActiveId] = useState<string | null>(null);
 
   useEffect(() => {
     loadServices();
@@ -351,77 +415,76 @@ const ServicesPage = () => {
         </div>
       }
     >
-      <div className="flex flex-col gap-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-emerald-600 font-medium">Total Services</p>
-                  <p className="text-2xl font-bold text-emerald-900">{stats.total}</p>
-                </div>
-                <div className="p-3 rounded-2xl bg-emerald-50 group-hover:scale-110 transition-transform duration-300">
-                  <Package className="h-6 w-6 text-emerald-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-600 font-medium">Active Services</p>
-                  <p className="text-2xl font-bold text-blue-900">{stats.active}</p>
-                </div>
-                <div className="p-3 rounded-2xl bg-blue-50 group-hover:scale-110 transition-transform duration-300">
-                  <Eye className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">Inactive Services</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.inactive}</p>
-                </div>
-                <div className="p-3 rounded-2xl bg-gray-50 group-hover:scale-110 transition-transform duration-300">
-                  <EyeOff className="h-6 w-6 text-gray-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {services.length === 0 ? (
+        <div className="flex items-center justify-center ">
+          <div className="text-center py-12">
+            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No services found</h3>
+            <p className="text-gray-600 mb-4">You haven&apos;t created any services yet</p>
+            <Button onClick={() => setShowCreateForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Your First Service
+            </Button>
+          </div>
         </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-emerald-600 font-medium">Total Services</p>
+                    <p className="text-2xl font-bold text-emerald-900">{stats.total}</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-emerald-50 group-hover:scale-110 transition-transform duration-300">
+                    <Package className="h-6 w-6 text-emerald-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Services DataTable */}
-        <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-end space-y-0 pb-4">
-            {services.length > 0 && (
-              <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add Service
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {services.length === 0 ? (
-              <div className="text-center py-12">
-                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No services found</h3>
-                <p className="text-gray-600 mb-4">
-                  You haven&apos;t created any services yet. Add your first service to enhance your
-                  professional profile!
-                </p>
-                <Button onClick={() => setShowCreateForm(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Service
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-blue-600 font-medium">Active Services</p>
+                    <p className="text-2xl font-bold text-blue-900">{stats.active}</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-blue-50 group-hover:scale-110 transition-transform duration-300">
+                    <Eye className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Inactive Services</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.inactive}</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-gray-50 group-hover:scale-110 transition-transform duration-300">
+                    <EyeOff className="h-6 w-6 text-gray-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Services DataTable */}
+          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-end space-y-0 pb-4">
+              {services.length > 0 && (
+                <Button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Service
                 </Button>
-              </div>
-            ) : (
+              )}
+            </CardHeader>
+            <CardContent>
               <DataTable
                 columns={createServiceColumns(
                   (service) => setEditingService(service),
@@ -441,63 +504,62 @@ const ServicesPage = () => {
                 showSorting={false}
                 showSearch={false}
               />
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      {/* Create/Edit Service Dialog */}
+      <Dialog
+        open={showCreateForm || !!editingService}
+        onOpenChange={() => {
+          setShowCreateForm(false);
+          setEditingService(null);
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
+            <DialogDescription>
+              {editingService
+                ? 'Update your service details and settings.'
+                : 'Create a new service to offer to your clients.'}
+            </DialogDescription>
+          </DialogHeader>
+          <ServiceForm
+            service={editingService || undefined}
+            onSuccess={() => {
+              setShowCreateForm(false);
+              setEditingService(null);
+              loadServices();
+            }}
+            onCancel={() => {
+              setShowCreateForm(false);
+              setEditingService(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
-        {/* Create/Edit Service Dialog */}
-        <Dialog
-          open={showCreateForm || !!editingService}
-          onOpenChange={() => {
-            setShowCreateForm(false);
-            setEditingService(null);
-          }}
-        >
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
-              <DialogDescription>
-                {editingService
-                  ? 'Update your service details and settings.'
-                  : 'Create a new service to offer to your clients.'}
-              </DialogDescription>
-            </DialogHeader>
-            <ServiceForm
-              service={editingService || undefined}
-              onSuccess={() => {
-                setShowCreateForm(false);
-                setEditingService(null);
-                loadServices();
-              }}
-              onCancel={() => {
-                setShowCreateForm(false);
-                setEditingService(null);
-              }}
-            />
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Service</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete &quot;{selectedService?.name}&quot;? This action
-                cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={handleDeleteService} disabled={isDeleting}>
-                {isDeleting ? 'Deleting...' : 'Delete Service'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Service</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;{selectedService?.name}&quot;? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteService} disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : 'Delete Service'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardPageWrapper>
   );
 };

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +30,31 @@ import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import ExpertCard from '../Overview/ExpertCard';
 
 // Simple Stats Section
-const StatsSection: React.FC<{ bookings: any[] }> = ({ bookings }) => {
+const StatsSection: React.FC<{ bookings: any[]; loading?: boolean }> = ({
+  bookings,
+  loading = false,
+}) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 animate-pulse"></div>
+              <div>
+                <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-1"></div>
+                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   const totalSessions = bookings?.length || 0;
   const upcomingSessions =
     bookings?.filter((booking: any) => {
@@ -120,18 +143,18 @@ const AppointmentSection: React.FC<{
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 justify-center items-center w-full">
           {/* Calendar */}
           <div>
             <CalendarComponent
               mode="single"
               selected={date}
               onSelect={onDateChange}
-              className="rounded-lg border border-gray-200 dark:border-gray-700"
+              className="rounded-lg w-full border border-gray-200 dark:border-gray-700"
             />
           </div>
           {/* Appointments List */}
-          <div>
+          <div className="w-full">
             <div className="mb-4">
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                 {date
@@ -172,9 +195,6 @@ const AppointmentSection: React.FC<{
                       <h5 className="font-medium text-gray-900 dark:text-white">
                         {getExpertName(booking)}
                       </h5>
-                      <Badge variant="outline" className="text-xs">
-                        {booking.status || 'Confirmed'}
-                      </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <Clock className="w-3 h-3" />
@@ -351,6 +371,31 @@ const UserExploreMain = () => {
   const { experts: allExperts } = useSelector((state: RootState) => state.overview);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [calendarLoading, setCalendarLoading] = useState(false);
+  const [allTimeBookings, setAllTimeBookings] = useState<any[]>([]);
+  const [allTimeBookingsLoading, setAllTimeBookingsLoading] = useState(false);
+
+  // Fetch all-time bookings for stats
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchAllTimeBookings = async () => {
+      setAllTimeBookingsLoading(true);
+      try {
+        // Fetch all bookings without date parameter for stats
+        const result = await dispatch(fetchExplorePatientBookings(undefined) as any);
+        if (fetchExplorePatientBookings.fulfilled.match(result)) {
+          setAllTimeBookings(result.payload || []);
+        }
+      } catch (error) {
+        console.error('Error fetching all-time bookings:', error);
+        setAllTimeBookings([]);
+      } finally {
+        setAllTimeBookingsLoading(false);
+      }
+    };
+
+    fetchAllTimeBookings();
+  }, [dispatch, isAuthenticated]);
 
   // Fetch data on component mount only if authenticated
   useEffect(() => {
@@ -481,9 +526,9 @@ const UserExploreMain = () => {
   const getBookingLocation = (booking: any) => {
     return booking?.slot?.locationType === 'OFFICE'
       ? 'Office'
-      : booking?.slot?.location === 'ONLINE'
+      : booking?.slot?.locationType === 'VIRTUAL'
         ? 'Online'
-        : booking?.slot?.location === 'HOME'
+        : booking?.slot?.locationType === 'HOME'
           ? 'Home'
           : 'Virtual';
   };
@@ -507,7 +552,7 @@ const UserExploreMain = () => {
       <div className="space-y-6">
         {/* Stats Section */}
         <div className="grid xl:grid-cols-2 grid-cols-1 gap-4 mb-6">
-          <StatsSection bookings={allBookings} />
+          <StatsSection bookings={allTimeBookings} loading={allTimeBookingsLoading} />
           <FavoritesSection favorites={favoritesList} loading={loading} />
         </div>
         <AppointmentSection

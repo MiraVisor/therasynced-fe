@@ -44,11 +44,11 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
   });
 
   // Get primary service name
-  const primaryService = services.length > 0 ? services[0].name : 'Therapy';
+  const primaryService = services[0].name;
 
   // Get location information
   const locations = freelancer.locations || [];
-  const primaryLocation = locations.length > 0 ? locations[0].name : 'Online';
+  const primaryLocation = locations[0].name;
 
   // Calculate experience from creation date or use default
   const createdAt = freelancer.createdAt ? new Date(freelancer.createdAt) : null;
@@ -77,7 +77,7 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     languages: ['English'], // Default, can be extended if API provides languages
     education: [], // Can be extended if API provides education
     certifications: [], // Can be extended if API provides certifications
-    sessionTypes: sessionTypes.length > 0 ? sessionTypes : ['online', 'office'],
+    sessionTypes: sessionTypes,
     pricing: freelancer.pricing,
     // Additional data from API
     email: freelancer.email,

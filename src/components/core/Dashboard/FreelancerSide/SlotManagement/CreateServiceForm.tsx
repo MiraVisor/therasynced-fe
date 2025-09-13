@@ -187,7 +187,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
                   onClick={() => toggleLocationType(locationType as LocationType)}
                 >
                   <div className="text-center">
-                    <div className="text-2xl mb-2">{getLocationTypeIcon(locationType)}</div>
+                    {/* <div className="text-2xl mb-2">{getLocationTypeIcon(locationType)}</div> */}
                     <div className="text-sm font-medium text-gray-700">
                       {getLocationTypeLabel(locationType)}
                     </div>
