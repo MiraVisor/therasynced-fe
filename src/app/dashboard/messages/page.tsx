@@ -1,20 +1,9 @@
 'use client';
 
 import { format } from 'date-fns';
-import {
-  Check,
-  CheckCheck,
-  ChevronLeft,
-  Phone,
-  Search,
-  Send,
-  Trash2,
-  User,
-  Video,
-} from 'lucide-react';
+import { Check, CheckCheck, ChevronLeft, Search, Send, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,15 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { useChatSocket } from '@/hooks/useChatSocket';
-import {
-  fetchChatContacts,
-  fetchMessages,
-  markMessagesAsRead,
-  sendMessage,
-  setSelectedContact,
-} from '@/redux/slices/chatSlice';
-import { RootState } from '@/redux/store';
+import useChat from '@/hooks/useChat';
+import { getDecodedToken } from '@/lib/utils';
 
 // Types
 interface Contact {
@@ -53,69 +35,68 @@ interface MessageType {
 }
 
 const MessagesPage = () => {
-  const dispatch = useDispatch();
-  const { contacts, messages, selectedContact, isLoadingContacts, isLoadingMessages, error } =
-    useSelector((state: RootState) => state.chat);
-  const { joinConversation, leaveConversation } = useChatSocket();
+  // Get current user ID for proper unread logic
+  const currentUser = getDecodedToken();
+  const currentUserId = currentUser?.sub;
+
+  const {
+    contacts,
+    activeConversationId,
+    activeConversation,
+    isConnected,
+    loading,
+    error,
+    selectConversation,
+    sendMessage,
+    getContactByConversationId,
+    markConversationAsRead,
+  } = useChat(currentUserId);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showChat, setShowChat] = useState(false);
-  const [lastFetchedConversationId, setLastFetchedConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const selectedContact = activeConversationId
+    ? getContactByConversationId(activeConversationId)
+    : null;
 
   // Function to scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Contacts are now loaded globally in the dashboard layout
-
-  // Load messages when a contact is selected
-  useEffect(() => {
-    if (
-      selectedContact?.conversationId &&
-      selectedContact.conversationId !== lastFetchedConversationId
-    ) {
-      dispatch(
-        fetchMessages({
-          conversationId: selectedContact.conversationId,
-          page: 1,
-          limit: 50,
-        }) as any,
-      );
-
-      setLastFetchedConversationId(selectedContact.conversationId);
-
-      // Mark messages as read when opening conversation
-      dispatch(markMessagesAsRead({ conversationId: selectedContact.conversationId }));
-
-      // Join the conversation for real-time updates
-      joinConversation(selectedContact.conversationId);
-    }
-
-    // Cleanup: leave conversation when component unmounts or contact changes
-    return () => {
-      if (selectedContact?.conversationId) {
-        leaveConversation(selectedContact.conversationId);
-      }
-    };
-  }, [
-    selectedContact?.conversationId,
-    dispatch,
-    joinConversation,
-    leaveConversation,
-    lastFetchedConversationId,
-  ]);
-
   // Scroll to bottom when messages are loaded or updated
   useEffect(() => {
-    if (!isLoadingMessages && selectedContact?.conversationId) {
+    if (!loading.messages && selectedContact?.conversationId) {
       // Small delay to ensure DOM is updated
       setTimeout(scrollToBottom, 100);
     }
-  }, [messages, isLoadingMessages, selectedContact?.conversationId]);
+  }, [activeConversation, loading.messages, selectedContact?.conversationId]);
+
+  // Mark messages as read when viewing a conversation with unread messages
+  useEffect(() => {
+    if (
+      selectedContact &&
+      selectedContact.unreadCount > 0 &&
+      activeConversation &&
+      activeConversation.length > 0
+    ) {
+      // Mark messages as read after a short delay to ensure user is actually viewing the messages
+      console.log(
+        'Auto-marking conversation as read after delay:',
+        selectedContact.conversationId,
+        'unread count:',
+        selectedContact.unreadCount,
+      );
+      const timer = setTimeout(() => {
+        markConversationAsRead(selectedContact.conversationId);
+      }, 1000); // 1 second delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [selectedContact, activeConversation, markConversationAsRead]);
 
   // Transform backend contacts to match original UI format
   const transformedContacts: Contact[] = contacts.map((contact) => ({
@@ -123,10 +104,7 @@ const MessagesPage = () => {
     name: contact.name,
     avatar: contact.profilePicture || '',
     lastMessage: contact.lastMessage?.content || 'No messages yet',
-    lastMessageTime:
-      contact.lastMessage?.createdAt ||
-      contact.lastAppointment?.createdAt ||
-      new Date().toISOString(),
+    lastMessageTime: contact.lastMessage?.createdAt || new Date().toISOString(),
     unreadCount: contact.unreadCount,
     status: 'active' as const,
   }));
@@ -134,7 +112,7 @@ const MessagesPage = () => {
   // Transform backend messages to match original UI format
   const getCurrentMessages = (): MessageType[] => {
     if (!selectedContact) return [];
-    const backendMessages = messages[selectedContact.conversationId] || [];
+    const backendMessages = activeConversation || [];
     return backendMessages.map((message) => ({
       id: message.id,
       content: message.content,
@@ -154,13 +132,30 @@ const MessagesPage = () => {
     // Find the backend contact
     const backendContact = contacts.find((c) => c.id === contact.id);
     if (backendContact) {
-      dispatch(setSelectedContact(backendContact));
-      if (isMobile) {
-        setShowChat(true);
-      }
-      // Mark messages as read
-      if (contact.unreadCount > 0) {
-        dispatch(markMessagesAsRead({ conversationId: backendContact.conversationId }));
+      // If clicking the same contact that's already selected, toggle chat
+      if (selectedContact?.id === contact.id) {
+        if (isMobile) {
+          setShowChat(!showChat);
+        } else {
+          // On desktop, deselect the conversation to close chat
+          selectConversation('');
+        }
+      } else {
+        // Different contact selected - open conversation
+        selectConversation(backendContact.conversationId);
+        // Mark messages as read when opening conversation
+        if (backendContact.unreadCount > 0) {
+          console.log(
+            'Marking conversation as read:',
+            backendContact.conversationId,
+            'unread count:',
+            backendContact.unreadCount,
+          );
+          markConversationAsRead(backendContact.conversationId);
+        }
+        if (isMobile) {
+          setShowChat(true);
+        }
       }
     }
   };
@@ -169,13 +164,7 @@ const MessagesPage = () => {
     if (!newMessage.trim() || !selectedContact) return;
 
     try {
-      await dispatch(
-        sendMessage({
-          recipientId: selectedContact.id,
-          content: newMessage.trim(),
-        }) as any,
-      ).unwrap();
-
+      await sendMessage(selectedContact.id, newMessage.trim());
       setNewMessage('');
       // Scroll to bottom after sending message
       setTimeout(scrollToBottom, 100);
@@ -193,6 +182,8 @@ const MessagesPage = () => {
 
   const handleBackToContacts = () => {
     setShowChat(false);
+    // Keep the conversation selected on mobile back - user might want to return to it
+    // Only deselect if they want to truly close the conversation
   };
 
   const formatMessageTime = (timestamp: string) => {
@@ -227,15 +218,15 @@ const MessagesPage = () => {
     }
   };
 
-  if (error) {
+  if (error.contacts || error.messages || error.sending) {
     return (
       <DashboardPageWrapper
         header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}
       >
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <Button onClick={() => dispatch(fetchChatContacts() as any)}>Try Again</Button>
+            <p className="text-red-500 mb-4">{error.contacts || error.messages || error.sending}</p>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
           </div>
         </div>
       </DashboardPageWrapper>
@@ -248,7 +239,7 @@ const MessagesPage = () => {
         <div className="flex flex-1 min-h-0">
           {/* Contacts Sidebar */}
           <div
-            className={`${showChat ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 border-r bg-white`}
+            className={`${showChat ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 border-r `}
           >
             {/* Search */}
             <div className="p-4 border-b">
@@ -265,7 +256,7 @@ const MessagesPage = () => {
 
             {/* Contacts List */}
             <div className="flex-1 overflow-y-auto">
-              {isLoadingContacts ? (
+              {loading.contacts ? (
                 <div className="flex items-center justify-center h-32">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -323,11 +314,11 @@ const MessagesPage = () => {
           </div>
 
           {/* Chat Area */}
-          <div className={`${!showChat ? 'hidden md:flex' : 'flex'} flex-col flex-1 bg-white`}>
+          <div className={`${!showChat ? 'hidden md:flex' : 'flex'} flex-col flex-1 `}>
             {selectedContact ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b bg-white flex items-center justify-between">
+                <div className="p-4 border-b  flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     {isMobile && (
                       <Button
@@ -358,22 +349,11 @@ const MessagesPage = () => {
                       <h3 className="font-medium">{selectedContact.name}</h3>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm">
-                      <Phone className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Video className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {isLoadingMessages ? (
+                  {loading.messages ? (
                     <div className="flex items-center justify-center h-32">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
@@ -412,17 +392,25 @@ const MessagesPage = () => {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t bg-white">
+                <div className="p-4 border-t ">
                   <div className="flex space-x-2">
                     <Input
-                      placeholder="Type a message..."
+                      placeholder={isConnected ? 'Type a message...' : 'Connecting...'}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
                       className="flex-1"
+                      disabled={!isConnected || loading.sending}
                     />
-                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                      <Send className="h-4 w-4" />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim() || !isConnected || loading.sending}
+                    >
+                      {loading.sending ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>

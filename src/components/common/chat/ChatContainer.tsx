@@ -238,7 +238,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
         <div className="absolute bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-sm z-10">
           <strong className="font-bold">Error: </strong>
           <span className="block sm:inline">
-            {error.contacts || error.messages || error.sending}
+            {error.contacts || error.messages || error.sending || 'An error occurred'}
           </span>
         </div>
       )}

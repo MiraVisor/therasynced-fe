@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
 
@@ -18,7 +18,6 @@ export default function GoogleSignInButton({
   children,
 }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleGoogleSignIn = async () => {
     try {

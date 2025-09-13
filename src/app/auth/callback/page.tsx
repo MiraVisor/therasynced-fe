@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 import { setCookie } from '@/lib/utils';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';

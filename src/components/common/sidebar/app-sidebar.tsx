@@ -210,12 +210,6 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                             : 'group-data-[collapsible=icon]:group-hover:text-accent-foreground',
                         )}
                       />
-                      {/* Show unread count badge for Messages */}
-                      {item.name === 'Messages' && totalUnreadCount > 0 && (
-                        <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-green-600 hover:bg-green-700 text-white flex items-center justify-center">
-                          {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-                        </Badge>
-                      )}
                     </div>
                     <span className="text-sm font-medium">{item.name}</span>
                     {item.name === 'Messages' && totalUnreadCount > 0 && (
