@@ -93,6 +93,16 @@ const authSlice = createSlice({
     setRole: (state, action) => {
       state.role = action.payload;
     },
+    setAuthData: (state, action) => {
+      const { user, token, isAuthenticated } = action.payload;
+      state.token = token;
+      state.role = user.role;
+      state.isAuthenticated = isAuthenticated;
+      if (typeof window !== 'undefined') {
+        setCookie('token', token);
+        setCookie('role', user.role);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -146,5 +156,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setRole } = authSlice.actions;
+export const { logout, setRole, setAuthData } = authSlice.actions;
 export default authSlice.reducer;

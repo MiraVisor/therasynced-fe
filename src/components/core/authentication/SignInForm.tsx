@@ -3,14 +3,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Chrome, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { setCookie } from '@/lib/utils';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { loginUser } from '@/redux/slices/authSlice';
+import { loginUser, setAuthData } from '@/redux/slices/authSlice';
+import { GoogleBackendResponse, handleGoogleSignInFlow } from '@/services/googleAuthService';
+import { renderGoogleButton } from '@/utils/googleAuth';
 
 const formSchema = z.object({
   email: z
@@ -29,6 +32,8 @@ type FormData = z.infer<typeof formSchema>;
 
 const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -52,15 +57,71 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Replace with your backend's Google OAuth endpoint
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
+  // Handle Google OAuth success
+  const handleGoogleSuccess = async (response: GoogleBackendResponse) => {
+    setIsGoogleLoading(false);
+
+    // Set auth data in Redux store
+    dispatch(
+      setAuthData({
+        user: response.data.user,
+        token: response.data.token,
+        isAuthenticated: true,
+      }),
+    );
+
+    // Set cookie for persistence
+    setCookie('token', response.data.token, 7); // 7 days
+    setCookie('role', response.data.user.role, 7);
+
+    // Redirect to dashboard
+    router.push('/dashboard');
   };
 
+  // Handle Google OAuth error
+  const handleGoogleError = (error: string) => {
+    setIsGoogleLoading(false);
+    console.error('Google sign-in error:', error);
+  };
+
+  // Initialize Google button on component mount
+  useEffect(() => {
+    const initGoogleButton = () => {
+      if (googleButtonRef.current && typeof window !== 'undefined' && window.google) {
+        renderGoogleButton(googleButtonRef.current, (response: GoogleAuthResponse) => {
+          setIsGoogleLoading(true);
+          handleGoogleSignInFlow(response.credential, handleGoogleSuccess, handleGoogleError);
+        });
+      }
+    };
+
+    // Check if Google script is loaded
+    if (typeof window !== 'undefined' && window.google) {
+      initGoogleButton();
+    } else {
+      // Wait for Google script to load
+      const checkGoogleLoaded = setInterval(() => {
+        if (typeof window !== 'undefined' && window.google) {
+          initGoogleButton();
+          clearInterval(checkGoogleLoaded);
+        }
+      }, 100);
+
+      return () => clearInterval(checkGoogleLoaded);
+    }
+  }, [handleGoogleSuccess, handleGoogleError]);
+
   const handleOAuthLogin = (provider: string) => {
-    // TODO: Implement OAuth login
     if (provider === 'google') {
-      handleGoogleSignIn();
+      // Google button is rendered via useEffect, so this is just a fallback
+      if (googleButtonRef.current) {
+        const googleBtn = googleButtonRef.current.querySelector(
+          'div[role="button"]',
+        ) as HTMLElement;
+        if (googleBtn) {
+          googleBtn.click();
+        }
+      }
     }
   };
 
@@ -76,13 +137,18 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
       <div className="flex-1 flex flex-col justify-center">
         {/* OAuth Options */}
         <div className="space-y-3 mb-4">
+          {/* Google Sign-In Button Container */}
+          <div ref={googleButtonRef} className="w-full" />
+
+          {/* Fallback Custom Button */}
           <Button
             variant="outline"
             onClick={() => handleOAuthLogin('google')}
+            disabled={isGoogleLoading}
             className="w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm"
           >
             <Chrome className="h-4 w-4" />
-            Continue with Google
+            {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
           </Button>
         </div>
 
