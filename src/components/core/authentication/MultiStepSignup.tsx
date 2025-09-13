@@ -2,14 +2,19 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle, ChevronLeft, ChevronRight, Chrome, Eye, EyeOff, Mail } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { genderOptions, roleOptions } from '@/config/onboardingConfig';
-import { cn } from '@/lib/utils';
+import { cn, setCookie } from '@/lib/utils';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { setAuthData } from '@/redux/slices/authSlice';
+import { GoogleBackendResponse, handleGoogleSignInFlow } from '@/services/googleAuthService';
+import { GoogleAuthResponse, renderGoogleButton } from '@/utils/googleAuth';
 
 // Zod schema for form validation
 const signupSchema = z
@@ -64,6 +69,10 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [authMethod, setAuthMethod] = useState<'email' | 'oauth' | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const {
     register,
@@ -211,15 +220,73 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     onSubmit(transformedData);
   };
 
-  const handleGoogleSignIn = () => {
-    // Replace with your backend's Google OAuth endpoint
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
+  // Handle Google OAuth success
+  const handleGoogleSuccess = async (response: GoogleBackendResponse) => {
+    setIsGoogleLoading(false);
+
+    // Set auth data in Redux store
+    dispatch(
+      setAuthData({
+        user: response.data.user,
+        token: response.data.token,
+        isAuthenticated: true,
+      }),
+    );
+
+    // Set cookie for persistence
+    setCookie('token', response.data.token, 7); // 7 days
+    setCookie('role', response.data.user.role, 7);
+
+    // Redirect to dashboard
+    router.push('/dashboard');
   };
 
+  // Handle Google OAuth error
+  const handleGoogleError = (error: string) => {
+    setIsGoogleLoading(false);
+    console.error('Google sign-up error:', error);
+  };
+
+  // Initialize Google button on component mount for OAuth step
+  useEffect(() => {
+    if (currentStep === 6 && authMethod === 'oauth') {
+      const initGoogleButton = () => {
+        if (googleButtonRef.current && typeof window !== 'undefined' && window.google) {
+          renderGoogleButton(googleButtonRef.current, (response: GoogleAuthResponse) => {
+            setIsGoogleLoading(true);
+            handleGoogleSignInFlow(response.credential, handleGoogleSuccess, handleGoogleError);
+          });
+        }
+      };
+
+      // Check if Google script is loaded
+      if (typeof window !== 'undefined' && window.google) {
+        initGoogleButton();
+      } else {
+        // Wait for Google script to load
+        const checkGoogleLoaded = setInterval(() => {
+          if (typeof window !== 'undefined' && window.google) {
+            initGoogleButton();
+            clearInterval(checkGoogleLoaded);
+          }
+        }, 100);
+
+        return () => clearInterval(checkGoogleLoaded);
+      }
+    }
+  }, [currentStep, authMethod, handleGoogleSuccess, handleGoogleError]);
+
   const handleOAuthSignup = (provider: string) => {
-    // TODO: Implement OAuth signup and redirect to dashboard
     if (provider === 'google') {
-      handleGoogleSignIn();
+      // Google button is rendered via useEffect, so this is just a fallback
+      if (googleButtonRef.current) {
+        const googleBtn = googleButtonRef.current.querySelector(
+          'div[role="button"]',
+        ) as HTMLElement;
+        if (googleBtn) {
+          googleBtn.click();
+        }
+      }
     }
   };
 
@@ -443,30 +510,58 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                   <label
                     key={option.value}
                     className={cn(
-                      'flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2',
-                      watch('role') === option.value
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-primary/30 hover:bg-primary/5',
+                      'flex items-center gap-4 p-4 rounded-lg transition-all duration-200 border-2',
+                      option.value === 'team'
+                        ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                        : watch('role') === option.value
+                          ? 'border-primary bg-primary/5 text-primary cursor-pointer'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-primary/30 hover:bg-primary/5 cursor-pointer',
                     )}
                     onClick={async () => {
-                      setValue('role', option.value);
-                      await trigger('role');
+                      if (option.value !== 'team') {
+                        setValue('role', option.value);
+                        await trigger('role');
+                      }
                     }}
+                    aria-disabled={option.value === 'team'}
                   >
                     <div
                       className={cn(
                         'p-2 rounded-lg',
-                        watch('role') === option.value ? 'bg-primary text-white' : 'bg-gray-100',
+                        option.value === 'team'
+                          ? 'bg-gray-100 text-gray-400'
+                          : watch('role') === option.value
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100',
                       )}
                     >
                       <IconComponent className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
-                      <span className="font-semibold text-base">{option.label}</span>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <span
+                        className={cn(
+                          'font-semibold text-base',
+                          option.value === 'team' && 'text-gray-400',
+                        )}
+                      >
+                        {option.label}
+                        {option.value === 'team' && (
+                          <span className="ml-2 text-xs font-normal bg-gray-200 text-gray-500 px-2 py-0.5 rounded">
+                            Coming soon
+                          </span>
+                        )}
+                      </span>
+                      <p
+                        className={cn(
+                          'text-sm mt-1',
+                          option.value === 'team' ? 'text-gray-400' : 'text-gray-500',
+                        )}
+                      >
                         {option.value === 'patient'
-                          ? 'Book appointments and connect with healthcare professionals'
-                          : 'Provide services and manage your practice'}
+                          ? 'Book appointments, manage your health, and connect with trusted professionals.'
+                          : option.value === 'provider'
+                            ? 'Offer your services as a freelancer and manage your practice online.'
+                            : 'Create and manage a team of providers (coming soon)'}
                       </p>
                     </div>
                   </label>
@@ -505,6 +600,24 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 <Chrome className="h-5 w-5" />
                 Continue with Google
               </Button>
+
+              {/* Google Sign-In Button Container - shows when OAuth is selected */}
+              {authMethod === 'oauth' && (
+                <div className="space-y-3">
+                  <div ref={googleButtonRef} className="w-full" />
+
+                  {/* Fallback Custom Button */}
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOAuthSignup('google')}
+                    disabled={isGoogleLoading}
+                    className="w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm"
+                  >
+                    <Chrome className="h-4 w-4" />
+                    {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
+                  </Button>
+                </div>
+              )}
 
               <div className="relative">
                 <div className="flex items-center">

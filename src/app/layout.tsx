@@ -104,6 +104,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="light">
+      <head>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+      </head>
       <body
         className={`${openSans.variable} ${inter.variable} ${poppins.variable} antialiased`}
         suppressHydrationWarning
