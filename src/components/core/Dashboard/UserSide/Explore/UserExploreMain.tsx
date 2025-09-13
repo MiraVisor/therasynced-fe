@@ -1,6 +1,14 @@
 'use client';
 
-import { Calendar, CheckCircle, Clock, Clock as ClockIcon, Heart, Users } from 'lucide-react';
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  Clock as ClockIcon,
+  Heart,
+  MessageCircle,
+  Users,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,6 +25,7 @@ import {
 } from '@/components/ui/carousel';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Skeleton } from '@/components/ui/skeleton';
+import useChat from '@/hooks/useChat';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import {
   fetchAllFavoriteFreelancers,
@@ -34,6 +43,8 @@ const StatsSection: React.FC<{ bookings: any[]; loading?: boolean }> = ({
   bookings,
   loading = false,
 }) => {
+  const router = useRouter();
+  const { totalUnreadCount } = useChat();
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-4 mb-6">
@@ -107,6 +118,33 @@ const StatsSection: React.FC<{ bookings: any[]; loading?: boolean }> = ({
               {upcomingSessions}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Upcoming</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Quick Access */}
+      <div
+        className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow"
+        onClick={() => router.push('/dashboard/messages')}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center relative">
+            <MessageCircle className="w-5 h-5 text-green-600" />
+            {totalUnreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-xs text-white font-bold">
+                  {totalUnreadCount > 9 ? '!' : totalUnreadCount}
+                </span>
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {totalUnreadCount || 0}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {totalUnreadCount > 0 ? 'New Messages' : 'Messages'}
+            </div>
           </div>
         </div>
       </div>

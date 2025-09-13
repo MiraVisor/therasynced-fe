@@ -16,6 +16,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar,
@@ -31,6 +32,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
+import useChat from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { RoleType } from '@/types/types';
@@ -55,6 +57,11 @@ const navigationLinks = {
       name: 'My Bookings',
       url: '/dashboard/my-bookings',
       icon: Calendar,
+    },
+    {
+      name: 'Messages',
+      url: '/dashboard/messages',
+      icon: MessageSquare,
     },
     {
       name: 'Account',
@@ -142,6 +149,9 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const { state } = useSidebar();
   const links = userRole ? navigationLinks[userRole] : [];
 
+  // Get unread message count for notification badge
+  const { totalUnreadCount } = useChat();
+
   const handleNavigation = (url: string) => {
     router.push(url);
   };
@@ -182,21 +192,29 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                   isActive={pathname === item.url}
                 >
                   <div
-                    className="mx-auto flex items-center gap-3"
+                    className="mx-auto flex items-center gap-3 relative"
                     onClick={() => handleNavigation(item.url)}
                   >
-                    <item.icon
-                      className={cn(
-                        'size-5 transition-all duration-200',
-                        resolvedTheme === 'dark' ? 'text-foreground' : 'text-foreground/90',
-                        'group-hover:scale-110',
-                        isMobile &&
-                          'group-data-[collapsible=icon]:size-6 group-data-[collapsible=icon]:group-hover:scale-110',
-                        isMobile && resolvedTheme === 'dark'
-                          ? 'group-data-[collapsible=icon]:group-hover:text-accent-foreground'
-                          : 'group-data-[collapsible=icon]:group-hover:text-accent-foreground',
+                    <div className="relative">
+                      <item.icon
+                        className={cn(
+                          'size-5 transition-all duration-200',
+                          resolvedTheme === 'dark' ? 'text-foreground' : 'text-foreground/90',
+                          'group-hover:scale-110',
+                          isMobile &&
+                            'group-data-[collapsible=icon]:size-6 group-data-[collapsible=icon]:group-hover:scale-110',
+                          isMobile && resolvedTheme === 'dark'
+                            ? 'group-data-[collapsible=icon]:group-hover:text-accent-foreground'
+                            : 'group-data-[collapsible=icon]:group-hover:text-accent-foreground',
+                        )}
+                      />
+                      {/* Show unread count badge for Messages */}
+                      {item.name === 'Messages' && totalUnreadCount > 0 && (
+                        <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-green-600 hover:bg-green-700 text-white flex items-center justify-center">
+                          {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                        </Badge>
                       )}
-                    />
+                    </div>
                     <span className="text-sm font-medium">{item.name}</span>
                   </div>
                 </SidebarMenuButton>

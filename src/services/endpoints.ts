@@ -67,6 +67,13 @@ export const ENDPOINTS = {
     favoriteAll: '/freelancer/favorite/all',
     recentFavorite: '/freelancer/favorite/recent',
   },
+  // Chat/messaging endpoints
+  chat: {
+    contacts: '/chat/contacts',
+    send: '/chat/send',
+    messages: '/chat/messages',
+    markRead: (messageId: string) => `/chat/messages/${messageId}/read`,
+  },
 };
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;

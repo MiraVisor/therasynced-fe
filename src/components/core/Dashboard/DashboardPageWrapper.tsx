@@ -11,9 +11,11 @@ import { cn } from '@/lib/utils';
 export function DashboardPageWrapper({
   header,
   children,
+  showNotifications = true,
 }: {
   header?: React.ReactNode;
   children: React.ReactNode;
+  showNotifications?: boolean;
 }) {
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
@@ -43,9 +45,11 @@ export function DashboardPageWrapper({
 
           <div className="flex items-center gap-4">
             {/* <ModeToggle /> */}
-            <Button variant={'outline'} className="h-10 w-10 p-0">
-              <Bell className="h-5 w-5" />
-            </Button>
+            {showNotifications && (
+              <Button variant={'outline'} className="h-10 w-10 p-0">
+                <Bell className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -51,7 +51,7 @@ const SocketConnectionTest = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-96 max-h-96 overflow-y-auto z-50">
+    <div className="fixed bottom-4 right-4 border border-gray-300 rounded-lg shadow-lg p-4 w-96 max-h-96 overflow-y-auto z-50">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Socket Connection Test</h3>
         <button onClick={() => setIsVisible(false)} className="text-gray-500 hover:text-gray-700">

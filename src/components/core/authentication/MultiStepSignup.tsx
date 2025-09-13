@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { DatePicker } from '@/components/common/input/DatePicker';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { genderOptions, roleOptions } from '@/config/onboardingConfig';
@@ -327,20 +326,66 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
             </div>
 
             <div className="space-y-4">
-              <DatePicker
-                title=""
-                onChange={(date) => {
-                  setValue('dob', date?.toISOString() ?? '');
-                  trigger('dob');
+              <input
+                type="date"
+                value={
+                  getValues('dob')
+                    ? (() => {
+                        try {
+                          return new Date(getValues('dob')).toISOString().split('T')[0];
+                        } catch {
+                          return '';
+                        }
+                      })()
+                    : ''
+                }
+                className={cn(
+                  'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
+                  errors.dob
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                    : 'border-gray-200 focus:border-primary',
+                )}
+                max={(() => {
+                  const today = new Date();
+                  const eighteenYearsAgo = new Date(
+                    today.getFullYear() - 18,
+                    today.getMonth(),
+                    today.getDate(),
+                  );
+                  return eighteenYearsAgo.toISOString().split('T')[0];
+                })()}
+                min="1900-01-01"
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+
+                  // Only process if we have a complete date (YYYY-MM-DD format)
+                  if (inputValue && inputValue.length === 10 && inputValue.includes('-')) {
+                    try {
+                      const selectedDate = new Date(inputValue + 'T00:00:00.000Z');
+                      // Check if the date is valid
+                      if (!isNaN(selectedDate.getTime())) {
+                        setValue('dob', selectedDate.toISOString());
+                        trigger('dob');
+                      }
+                    } catch (error) {
+                      // If date conversion fails, just clear the value
+                      setValue('dob', '');
+                    }
+                  } else if (!inputValue) {
+                    // Clear the value if input is empty
+                    setValue('dob', '');
+                    trigger('dob');
+                  }
+                  // For incomplete dates, don't update the form value yet
                 }}
-                value={getValues('dob') ? new Date(getValues('dob')) : undefined}
+                autoFocus
               />
-              {/* {errors.dob && (
+              {errors.dob && (
                 <p className="text-red-500 text-sm flex items-center gap-1 mt-2">
                   <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                   {errors.dob.message}
                 </p>
-              )} */}
+              )}
             </div>
           </div>
         );
