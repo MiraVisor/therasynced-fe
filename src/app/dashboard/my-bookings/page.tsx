@@ -1,14 +1,33 @@
 'use client';
 
-import { Calendar, Clock, Filter, MapPin, Search, User } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  Filter,
+  MapPin,
+  MessageCircle,
+  RotateCcw,
+  Search,
+  User,
+  X,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
@@ -18,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fetchUserBookings } from '@/redux/slices/bookingSlice';
+import { cancelUserBooking, fetchUserBookings } from '@/redux/slices/bookingSlice';
 import { RootState } from '@/redux/store';
 import { Booking } from '@/types/types';
 
@@ -101,7 +120,19 @@ const BookingStats = ({ bookings }: { bookings: Booking[] }) => {
 };
 
 // Booking Card Component
-const BookingCard = ({ booking }: { booking: Booking }) => {
+const BookingCard = ({
+  booking,
+  onMessage,
+  onReschedule,
+  onCancel,
+  cancellingBookingId,
+}: {
+  booking: Booking;
+  onMessage: (booking: Booking) => void;
+  onReschedule: (booking: Booking) => void;
+  onCancel: (booking: Booking) => void;
+  cancellingBookingId: string | null;
+}) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
@@ -191,13 +222,41 @@ const BookingCard = ({ booking }: { booking: Booking }) => {
         </div>
 
         <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-          <Button variant="outline" size="sm" className="flex-1">
-            View Details
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => onMessage(booking)}>
+            <MessageCircle className="w-4 h-4 mr-1" />
+            Message
           </Button>
           {isUpcoming && (
-            <Button variant="outline" size="sm" className="flex-1">
-              Reschedule
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => onReschedule(booking)}
+              >
+                <RotateCcw className="w-4 h-4 mr-1" />
+                Reschedule
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                onClick={() => onCancel(booking)}
+                disabled={cancellingBookingId === booking.id}
+              >
+                {cancellingBookingId === booking.id ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-1"></div>
+                    Cancelling...
+                  </>
+                ) : (
+                  <>
+                    <X className="w-4 h-4 mr-1" />
+                    Cancel
+                  </>
+                )}
+              </Button>
+            </>
           )}
         </div>
       </CardContent>
@@ -259,37 +318,87 @@ export default function MyBookingsPage() {
   const { bookings, loading, error } = useSelector((state: RootState) => state.booking);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
 
   // Fetch bookings on component mount
   useEffect(() => {
     dispatch(fetchUserBookings({ date: new Date().toISOString() }) as any);
   }, [dispatch]);
 
-  // Filter bookings based on search and status
-  const filteredBookings = bookings.filter((booking: Booking) => {
-    const matchesSearch =
-      booking.slot.freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (booking.services.length > 0 &&
-        booking.services[0].name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Handler functions for booking actions
+  const handleMessage = (booking: Booking) => {
+    // Navigate to messages page with the freelancer
+    router.push(`/dashboard/messages?freelancerId=${booking.slot.freelancer.id}`);
+  };
 
-    const matchesStatus = (() => {
-      if (!statusFilter) return true;
-      if (statusFilter === 'upcoming') {
-        return booking.status === 'CONFIRMED' && new Date(booking.slot.startTime) > new Date();
-      }
-      if (statusFilter === 'completed') {
-        return new Date(booking.slot.startTime) < new Date();
-      }
-      if (statusFilter === 'cancelled') {
-        return booking.status === 'CANCELLED';
-      }
-      return true;
-    })();
+  const handleReschedule = (booking: Booking) => {
+    // Navigate to freelancer page for rescheduling
+    if (booking.slot?.freelancer?.id) {
+      router.push(`/dashboard/freelancer/${booking.slot.freelancer.id}`);
+    }
+  };
 
-    return matchesSearch && matchesStatus;
-  });
+  const handleCancel = (booking: Booking) => {
+    setBookingToCancel(booking);
+    setCancelReason('');
+    setShowCancelModal(true);
+  };
 
-  console.log(filteredBookings);
+  const confirmCancel = async () => {
+    if (!bookingToCancel) return;
+
+    setCancellingBookingId(bookingToCancel.id);
+    try {
+      await dispatch(
+        cancelUserBooking({
+          bookingId: bookingToCancel.id,
+          reason: cancelReason || 'Cancelled by user',
+        }) as any,
+      ).unwrap();
+      toast.success('Booking cancelled successfully');
+      setShowCancelModal(false);
+      setBookingToCancel(null);
+      setCancelReason('');
+    } catch (error) {
+      toast.error('Failed to cancel booking');
+    } finally {
+      setCancellingBookingId(null);
+    }
+  };
+
+  // Filter and sort bookings based on search, status, and date
+  const filteredBookings = bookings
+    .filter((booking: Booking) => {
+      const matchesSearch =
+        booking.slot.freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (booking.services.length > 0 &&
+          booking.services[0].name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesStatus = (() => {
+        if (!statusFilter) return true;
+        if (statusFilter === 'upcoming') {
+          return booking.status === 'CONFIRMED' && new Date(booking.slot.startTime) > new Date();
+        }
+        if (statusFilter === 'completed') {
+          return new Date(booking.slot.startTime) < new Date();
+        }
+        if (statusFilter === 'cancelled') {
+          return booking.status === 'CANCELLED';
+        }
+        return true;
+      })();
+
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a: Booking, b: Booking) => {
+      // Sort by date: closest to furthest
+      const dateA = new Date(a.slot.startTime).getTime();
+      const dateB = new Date(b.slot.startTime).getTime();
+      return dateA - dateB;
+    });
 
   return (
     <DashboardPageWrapper
@@ -367,7 +476,16 @@ export default function MyBookingsPage() {
           {/* Bookings Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredBookings.length > 0 ? (
-              filteredBookings.map((booking) => <BookingCard key={booking.id} booking={booking} />)
+              filteredBookings.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  onMessage={handleMessage}
+                  onReschedule={handleReschedule}
+                  onCancel={handleCancel}
+                  cancellingBookingId={cancellingBookingId}
+                />
+              ))
             ) : (
               <div className="col-span-full text-center py-12">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
@@ -394,6 +512,82 @@ export default function MyBookingsPage() {
           </div>
         </div>
       )}
+
+      {/* Cancel Confirmation Modal */}
+      <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cancel Booking</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this booking? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {bookingToCancel && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium text-gray-900">
+                  {bookingToCancel.slot.freelancer.name}
+                </h4>
+                <p className="text-sm text-gray-600">
+                  {new Date(bookingToCancel.slot.startTime).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </p>
+                <p className="text-sm text-gray-600">
+                  €{bookingToCancel.totalAmount} • {bookingToCancel.slot.duration} min
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="cancel-reason" className="text-sm font-medium text-gray-700">
+                  Reason for cancellation (optional)
+                </label>
+                <Input
+                  id="cancel-reason"
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Enter reason for cancellation..."
+                  className="w-full"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCancelModal(false);
+                setBookingToCancel(null);
+                setCancelReason('');
+              }}
+              disabled={cancellingBookingId === bookingToCancel?.id}
+            >
+              Keep Booking
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmCancel}
+              disabled={cancellingBookingId === bookingToCancel?.id}
+            >
+              {cancellingBookingId === bookingToCancel?.id ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Cancelling...
+                </>
+              ) : (
+                'Cancel Booking'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardPageWrapper>
   );
 }

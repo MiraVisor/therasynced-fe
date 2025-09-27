@@ -129,16 +129,24 @@ export default function AccountPage() {
         return;
       }
 
-      // Format the DOB from ISO string to YYYY-MM-DD for the date input
+      // Handle DOB without timezone conversion
       let formattedDob = '';
       if (userData.dob) {
-        try {
-          const date = new Date(userData.dob);
-          if (!isNaN(date.getTime())) {
-            formattedDob = date.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
+        // If DOB is already in YYYY-MM-DD format, use it directly
+        if (/^\d{4}-\d{2}-\d{2}$/.test(userData.dob)) {
+          formattedDob = userData.dob;
+        } else {
+          // If it's an ISO string, extract just the date part
+          try {
+            const date = new Date(userData.dob);
+            if (!isNaN(date.getTime())) {
+              // Extract YYYY-MM-DD from ISO string without timezone conversion
+              const isoString = date.toISOString();
+              formattedDob = isoString.split('T')[0];
+            }
+          } catch (error) {
+            console.error('Error formatting DOB:', error);
           }
-        } catch (error) {
-          console.error('Error formatting DOB:', error);
         }
       }
 
@@ -212,22 +220,35 @@ export default function AccountPage() {
         return;
       }
 
-      // Validate and format the DOB before sending to API
+      // Validate DOB format without timezone conversion
       let dobToSend = formData.dob;
       if (formData.dob) {
-        try {
-          const date = new Date(formData.dob);
-          if (!isNaN(date.getTime())) {
-            // Convert YYYY-MM-DD back to ISO string for API
-            dobToSend = date.toISOString();
-          } else {
-            toast.error('Invalid date format for Date of Birth');
-            return;
-          }
-        } catch (error) {
-          toast.error('Invalid date format for Date of Birth');
+        // Validate YYYY-MM-DD format
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(formData.dob)) {
+          toast.error('Invalid date format for Date of Birth. Please use YYYY-MM-DD format');
           return;
         }
+
+        // Validate the date is actually valid
+        const dateParts = formData.dob.split('-');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+        const day = parseInt(dateParts[2]);
+        const testDate = new Date(year, month, day);
+
+        if (
+          isNaN(testDate.getTime()) ||
+          testDate.getFullYear() !== year ||
+          testDate.getMonth() !== month ||
+          testDate.getDate() !== day
+        ) {
+          toast.error('Invalid date for Date of Birth');
+          return;
+        }
+
+        // Send as YYYY-MM-DD format without timezone conversion
+        dobToSend = formData.dob;
       }
 
       const response = await updateProfile({
@@ -447,7 +468,17 @@ export default function AccountPage() {
                 title=""
                 value={formData.dob ? new Date(formData.dob) : undefined}
                 onChange={(date) =>
-                  handleInputChange('dob', date ? date.toISOString().split('T')[0] : '')
+                  handleInputChange(
+                    'dob',
+                    date
+                      ? (() => {
+                          const year = date.getFullYear();
+                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                          const day = String(date.getDate()).padStart(2, '0');
+                          return `${year}-${month}-${day}`;
+                        })()
+                      : '',
+                  )
                 }
               />
             </div>

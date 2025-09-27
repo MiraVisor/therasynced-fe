@@ -1,24 +1,30 @@
 'use client';
 
-import { Bell } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
-import { Button } from '@/components/ui/button';
+import { NotificationPopover } from '@/components/common/notifications';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNotifications } from '@/hooks/useNotifications';
 import { cn } from '@/lib/utils';
+import { RoleType } from '@/types/types';
 
 export function DashboardPageWrapper({
   header,
   children,
   showNotifications = true,
+  userRole,
 }: {
   header?: React.ReactNode;
   children: React.ReactNode;
   showNotifications?: boolean;
+  userRole?: RoleType | null;
 }) {
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
+  const notifications = useNotifications();
+
+  // Removed notification click navigation for now - keeping it simple
 
   return (
     <>
@@ -45,10 +51,14 @@ export function DashboardPageWrapper({
 
           <div className="flex items-center gap-4">
             {/* <ModeToggle /> */}
-            {showNotifications && (
-              <Button variant={'outline'} className="h-10 w-10 p-0">
-                <Bell className="h-5 w-5" />
-              </Button>
+            {showNotifications && userRole && (
+              <NotificationPopover
+                notifications={notifications.notifications}
+                unreadCount={notifications.unreadCount}
+                onMarkAsRead={notifications.markAsRead}
+                onMarkAllAsRead={notifications.markAllAsRead}
+                userRole={userRole}
+              />
             )}
           </div>
         </div>

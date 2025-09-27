@@ -4,12 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle, ChevronLeft, ChevronRight, Chrome, Eye, EyeOff, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { genderOptions, roleOptions } from '@/config/onboardingConfig';
 import { cn } from '@/lib/utils';
+import { BACKEND_URL } from '@/services/endpoints';
 
 // Zod schema for form validation
 const signupSchema = z
@@ -21,7 +23,25 @@ const signupSchema = z
       .min(1, 'Date of birth is required')
       .refine((date) => {
         if (!date) return false;
-        const selectedDate = new Date(date);
+        // Handle YYYY-MM-DD format without timezone conversion
+        const dateParts = date.split('-');
+        if (dateParts.length !== 3) return false;
+
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+        const day = parseInt(dateParts[2]);
+        const selectedDate = new Date(year, month, day);
+
+        // Validate the date is valid and matches input
+        if (
+          isNaN(selectedDate.getTime()) ||
+          selectedDate.getFullYear() !== year ||
+          selectedDate.getMonth() !== month ||
+          selectedDate.getDate() !== day
+        ) {
+          return false;
+        }
+
         const today = new Date();
         const age = today.getFullYear() - selectedDate.getFullYear();
         const monthDiff = today.getMonth() - selectedDate.getMonth();
@@ -64,6 +84,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [authMethod, setAuthMethod] = useState<'email' | 'oauth' | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const {
     register,
@@ -211,13 +232,27 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     onSubmit(transformedData);
   };
 
-  const handleGoogleSignIn = () => {
-    // Replace with your backend's Google OAuth endpoint
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api/v1'}/auth/google-signin`;
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsGoogleLoading(true);
+
+      // Get the current URL to use as return URL
+      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+      // Construct the Google OAuth URL with return URL (matching GoogleSignInButton implementation)
+      const backendUrl = BACKEND_URL || 'http://localhost:4000';
+      const googleAuthUrl = `${backendUrl}/auth/google?returnUrl=${encodeURIComponent(currentUrl)}`;
+
+      // Redirect to Google OAuth
+      window.location.href = googleAuthUrl;
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      setIsGoogleLoading(false);
+      toast.error('Failed to initiate Google sign-in');
+    }
   };
 
   const handleOAuthSignup = (provider: string) => {
-    // TODO: Implement OAuth signup and redirect to dashboard
     if (provider === 'google') {
       handleGoogleSignIn();
     }
@@ -332,7 +367,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                   getValues('dob')
                     ? (() => {
                         try {
-                          return new Date(getValues('dob')).toISOString().split('T')[0];
+                          return getValues('dob');
                         } catch {
                           return '';
                         }
@@ -352,7 +387,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                     today.getMonth(),
                     today.getDate(),
                   );
-                  return eighteenYearsAgo.toISOString().split('T')[0];
+                  // Format as YYYY-MM-DD without timezone conversion
+                  const year = eighteenYearsAgo.getFullYear();
+                  const month = String(eighteenYearsAgo.getMonth() + 1).padStart(2, '0');
+                  const day = String(eighteenYearsAgo.getDate()).padStart(2, '0');
+                  return `${year}-${month}-${day}`;
                 })()}
                 min="1900-01-01"
                 onChange={(e) => {
@@ -361,10 +400,22 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                   // Only process if we have a complete date (YYYY-MM-DD format)
                   if (inputValue && inputValue.length === 10 && inputValue.includes('-')) {
                     try {
-                      const selectedDate = new Date(inputValue + 'T00:00:00.000Z');
-                      // Check if the date is valid
-                      if (!isNaN(selectedDate.getTime())) {
-                        setValue('dob', selectedDate.toISOString());
+                      // Validate the date format without timezone conversion
+                      const dateParts = inputValue.split('-');
+                      const year = parseInt(dateParts[0]);
+                      const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+                      const day = parseInt(dateParts[2]);
+                      const selectedDate = new Date(year, month, day);
+
+                      // Check if the date is valid and matches the input
+                      if (
+                        !isNaN(selectedDate.getTime()) &&
+                        selectedDate.getFullYear() === year &&
+                        selectedDate.getMonth() === month &&
+                        selectedDate.getDate() === day
+                      ) {
+                        // Store as YYYY-MM-DD format without timezone conversion
+                        setValue('dob', inputValue);
                         trigger('dob');
                       }
                     } catch (error) {
@@ -495,15 +546,26 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
               <Button
                 variant="outline"
                 onClick={() => handleAuthMethodSelect('oauth')}
+                disabled={isGoogleLoading}
                 className={cn(
                   'w-full h-12 flex items-center justify-center gap-3 px-4 rounded-lg border transition-all duration-200 text-sm font-medium shadow-sm',
                   authMethod === 'oauth'
                     ? 'border-primary bg-primary/5 text-primary'
                     : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300',
+                  isGoogleLoading && 'opacity-50 cursor-not-allowed',
                 )}
               >
-                <Chrome className="h-5 w-5" />
-                Continue with Google
+                {isGoogleLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  <>
+                    <Chrome className="h-5 w-5" />
+                    Continue with Google
+                  </>
+                )}
               </Button>
 
               <div className="relative">

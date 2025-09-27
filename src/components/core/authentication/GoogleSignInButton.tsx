@@ -1,10 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
+import { BACKEND_URL } from '@/services/endpoints';
 
 interface GoogleSignInButtonProps {
   returnUrl?: string;
@@ -28,8 +28,8 @@ export default function GoogleSignInButton({
       const finalReturnUrl = returnUrl || currentUrl;
 
       // Construct the Google OAuth URL with return URL
-      const backendUrl = 'http://localhost:4000';
-      const googleAuthUrl = `${backendUrl}/api/v1/auth/google?returnUrl=${encodeURIComponent(finalReturnUrl)}`;
+      const backendUrl = BACKEND_URL || 'http://localhost:4000';
+      const googleAuthUrl = `${backendUrl}/auth/google?returnUrl=${encodeURIComponent(finalReturnUrl)}`;
 
       // Redirect to Google OAuth
       window.location.href = googleAuthUrl;

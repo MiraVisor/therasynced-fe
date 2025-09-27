@@ -32,6 +32,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { rescheduleBooking } from '@/redux/api/exploreApi';
 import { getFreelancerServices } from '@/redux/api/overviewApi';
+import { getSlot } from '@/redux/api/slotApi';
 import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -78,7 +79,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [datePage, setDatePage] = useState(0);
   const [loadingMoreSlots, setLoadingMoreSlots] = useState(false);
-  const [] = useState(false);
+  const [availableServices, setAvailableServices] = useState<any[]>([]);
   const [freelancerServices, setFreelancerServices] = useState<any[]>([]);
 
   // Form states
@@ -119,6 +120,36 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       fetchServices();
     }
   }, [dispatch, freelancerId]);
+
+  // Fetch slot details with available services when a slot is selected
+  const fetchSlotDetails = useCallback(
+    async (slotId: string) => {
+      try {
+        const response = await getSlot(slotId);
+        if (response.success && response.data.availableServices) {
+          setAvailableServices(response.data.availableServices);
+        } else {
+          // Fallback to freelancer services if slot doesn't have specific services
+          setAvailableServices(freelancerServices);
+        }
+      } catch (error) {
+        // Fallback to freelancer services
+        setAvailableServices(freelancerServices);
+      }
+    },
+    [freelancerServices],
+  );
+
+  // Update available services when slot is selected
+  useEffect(() => {
+    if (selectedTime) {
+      fetchSlotDetails(selectedTime);
+    } else {
+      // Reset service selection when no slot is selected
+      setAvailableServices([]);
+      serviceForm.setValue('serviceIds', []);
+    }
+  }, [selectedTime, fetchSlotDetails, serviceForm]);
 
   // Load more slots when needed
   const loadMoreSlots = async () => {
@@ -422,6 +453,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     const isSelected = selectedDate === date;
                     const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                     const dayNumber = dateObj.getDate();
+                    const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
 
                     return (
                       <button
@@ -443,6 +475,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                             className={`text-lg font-semibold ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}
                           >
                             {dayNumber}
+                          </div>
+                          <div
+                            className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-500'}`}
+                          >
+                            {month}
                           </div>
                         </div>
                         {isToday && (
@@ -591,16 +628,16 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
             {/* Session Details Form */}
             <div className="max-w-2xl mx-auto space-y-6">
               {/* Services Selection */}
-              {therapist?.services && therapist.services.length > 0 && (
+              {availableServices && availableServices.length > 0 ? (
                 <div className="space-y-4">
                   <Label className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Services (Optional)
+                    Available Services for This Slot
                   </Label>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Select specific services you&apos;d like to focus on during your session
+                    Select from services available for your selected time slot
                   </p>
                   <div className="grid gap-3">
-                    {therapist.services.map((service: any) => (
+                    {availableServices.map((service: any) => (
                       <div key={service.id} className="relative">
                         <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                           <input
@@ -658,7 +695,17 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     ))}
                   </div>
                 </div>
-              )}
+              ) : selectedTime ? (
+                <div className="space-y-4">
+                  <Label className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Services
+                  </Label>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    No specific services are configured for this time slot. You can discuss your
+                    needs directly with the therapist during your session.
+                  </div>
+                </div>
+              ) : null}
 
               {/* Additional Notes */}
               <div className="space-y-4">
@@ -681,7 +728,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
               {/* Address for Home Sessions */}
               {serviceForm.watch('serviceIds')?.some((id) => {
-                const service = therapist?.services?.find((s: any) => s.id === id);
+                const service = availableServices?.find((s: any) => s.id === id);
                 return service?.locationTypes?.includes('HOME');
               }) && (
                 <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">

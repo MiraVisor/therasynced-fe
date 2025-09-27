@@ -2,6 +2,7 @@
 
 import { Package } from 'lucide-react';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { createServiceAsync } from '@/redux/slices/serviceSlice';
 import { CreateServiceDto, LocationType } from '@/types/types';
 
 interface CreateServiceFormProps {
@@ -25,6 +27,7 @@ interface CreateServiceFormProps {
 }
 
 export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState<CreateServiceDto>({
     name: '',
     description: '',
@@ -45,8 +48,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
     }
 
     try {
-      // TODO: Implement service creation API call
-      toast.success('Service created successfully!');
+      await dispatch(createServiceAsync(formData) as any).unwrap();
       onSuccess?.();
     } catch (error) {
       toast.error('Failed to create service');
@@ -80,21 +82,6 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
       ...formData,
       locationTypes: newTypes,
     });
-  };
-
-  const getLocationTypeIcon = (type: string) => {
-    switch (type) {
-      case 'VIRTUAL':
-        return '💻';
-      case 'HOME':
-        return '🏠';
-      case 'OFFICE':
-        return '🏢';
-      case 'CLINIC':
-        return '🏥';
-      default:
-        return '📍';
-    }
   };
 
   const getLocationTypeLabel = (type: string) => {

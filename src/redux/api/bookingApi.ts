@@ -9,8 +9,7 @@ export const createBooking = async (data: CreateBookingDto) => {
 
 // Get patient bookings
 export const getPatientBookings = async (date?: string) => {
-  const params = date ? { date } : {};
-  const response = await api.get('/booking/patient/all', { params });
+  const response = await api.get('/booking/patient/all');
   return response.data;
 };
 

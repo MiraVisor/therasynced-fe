@@ -371,10 +371,16 @@ const FavoritesSection: React.FC<{ favorites: Expert[]; loading: boolean }> = ({
               </CarouselContent>
 
               {/* Navigation Arrows */}
-              {favorites.length > 1 && (
+              {favorites.length > 0 && (
                 <>
-                  <CarouselPrevious className="absolute -left-3 top-1/2 -translate-y-1/2 hidden md:flex" />
-                  <CarouselNext className="absolute -right-3 top-1/2 -translate-y-1/2 hidden md:flex" />
+                  <CarouselPrevious
+                    disabled={!api?.canScrollPrev()}
+                    className="absolute -left-3 top-1/2 -translate-y-1/2 hidden md:flex"
+                  />
+                  <CarouselNext
+                    disabled={!api?.canScrollNext()}
+                    className="absolute -right-3 top-1/2 -translate-y-1/2 hidden md:flex"
+                  />
                 </>
               )}
             </Carousel>
@@ -581,6 +587,7 @@ const UserExploreMain = () => {
 
   return (
     <DashboardPageWrapper
+      userRole="PATIENT"
       header={
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome! 👋</h1>

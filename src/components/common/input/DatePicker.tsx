@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
@@ -45,14 +44,39 @@ export function DatePicker({ title, value, onChange }: DatePickerProps) {
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="center" sideOffset={8}>
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={handleDateChange}
+          <input
+            type="date"
+            value={
+              date
+                ? [
+                    date.getFullYear(),
+                    String(date.getMonth() + 1).padStart(2, '0'),
+                    String(date.getDate()).padStart(2, '0'),
+                  ].join('-')
+                : ''
+            }
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val) {
+                const [year, month, day] = val.split('-').map(Number);
+                const selectedDate = new Date(year, month - 1, day);
+                handleDateChange(selectedDate);
+              } else {
+                handleDateChange(undefined);
+              }
+            }}
+            min="1900-01-01"
+            max={(() => {
+              const today = new Date();
+              const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+              return [
+                maxDate.getFullYear(),
+                String(maxDate.getMonth() + 1).padStart(2, '0'),
+                String(maxDate.getDate()).padStart(2, '0'),
+              ].join('-');
+            })()}
+            className="rounded-md border border-gray-300 px-3 py-2 w-full h-11 text-sm font-normal text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
             autoFocus
-            captionLayout="dropdown"
-            disabled={(date) => date > new Date() || date < new Date(1900, 0, 1)}
-            className="rounded-md border"
           />
         </PopoverContent>
       </Popover>

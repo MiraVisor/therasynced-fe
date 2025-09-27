@@ -135,9 +135,6 @@ export interface Expert {
   profilePicture?: string;
   services?: any[];
   location?: string;
-  languages?: string[];
-  education?: any[];
-  certifications?: any[];
   sessionTypes?: string[];
   pricing?: {
     online: { min: number; max: number };
@@ -161,7 +158,6 @@ export interface Expert {
   // Available slots count
   availableSlots?: number;
   totalSlots?: number;
-  nextAvailableSlot?: any;
 }
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 
@@ -243,6 +239,7 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
+  availableServices?: Service[]; // NEW: Services available for this slot
   booking?: {
     id: string;
     status: string;
@@ -286,6 +283,7 @@ export interface CreateSlotDto {
     startTime: string;
     endTime: string;
   }>;
+  serviceIds?: string[]; // NEW: Optional array of service IDs
   notes?: string;
 }
 
@@ -315,6 +313,7 @@ export interface CreateSlotsDto {
     startTime: string;
     endTime: string;
   }>;
+  serviceIds?: string[]; // NEW: Optional array of service IDs
   notes?: string;
 }
 
@@ -499,4 +498,58 @@ export interface Freelancer {
   }>;
   createdAt: string;
   updatedAt: string;
+}
+
+// Notification types
+export type NotificationType =
+  | 'APPOINTMENT'
+  | 'BOOKING'
+  | 'BOOKING_CREATED'
+  | 'BOOKING_CANCELLED'
+  | 'BOOKING_RESCHEDULED'
+  | 'PAYMENT'
+  | 'LOYALTY_POINTS_AWARDED'
+  | 'LOYALTY_REWARD_REDEEMED'
+  | 'SYSTEM'
+  | 'MESSAGE'
+  | 'REVIEW';
+
+export type NotificationPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+
+export interface Notification {
+  id: string;
+  userId?: string;
+  type: NotificationType;
+  priority?: NotificationPriority;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  actionUrl?: string;
+  actionText?: string;
+  metadata?: {
+    appointmentId?: string;
+    bookingId?: string;
+    freelancerId?: string;
+    clientId?: string;
+    slotId?: string;
+    startTime?: string;
+    amount?: number;
+    [key: string]: any;
+  };
+}
+
+export interface NotificationState {
+  notifications: Notification[];
+  unreadCount: number;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface NotificationFilters {
+  page?: number;
+  limit?: number;
+  type?: string;
+  isRead?: boolean;
 }

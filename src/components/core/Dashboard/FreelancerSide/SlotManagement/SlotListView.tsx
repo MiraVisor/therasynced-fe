@@ -1,7 +1,7 @@
 'use client';
 
 import { endOfWeek, format, isSameDay, isSameMonth, startOfWeek } from 'date-fns';
-import { Calendar, ChevronRight, Clock, Euro, MapPin } from 'lucide-react';
+import { Calendar, ChevronRight, Clock, Euro, MapPin, Package } from 'lucide-react';
 import { View } from 'react-big-calendar';
 
 import { Badge } from '@/components/ui/badge';
@@ -141,6 +141,29 @@ export const SlotListView = ({ slots, onSelectSlot, view, selectedDate }: SlotLi
                       <span>{slot.duration} min</span>
                     </div>
                   </div>
+
+                  {/* Available Services */}
+                  {slot.availableServices && slot.availableServices.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Package className="h-4 w-4" />
+                        <span>Available Services ({slot.availableServices.length})</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {slot.availableServices.slice(0, 3).map((service) => (
+                          <Badge key={service.id} variant="outline" className="text-xs">
+                            {service.name}
+                            {service.duration && ` (${service.duration}min)`}
+                          </Badge>
+                        ))}
+                        {slot.availableServices.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{slot.availableServices.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Notes Preview */}
                   {slot.notes && (

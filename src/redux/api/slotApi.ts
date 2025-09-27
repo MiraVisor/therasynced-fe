@@ -14,7 +14,7 @@ export const createSlot = async (data: CreateSlotsDto): Promise<ApiResponse<Slot
 };
 
 export const getSlots = async (params: PaginationDto): Promise<ApiResponse<Slot[]>> => {
-  const response = await api.post('/slot/list', params);
+  const response = await api.post('/slot/my-slots', params);
   return response.data;
 };
 
@@ -29,7 +29,7 @@ export const deleteSlot = async (id: string): Promise<ApiResponse<void>> => {
 };
 
 export const getSlot = async (id: string): Promise<ApiResponse<Slot>> => {
-  const response = await api.post('/slot/get', { id });
+  const response = await api.get(`/slot/get/${id}`);
   return response.data;
 };
 

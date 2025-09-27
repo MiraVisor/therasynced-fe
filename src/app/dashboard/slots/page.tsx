@@ -1,6 +1,5 @@
 'use client';
 
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 import {
   addDays,
   eachDayOfInterval,
@@ -35,7 +34,14 @@ import { CreateSlotForm } from '@/components/core/Dashboard/FreelancerSide/SlotM
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { DialogFooter, DialogHeader } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { deleteSlot, fetchSlots } from '@/redux/slices/slotSlice';
@@ -334,25 +340,23 @@ const SlotsPage = () => {
           </div>
 
           <div className="flex items-center justify-center gap-4">
-            {slots.length > 0 && (
-              <Button
-                onClick={() => setShowCreateSlotForm(true)}
-                disabled={isCreating}
-                className="h-11 px-6"
-              >
-                {isCreating ? (
-                  <>
-                    <LoadingSpinner size="sm" className="mr-2" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Availability
-                  </>
-                )}
-              </Button>
-            )}
+            <Button
+              onClick={() => setShowCreateSlotForm(true)}
+              disabled={isCreating}
+              className="h-11 px-6"
+            >
+              {isCreating ? (
+                <>
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add Availability
+                </>
+              )}
+            </Button>
           </div>
         </div>
 

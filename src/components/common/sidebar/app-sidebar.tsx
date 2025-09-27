@@ -92,11 +92,6 @@ const navigationLinks = {
       icon: MessageSquare,
     },
     {
-      name: 'Services',
-      url: '/dashboard/services',
-      icon: Users,
-    },
-    {
       name: 'Analytics',
       url: '/dashboard/analytics',
       icon: BarChart,

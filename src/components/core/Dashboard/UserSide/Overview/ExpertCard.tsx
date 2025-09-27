@@ -28,12 +28,10 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   showFavoriteText = false,
   services = [],
   location = 'Online',
-  languages = ['English'],
   sessionTypes = ['online', 'office'],
   pricing,
   availableSlots,
   cardInfo,
-  nextAvailableSlot,
 }) => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -51,12 +49,10 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       isFavorite,
       services,
       location,
-      languages,
       sessionTypes,
       pricing,
       availableSlots,
       cardInfo,
-      nextAvailableSlot,
     };
 
     router.push(
@@ -257,57 +253,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                       )}
                     </div>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Languages */}
-            {languages.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm lg:text-base">
-                  Languages
-                </h4>
-                <div className="flex gap-1 lg:gap-2">
-                  {languages.map((lang: string, index: number) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {lang}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Next Available Slot */}
-            {nextAvailableSlot && (
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm lg:text-base">
-                  Next Available
-                </h4>
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2 lg:p-3 border border-green-200 dark:border-green-800">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
-                    <div>
-                      <p className="text-xs lg:text-sm font-medium text-green-800 dark:text-green-200">
-                        {new Date(nextAvailableSlot.startTime).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                      <p className="text-xs text-green-600 dark:text-green-300">
-                        {new Date(nextAvailableSlot.startTime).toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true,
-                        })}{' '}
-                        -{' '}
-                        {new Date(nextAvailableSlot.endTime).toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true,
-                        })}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}

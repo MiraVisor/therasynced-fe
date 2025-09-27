@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
+import { useAuth } from '@/redux/hooks/useAppHooks';
+
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
 import { SearchBar } from '../SearchBar';
 import {
@@ -20,6 +22,8 @@ import { StatsCard } from './Cards/StatsCard';
 type IconName = 'users' | 'clients' | 'calendar' | 'money';
 
 const AdminHome = () => {
+  const { role } = useAuth();
+
   // Map icons to their components
   const iconComponents = {
     users: <Image src="/svgs/UsersIcon.svg" alt="Users" width={24} height={24} />,
@@ -46,6 +50,7 @@ const AdminHome = () => {
 
   return (
     <DashboardPageWrapper
+      userRole={role}
       header={
         <div className="flex w-full items-center gap-4">
           <div className="flex-shrink-0">
