@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { cn } from '@/lib/utils';
 import { RoleType } from '@/types/types';
+import { ModeToggle } from '@/components/mode-toggler';
 
 export function DashboardPageWrapper({
   header,
@@ -50,7 +51,7 @@ export function DashboardPageWrapper({
           )}
 
           <div className="flex items-center gap-4">
-            {/* <ModeToggle /> */}
+            <ModeToggle />
             {showNotifications && userRole && (
               <NotificationPopover
                 notifications={notifications.notifications}

@@ -97,9 +97,9 @@ export function DataTable<TData, TValue>({
   return (
     <div className="border rounded-lg">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <h2 className="font-poppins text-lg sm:text-[22px] font-bold tracking-tight">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2">
+        <div className="flex items-center space-x-2 px-2 py-4">
+          <h2 className="font-poppins text-[22px] font-bold tracking-tight">
             <span className="text-black">{firstWord} </span>
             <span className="text-primary">{restTitle}</span>
           </h2>
@@ -142,7 +142,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg bg-[#ffffff] overflow-hidden h-full overflow-y-auto">
+      <div className="rounded-lg bg-[#ffffff] overflow-hidden min-h-[400px]  overflow-y-auto">
         <Table>
           <TableHeader className="sticky top-0 bg-gray-100 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -151,7 +151,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className="font-poppins font-semibold text-sm sm:text-base text-black py-3 sm:py-4 px-3 sm:px-6 first:pl-3 sm:first:pl-6 last:pr-3 sm:last:pr-6 border-0"
+                      className="min-w-[150px] font-poppins  font-medium text-sm sm:text-base text-black py-1 sm:py-1 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-3 sm:last:pr-6 border-0"
                     >
                       {header.isPlaceholder
                         ? null
@@ -173,7 +173,7 @@ export function DataTable<TData, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="font-poppins font-medium text-xs sm:text-[14px] text-table-row py-3 sm:py-4 px-3 sm:px-6 first:pl-3 sm:first:pl-6 last:pr-3 sm:last:pr-6 border-0"
+                      className="font-poppins font-medium text-xs sm:text-[14px] text-table-row py-3 sm:py-4 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-2 sm:last:pr-6 border-0"
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -195,7 +195,7 @@ export function DataTable<TData, TValue>({
       </div>
       {/* Pagination */}
       {enablePagination && (
-        <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 space-x-0 sm:space-x-2 p-4 sm:p-6 border-t">
+        <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 space-x-0 sm:space-x-2 py-2 px-4 sm:px-6 border-t">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-poppins font-medium text-table-row">Rows per page</p>
             <Select

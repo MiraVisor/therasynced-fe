@@ -21,7 +21,7 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="hover:bg-transparent p-0"
+          className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
         >
           Freelancer
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -57,7 +57,7 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="hover:bg-transparent p-0"
+    className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
         >
           Rating
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -193,15 +193,15 @@ const RealFreelancersPage = () => {
     },
   ];
 
-  if (currentLoading) {
-    return (
-      <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Freelancers</h2>}>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading freelancers...</div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
+  // if (currentLoading) {
+  //   return (
+  //     <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Freelancers</h2>}>
+  //       <div className="flex items-center justify-center h-64">
+  //         <div className="text-lg">Loading freelancers...</div>
+  //       </div>
+  //     </DashboardPageWrapper>
+  //   );
+  // }
 
   if (currentError) {
     return (
@@ -225,7 +225,7 @@ const RealFreelancersPage = () => {
       }
     >
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {stats.map((stat, index) => (
           <div
             key={index}
@@ -250,7 +250,7 @@ const RealFreelancersPage = () => {
           <TabsTrigger value="favorites">Favorites</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-6">
+        <TabsContent value="all" className="mt-4">
           <DataTable
             columns={freelancerColumns}
             data={currentFreelancers}
