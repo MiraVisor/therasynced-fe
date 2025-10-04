@@ -193,15 +193,15 @@ const RealFreelancersPage = () => {
     },
   ];
 
-  // if (currentLoading) {
-  //   return (
-  //     <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Freelancers</h2>}>
-  //       <div className="flex items-center justify-center h-64">
-  //         <div className="text-lg">Loading freelancers...</div>
-  //       </div>
-  //     </DashboardPageWrapper>
-  //   );
-  // }
+  if (currentLoading) {
+    return (
+      <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Freelancers</h2>}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading freelancers...</div>
+        </div>
+      </DashboardPageWrapper>
+    );
+  }
 
   if (currentError) {
     return (

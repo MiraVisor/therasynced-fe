@@ -157,9 +157,9 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg bg-[#ffffff] overflow-hidden h-[calc(48px*9)] flex flex-col">
+      <div className="bg-[#ffffff] overflow-hidden h-[calc(48px*9)] flex flex-col">
         <Table className="h-full">
-          <TableHeader className="bg-gray-100">
+          <TableHeader className="bg-gray-100 rounded-none">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="bg-gray-100">
                 {headerGroup.headers.map((header) => {
@@ -189,12 +189,12 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="hover:bg-gray-100 border-b h-[48px]"
+                  className="hover:bg-gray-100 border-b"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="font-poppins font-medium text-xs sm:text-[14px] text-table-row py-3 sm:py-4 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-2 sm:last:pr-6 border-0"
+                      className="font-poppins font-medium text-xs sm:text-[14px] text-table-row py-4 sm:py-6 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-2 sm:last:pr-6 border-0"
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
