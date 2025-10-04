@@ -33,6 +33,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+import { LoadingSpinner } from './loading-spinner';
+import { TableSkeleton } from './table-skeleton';
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -47,6 +50,8 @@ interface DataTableProps<TData, TValue> {
   pageSizeOptions?: number[];
   showSearch?: boolean;
   showSorting?: boolean;
+  loading?: boolean;
+  initialLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -63,11 +68,14 @@ export function DataTable<TData, TValue>({
   pageSizeOptions = [5, 10, 20, 30, 40, 50],
   showSearch = true,
   showSorting = true,
+  loading = false,
+  initialLoading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [isFiltering, setIsFiltering] = useState(false);
 
   const table = useReactTable({
     data,
@@ -105,6 +113,13 @@ export function DataTable<TData, TValue>({
           </h2>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+          {/* Loading Spinner */}
+          {loading && (
+            <div className="flex items-center">
+              <LoadingSpinner size="medium" />
+            </div>
+          )}
+
           {/* Search Input */}
           {showSearch && enableFiltering && searchKey && (
             <div className="relative w-full sm:max-w-sm">
@@ -142,9 +157,9 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg bg-[#ffffff] overflow-hidden min-h-[400px]  overflow-y-auto">
-        <Table>
-          <TableHeader className="sticky top-0 bg-gray-100 z-10">
+      <div className="rounded-lg bg-[#ffffff] overflow-hidden h-[calc(48px*9)] flex flex-col">
+        <Table className="h-full">
+          <TableHeader className="bg-gray-100">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="bg-gray-100">
                 {headerGroup.headers.map((header) => {
@@ -162,13 +177,19 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
+          <TableBody className="overflow-y-auto">
+            {initialLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="p-4">
+                  <TableSkeleton columns={columns.length} rows={5} />
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="hover:bg-gray-100 border-b"
+                  className="hover:bg-gray-100 border-b h-[48px]"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
@@ -184,9 +205,9 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center font-poppins font-medium text-[14px] text-table-row border-0"
+                  className="h-[calc(48px*5)] text-center font-poppins font-medium text-[14px] text-table-row border-0"
                 >
-                  No results found.
+                  <div className="flex items-center justify-center h-full">No results found.</div>
                 </TableCell>
               </TableRow>
             )}
