@@ -16,8 +16,8 @@ import {
 import { ApplicationCard } from './Cards/ApplicationCard';
 import { AppointmentCard } from './Cards/AppointmentCard';
 import { CardContainer } from './Cards/CardContainer';
-import { RevenueChart } from './Cards/RevenueChart';
 import { StatsCard } from './Cards/StatsCard';
+import { AdminRevenueChart } from './Charts/AdminRevenueChart';
 
 type IconName = 'users' | 'clients' | 'calendar' | 'money';
 
@@ -106,7 +106,7 @@ const AdminHome = () => {
         </div>
 
         {/* Revenue Chart */}
-        <RevenueChart
+        <AdminRevenueChart
           month={selectedMonth}
           months={mockChartData.months}
           onMonthChange={setSelectedMonth}
