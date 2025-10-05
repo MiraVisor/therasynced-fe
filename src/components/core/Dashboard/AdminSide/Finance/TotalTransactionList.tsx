@@ -14,7 +14,7 @@ type Props = {
 
 export const TotalTransactionList = ({ transactions }: Props) => {
   return (
-    <div className="bg-white rounded-xl border shadow-sm py-4 pl-4 pr-0 w-full max-w-xs">
+    <div className="bg-white rounded-xl border shadow-sm py-4 pl-4 pr-0 w-full">
       <div className="pr-3">
         <h3 className="text-md font-semibold mb-4">Total Transaction</h3>
         <Divider className="mt-6 bg-[#000000] mb-3 mr-2" />

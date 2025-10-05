@@ -120,7 +120,7 @@ const navigationLinks = {
     },
     {
       name: 'Bookings',
-      url: '/dashboard/bookings',
+      url: '/dashboard/admin-bookings',
       icon: Calendar,
     },
     {

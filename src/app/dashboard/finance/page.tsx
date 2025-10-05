@@ -80,15 +80,19 @@ export default function FinancePage() {
         </div>
 
         {/* Chart & Transaction */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 bg-[#F9FA]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
           {/* Chart (2/3 width) */}
-          <div className="col-span-2">
-            <TotalRevenueChart />
+          <div className="lg:col-span-8">
+            <div className="h-full">
+              <TotalRevenueChart />
+            </div>
           </div>
 
           {/* Transactions (1/3 width) */}
-          <div className="h-full">
-            <TotalTransactionList transactions={mockTransactions} />
+          <div className="lg:col-span-4">
+            <div className="h-full w-full">
+              <TotalTransactionList transactions={mockTransactions} />
+            </div>
           </div>
         </div>
       </div>
