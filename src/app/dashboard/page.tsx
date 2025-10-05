@@ -10,6 +10,7 @@ import { ROLES, RoleType } from '@/types/types';
 // Dynamically import components that use Redux to prevent SSR issues
 const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminSide/AdminHome'), {
   ssr: false,
+
   loading: () => (
     <div className="flex items-center justify-center h-full">
       <LoadingSpinner size="lg" />

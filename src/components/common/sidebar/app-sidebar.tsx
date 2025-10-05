@@ -115,7 +115,7 @@ const navigationLinks = {
     },
     {
       name: 'Reviews & Reports',
-      url: '/dashboard/reviews',
+      url: '/dashboard/review-approvals',
       icon: FileText,
     },
     {

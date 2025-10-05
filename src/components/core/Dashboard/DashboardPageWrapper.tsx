@@ -51,7 +51,7 @@ export function DashboardPageWrapper({
           )}
 
           <div className="flex items-center gap-4">
-            <ModeToggle />
+            {/* <ModeToggle /> */}
             {showNotifications && userRole && (
               <NotificationPopover
                 notifications={notifications.notifications}
