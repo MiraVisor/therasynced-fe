@@ -9,6 +9,7 @@ import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageW
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useFavoriteFreelancers, useFreelancers } from '@/hooks/useFreelancers';
 import { Freelancer } from '@/types/types';
 
@@ -57,7 +58,7 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-    className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
+          className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
         >
           Rating
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -150,6 +151,15 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
           {isActive ? 'Active' : 'Inactive'}
         </Badge>
       );
+    },
+  },
+  {
+    accessorKey: 'verificationStatus',
+    header: 'Verification',
+    cell: ({ row }) => {
+      const verificationStatus = row.original.verificationStatus || 'unverified';
+
+      return <VerificationBadge status={verificationStatus} size="sm" />;
     },
   },
 ];

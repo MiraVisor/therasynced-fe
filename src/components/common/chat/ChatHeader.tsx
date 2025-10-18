@@ -88,7 +88,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <Avatar className="h-10 w-10">
               <AvatarImage src={contact.profilePicture} alt={contact.name} />
               <AvatarFallback className="bg-green-100 text-green-700 font-medium">
-                {getInitials(contact.name)}
+                {contact.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
             {contact.isOnline && (

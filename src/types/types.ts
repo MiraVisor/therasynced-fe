@@ -148,6 +148,15 @@ export interface Expert {
   isEmailVerified?: boolean;
   isActive?: boolean;
   authProvider?: string;
+  verificationStatus?:
+    | 'verified'
+    | 'pending'
+    | 'rejected'
+    | 'unverified'
+    | 'APPROVED'
+    | 'PENDING'
+    | 'REJECTED'
+    | 'UNVERIFIED';
   // Slot information
   slots?: any[];
   slotSummary?: any;
@@ -457,6 +466,15 @@ export interface Freelancer {
   isActive: boolean;
   isFavorite?: boolean;
   favoritedAt?: string;
+  verificationStatus?:
+    | 'verified'
+    | 'pending'
+    | 'rejected'
+    | 'unverified'
+    | 'APPROVED'
+    | 'PENDING'
+    | 'REJECTED'
+    | 'UNVERIFIED';
   cardInfo: {
     name: string;
     title: string;
@@ -552,4 +570,13 @@ export interface NotificationFilters {
   limit?: number;
   type?: string;
   isRead?: boolean;
+}
+
+// Chat/Message types
+export interface Conversation {
+  id: string;
+  participant1Id: string;
+  participant2Id: string;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -5,7 +5,13 @@ import * as React from 'react';
 
 export function ThemeProvider({ children }: React.ComponentProps<typeof NextThemesProvider>) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="light"
+      forcedTheme="light"
+      enableSystem={false}
+      disableTransitionOnChange={false}
+    >
       {children}
     </NextThemesProvider>
   );

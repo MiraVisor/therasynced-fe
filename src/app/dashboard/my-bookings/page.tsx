@@ -182,48 +182,83 @@ const BookingCard = ({
     booking.status === 'CONFIRMED' && new Date(booking.slot.startTime) > new Date();
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
+    <Card className="border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800">
+      <CardContent className="p-5">
+        {/* Header Section */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              {booking.slot.freelancer.name}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                {booking.slot.freelancer.name}
+              </h3>
+              <Badge className={`${getStatusColor(booking.status)} text-xs font-medium px-2 py-1`}>
+                {getStatusText(booking.status)}
+              </Badge>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
               {booking.services.length > 0 ? booking.services[0].name : 'Therapy Session'}
             </p>
-            <Badge className={`${getStatusColor(booking.status)} capitalize`}>
-              {getStatusText(booking.status)}
-            </Badge>
           </div>
-          <div className="text-right">
+          <div className="text-right ml-4">
             <div className="text-xl font-bold text-gray-900 dark:text-white">
               €{booking.totalAmount}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {booking.slot.duration} min
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {booking.slot.duration} minutes
             </div>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Calendar className="w-4 h-4" />
-            <span>{formatDate(booking.slot.startTime)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Clock className="w-4 h-4" />
-            <span>{formatTime(booking.slot.startTime)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <MapPin className="w-4 h-4" />
-            <span>{getLocationText()}</span>
+        {/* Appointment Details */}
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Date</div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {formatDate(booking.slot.startTime)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Time</div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {formatTime(booking.slot.startTime)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <MapPin className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Location</div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {getLocationText()}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-          <Button variant="outline" size="sm" className="flex-1" onClick={() => onMessage(booking)}>
-            <MessageCircle className="w-4 h-4 mr-1" />
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 h-10 text-sm font-medium border-gray-300 text-gray-700 hover:bg-gray-50"
+            onClick={() => onMessage(booking)}
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
             Message
           </Button>
           {isUpcoming && (
@@ -231,27 +266,27 @@ const BookingCard = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
+                className="flex-1 h-10 text-sm font-medium border-blue-300 text-blue-700 hover:bg-blue-50"
                 onClick={() => onReschedule(booking)}
               >
-                <RotateCcw className="w-4 h-4 mr-1" />
+                <RotateCcw className="w-4 h-4 mr-2" />
                 Reschedule
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                className="flex-1 h-10 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
                 onClick={() => onCancel(booking)}
                 disabled={cancellingBookingId === booking.id}
               >
                 {cancellingBookingId === booking.id ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-1"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
                     Cancelling...
                   </>
                 ) : (
                   <>
-                    <X className="w-4 h-4 mr-1" />
+                    <X className="w-4 h-4 mr-2" />
                     Cancel
                   </>
                 )}

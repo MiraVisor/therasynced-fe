@@ -80,6 +80,7 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     isEmailVerified: freelancer.isEmailVerified,
     isActive: freelancer.isActive,
     authProvider: freelancer.authProvider,
+    verificationStatus: freelancer.verificationStatus,
     // Slot information
     slots: freelancer.slots || [],
     slotSummary: freelancer.slotSummary || {},

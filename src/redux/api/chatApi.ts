@@ -25,7 +25,7 @@ export interface Message {
   content: string;
   createdAt: string;
   isRead: boolean;
-  sender: {
+  users: {
     id: string;
     name: string;
     profilePicture?: string;

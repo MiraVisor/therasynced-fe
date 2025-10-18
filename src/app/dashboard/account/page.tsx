@@ -428,7 +428,9 @@ export default function AccountPage() {
 
             <div className="h-11">
               <LocationDropdown
-                value={formData.city || ''}
+                value={
+                  formData.city && formData.city.trim() !== '' ? formData.city : 'Select your city'
+                }
                 onValueChange={(value: string) => handleInputChange('city', value)}
                 placeholder="Select your city"
                 searchPlaceholder="Search locations..."
@@ -574,6 +576,8 @@ export default function AccountPage() {
               id="newEmail"
               type="email"
               placeholder="Enter new email address"
+              autoComplete="off"
+              defaultValue=""
               className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
             />
           </div>

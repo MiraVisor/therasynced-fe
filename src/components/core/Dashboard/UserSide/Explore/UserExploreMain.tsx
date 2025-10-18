@@ -1,31 +1,12 @@
 'use client';
 
-import {
-  Calendar,
-  CheckCircle,
-  Clock,
-  Clock as ClockIcon,
-  Heart,
-  MessageCircle,
-  Users,
-} from 'lucide-react';
+import { ArrowRight, Calendar, Heart, MessageCircle, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { Skeleton } from '@/components/ui/skeleton';
-import useChat from '@/hooks/useChat';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import {
   fetchAllFavoriteFreelancers,
@@ -36,387 +17,154 @@ import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
-import ExpertCard from '../Overview/ExpertCard';
+import DashboardWidget from '../Home/DashboardWidget';
+import FavoriteTherapistCard from '../Home/FavoriteTherapistCard';
+import InlineBookingModal from '../Home/InlineBookingModal';
+import NextAppointmentHero from '../Home/NextAppointmentHero';
+import QuickBookingWidget from '../Home/QuickBookingWidget';
+import UpcomingAppointmentCard from '../Home/UpcomingAppointmentCard';
 
-// Simple Stats Section
-const StatsSection: React.FC<{ bookings: any[]; loading?: boolean }> = ({
-  bookings,
-  loading = false,
-}) => {
-  const router = useRouter();
-  const { totalUnreadCount } = useChat();
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 gap-4 mb-6">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 animate-pulse"></div>
-              <div>
-                <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-1"></div>
-                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+// Helper functions for data processing
+const getNextUpcomingAppointment = (bookings: any[]) => {
+  if (!bookings || bookings.length === 0) return null;
 
-  const totalSessions = bookings?.length || 0;
-  const upcomingSessions =
-    bookings?.filter((booking: any) => {
-      const bookingDate = new Date(booking.slot?.startTime);
-      const now = new Date();
+  const now = new Date();
+  const upcomingBookings = bookings
+    .filter((booking: any) => {
+      if (!booking?.slot?.startTime) return false;
+      const bookingDate = new Date(booking.slot.startTime);
       return bookingDate > now;
-    }).length || 0;
-  const completedSessions =
-    bookings?.filter((booking: any) => {
-      const bookingDate = new Date(booking.slot?.startTime);
-      const now = new Date();
-      return bookingDate < now;
-    }).length || 0;
-
-  return (
-    <div className="grid grid-cols-1 gap-4 mb-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-            <Users className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalSessions}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Total Sessions</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {completedSessions}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
-            <ClockIcon className="w-5 h-5 text-orange-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {upcomingSessions}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Upcoming</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages Quick Access */}
-      <div
-        className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => router.push('/dashboard/messages')}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center relative">
-            <MessageCircle className="w-5 h-5 text-green-600" />
-            {totalUnreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-xs text-white font-bold">
-                  {totalUnreadCount > 9 ? '!' : totalUnreadCount}
-                </span>
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {totalUnreadCount || 0}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {totalUnreadCount > 0 ? 'New Messages' : 'Messages'}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Enhanced Appointment Section with API Integration
-const AppointmentSection: React.FC<{
-  date: Date | undefined;
-  onDateChange: (date: Date | undefined) => void;
-  bookings: any[];
-  loading: boolean;
-  getExpertName: (booking: any) => string;
-  getBookingTime: (booking: any) => string;
-  getBookingDuration: (booking: any) => string;
-  getBookingLocation: (booking: any) => string;
-}> = ({
-  date,
-  onDateChange,
-  bookings,
-  loading,
-  getExpertName,
-  getBookingTime,
-  getBookingDuration,
-  getBookingLocation,
-}) => {
-  const router = useRouter();
-  return (
-    <Card className="border border-gray-200 dark:border-gray-700">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-          Your Schedule
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col lg:flex-row gap-6 justify-center items-center w-full">
-          {/* Calendar */}
-          <div>
-            <CalendarComponent
-              mode="single"
-              selected={date}
-              onSelect={onDateChange}
-              className="rounded-lg w-full border border-gray-200 dark:border-gray-700"
-            />
-          </div>
-          {/* Appointments List */}
-          <div className="w-full">
-            <div className="mb-4">
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                {date
-                  ? date.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })
-                  : 'Select a date'}
-              </h4>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {loading
-                  ? 'Loading appointments...'
-                  : `${bookings.length} session${bookings.length !== 1 ? 's' : ''} scheduled`}
-              </div>
-            </div>
-
-            <div className="space-y-3 max-h-80 overflow-y-auto">
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-                        <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : bookings.length > 0 ? (
-                bookings.map((booking, index) => (
-                  <div
-                    key={booking.id || index}
-                    className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border-l-4 border-primary"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h5 className="font-medium text-gray-900 dark:text-white">
-                        {getExpertName(booking)}
-                      </h5>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Clock className="w-3 h-3" />
-                      <span>{getBookingTime(booking)}</span>
-                      <span>•</span>
-                      <span>{getBookingDuration(booking)}</span>
-                      <span>•</span>
-                      <span>{getBookingLocation(booking)}</span>
-                    </div>
-                    {booking?.totalAmount && (
-                      <div className="text-sm font-medium text-primary mt-1">
-                        €{booking.totalAmount}
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p className="mb-3">No appointments scheduled</p>
-                  <Button
-                    className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
-                    onClick={() => router.push('/dashboard/explore')}
-                    disabled={loading}
-                  >
-                    {loading ? 'Loading...' : 'Book New Session'}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Enhanced Favorites Section with Responsive Carousel
-const FavoritesSection: React.FC<{ favorites: Expert[]; loading: boolean }> = ({
-  favorites,
-  loading,
-}) => {
-  const [api, setApi] = useState<any>();
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    api.on('select', () => {
-      setCurrent(api.selectedScrollSnap());
+    })
+    .sort((a: any, b: any) => {
+      return new Date(a.slot.startTime).getTime() - new Date(b.slot.startTime).getTime();
     });
-  }, [api]);
 
-  if (loading) {
-    return (
-      <Card className="border border-gray-200 dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-            <Heart className="w-5 h-5 text-red-500" />
-            Favorites
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-20 w-full" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  return upcomingBookings.length > 0 ? upcomingBookings[0] : null;
+};
 
-  if (!favorites || favorites.length === 0) {
-    return (
-      <Card className="border border-gray-200 dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-            <Heart className="w-5 h-5 text-red-500" />
-            Favorites
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-6">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-              <Heart className="w-6 h-6 text-gray-400" />
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Save your favorite experts for quick access
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+// Map freelancer data to Expert format
+const mapFreelancerToExpert = (freelancer: any): Expert => {
+  // Extract services and their location types
+  const services = freelancer.services || [];
+  const allLocationTypes = new Set<string>();
 
-  return (
-    <Card className="border border-gray-200 dark:border-gray-700">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <Heart className="w-5 h-5 text-red-500" />
-          Favorites
-          {favorites.length > 1 && (
-            <span className="text-sm font-normal text-gray-500">({favorites.length})</span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="relative">
-          {/* Carousel Container */}
-          <div className="px-6 pb-6">
-            <Carousel
-              setApi={setApi}
-              opts={{
-                align: 'start',
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {favorites.map((expert) => (
-                  <CarouselItem
-                    key={expert.id}
-                    className="pl-2 lg:pl-4 basis-full lg:basis-1/2 lg:basis-full"
-                  >
-                    <div className="lg:px-12">
-                      <ExpertCard {...expert} showFavoriteText={false} />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
+  // Convert location types to session types
+  const sessionTypes = Array.from(allLocationTypes).map((type) => {
+    switch (type) {
+      case 'VIRTUAL':
+        return 'online';
+      case 'OFFICE':
+        return 'office';
+      case 'HOME':
+        return 'home';
+      case 'CLINIC':
+        return 'office';
+      default:
+        return 'online';
+    }
+  });
 
-              {/* Navigation Arrows */}
-              {favorites.length > 0 && (
-                <>
-                  <CarouselPrevious
-                    disabled={!api?.canScrollPrev()}
-                    className="absolute -left-3 top-1/2 -translate-y-1/2 hidden md:flex"
-                  />
-                  <CarouselNext
-                    disabled={!api?.canScrollNext()}
-                    className="absolute -right-3 top-1/2 -translate-y-1/2 hidden md:flex"
-                  />
-                </>
-              )}
-            </Carousel>
-          </div>
+  // Get primary service name
+  const primaryService = services.length > 0 ? services[0]?.name : 'N/A';
 
-          {/* Interactive Indicators */}
-          {favorites.length > 1 && (
-            <div className="flex justify-center gap-1 mt-4 pb-4">
-              {favorites.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index === current ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
-                  onClick={() => api?.scrollTo(index)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+  // Get location information
+  const locations = freelancer.locations || [];
+  const primaryLocation = locations.length > 0 ? locations[0]?.name : 'N/A';
+
+  // Calculate experience from creation date or use default
+  const createdAt = freelancer.createdAt ? new Date(freelancer.createdAt) : null;
+  const yearsOfExperience = createdAt
+    ? Math.floor((new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365))
+    : 5;
+
+  // Get rating and reviews from cardInfo
+  const cardInfo = freelancer.cardInfo || {};
+  const rating = cardInfo.averageRating || freelancer.averageRating || 4.0;
+
+  // Map API freelancer to Expert type for UI
+  return {
+    id: freelancer.id,
+    name: freelancer.name || cardInfo.name,
+    specialty: cardInfo.mainService || primaryService,
+    yearsOfExperience: yearsOfExperience.toString(),
+    rating: rating,
+    reviews: freelancer.favoritedBy?.length || 0,
+    description: freelancer.description || cardInfo.title,
+    isFavorite: freelancer.isFavorite ?? false,
+    // Additional data for profile dialog
+    profilePicture: freelancer.profilePicture,
+    services: Array.isArray(services)
+      ? services.filter((service: any) => service && service.isActive)
+      : [],
+    location: primaryLocation,
+    sessionTypes: sessionTypes,
+    pricing: freelancer.pricing,
+    // Additional data from API
+    email: freelancer.email,
+    gender: freelancer.gender,
+    city: freelancer.city,
+    isEmailVerified: freelancer.isEmailVerified,
+    isActive: freelancer.isActive,
+    authProvider: freelancer.authProvider,
+    verificationStatus: freelancer.verificationStatus,
+    // Slot information
+    slots: freelancer.slots || [],
+    slotSummary: freelancer.slotSummary || {},
+    // Favorites information
+    favoritedBy: freelancer.favoritedBy || [],
+    // Card info
+    cardInfo: cardInfo,
+    // Available slots count
+    availableSlots: freelancer.slotSummary?.availableSlots || 0,
+    totalSlots: freelancer.slotSummary?.totalSlots || 0,
+  };
+};
+
+const getRecommendedTherapists = (freelancers: any[], favorites: Expert[]) => {
+  if (!freelancers || freelancers.length === 0) return [];
+
+  // Map freelancers to Expert format
+  const experts = freelancers.map(mapFreelancerToExpert);
+
+  // Filter out already favorited therapists and get top-rated ones
+  const favoriteIds = new Set(favorites.map((fav) => fav.id));
+  const available = experts.filter((expert) => !favoriteIds.has(expert.id));
+
+  // Sort by rating and return top 4
+  return available.sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
+};
+
+const getUpcomingAppointments = (bookings: any[]) => {
+  if (!bookings || bookings.length === 0) return [];
+
+  const now = new Date();
+  const upcomingBookings = bookings
+    .filter((booking: any) => {
+      if (!booking?.slot?.startTime) return false;
+      const bookingDate = new Date(booking.slot.startTime);
+      return bookingDate > now;
+    })
+    .sort((a: any, b: any) => {
+      return new Date(a.slot.startTime).getTime() - new Date(b.slot.startTime).getTime();
+    });
+
+  return upcomingBookings;
 };
 
 const UserExploreMain = () => {
+  const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
   const { favorites, loading, bookings, bookingsLoading } = useSelector(
     (state: RootState) => state.explore as any,
   );
-  const { experts: allExperts } = useSelector((state: RootState) => state.overview);
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [calendarLoading, setCalendarLoading] = useState(false);
+  const { experts: allExperts, loading: expertsLoading } = useSelector(
+    (state: RootState) => state.overview,
+  );
   const [allTimeBookings, setAllTimeBookings] = useState<any[]>([]);
   const [allTimeBookingsLoading, setAllTimeBookingsLoading] = useState(false);
+  const [selectedTherapist, setSelectedTherapist] = useState<Expert | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   // Fetch all-time bookings for stats
   useEffect(() => {
@@ -432,7 +180,6 @@ const UserExploreMain = () => {
         }
       } catch (error) {
         console.error('Error fetching all-time bookings:', error);
-        setAllTimeBookings([]);
       } finally {
         setAllTimeBookingsLoading(false);
       }
@@ -441,143 +188,53 @@ const UserExploreMain = () => {
     fetchAllTimeBookings();
   }, [dispatch, isAuthenticated]);
 
-  // Fetch data on component mount only if authenticated
+  // Fetch favorites and experts
   useEffect(() => {
     if (!isAuthenticated) return;
 
     dispatch(fetchAllFavoriteFreelancers() as any);
-    dispatch(fetchFreelancers({ limit: 6 }) as any);
-    // Fetch bookings for current date on mount - use timezone-safe formatting
-    const currentDate = new Date();
-    const formattedCurrentDate =
-      currentDate.getFullYear() +
-      '-' +
-      String(currentDate.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(currentDate.getDate()).padStart(2, '0');
-    dispatch(fetchExplorePatientBookings(formattedCurrentDate) as any);
+    dispatch(fetchFreelancers({}) as any);
   }, [dispatch, isAuthenticated]);
 
-  // Helper function to format date safely without timezone issues
-  const formatDateForAPI = (date: Date): string => {
-    return (
-      date.getFullYear() +
-      '-' +
-      String(date.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(date.getDate()).padStart(2, '0')
-    );
+  // Process data
+  const favoritesList =
+    favorites?.map((favorite: Expert) => {
+      return {
+        ...favorite,
+        verificationStatus: favorite.verificationStatus,
+      };
+    }) || [];
+
+  const nextAppointment = getNextUpcomingAppointment(allTimeBookings);
+  const upcomingAppointments = getUpcomingAppointments(allTimeBookings);
+  const recommendedTherapists = getRecommendedTherapists(allExperts, favoritesList);
+
+  // Calculate stats
+  const totalSessions = allTimeBookings?.length || 0;
+  const upcomingSessions =
+    allTimeBookings?.filter((booking: any) => {
+      const bookingDate = new Date(booking.slot?.startTime);
+      const now = new Date();
+      return bookingDate > now;
+    }).length || 0;
+  const favoriteTherapists = favoritesList?.length || 0;
+
+  // Calculate actual unread messages from others (not from user)
+  const unreadMessages = 0; // TODO: Implement real unread message count from API
+
+  const handleTherapistClick = (therapist: Expert) => {
+    setSelectedTherapist(therapist);
+    setIsBookingModalOpen(true);
   };
 
-  // Handle date change with API integration
-  const handleDateChange = async (newDate: Date | undefined) => {
-    setDate(newDate);
-
-    if (newDate && isAuthenticated) {
-      setCalendarLoading(true);
-      try {
-        // Format date as YYYY-MM-DD for API using timezone-safe method
-        const formattedDate = formatDateForAPI(newDate);
-        // Dispatch API call for the selected date
-        await dispatch(fetchExplorePatientBookings(formattedDate) as any);
-      } catch (error) {
-        console.error('Error fetching appointments for date:', error);
-      } finally {
-        setCalendarLoading(false);
-      }
-    }
+  const handleBookSession = (therapist: Expert, slot: any) => {
+    console.log('Booking session:', { therapist, slot });
+    // TODO: Implement actual booking logic
+    setIsBookingModalOpen(false);
+    setSelectedTherapist(null);
   };
 
-  // Process favorites data
-  let favoritesList: Expert[] = [];
-  if (favorites && favorites.length > 0) {
-    favoritesList = favorites
-      .map((favorite: Expert) => {
-        if (!favorite?.cardInfo) return null;
-        return {
-          id: favorite.id ?? '',
-          name: favorite.cardInfo.name ?? '',
-          specialty: favorite.cardInfo.mainService ?? '',
-          yearsOfExperience: favorite.cardInfo.yearsOfExperience ?? 'N/A',
-          rating: favorite.cardInfo.averageRating ?? 0,
-          reviews: favorite.cardInfo.patientStories ?? 0,
-          description:
-            favorite.description ?? favorite.cardInfo.title ?? 'No description available',
-          isFavorite: !!favorite.isFavorite,
-          services: favorite.services || [],
-          location: favorite.city || favorite.cardInfo.country || 'Online',
-          languages: favorite.languages || ['English'],
-          sessionTypes: favorite.sessionTypes || ['online', 'office'],
-          pricing: favorite.pricing,
-          availableSlots: favorite.slotSummary?.availableSlots || favorite.availableSlots || 0,
-          totalSlots: favorite.slotSummary?.totalSlots || 0,
-          nextAvailableSlot: favorite.slotSummary?.nextAvailable || favorite.nextAvailableSlot,
-          cardInfo: favorite.cardInfo,
-          profilePicture: favorite.profilePicture,
-          email: favorite.email,
-          gender: favorite.gender,
-          city: favorite.city,
-          isEmailVerified: favorite.isEmailVerified,
-          isActive: favorite.isActive,
-          authProvider: favorite.authProvider,
-          slots: favorite.slots || [],
-        };
-      })
-      .filter(Boolean);
-  }
-
-  // Fallback to overview experts
-  if (favoritesList.length === 0 && allExperts && allExperts.length > 0) {
-    favoritesList = allExperts
-      .filter((expert: any) => expert.isFavorite)
-      .slice(0, 3) as unknown as Expert[];
-  }
-
-  // Process bookings data
-  const allBookings = bookings?.data || bookings || [];
-  const bookingData = allBookings.filter((booking: any) => {
-    if (!date || !booking?.slot?.startTime) return false;
-    const bookingDate = new Date(booking.slot.startTime);
-    const selectedDate = new Date(date);
-    return (
-      bookingDate.getFullYear() === selectedDate.getFullYear() &&
-      bookingDate.getMonth() === selectedDate.getMonth() &&
-      bookingDate.getDate() === selectedDate.getDate()
-    );
-  });
-
-  // Helper functions
-  const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
-
-  const getExpertName = (booking: any) => {
-    return booking?.slot?.freelancer?.name || booking?.expertName;
-  };
-
-  const getBookingTime = (booking: any) => {
-    return booking?.slot?.startTime ? formatTime(booking.slot.startTime) : '';
-  };
-
-  const getBookingDuration = (booking: any) => {
-    return booking?.slot?.duration ? `${booking.slot.duration} min` : '';
-  };
-
-  const getBookingLocation = (booking: any) => {
-    return booking?.slot?.locationType === 'OFFICE'
-      ? 'Office'
-      : booking?.slot?.locationType === 'VIRTUAL'
-        ? 'Online'
-        : booking?.slot?.locationType === 'HOME'
-          ? 'Home'
-          : 'Virtual';
-  };
-
-  if (loading) {
+  if (loading || expertsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <LoadingSpinner />
@@ -594,32 +251,146 @@ const UserExploreMain = () => {
         </div>
       }
     >
-      <div className="space-y-6">
-        {/* Stats Section */}
-        <div className="grid xl:grid-cols-2 grid-cols-1 gap-4 mb-6">
-          <StatsSection bookings={allTimeBookings} loading={allTimeBookingsLoading} />
-          <FavoritesSection favorites={favoritesList} loading={loading} />
+      <div className="space-y-8">
+        {/* Dashboard Grid - Stats at Top */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <DashboardWidget
+            icon={Calendar}
+            title="My Bookings"
+            value={upcomingSessions}
+            href="/dashboard/my-bookings"
+          />
+          <DashboardWidget
+            icon={MessageCircle}
+            title="Messages"
+            value={unreadMessages}
+            href="/dashboard/messages"
+          />
+          <DashboardWidget
+            icon={Heart}
+            title="Favorites"
+            value={favoriteTherapists}
+            href="/dashboard/favorites"
+          />
+          <DashboardWidget
+            icon={User}
+            title="Sessions"
+            value={totalSessions}
+            className="cursor-default"
+          />
         </div>
-        <AppointmentSection
-          date={date}
-          onDateChange={handleDateChange}
-          bookings={bookingData}
-          loading={calendarLoading || bookingsLoading}
-          getExpertName={getExpertName}
-          getBookingTime={getBookingTime}
-          getBookingDuration={getBookingDuration}
-          getBookingLocation={getBookingLocation}
+
+        {/* Next Appointment Hero - Large, Prominent */}
+        <NextAppointmentHero booking={nextAppointment} loading={bookingsLoading} />
+
+        {/* Quick Booking Widget - Unique Inline Experience */}
+        <QuickBookingWidget
+          therapists={recommendedTherapists}
+          loading={expertsLoading}
+          onTherapistClick={handleTherapistClick}
         />
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Favorites Section */}
-          <div className="xl:col-span-1"></div>
+        {/* Your Favorite Therapists Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Your Favorite Therapists
+            </h2>
+            <Button
+              onClick={() => router.push('/dashboard/favorites')}
+              variant="ghost"
+              size="sm"
+              className="text-primary hover:text-primary/80"
+            >
+              See All
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+          {favoritesList && favoritesList.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {favoritesList.slice(0, 6).map((therapist: Expert) => (
+                <FavoriteTherapistCard
+                  key={therapist.id}
+                  therapist={therapist}
+                  onBook={handleTherapistClick}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <Heart className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No favorites yet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Add therapists to favorites to see them here
+              </p>
+              <button
+                onClick={() => router.push('/dashboard/explore')}
+                className="text-primary hover:text-primary/80 font-medium"
+              >
+                Browse Therapists
+              </button>
+            </div>
+          )}
+        </div>
 
-          {/* Schedule Section */}
-          <div className="xl:col-span-2"></div>
+        {/* Upcoming Appointments Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Upcoming Appointments
+            </h2>
+            <Button
+              onClick={() => router.push('/dashboard/my-bookings')}
+              variant="ghost"
+              size="sm"
+              className="text-primary hover:text-primary/80"
+            >
+              View All
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+          {upcomingAppointments && upcomingAppointments.length > 1 ? (
+            <div className="space-y-3">
+              {upcomingAppointments.slice(1, 4).map((booking: any) => (
+                <UpcomingAppointmentCard key={booking.id} booking={booking} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <Calendar className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No upcoming appointments
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Book a session to see your appointments here
+              </p>
+              <button
+                onClick={() => router.push('/dashboard/explore')}
+                className="text-primary hover:text-primary/80 font-medium"
+              >
+                Book a Session
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Inline Booking Modal */}
+      <InlineBookingModal
+        therapist={selectedTherapist}
+        isOpen={isBookingModalOpen}
+        onClose={() => {
+          setIsBookingModalOpen(false);
+          setSelectedTherapist(null);
+        }}
+        onBook={handleBookSession}
+      />
     </DashboardPageWrapper>
   );
 };

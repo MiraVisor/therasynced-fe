@@ -4,6 +4,7 @@ import {
   BarChart,
   Calendar,
   FileText,
+  Heart,
   Home,
   LogOut,
   Map,
@@ -53,6 +54,11 @@ const navigationLinks = {
       name: 'Explore',
       url: '/dashboard/explore',
       icon: Map,
+    },
+    {
+      name: 'Favorites',
+      url: '/dashboard/favorites',
+      icon: Heart,
     },
     {
       name: 'My Bookings',

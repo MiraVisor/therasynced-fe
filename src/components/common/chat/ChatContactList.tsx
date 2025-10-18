@@ -116,7 +116,7 @@ const ChatContactList: React.FC<ChatContactListProps> = ({
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={contact.profilePicture} alt={contact.name} />
                     <AvatarFallback className="bg-green-100 text-green-700 font-medium">
-                      {getInitials(contact.name)}
+                      {contact.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                 </div>

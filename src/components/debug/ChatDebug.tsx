@@ -206,7 +206,7 @@ const ChatDebug = () => {
                   {activeConversation.slice(-5).map((message) => (
                     <div key={message.id} className="p-2 bg-gray-50 rounded">
                       <div className="flex justify-between text-sm">
-                        <span className="font-medium">{message.sender.name}</span>
+                        <span className="font-medium">{message.users.name}</span>
                         <span className="text-gray-500">
                           {new Date(message.createdAt).toLocaleTimeString()}
                         </span>
