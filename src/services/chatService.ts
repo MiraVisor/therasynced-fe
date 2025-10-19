@@ -23,6 +23,15 @@ export interface ChatContact {
     status: string;
   };
   isOnline?: boolean;
+  verificationStatus?:
+    | 'verified'
+    | 'pending'
+    | 'rejected'
+    | 'unverified'
+    | 'APPROVED'
+    | 'PENDING'
+    | 'REJECTED'
+    | 'UNVERIFIED';
 }
 
 export interface ChatMessage {

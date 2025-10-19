@@ -6,25 +6,25 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { VerifiedAvatar } from '@/components/ui/verification-badge';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 import { Expert } from '@/types/types';
 
 interface InlineBookingModalProps {
-  therapist: Expert | null;
+  freelancer: Expert | null;
   isOpen: boolean;
   onClose: () => void;
-  onBook: (therapist: Expert, slot: any) => void;
+  onBook: (freelancer: Expert, slot: any) => void;
 }
 
 const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
-  therapist,
+  freelancer,
   isOpen,
   onClose,
   onBook,
 }) => {
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
 
-  if (!therapist) return null;
+  if (!freelancer) return null;
 
   // Mock available slots - in real app, this would come from API
   const availableSlots = [
@@ -33,21 +33,21 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
       startTime: '2025-01-20T10:00:00.000Z',
       endTime: '2025-01-20T11:00:00.000Z',
       locationType: 'VIRTUAL',
-      price: therapist.pricing?.online?.min || 50,
+      price: freelancer.pricing?.online?.min || 0,
     },
     {
       id: '2',
       startTime: '2025-01-20T14:00:00.000Z',
       endTime: '2025-01-20T15:00:00.000Z',
       locationType: 'VIRTUAL',
-      price: therapist.pricing?.online?.min || 50,
+      price: freelancer.pricing?.online?.min || 0,
     },
     {
       id: '3',
       startTime: '2025-01-21T09:00:00.000Z',
       endTime: '2025-01-21T10:00:00.000Z',
       locationType: 'OFFICE',
-      price: therapist.pricing?.office?.min || 60,
+      price: freelancer.pricing?.office?.min || 0,
     },
   ];
 
@@ -86,7 +86,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
 
   const handleBook = () => {
     if (selectedSlot) {
-      onBook(therapist, selectedSlot);
+      onBook(freelancer, selectedSlot);
       onClose();
     }
   };
@@ -96,16 +96,17 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <VerifiedAvatar
-              name={therapist.name}
-              verificationStatus={therapist.verificationStatus}
-              size="md"
-            />
-            <div>
-              <h2 className="text-xl font-semibold">{therapist.name}</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {therapist.specialty || 'Therapist'}
-              </p>
+            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm flex-shrink-0">
+              {freelancer.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold">{freelancer.name}</h2>
+                <VerificationBadge status={freelancer.verificationStatus} size="sm" />
+              </div>
+              {freelancer.specialty && (
+                <p className="text-sm text-gray-600 dark:text-gray-400">{freelancer.specialty}</p>
+              )}
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -117,11 +118,11 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                  <span className="font-medium">{therapist.rating || 5.0}</span>
-                  <span className="text-sm text-gray-500">({therapist.reviews || 0} reviews)</span>
+                  <span className="font-medium">{freelancer.rating}</span>
+                  <span className="text-sm text-gray-500">({freelancer.reviews || 0} reviews)</span>
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {therapist.yearsOfExperience} years experience
+                  {freelancer.yearsOfExperience} years experience
                 </div>
               </div>
             </CardContent>

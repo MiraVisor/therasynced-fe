@@ -425,12 +425,7 @@ const Appointments = () => {
                                 <div className="text-xs leading-tight truncate mt-1">
                                   {appointmentSlot.appointment.location === LocationType.CLINIC
                                     ? 'Clinic'
-                                    : appointmentSlot.appointment.location === LocationType.OFFICE
-                                      ? 'Office'
-                                      : appointmentSlot.appointment.location ===
-                                          LocationType.VIRTUAL
-                                        ? 'Virtual'
-                                        : 'Home'}
+                                    : 'Home'}
                                 </div>
                               )}
                             </div>
@@ -537,13 +532,7 @@ const Appointments = () => {
                     </div>
                     {appointment.location && (
                       <div className="text-xs leading-tight truncate mt-1 text-gray-500">
-                        {appointment.location === LocationType.CLINIC
-                          ? 'Clinic'
-                          : appointment.location === LocationType.OFFICE
-                            ? 'Office'
-                            : appointment.location === LocationType.VIRTUAL
-                              ? 'Virtual'
-                              : 'Home'}
+                        {appointment.location === LocationType.CLINIC ? 'Clinic' : 'Home'}
                       </div>
                     )}
                   </div>
@@ -630,13 +619,7 @@ const Appointments = () => {
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">Location</p>
                         <p className="text-sm text-gray-600">
-                          {selectedAppointment.location === LocationType.CLINIC
-                            ? 'Clinic'
-                            : selectedAppointment.location === LocationType.OFFICE
-                              ? 'Office'
-                              : selectedAppointment.location === LocationType.VIRTUAL
-                                ? 'Virtual'
-                                : 'Home'}
+                          {selectedAppointment.location === LocationType.CLINIC ? 'Clinic' : 'Home'}
                         </p>
                       </div>
                     </div>

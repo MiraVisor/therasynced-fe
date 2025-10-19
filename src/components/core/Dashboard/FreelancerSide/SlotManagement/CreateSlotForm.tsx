@@ -274,7 +274,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
   const { isCreating } = useSelector((state: RootState) => state.slot);
 
   const [formData, setFormData] = useState<CreateSlotDto>({
-    locationType: LocationType.VIRTUAL,
+    locationType: LocationType.HOME,
     locationId: undefined,
     basePrice: 50,
     duration: 60,
@@ -387,9 +387,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={LocationType.VIRTUAL}>💻 Virtual (Online)</SelectItem>
                 <SelectItem value={LocationType.HOME}>🏠 Home Visit</SelectItem>
-                <SelectItem value={LocationType.OFFICE}>🏢 Office</SelectItem>
                 <SelectItem value={LocationType.CLINIC}>🏥 Clinic</SelectItem>
               </SelectContent>
             </Select>

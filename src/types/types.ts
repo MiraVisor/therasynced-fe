@@ -1,12 +1,101 @@
+// Job Title interface for freelancers
+export interface JobTitle {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface JobTitlesResponse {
+  success: boolean;
+  data: JobTitle[];
+}
+
+// First Aid Certificate Status
+export type FirstAidCertificateStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+// Cloudinary Upload Response
+export interface CloudinaryUploadResponse {
+  url: string;
+  publicId: string;
+  success: boolean;
+  error?: string;
+}
+
+// Freelancer File Type
+export type FreelancerFileType =
+  | 'CERTIFICATE'
+  | 'VERIFICATION_DOCUMENT'
+  | 'PROFILE_PICTURE'
+  | 'OTHER';
+
+// Individual File Structure (from backend)
+export interface BackendFile {
+  url: string;
+  type: string;
+  uploadedAt: string;
+  fileSize: number;
+  format: string;
+  originalName: string;
+  status?: string;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+}
+
+// Backend Response Structure
+export interface FreelancerFilesResponse {
+  profilePicture?: BackendFile;
+  firstAidCertificate?: BackendFile;
+  verificationDocuments?: BackendFile[];
+}
+
+// Flattened File for DataTable
+export interface FreelancerFile {
+  id: string;
+  fileName: string;
+  fileType: FreelancerFileType;
+  url: string;
+  publicId?: string;
+  fileSize: number;
+  uploadedAt: string;
+  status?: string;
+  format?: string;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+}
+
+// Service Category interface
+export interface ServiceCategory {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+}
+
+// First Aid Certificate Info
+export interface FirstAidCertificateInfo {
+  firstAidCertificateUrl: string;
+  firstAidCertificateStatus: FirstAidCertificateStatus;
+  firstAidCertificateApprovedAt: Date | null;
+  firstAidCertificateRejectedAt: Date | null;
+  firstAidCertificateRejectionReason: string | null;
+}
+
 export interface registerUserTypes {
   name: string;
   email: string;
   role: string;
   password: string;
   profilePicture?: string;
-  gender: string;
-  dob: string;
-  city: string;
+  gender?: string;
+  dob?: string;
+  city?: string;
+  // New optional fields for freelancers
+  mainJobTitle?: JobTitle;
+  clinicAddress?: string;
+  firstAidCertificateUrl?: string;
+  verificationDocuments?: string[];
 }
 
 // New DTOs to match backend
@@ -16,9 +105,14 @@ export interface SignUpDto {
   role: string;
   password: string;
   profilePicture?: string;
-  gender: string;
-  dob: string;
-  city: string;
+  gender?: string;
+  dob?: string;
+  city?: string;
+  // New optional fields for freelancers
+  mainJobTitle?: JobTitle;
+  clinicAddress?: string;
+  firstAidCertificateUrl?: string;
+  verificationDocuments?: string[];
 }
 
 export interface LoginDto {
@@ -56,6 +150,9 @@ export interface UpdateProfileDto {
   city?: string;
   gender?: string;
   dob?: string;
+  // New fields for freelancers
+  mainJobTitleId?: string; // Updated to match backend DTO
+  clinicAddress?: string;
 }
 
 // Backend response types
@@ -86,6 +183,19 @@ export interface BackendProfileResponse {
       authProvider: string;
       createdAt: string;
       updatedAt: string;
+      // New fields for enhanced user profile
+      mainJobTitle?: JobTitle;
+      clinicAddress?: string;
+      verificationDocuments?: string[];
+      verificationRequestedAt?: Date | null;
+      verificationApprovedAt?: Date | null;
+      verificationRejectedAt?: Date | null;
+      verificationRejectionReason?: string | null;
+      firstAidCertificateUrl?: string;
+      firstAidCertificateStatus?: FirstAidCertificateStatus;
+      firstAidCertificateApprovedAt?: Date | null;
+      firstAidCertificateRejectedAt?: Date | null;
+      firstAidCertificateRejectionReason?: string | null;
     };
     freelancerData?: any;
   };
@@ -126,8 +236,9 @@ export interface Expert {
   id: string;
   name: string;
   specialty: string;
+  jobTitle?: JobTitle; // Add job title field
   yearsOfExperience: string;
-  rating: number;
+  rating?: number;
   reviews: number;
   description: string;
   isFavorite?: boolean;
@@ -157,6 +268,8 @@ export interface Expert {
     | 'PENDING'
     | 'REJECTED'
     | 'UNVERIFIED';
+  // First aid certificate information
+  firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   // Slot information
   slots?: any[];
   slotSummary?: any;
@@ -190,8 +303,6 @@ export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELL
 
 export enum LocationType {
   HOME = 'HOME',
-  OFFICE = 'OFFICE',
-  VIRTUAL = 'VIRTUAL',
   CLINIC = 'CLINIC',
 }
 
@@ -475,6 +586,19 @@ export interface Freelancer {
     | 'PENDING'
     | 'REJECTED'
     | 'UNVERIFIED';
+  // New fields for enhanced freelancer profile
+  mainJobTitle?: JobTitle;
+  clinicAddress?: string;
+  verificationDocuments?: string[];
+  verificationRequestedAt?: Date | null;
+  verificationApprovedAt?: Date | null;
+  verificationRejectedAt?: Date | null;
+  verificationRejectionReason?: string | null;
+  firstAidCertificateUrl?: string;
+  firstAidCertificateStatus?: FirstAidCertificateStatus;
+  firstAidCertificateApprovedAt?: Date | null;
+  firstAidCertificateRejectedAt?: Date | null;
+  firstAidCertificateRejectionReason?: string | null;
   cardInfo: {
     name: string;
     title: string;

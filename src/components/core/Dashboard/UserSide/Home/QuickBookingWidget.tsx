@@ -1,33 +1,34 @@
 'use client';
 
-import { ArrowRight, Clock, Star } from 'lucide-react';
+import { ArrowRight, CheckCircle, Clock, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { VerifiedAvatar } from '@/components/ui/verification-badge';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 import { Expert } from '@/types/types';
 
 interface QuickBookingWidgetProps {
-  therapists: Expert[];
+  freelancers: Expert[];
   loading?: boolean;
-  onTherapistClick?: (therapist: Expert) => void;
+  onFreelancerClick?: (freelancer: Expert) => void;
 }
 
 const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
-  therapists,
+  freelancers,
   loading = false,
-  onTherapistClick,
+  onFreelancerClick,
 }) => {
   const router = useRouter();
 
-  const handleTherapistClick = (therapist: Expert) => {
-    if (onTherapistClick) {
-      onTherapistClick(therapist);
+  const handleFreelancerClick = (freelancer: Expert) => {
+    if (onFreelancerClick) {
+      onFreelancerClick(freelancer);
     } else {
       // Fallback: navigate to booking page
-      router.push(`/dashboard/freelancer/${therapist.id}`);
+      router.push(`/dashboard/freelancer/${freelancer.id}`);
     }
   };
 
@@ -68,7 +69,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
     );
   }
 
-  if (!therapists || therapists.length === 0) {
+  if (!freelancers || freelancers.length === 0) {
     return (
       <Card className="border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6 text-center">
@@ -76,10 +77,10 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
             Book Your Next Session
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            No therapists available at the moment.
+            No freelancers available at the moment.
           </p>
           <Button onClick={handleViewAll} variant="outline">
-            Explore All Therapists
+            Explore All Freelancers
           </Button>
         </CardContent>
       </Card>
@@ -105,35 +106,53 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {therapists.slice(0, 4).map((therapist) => (
+          {freelancers.slice(0, 4).map((freelancer) => (
             <Card
-              key={therapist.id}
+              key={freelancer.id}
               className="border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer"
-              onClick={() => handleTherapistClick(therapist)}
+              onClick={() => handleFreelancerClick(freelancer)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3 mb-3">
-                  <VerifiedAvatar
-                    name={therapist.name}
-                    verificationStatus={therapist.verificationStatus}
-                    size="md"
-                  />
+                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                    {freelancer.name?.charAt(0).toUpperCase()}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                      {therapist.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {therapist.specialty || 'Therapist'}
-                    </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {therapist.rating || 5.0}
-                      </span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        ({therapist.reviews || 0})
-                      </span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                        {freelancer.name}
+                      </h3>
+                      <VerificationBadge
+                        status={freelancer.verificationStatus || 'unverified'}
+                        size="sm"
+                      />
                     </div>
+                    {freelancer.jobTitle?.name ? (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        {freelancer.jobTitle.name}
+                      </p>
+                    ) : freelancer.specialty ? (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        {freelancer.specialty}
+                      </p>
+                    ) : null}
+                    {freelancer.rating && freelancer.rating > 0 ? (
+                      <div className="flex items-center gap-1 mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3 h-3 ${i < Math.floor(freelancer.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                          />
+                        ))}
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                          ({freelancer.rating})
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        No ratings yet
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -141,9 +160,15 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
                   <div className="text-sm text-gray-600 dark:text-gray-400">Next: Tomorrow 2pm</div>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-primary">
-                      From €{therapist.pricing?.online?.min || 50}/session
-                    </div>
+                    {freelancer.pricing?.online?.min ? (
+                      <div className="text-sm font-semibold text-primary">
+                        From €{freelancer.pricing.online.min}/session
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Contact for pricing
+                      </div>
+                    )}
                     <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
                       Book Now
                     </Button>

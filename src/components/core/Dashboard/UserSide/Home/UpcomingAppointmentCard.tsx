@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { VerifiedAvatar } from '@/components/ui/verification-badge';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 
 interface UpcomingAppointmentCardProps {
   booking: any;
@@ -85,15 +85,19 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
 
           {/* Therapist Info */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <VerifiedAvatar
-              name={getExpertName(booking)}
-              verificationStatus={booking?.slot?.freelancer?.verificationStatus}
-              size="sm"
-            />
+            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs flex-shrink-0">
+              {getExpertName(booking)?.charAt(0).toUpperCase()}
+            </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-gray-900 dark:text-white truncate">
-                {getExpertName(booking)}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                  {getExpertName(booking)}
+                </h3>
+                <VerificationBadge
+                  status={booking?.slot?.freelancer?.verificationStatus}
+                  size="sm"
+                />
+              </div>
               <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />

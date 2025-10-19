@@ -32,7 +32,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
     name: '',
     description: '',
     duration: undefined,
-    locationTypes: ['VIRTUAL' as LocationType],
+    locationTypes: ['HOME' as LocationType],
     tags: [],
     requiresEquipment: false,
   });
@@ -86,12 +86,8 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
 
   const getLocationTypeLabel = (type: string) => {
     switch (type) {
-      case 'VIRTUAL':
-        return 'Virtual (Online)';
       case 'HOME':
         return 'Home Visit';
-      case 'OFFICE':
-        return 'Office';
       case 'CLINIC':
         return 'Clinic';
       default:
@@ -162,8 +158,8 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
           {/* Location Types */}
           <div className="space-y-4">
             <Label className="text-base font-semibold">Available Location Types</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(['VIRTUAL', 'HOME', 'OFFICE', 'CLINIC'] as const).map((locationType) => (
+            <div className="grid grid-cols-2 gap-3">
+              {(['HOME', 'CLINIC'] as const).map((locationType) => (
                 <div
                   key={locationType}
                   className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md ${

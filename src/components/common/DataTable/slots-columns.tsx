@@ -13,14 +13,8 @@ import { LocationType, Slot } from '@/types/types';
 // Location type configuration using LocationType enum
 const getLocationTypeConfig = (locationType: LocationType) => {
   const configs = {
-    [LocationType.VIRTUAL]: {
-      label: 'Virtual',
-    },
     [LocationType.HOME]: {
       label: 'Home Visit',
-    },
-    [LocationType.OFFICE]: {
-      label: 'Office',
     },
     [LocationType.CLINIC]: {
       label: 'Clinic',

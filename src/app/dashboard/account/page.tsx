@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DatePicker } from '@/components/common/input/DatePicker';
@@ -44,9 +45,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
-import { ROLES } from '@/types/types';
+import { JobTitle, ROLES } from '@/types/types';
 
 interface UserProfile {
   id?: string;
@@ -59,6 +61,10 @@ interface UserProfile {
   isEmailVerified?: boolean;
   isActive?: boolean;
   role?: string;
+  // Professional information for freelancers
+  mainJobTitle?: JobTitle;
+  mainJobTitleId?: string; // Add this to store the ID from API
+  clinicAddress?: string;
 }
 
 export default function AccountPage() {
@@ -69,9 +75,10 @@ export default function AccountPage() {
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
+  const [isLoadingJobTitles, setIsLoadingJobTitles] = useState(false);
   const { role, logout } = useAuth();
-
-  console.log(role);
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState<UserProfile>({
     name: '',
@@ -79,6 +86,9 @@ export default function AccountPage() {
     city: '',
     gender: '',
     dob: '',
+    mainJobTitle: undefined,
+    mainJobTitleId: undefined,
+    clinicAddress: '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -98,16 +108,49 @@ export default function AccountPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    loadUserProfile();
+    const loadData = async () => {
+      await loadJobTitles();
+      await loadUserProfile();
+    };
+    loadData();
   }, []);
+
+  // Update job title when job titles are loaded and we have a mainJobTitleId
+  useEffect(() => {
+    if (jobTitles.length > 0 && formData.mainJobTitleId && !formData.mainJobTitle) {
+      const jobTitle = jobTitles.find((jt) => jt.id === formData.mainJobTitleId);
+      if (jobTitle) {
+        setFormData((prev) => ({
+          ...prev,
+          mainJobTitle: jobTitle,
+        }));
+      }
+    }
+  }, [jobTitles, formData.mainJobTitleId, formData.mainJobTitle]);
+
+  const loadJobTitles = async () => {
+    try {
+      setIsLoadingJobTitles(true);
+      const response = await dispatch(getActiveJobTitles() as any);
+
+      if (response.payload && Array.isArray(response.payload) && response.payload.length > 0) {
+        setJobTitles(response.payload);
+      } else {
+        setJobTitles([]);
+      }
+    } catch (error) {
+      // Don't show error toast for job titles as it's not critical
+      setJobTitles([]);
+    } finally {
+      setIsLoadingJobTitles(false);
+    }
+  };
 
   const loadUserProfile = async () => {
     try {
       setIsProfileLoading(true);
-      console.log('Loading user profile...'); // Debug log
 
       const response = await getProfile();
-      console.log('Profile API Response:', response); // Debug log
 
       // Handle the actual API response structure
       let userData: any;
@@ -115,16 +158,12 @@ export default function AccountPage() {
         // Actual API structure: { success: true, data: { user: { ... } } }
         userData = response.data.user;
       } else {
-        console.error('Unexpected API response structure:', response);
         toast.error('Invalid profile data received from server');
         return;
       }
 
-      console.log('Extracted User Data:', userData); // Debug log
-
       // Validate that we have the minimum required data
       if (!userData || !userData.id) {
-        console.error('Missing required user data:', userData);
         toast.error('Profile data is incomplete');
         return;
       }
@@ -144,9 +183,7 @@ export default function AccountPage() {
               const isoString = date.toISOString();
               formattedDob = isoString.split('T')[0];
             }
-          } catch (error) {
-            console.error('Error formatting DOB:', error);
-          }
+          } catch (error) {}
         }
       }
 
@@ -161,14 +198,17 @@ export default function AccountPage() {
         isEmailVerified: userData.isEmailVerified || false,
         isActive: userData.isActive !== undefined ? userData.isActive : true,
         role: userData.role || '',
+        // Professional information
+        mainJobTitleId: userData.mainJobTitleId, // Store the ID from API
+        mainJobTitle: userData.mainJobTitleId
+          ? jobTitles.find((jt) => jt.id === userData.mainJobTitleId)
+          : undefined,
+        clinicAddress: userData.clinicAddress || '',
       };
 
-      console.log('Setting Form Data:', newFormData); // Debug log
       setFormData(newFormData);
       setProfileLoaded(true);
     } catch (error: any) {
-      console.error('Failed to load user profile:', error);
-
       // More specific error messages
       if (error?.status === 401) {
         toast.error('Authentication failed. Please log in again.');
@@ -191,6 +231,13 @@ export default function AccountPage() {
     }));
   };
 
+  const handleJobTitleChange = (jobTitle: JobTitle) => {
+    setFormData((prev: UserProfile) => ({
+      ...prev,
+      mainJobTitle: jobTitle,
+    }));
+  };
+
   const handlePasswordChange = (field: string, value: string) => {
     setPasswordData(
       (prev: { currentPassword: string; newPassword: string; confirmPassword: string }) => ({
@@ -207,16 +254,6 @@ export default function AccountPage() {
       // Basic validation
       if (!formData.name.trim()) {
         toast.error('Name is required');
-        return;
-      }
-
-      if (!formData.city || !formData.city.trim()) {
-        toast.error('City is required');
-        return;
-      }
-
-      if (!formData.gender) {
-        toast.error('Please select your gender');
         return;
       }
 
@@ -253,9 +290,11 @@ export default function AccountPage() {
 
       const response = await updateProfile({
         name: formData.name.trim(),
-        city: formData.city.trim(),
-        gender: formData.gender,
-        dob: dobToSend,
+        ...(formData.city && { city: formData.city.trim() }),
+        ...(formData.gender && { gender: formData.gender }),
+        ...(formData.dob && { dob: dobToSend }),
+        ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
+        ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
       });
 
       if (response.success) {
@@ -271,7 +310,6 @@ export default function AccountPage() {
         toast.error(response.message || 'Failed to update profile');
       }
     } catch (error: any) {
-      console.error('Profile update error:', error);
       toast.error(error?.message || 'Failed to update profile');
     } finally {
       setIsLoading(false);
@@ -504,6 +542,99 @@ export default function AccountPage() {
           </Button>
         </div>
       </div>
+
+      {/* Professional Information Section - Only for Freelancers */}
+      {role === ROLES.FREELANCER && (
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Professional Information</h3>
+            <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+              Freelancer
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Job Title */}
+            <div className="space-y-2">
+              <Label htmlFor="jobTitle" className="text-sm font-medium text-gray-700">
+                Job Title
+              </Label>
+              <Select
+                value={formData.mainJobTitle?.id || ''}
+                onValueChange={(value) => {
+                  const selectedJobTitle = jobTitles.find((jt) => jt.id === value);
+                  if (selectedJobTitle) {
+                    handleJobTitleChange(selectedJobTitle);
+                  }
+                }}
+                disabled={isProfileLoading || isLoading || isLoadingJobTitles}
+              >
+                <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors">
+                  <SelectValue
+                    placeholder={
+                      isLoadingJobTitles
+                        ? 'Loading job titles...'
+                        : jobTitles.length === 0
+                          ? 'No job titles available'
+                          : 'Select your job title'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {jobTitles.length === 0 ? (
+                    <div className="px-2 py-1.5 text-sm text-gray-500 text-center">
+                      No job titles available
+                    </div>
+                  ) : (
+                    jobTitles.map((jobTitle) => (
+                      <SelectItem key={jobTitle.id} value={jobTitle.id}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{jobTitle.name}</span>
+                          {jobTitle.description && (
+                            <span className="text-xs text-gray-500">- {jobTitle.description}</span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clinic Address */}
+            <div className="space-y-2">
+              <Label htmlFor="clinicAddress" className="text-sm font-medium text-gray-700">
+                Clinic Address
+              </Label>
+              <Input
+                id="clinicAddress"
+                placeholder="Enter your clinic or practice address"
+                value={formData.clinicAddress || ''}
+                onChange={(e) => handleInputChange('clinicAddress', e.target.value)}
+                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+                disabled={isProfileLoading || isLoading}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-6">
+            <Button
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
+              onClick={handleProfileUpdate}
+              disabled={isLoading || isProfileLoading}
+            >
+              {isLoading ? (
+                <>Saving...</>
+              ) : (
+                <>
+                  Save Changes
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 

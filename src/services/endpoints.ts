@@ -25,6 +25,9 @@ export const ENDPOINTS = {
   slots: {
     create: '/slot/create',
     list: '/slot/list',
+    mySlots: '/slot/my-slots', // For freelancer's own slots
+    bookedSlots: '/slot/booked-slots',
+    available: (freelancerId: string) => `/slot/available/${freelancerId}`,
     update: (id: string) => `/slot/${id}`,
     delete: (id: string) => `/slot/${id}`,
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
@@ -66,6 +69,7 @@ export const ENDPOINTS = {
     favorite: '/freelancer/favorite',
     favoriteAll: '/freelancer/favorite/all',
     recentFavorite: '/freelancer/favorite/recent',
+    files: '/freelancer/files', // Get all uploaded files
   },
   // Chat/messaging endpoints
   chat: {
@@ -73,6 +77,35 @@ export const ENDPOINTS = {
     send: '/chat/send',
     messages: '/chat/messages',
     markRead: (messageId: string) => `/chat/messages/${messageId}/read`,
+  },
+  // Service categories endpoints
+  serviceCategories: {
+    getAll: '/service-categories',
+    getByJobTitle: (jobTitle: string) => `/service-categories/${jobTitle}`,
+  },
+  // Job titles endpoints
+  jobTitles: {
+    getAll: '/service/job-titles',
+  },
+  // Certificate management endpoints
+  certificate: {
+    upload: '/freelancer/first-aid-certificate/upload',
+    status: '/freelancer/first-aid-certificate/status',
+  },
+  // Verification document endpoints
+  verification: {
+    uploadDocument: '/freelancer/verification/upload-document',
+    getDocuments: '/freelancer/verification/documents',
+    deleteDocument: (docId: string) => `/freelancer/verification/document/${docId}`,
+    status: '/freelancer/verification/status',
+    requestVerification: '/freelancer/verification/request',
+  },
+  // Image upload endpoints
+  image: {
+    uploadSingle: '/image/upload/single',
+    uploadVerificationDocument: '/image/upload/verification-document',
+    uploadFirstAidCertificate: '/image/upload/first-aid-certificate',
+    deleteSingle: (publicId: string) => `/image/delete/single/${publicId}`,
   },
 };
 

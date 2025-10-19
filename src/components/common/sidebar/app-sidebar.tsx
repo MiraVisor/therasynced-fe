@@ -10,6 +10,7 @@ import {
   Map,
   MessageSquare,
   Settings,
+  Shield,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -96,6 +97,11 @@ const navigationLinks = {
       name: 'Messages',
       url: '/dashboard/messages',
       icon: MessageSquare,
+    },
+    {
+      name: 'Verification',
+      url: '/dashboard/verification',
+      icon: Shield,
     },
     {
       name: 'Analytics',

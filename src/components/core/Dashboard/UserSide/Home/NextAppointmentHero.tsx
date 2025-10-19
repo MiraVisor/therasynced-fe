@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { VerifiedAvatar } from '@/components/ui/verification-badge';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 
 interface NextAppointmentHeroProps {
   booking: any;
@@ -141,21 +141,24 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
         <div className="flex items-center gap-6">
           {/* Therapist Photo */}
           <div className="flex-shrink-0">
-            <VerifiedAvatar
-              name={getExpertName(booking)}
-              verificationStatus={booking?.slot?.freelancer?.verificationStatus}
-              size="xl"
-              className="w-20 h-20"
-            />
+            <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-2xl flex-shrink-0">
+              {getExpertName(booking)?.charAt(0).toUpperCase()}
+            </div>
           </div>
 
           {/* Appointment Details */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  {getExpertName(booking)}
-                </h2>
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {getExpertName(booking)}
+                  </h2>
+                  <VerificationBadge
+                    status={booking?.slot?.freelancer?.verificationStatus}
+                    size="md"
+                  />
+                </div>
 
                 <div className="flex items-center gap-6 text-lg text-gray-600 dark:text-gray-400 mb-3">
                   <div className="flex items-center gap-2">

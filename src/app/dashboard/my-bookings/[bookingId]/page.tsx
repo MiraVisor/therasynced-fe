@@ -169,11 +169,11 @@ export default function BookingDetailsPage() {
                         <div className="flex-1 space-y-3">
                           <div>
                             <h3 className="text-lg font-semibold text-gray-900">
-                              {freelancer?.name || 'Unknown'}
+                              {freelancer?.name}
                             </h3>
-                            <p className="text-gray-600">
-                              {freelancer?.specialty || 'Healthcare Professional'}
-                            </p>
+                            {freelancer?.jobTitle?.name && (
+                              <p className="text-gray-600">{freelancer.jobTitle.name}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-500">
                             {freelancer?.rating && (

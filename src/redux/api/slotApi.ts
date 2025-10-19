@@ -14,7 +14,7 @@ export const createSlot = async (data: CreateSlotsDto): Promise<ApiResponse<Slot
 };
 
 export const getSlots = async (params: PaginationDto): Promise<ApiResponse<Slot[]>> => {
-  const response = await api.post('/slot/my-slots', params);
+  const response = await api.post('/slot/list', params);
   return response.data;
 };
 
@@ -51,5 +51,22 @@ export const getFreelancerAvailableSlots = async (
   freelancerId: string,
 ): Promise<ApiResponse<Slot[]>> => {
   const response = await api.get(`/slot/freelancer/${freelancerId}/available`);
+  return response.data;
+};
+
+export const getBookedSlots = async (params: PaginationDto): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.post('/slot/booked-slots', params);
+  return response.data;
+};
+
+export const getAvailableSlots = async (freelancerId: string): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.get(`/slot/available/${freelancerId}`);
+  return response.data;
+};
+
+export const getMySlots = async (
+  params: PaginationDto & { freelancerId?: string },
+): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.post('/slot/list', params);
   return response.data;
 };

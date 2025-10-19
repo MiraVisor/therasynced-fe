@@ -110,6 +110,18 @@ export const checkExpiredReservations = createAsyncThunk(
   },
 );
 
+export const fetchMySlots = createAsyncThunk(
+  'slot/fetchMySlots',
+  async (params: PaginationDto, { rejectWithValue }) => {
+    try {
+      const response = await slotApi.getMySlots(params);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch my slots');
+    }
+  },
+);
+
 const slotSlice = createSlice({
   name: 'slot',
   initialState,
@@ -271,6 +283,20 @@ const slotSlice = createSlice({
         // This could be optimized by updating specific slots, but for now we'll let the user refresh
       })
       .addCase(checkExpiredReservations.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch my slots
+      .addCase(fetchMySlots.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchMySlots.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.slots = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchMySlots.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

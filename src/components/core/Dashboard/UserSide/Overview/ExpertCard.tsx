@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { VerificationBadge, VerifiedAvatar } from '@/components/ui/verification-badge';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
 import { Expert } from '@/types/types';
 
@@ -25,12 +25,14 @@ interface ExpertCardProps extends Expert {
     | 'PENDING'
     | 'REJECTED'
     | 'UNVERIFIED';
+  firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 const ExpertCard: React.FC<ExpertCardProps> = ({
   id,
   name,
   specialty,
+  jobTitle,
   yearsOfExperience,
   rating,
   description,
@@ -43,6 +45,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   availableSlots,
   cardInfo,
   verificationStatus = 'unverified',
+  firstAidCertificateStatus,
 }) => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -96,7 +99,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   // Get session type icons
 
   // Get freelancer info from the available props
-  const freelancerName = name || cardInfo?.name || 'Unknown';
+  const freelancerName = name || cardInfo?.name;
 
   return (
     <>
@@ -110,24 +113,33 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <VerifiedAvatar
-                name={freelancerName}
-                verificationStatus={verificationStatus}
-                size="md"
-                className="flex-shrink-0"
-              />
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                {freelancerName?.charAt(0).toUpperCase()}
+              </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate transition-colors mb-1">
-                  {freelancerName}
-                </h4>
-                <div className="flex items-center gap-1 mt-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                    />
-                  ))}
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate transition-colors">
+                    {freelancerName}
+                  </h4>
+                  <VerificationBadge status={verificationStatus} size="sm" />
                 </div>
+                {rating && rating > 0 ? (
+                  <div className="flex items-center gap-1 mt-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                      />
+                    ))}
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                      ({rating})
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    No ratings yet
+                  </div>
+                )}
               </div>
             </div>
 
@@ -199,22 +211,32 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         <DialogContent className="max-w-[95vw] lg:max-w-3xl max-h-[90vh] lg:max-h-[85vh] overflow-y-auto mx-4 lg:mx-auto">
           <DialogHeader className="pb-4">
             <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white text-center">
-              Expert Profile
+              Freelancer Profile
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6">
             {/* Simple Profile Header */}
             <div className="text-center pb-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{name}</h3>
-              <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">{specialty}</p>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{name}</h3>
+                <VerificationBadge status={verificationStatus} size="md" />
+              </div>
+              {jobTitle?.name && (
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">{jobTitle.name}</p>
+              )}
+              {firstAidCertificateStatus === 'APPROVED' && (
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  First Aid Certificate: Approved
+                </p>
+              )}
             </div>
 
             {/* About Section with Clear Label */}
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
-                About This Expert
+                About This Freelancer
               </h4>
               <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                 {description}

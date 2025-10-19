@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';

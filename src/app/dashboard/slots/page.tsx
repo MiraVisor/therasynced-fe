@@ -44,7 +44,7 @@ import {
 } from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { deleteSlot, fetchSlots } from '@/redux/slices/slotSlice';
+import { deleteSlot, fetchMySlots } from '@/redux/slices/slotSlice';
 import { RootState } from '@/redux/store';
 import { LocationType, Slot } from '@/types/types';
 
@@ -62,12 +62,12 @@ const SlotsPage = () => {
   const [showHelp, setShowHelp] = useState(true);
 
   useEffect(() => {
-    dispatch(fetchSlots({ page: 1, limit: 100 }) as any);
+    dispatch(fetchMySlots({ page: 1, limit: 100 }) as any);
   }, [dispatch]);
 
   const handleSlotCreateSuccess = () => {
     setShowCreateSlotForm(false);
-    dispatch(fetchSlots({ page: 1, limit: 100 }) as any);
+    dispatch(fetchMySlots({ page: 1, limit: 100 }) as any);
   };
 
   const handleDeleteSlot = async () => {
@@ -79,7 +79,7 @@ const SlotsPage = () => {
       toast.success('Slot deleted successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete slot');
-      dispatch(fetchSlots({ page: 1, limit: 100 }) as any);
+      dispatch(fetchMySlots({ page: 1, limit: 100 }) as any);
     }
   };
 
@@ -187,17 +187,13 @@ const SlotsPage = () => {
               <div className="flex flex-col">
                 <div className="mb-1">{getStatusBadge(slot)}</div>
                 <div className="flex items-center gap-1 text-sm text-gray-600">
-                  {slot.locationType === LocationType.VIRTUAL ? (
-                    <>
-                      <Video className="h-4 w-4" /> Online
-                    </>
-                  ) : slot.locationType === LocationType.HOME ? (
+                  {slot.locationType === LocationType.HOME ? (
                     <>
                       <Home className="h-4 w-4" /> Home Visit
                     </>
                   ) : (
                     <>
-                      <Building className="h-4 w-4" /> Office
+                      <Building className="h-4 w-4" /> Clinic
                     </>
                   )}
                 </div>

@@ -25,43 +25,43 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
   // Convert location types to session types
   const sessionTypes = Array.from(allLocationTypes).map((type) => {
     switch (type) {
-      case 'VIRTUAL':
-        return 'online';
-      case 'OFFICE':
-        return 'office';
       case 'HOME':
         return 'home';
       case 'CLINIC':
-        return 'office';
+        return 'clinic';
       default:
-        return 'online';
+        return 'home';
     }
   });
 
   // Get primary service name
-  const primaryService = services.length > 0 ? services[0]?.name : 'N/A';
+  const primaryService = services.length > 0 ? services[0]?.name : undefined;
 
   // Get location information
   const locations = freelancer.locations || [];
-  const primaryLocation = locations.length > 0 ? locations[0]?.name : 'N/A';
+  const primaryLocation = locations.length > 0 ? locations[0]?.name : undefined;
 
-  // Calculate experience from creation date or use default
+  // Calculate experience from creation date
   const createdAt = freelancer.createdAt ? new Date(freelancer.createdAt) : null;
   const yearsOfExperience = createdAt
     ? Math.floor((new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365))
-    : 5;
+    : undefined;
 
   // Get rating and reviews from cardInfo
   const cardInfo = freelancer.cardInfo || {};
-  const rating = cardInfo.averageRating || freelancer.averageRating || 4.0;
+  const rating = cardInfo.averageRating || freelancer.averageRating;
+
+  // Only use rating if it's a valid number greater than 0
+  const validRating = rating && rating > 0 ? rating : undefined;
 
   // Map API freelancer to Expert type for UI
   return {
     id: freelancer.id,
     name: freelancer.name || cardInfo.name,
     specialty: cardInfo.mainService || primaryService,
-    yearsOfExperience: yearsOfExperience.toString(),
-    rating: rating,
+    jobTitle: freelancer.mainJobTitle, // Add job title mapping
+    yearsOfExperience: yearsOfExperience?.toString() || '',
+    rating: validRating,
     reviews: freelancer.favoritedBy?.length || 0,
     description: freelancer.description || cardInfo.title,
     isFavorite: freelancer.isFavorite ?? false,
@@ -81,6 +81,7 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     isActive: freelancer.isActive,
     authProvider: freelancer.authProvider,
     verificationStatus: freelancer.verificationStatus,
+    firstAidCertificateStatus: freelancer.firstAidCertificateStatus,
     // Slot information
     slots: freelancer.slots || [],
     slotSummary: freelancer.slotSummary || {},
@@ -115,7 +116,7 @@ const EnhancedSearchBar = ({ onSearch }: { onSearch: (query: string) => void }) 
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         <Input
           type="text"
-          placeholder="Search therapists by name, specialty, or keywords..."
+          placeholder="Search freelancers by name, specialty, or keywords..."
           value={searchQuery}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-10 pr-4 py-3 text-base border-gray-200 focus:border-primary focus:ring-primary"
@@ -174,30 +175,11 @@ const UserOverview = () => {
   const hasNextPage = pagination?.hasNext || false;
 
   // Debug pagination state
-  useEffect(() => {
-    console.log('Pagination state changed:', pagination);
-    console.log('hasNextPage:', hasNextPage);
-  }, [pagination, hasNextPage]);
+  useEffect(() => {}, [pagination, hasNextPage]);
 
   const handleLoadMore = () => {
-    console.log('handleLoadMore called', { pagination, hasNextPage, loadingMore });
     if (pagination && hasNextPage && !loadingMore) {
-      console.log('Dispatching loadMoreFreelancers', {
-        page: pagination.page + 1,
-        limit: 6,
-      });
-      dispatch(
-        loadMoreFreelancers({
-          page: pagination.page + 1,
-          limit: 6, // Keep the same limit as initial fetch
-        }) as any,
-      );
-    } else {
-      console.log('Load more conditions not met:', {
-        hasPagination: !!pagination,
-        hasNextPage,
-        loadingMore,
-      });
+      dispatch(loadMoreFreelancers({ page: pagination.page + 1, limit: 6 }) as any);
     }
   };
 
@@ -244,7 +226,7 @@ const UserOverview = () => {
         <div className="space-y-6">
           <div className="space-y-3">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Find Your Perfect Therapist
+              Find Your Perfect Freelancer
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
               Connect with qualified mental health professionals who can help you on your journey to
@@ -261,7 +243,7 @@ const UserOverview = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {loading ? 'Loading therapists...' : `${filteredExperts.length} therapists found`}
+              {loading ? 'Loading freelancers...' : `${filteredExperts.length} freelancers found`}
             </h2>
             {searchQuery && (
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -284,7 +266,7 @@ const UserOverview = () => {
               <span className="text-2xl">⚠️</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Unable to load therapists
+              Unable to load freelancers
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <Button
@@ -300,11 +282,11 @@ const UserOverview = () => {
               <Search className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No therapists found
+              No freelancers found
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {searchQuery
-                ? `No therapists match your search for ${searchQuery}`
+                ? `No freelancers match your search for ${searchQuery}`
                 : 'Try adjusting your search criteria or filters'}
             </p>
             <Button
@@ -332,7 +314,7 @@ const UserOverview = () => {
                   <div className="text-center">
                     <LoadingSpinner size="md" />
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                      Loading more therapists...
+                      Loading more freelancers...
                     </p>
                   </div>
                 )}

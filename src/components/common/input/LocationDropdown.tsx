@@ -16,8 +16,51 @@ import {
 } from '@/components/ui/command';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { irishLocations } from '@/config/onboardingConfig';
 import { cn } from '@/lib/utils';
+
+// Define Irish locations locally since onboarding config is removed
+const irishLocations = [
+  'Dublin',
+  'Cork',
+  'Limerick',
+  'Galway',
+  'Waterford',
+  'Drogheda',
+  'Swords',
+  'Dundalk',
+  'Bray',
+  'Navan',
+  'Ennis',
+  'Kilkenny',
+  'Carlow',
+  'Tralee',
+  'Newbridge',
+  'Naas',
+  'Athlone',
+  'Portlaoise',
+  'Mullingar',
+  'Wexford',
+  'Sligo',
+  'Clonmel',
+  'Navan',
+  'Celbridge',
+  'Leixlip',
+  'Tullamore',
+  'Killarney',
+  'Arklow',
+  'Cobh',
+  'Castlebar',
+  'Midleton',
+  'Mallow',
+  'Ballina',
+  'Enniscorthy',
+  'Wicklow',
+  'Cavan',
+  'Shannon',
+  'Kilcock',
+  'Roscommon',
+  'Dungarvan',
+];
 
 // Convert irishLocations to the format expected by the dropdown
 const locationOptions = irishLocations.map((location) => ({

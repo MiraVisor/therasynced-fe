@@ -35,12 +35,8 @@ const getLocationTypeIcon = (type: string | undefined | null) => {
   if (!type) return '📍';
 
   switch (type) {
-    case 'VIRTUAL':
-      return '💻';
     case 'HOME':
       return '🏠';
-    case 'OFFICE':
-      return '🏢';
     case 'CLINIC':
       return '🏥';
     default:
@@ -52,12 +48,8 @@ const getLocationTypeLabel = (type: string | undefined | null) => {
   if (!type) return '';
 
   switch (type) {
-    case 'VIRTUAL':
-      return 'Virtual';
     case 'HOME':
       return 'Home Visit';
-    case 'OFFICE':
-      return 'Office';
     case 'CLINIC':
       return 'Clinic';
     default:
