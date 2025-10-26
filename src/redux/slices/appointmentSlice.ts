@@ -128,8 +128,12 @@ export const appointmentSlice = createSlice({
           status: booking.status,
           clientName: booking.client.name,
           description: booking.notes || '',
-          location: booking.slot.location?.name || booking.slot.locationType,
+          location: booking.slot.locationType, // Use locationType: CLINIC, HOME, ONLINE
           notes: booking.notes || '',
+          // Add additional fields for address display
+          locationType: booking.slot.locationType,
+          clientAddress: booking.clientAddress,
+          freelancer: booking.slot.freelancer,
         }));
         state.appointments = appointments;
       })
@@ -171,8 +175,12 @@ export const appointmentSlice = createSlice({
           status: booking.status,
           clientName: booking.client.name,
           description: booking.notes || '',
-          location: booking.slot.location?.name || booking.slot.locationType,
+          location: booking.slot.locationType, // Use locationType: CLINIC, HOME, ONLINE
           notes: booking.notes || '',
+          // Add additional fields for address display
+          locationType: booking.slot.locationType,
+          clientAddress: booking.clientAddress,
+          freelancer: booking.slot.freelancer,
         }));
         state.appointments = appointments;
       })

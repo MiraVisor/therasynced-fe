@@ -1,7 +1,7 @@
 'use client';
 
-import { Calendar, Clock, Euro, Package } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, ChevronDown, ChevronUp, Clock, Euro, Package } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
   Select,
   SelectContent,
@@ -18,11 +19,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-// import { fetchServices } from '@/redux/slices/serviceSlice'; // No longer needed
+import { getProfile } from '@/redux/api/profileApi';
 import { createSlot } from '@/redux/slices/slotSlice';
 import type { AppDispatch } from '@/redux/store';
 import { RootState } from '@/redux/store';
-import { CreateSlotDto, LocationType } from '@/types/types';
+import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
+import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
 
 interface CreateSlotFormProps {
   onSuccess?: () => void;
@@ -269,7 +272,95 @@ const SERVICES = [
 
 const CATEGORIES = ['Physiotherapy', 'Sports Therapy', 'Massage Therapy', 'Personal Training'];
 
+// Collapsible categories component
+const CollapsibleCategories = ({
+  categories,
+  formData,
+  onServiceToggle,
+}: {
+  categories: any[];
+  formData: CreateSlotDto;
+  onServiceToggle: (id: string) => void;
+}) => {
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+
+  // Group categories by job title
+  const grouped: { [key: string]: any[] } = {};
+  categories.forEach((category: any) => {
+    const jobTitleName = category.jobTitle?.name || 'Other';
+    if (!grouped[jobTitleName]) {
+      grouped[jobTitleName] = [];
+    }
+    grouped[jobTitleName].push(category);
+  });
+
+  // Toggle section
+  const toggleSection = (jobTitleName: string) => {
+    setOpenSections((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(jobTitleName)) {
+        newSet.delete(jobTitleName);
+      } else {
+        newSet.add(jobTitleName);
+      }
+      return newSet;
+    });
+  };
+
+  return (
+    <div className="space-y-2 max-h-64 overflow-y-auto">
+      {Object.entries(grouped).map(([jobTitleName, catList]) => {
+        const isOpen = openSections.has(jobTitleName);
+        return (
+          <div key={jobTitleName} className="border border-gray-200 rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => toggleSection(jobTitleName)}
+              className="w-full px-3 py-2 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+            >
+              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                {jobTitleName.replace(/_/g, ' ')}
+              </span>
+              {isOpen ? (
+                <ChevronUp className="h-4 w-4 text-gray-500" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-gray-500" />
+              )}
+            </button>
+            {isOpen && (
+              <div className="space-y-1 p-2 bg-white">
+                {catList.map((category: any) => {
+                  const isSelected = formData.serviceIds?.includes(category.id) || false;
+                  return (
+                    <div
+                      key={category.id}
+                      className="flex items-start space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
+                      onClick={() => onServiceToggle(category.id)}
+                    >
+                      <div className="mt-0.5 w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center">
+                        {isSelected && <div className="w-2 h-2 bg-blue-600 rounded-sm" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-sm">{category.name}</span>
+                        {category.description && (
+                          <p className="text-xs text-gray-500 mt-0.5">{category.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
+  console.log('CreateSlotForm component rendered');
+
   const dispatch = useDispatch<AppDispatch>();
   const { isCreating } = useSelector((state: RootState) => state.slot);
 
@@ -285,6 +376,51 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
 
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [freelancerJobTitle, setFreelancerJobTitle] = useState<string | null>(null);
+
+  // Fetch all service categories
+  useEffect(() => {
+    const loadServiceCategories = async () => {
+      console.log('Loading service categories');
+      try {
+        setIsLoadingCategories(true);
+        // Fetch all categories from /service/categories/all
+        const categoriesResponse = await api.get('service/categories/all');
+        console.log('Categories response:', categoriesResponse.data);
+
+        if (categoriesResponse.data.success && Array.isArray(categoriesResponse.data.data)) {
+          // The response is a flat list with each category having a jobTitle property
+          // Group them by job title for better organization in the UI
+          const groupedByJobTitle: { [key: string]: any[] } = {};
+
+          categoriesResponse.data.data.forEach((category: any) => {
+            const jobTitleName = category.jobTitle?.name || 'Other';
+            if (!groupedByJobTitle[jobTitleName]) {
+              groupedByJobTitle[jobTitleName] = [];
+            }
+            groupedByJobTitle[jobTitleName].push(category);
+          });
+
+          // Flatten back to show all categories, but keep the structure for display
+          const allCategories = categoriesResponse.data.data;
+          setServiceCategories(allCategories);
+          console.log('Loaded categories:', allCategories);
+          console.log('Grouped by job title:', groupedByJobTitle);
+        } else {
+          console.warn('No categories data received, response:', categoriesResponse.data);
+        }
+      } catch (error) {
+        console.error('Failed to load service categories:', error);
+        toast.error('Failed to load service categories');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    loadServiceCategories();
+  }, []);
 
   // Calculate end time automatically when start time or duration changes
   const calculateEndTime = (start: string, durationMinutes: number): string => {
@@ -468,43 +604,22 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
                 Select which services will be available for booking in this time slot:
               </div>
 
-              {/* Group services by category */}
-              {CATEGORIES.map((category) => {
-                const categoryServices = SERVICES.filter(
-                  (service) => service.category === category,
-                );
-                return (
-                  <div key={category} className="space-y-2">
-                    <h4 className="font-medium text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-1">
-                      {category}
-                    </h4>
-                    <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto">
-                      {categoryServices.map((service) => {
-                        const isSelected = formData.serviceIds?.includes(service.id) || false;
-                        return (
-                          <div
-                            key={service.id}
-                            className="flex items-start space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
-                            onClick={() => handleServiceToggle(service.id)}
-                          >
-                            <div className="mt-0.5 w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center">
-                              {isSelected && <div className="w-2 h-2 bg-blue-600 rounded-sm" />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm">{service.name}</span>
-                                <Badge variant="secondary" className="text-xs">
-                                  {service.duration}min
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Show dynamic service categories grouped by job title */}
+              {isLoadingCategories ? (
+                <div className="flex items-center justify-center py-8">
+                  <LoadingSpinner />
+                </div>
+              ) : serviceCategories.length > 0 ? (
+                <CollapsibleCategories
+                  categories={serviceCategories}
+                  formData={formData}
+                  onServiceToggle={handleServiceToggle}
+                />
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  No service categories available.
+                </div>
+              )}
 
               {/* Selected Services Summary */}
               {formData.serviceIds && formData.serviceIds.length > 0 && (
@@ -514,10 +629,10 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {formData.serviceIds.map((serviceId) => {
-                      const service = SERVICES.find((s) => s.id === serviceId);
+                      const service = serviceCategories.find((s) => s.id === serviceId);
                       return service ? (
                         <Badge key={serviceId} variant="default" className="text-xs">
-                          {service.name} ({service.duration}min)
+                          {service.name}
                         </Badge>
                       ) : null;
                     })}

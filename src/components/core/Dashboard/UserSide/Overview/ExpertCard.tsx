@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
+import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   const router = useRouter();
   const dispatch = useDispatch();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
@@ -352,10 +354,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 <Button
                   variant="outline"
                   className="flex-1 h-10 text-sm border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
-                  onClick={() => {
-                    // TODO: Implement report/block functionality
-                    toast.info('Report/Block functionality coming soon');
-                  }}
+                  onClick={() => setShowReportDialog(true)}
                   tabIndex={3}
                 >
                   Report/Block
@@ -375,6 +374,14 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Report Dialog */}
+      <ReportFreelancerDialog
+        isOpen={showReportDialog}
+        onClose={() => setShowReportDialog(false)}
+        freelancerId={id}
+        freelancerName={name}
+      />
     </>
   );
 };

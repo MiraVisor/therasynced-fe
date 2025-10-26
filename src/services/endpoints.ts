@@ -107,6 +107,27 @@ export const ENDPOINTS = {
     uploadFirstAidCertificate: '/image/upload/first-aid-certificate',
     deleteSingle: (publicId: string) => `/image/delete/single/${publicId}`,
   },
+  // Loyalty system endpoints
+  loyalty: {
+    profile: '/loyalty/profile',
+    rewards: '/loyalty/rewards',
+    redeem: '/loyalty/redeem',
+    redemptions: '/loyalty/redemptions',
+  },
+  // Complaint system endpoints
+  complaint: {
+    create: '/complaint/create',
+    myComplaints: '/complaint/my-complaints',
+    againstMe: '/complaint/against-me',
+    detail: (complaintId: string) => `/complaint/${complaintId}`,
+  },
+  // Service categories - public endpoints
+  public: {
+    jobTitles: '/service/job-titles',
+    categories: '/service/categories',
+    allCategories: '/categories/all',
+    categoriesByJobTitle: (jobTitle: string) => `/service/categories/${jobTitle}`,
+  },
 };
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;

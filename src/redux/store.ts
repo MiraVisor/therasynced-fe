@@ -6,7 +6,10 @@ import bookingSlice from './slices/bookingSlice';
 import calendarSlice from './slices/calendarSlice';
 import certificateSlice from './slices/certificateSlice';
 import chatSlice from './slices/chatSlice';
+import complaintSlice from './slices/complaintSlice';
 import exploreSlice from './slices/exploreSlice';
+import imageUploadSlice from './slices/imageUploadSlice';
+import loyaltySlice from './slices/loyaltySlice';
 import overviewSlice from './slices/overviewSlice';
 import serviceSlice from './slices/serviceSlice';
 import slotReducer from './slices/slotSlice';
@@ -18,8 +21,11 @@ export const store = configureStore({
     appointment: appointmentSlice,
     calendar: calendarSlice,
     chat: chatSlice,
-    overview: overviewSlice,
+    complaint: complaintSlice,
     explore: exploreSlice,
+    imageUpload: imageUploadSlice,
+    loyalty: loyaltySlice,
+    overview: overviewSlice,
     booking: bookingSlice,
     slot: slotReducer,
     service: serviceSlice,

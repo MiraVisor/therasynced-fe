@@ -226,16 +226,46 @@ export default function BookingDetailsPage() {
                             </p>
                           </div>
                         </div>
-                        {location && (
-                          <div className="flex items-center gap-3">
-                            <MapPin className="h-5 w-5 text-gray-400" />
-                            <div>
-                              <p className="text-sm text-gray-500">Location</p>
-                              <p className="font-medium">{location.name}</p>
-                              <p className="text-sm text-gray-600">{location.address}</p>
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm text-gray-500">Location</p>
+                            {(() => {
+                              // Show appropriate location based on type
+                              if (slot?.locationType === 'ONLINE') {
+                                return <p className="font-medium">Online</p>;
+                              } else if (
+                                slot?.locationType === 'CLINIC' &&
+                                freelancer?.clinicAddress
+                              ) {
+                                return (
+                                  <>
+                                    <p className="font-medium">Clinic</p>
+                                    <p className="text-sm text-gray-600">
+                                      {freelancer.clinicAddress}
+                                    </p>
+                                  </>
+                                );
+                              } else if (slot?.locationType === 'HOME' && booking.clientAddress) {
+                                return (
+                                  <>
+                                    <p className="font-medium">Your Home</p>
+                                    <p className="text-sm text-gray-600">{booking.clientAddress}</p>
+                                  </>
+                                );
+                              } else if (location) {
+                                return (
+                                  <>
+                                    <p className="font-medium">{location.name}</p>
+                                    <p className="text-sm text-gray-600">{location.address}</p>
+                                  </>
+                                );
+                              } else {
+                                return <p className="font-medium">Not specified</p>;
+                              }
+                            })()}
                           </div>
-                        )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

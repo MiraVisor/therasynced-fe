@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Award,
   BarChart,
   Calendar,
   FileText,
@@ -67,6 +68,11 @@ const navigationLinks = {
       icon: Calendar,
     },
     {
+      name: 'Loyalty',
+      url: '/dashboard/loyalty',
+      icon: Award,
+    },
+    {
       name: 'Messages',
       url: '/dashboard/messages',
       icon: MessageSquare,
@@ -92,6 +98,11 @@ const navigationLinks = {
       name: 'Bookings',
       url: '/dashboard/slots',
       icon: Calendar,
+    },
+    {
+      name: 'Loyalty',
+      url: '/dashboard/loyalty',
+      icon: Award,
     },
     {
       name: 'Messages',

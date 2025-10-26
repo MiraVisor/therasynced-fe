@@ -618,9 +618,46 @@ const Appointments = () => {
                     <div className="flex items-center gap-3 p-3 rounded-lg">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">Location</p>
-                        <p className="text-sm text-gray-600">
-                          {selectedAppointment.location === LocationType.CLINIC ? 'Clinic' : 'Home'}
-                        </p>
+                        {(() => {
+                          // Show appropriate location based on type
+                          if (selectedAppointment.locationType === 'ONLINE') {
+                            return <p className="text-sm text-gray-600">Online</p>;
+                          } else if (
+                            selectedAppointment.locationType === 'CLINIC' &&
+                            selectedAppointment.freelancer?.clinicAddress
+                          ) {
+                            return (
+                              <>
+                                <p className="text-sm font-medium text-gray-600">Clinic</p>
+                                <p className="text-sm text-gray-500">
+                                  {selectedAppointment.freelancer.clinicAddress}
+                                </p>
+                              </>
+                            );
+                          } else if (
+                            selectedAppointment.locationType === 'HOME' &&
+                            selectedAppointment.clientAddress
+                          ) {
+                            return (
+                              <>
+                                <p className="text-sm font-medium text-gray-600">
+                                  Client&apos;s Home
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {selectedAppointment.clientAddress}
+                                </p>
+                              </>
+                            );
+                          } else {
+                            return (
+                              <p className="text-sm text-gray-600">
+                                {selectedAppointment.location === LocationType.CLINIC
+                                  ? 'Clinic'
+                                  : 'Home'}
+                              </p>
+                            );
+                          }
+                        })()}
                       </div>
                     </div>
                   )}

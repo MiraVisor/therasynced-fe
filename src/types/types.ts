@@ -316,6 +316,13 @@ export interface Appointment {
   description?: string;
   location: LocationType;
   notes: string;
+  // Additional fields for address display
+  locationType?: 'CLINIC' | 'HOME' | 'ONLINE';
+  clientAddress?: string | null;
+  freelancer?: {
+    clinicAddress?: string | null;
+    [key: string]: any;
+  };
 }
 
 export interface AppointmentFilters {
@@ -703,4 +710,116 @@ export interface Conversation {
   participant2Id: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// Loyalty System Types
+export interface LoyaltyProfile {
+  id: string;
+  userId: string;
+  totalPoints: number;
+  availablePoints: number;
+  tier: LoyaltyTier;
+  tierBenefits: string[];
+  nextTier: LoyaltyTier;
+  pointsToNextTier: number;
+  pointTransactions: PointTransaction[];
+  redemptions: Redemption[];
+}
+
+export type LoyaltyTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+
+export interface PointTransaction {
+  id: string;
+  loyaltyProfileId: string;
+  points: number;
+  type: 'EARNED' | 'SPENT' | 'EXPIRED';
+  description: string;
+  bookingId?: string;
+  createdAt: string;
+}
+
+export interface LoyaltyReward {
+  id: string;
+  name: string;
+  description: string;
+  pointsCost: number;
+  category: string;
+  isActive: boolean;
+  imageUrl?: string;
+  createdAt: string;
+}
+
+export interface Redemption {
+  id: string;
+  loyaltyProfileId: string;
+  rewardId: string;
+  reward: LoyaltyReward;
+  pointsSpent: number;
+  status: 'PENDING' | 'FULFILLED' | 'CANCELLED';
+  fulfilledAt?: string;
+  createdAt: string;
+}
+
+// Complaint System Types
+export type ComplaintStatus = 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
+
+export type ComplaintCategory =
+  | 'HARASSMENT'
+  | 'UNPROFESSIONAL_BEHAVIOR'
+  | 'SAFETY_CONCERN'
+  | 'NO_SHOW'
+  | 'LATE_CANCELLATION'
+  | 'INAPPROPRIATE_CONDUCT'
+  | 'POOR_SERVICE_QUALITY'
+  | 'OTHER';
+
+export interface Complaint {
+  id: string;
+  reporterId: string;
+  reporter: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  reportedUserId: string;
+  reportedUser: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  category: ComplaintCategory;
+  reason: string;
+  description: string;
+  evidence: string[];
+  status: ComplaintStatus;
+  adminResponse?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateComplaintDto {
+  reportedUserId: string;
+  category: ComplaintCategory;
+  reason: string;
+  description: string;
+  evidence?: string[];
+}
+
+// File Upload Types
+export interface FileUploadResponse {
+  success: boolean;
+  data: {
+    secureUrl: string;
+    publicId: string;
+    format: string;
+    originalName: string;
+  };
+}
+
+export interface UploadedFile {
+  url: string;
+  publicId: string;
+  format: string;
+  originalName: string;
 }

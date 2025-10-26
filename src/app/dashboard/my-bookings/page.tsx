@@ -173,8 +173,22 @@ const BookingCard = ({
   };
 
   const getLocationText = () => {
+    // Check location type
     if (booking.slot.locationType === 'ONLINE') return 'Online';
+
+    // For CLINIC location type, show clinic address from freelancer
+    if (booking.slot.locationType === 'CLINIC') {
+      return booking.slot.freelancer?.clinicAddress || 'Clinic';
+    }
+
+    // For HOME location type, show client address
+    if (booking.slot.locationType === 'HOME') {
+      return booking.clientAddress || 'Home';
+    }
+
+    // Fallback to location object if exists
     if (booking.slot.location) return booking.slot.location.name;
+
     return 'Office';
   };
 
