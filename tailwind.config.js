@@ -45,6 +45,19 @@ module.exports = {
         input: 'var(--input)',
         ring: 'var(--ring)',
 
+        // New Soft Palette Colors
+        sage: 'var(--sage-green)',
+        mint: 'var(--mint)',
+        teal: 'var(--teal)',
+        'warm-gray': 'var(--warm-gray)',
+        charcoal: 'var(--charcoal)',
+
+        // Status Colors
+        success: 'var(--success)',
+        warning: 'var(--warning)',
+        error: 'var(--error)',
+        info: 'var(--info)',
+
         'chart-1': 'var(--chart-1)',
         'chart-2': 'var(--chart-2)',
         'chart-3': 'var(--chart-3)',
@@ -74,6 +87,7 @@ module.exports = {
         'open-sans': ['var(--font-open-sans)', 'sans-serif'],
         inter: ['var(--font-inter)', 'sans-serif'],
         poppins: ['var(--font-poppins)', 'sans-serif'],
+        sans: ['var(--font-inter)', 'sans-serif'], // Inter as default for UI
       },
 
       fontSize: {
@@ -82,6 +96,17 @@ module.exports = {
         headingLg: ['24px', { lineHeight: '120%', letterSpacing: '-0.5px' }],
         headingSm: ['18px', { lineHeight: '120%', letterSpacing: '-0.2px' }],
         caption: ['12px', { lineHeight: '100%' }],
+      },
+
+      boxShadow: {
+        soft: '0 2px 8px rgba(0, 0, 0, 0.04)',
+        'soft-lg': '0 4px 16px rgba(0, 0, 0, 0.06)',
+        'inner-soft': 'inset 0 1px 3px rgba(0, 0, 0, 0.04)',
+      },
+
+      spacing: {
+        18: '4.5rem',
+        88: '22rem',
       },
 
       fontWeight: {

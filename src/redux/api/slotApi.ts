@@ -65,8 +65,27 @@ export const getAvailableSlots = async (freelancerId: string): Promise<ApiRespon
 };
 
 export const getMySlots = async (
-  params: PaginationDto & { freelancerId?: string },
+  params: PaginationDto & {
+    freelancerId?: string;
+    weekStart?: string;
+    weekEnd?: string;
+  },
 ): Promise<ApiResponse<Slot[]>> => {
-  const response = await api.post('/slot/list', params);
+  const response = await api.post(
+    '/slot/list',
+    {
+      freelancerId: params.freelancerId,
+      weekStart: params.weekStart,
+      weekEnd: params.weekEnd,
+    },
+    {
+      params: {
+        page: params.page,
+        limit: params.limit,
+        sortBy: params.sortBy || 'startTime',
+        sortOrder: params.sortOrder || 'asc',
+      },
+    },
+  );
   return response.data;
 };

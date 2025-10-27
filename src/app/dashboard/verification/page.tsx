@@ -464,8 +464,8 @@ export default function VerificationPage() {
     <DashboardPageWrapper
       header={
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Verification Center</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="font-poppins text-3xl font-bold text-charcoal">Verification Center</h1>
+          <p className="font-inter text-muted-foreground mt-2">
             Upload your professional documents and track your verification status
           </p>
         </div>

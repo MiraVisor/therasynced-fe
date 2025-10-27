@@ -315,8 +315,10 @@ const Appointments = () => {
     <DashboardPageWrapper
       header={
         <div className="flex flex-col gap-2 w-full">
-          <h2 className="text-2xl font-bold">Appointments</h2>
-          <p className="text-gray-600">Manage your client appointments and bookings</p>
+          <h2 className="text-2xl font-poppins font-bold text-charcoal">Appointments</h2>
+          <p className="font-inter text-muted-foreground">
+            Manage your client appointments and bookings
+          </p>
         </div>
       }
     >
@@ -348,7 +350,7 @@ const Appointments = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between w-full space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-2xl font-semibold text-gray-900">
+                    <h3 className="font-poppins text-2xl font-semibold text-charcoal">
                       {format(currentDate, 'EEEE, MMMM d, yyyy')}
                     </h3>
                   </div>
@@ -356,7 +358,7 @@ const Appointments = () => {
                 <div className="flex items-center justify-between w-full sm:w-auto gap-4">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-600">
+                    <span className="text-sm font-inter font-medium text-muted-foreground">
                       {getDayAppointments().length} appointment
                       {getDayAppointments().length !== 1 ? 's' : ''}
                     </span>
@@ -453,7 +455,7 @@ const Appointments = () => {
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              <h3 className="text-xl font-bold text-gray-900">{getCalendarMonth()}</h3>
+              <h3 className="font-poppins text-xl font-bold text-charcoal">{getCalendarMonth()}</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -514,7 +516,7 @@ const Appointments = () => {
           {/* Appointments List - Hidden on Mobile */}
           <div className="hidden lg:block bg-white border border-gray-200 rounded-xl p-3 flex-1 shadow-sm">
             <div className="flex items-center gap-3 mb-4 px-3">
-              <h3 className="text-lg font-bold text-gray-900">APPOINTMENTS</h3>
+              <h3 className="font-poppins text-lg font-bold text-charcoal">APPOINTMENTS</h3>
             </div>
             <div className="space-y-3">
               {getDayAppointments().map((appointment) => {
@@ -524,14 +526,14 @@ const Appointments = () => {
                     className="text-xs text-gray-700 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-all duration-200 hover:shadow-sm"
                     onClick={() => setSelectedAppointment(appointment)}
                   >
-                    <div className="text-xs font-medium leading-tight mb-1 text-gray-900">
+                    <div className="text-xs font-poppins font-medium leading-tight mb-1 text-charcoal">
                       {appointment.title}
                     </div>
-                    <div className="text-xs leading-tight text-gray-600">
+                    <div className="text-xs font-inter leading-tight text-muted-foreground">
                       {getAppointmentTimeRange(appointment)}
                     </div>
                     {appointment.location && (
-                      <div className="text-xs leading-tight truncate mt-1 text-gray-500">
+                      <div className="text-xs font-inter leading-tight truncate mt-1 text-muted-foreground">
                         {appointment.location === LocationType.CLINIC ? 'Clinic' : 'Home'}
                       </div>
                     )}
@@ -543,8 +545,12 @@ const Appointments = () => {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <Calendar className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-500 font-medium">No appointments for this day</p>
-                  <p className="text-sm text-gray-400 mt-1">Enjoy your free time!</p>
+                  <p className="font-poppins text-charcoal font-medium">
+                    No appointments for this day
+                  </p>
+                  <p className="text-sm font-inter text-muted-foreground mt-1">
+                    Enjoy your free time!
+                  </p>
                 </div>
               )}
             </div>

@@ -3,12 +3,12 @@
 import { useTheme } from 'next-themes';
 
 import { NotificationPopover } from '@/components/common/notifications';
+import { ModeToggle } from '@/components/mode-toggler';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { cn } from '@/lib/utils';
 import { RoleType } from '@/types/types';
-import { ModeToggle } from '@/components/mode-toggler';
 
 export function DashboardPageWrapper({
   header,
@@ -35,12 +35,14 @@ export function DashboardPageWrapper({
             !isMobile ? 'justify-between' : 'justify-between'
           } mb-8 w-full `}
         >
-          <div className="hidden md:flex items-center gap-2 flex-grow">{header}</div>
+          <div className="hidden md:flex items-center gap-2 flex-grow text-charcoal font-poppins">
+            {header}
+          </div>
 
           {isMobile && (
             <SidebarTrigger
               className={cn(
-                'h-10 w-10 border bg-background shadow-sm',
+                'h-10 w-10 border bg-background shadow-soft',
                 'hover:bg-accent hover:text-accent-foreground',
                 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 resolvedTheme === 'dark'
@@ -64,7 +66,9 @@ export function DashboardPageWrapper({
           </div>
         </div>
       </div>
-      {isMobile && <div className="flex items-center gap-2 mb-4">{header}</div>}
+      {isMobile && (
+        <div className="flex items-center gap-2 mb-4 text-charcoal font-poppins">{header}</div>
+      )}
       {children}
     </>
   );

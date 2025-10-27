@@ -228,8 +228,10 @@ const AnalyticsPage = () => {
     <DashboardPageWrapper
       header={
         <div className="flex flex-col gap-2 w-full">
-          <h2 className="text-2xl font-bold">Analytics & Insights</h2>
-          <p className="text-gray-600">Track your performance and client engagement</p>
+          <h2 className="text-2xl font-poppins font-bold text-charcoal">Analytics & Insights</h2>
+          <p className="font-inter text-muted-foreground">
+            Track your performance and client engagement
+          </p>
         </div>
       }
     >
@@ -240,8 +242,8 @@ const AnalyticsPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-emerald-600 font-medium">Completed Sessions</p>
-                  <p className="text-2xl font-bold text-emerald-900">{totalSessions}</p>
+                  <p className="text-sm font-inter font-medium text-success">Completed Sessions</p>
+                  <p className="text-2xl font-poppins font-bold text-charcoal">{totalSessions}</p>
                   <div className="flex items-center mt-1">
                     {sessionsTrend > 0 ? (
                       <TrendingUp className="h-4 w-4 text-emerald-600 mr-1" />
@@ -266,8 +268,10 @@ const AnalyticsPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-medium">Total Hours</p>
-                  <p className="text-2xl font-bold text-blue-900">{totalHours.toFixed(1)}h</p>
+                  <p className="text-sm font-inter font-medium text-info">Total Hours</p>
+                  <p className="text-2xl font-poppins font-bold text-charcoal">
+                    {totalHours.toFixed(1)}h
+                  </p>
                   <p className="text-xs text-blue-600 mt-1">
                     {completionRate.toFixed(1)}% completion rate
                   </p>
@@ -283,8 +287,10 @@ const AnalyticsPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-medium">Average Rating</p>
-                  <p className="text-2xl font-bold text-purple-900">{averageRating.toFixed(1)}</p>
+                  <p className="text-sm font-inter font-medium text-warning">Average Rating</p>
+                  <p className="text-2xl font-poppins font-bold text-charcoal">
+                    {averageRating.toFixed(1)}
+                  </p>
                   <div className="flex items-center mt-1">
                     <Star className="h-4 w-4 text-purple-600 mr-1" />
                     <span className="text-xs text-purple-600">
@@ -303,8 +309,8 @@ const AnalyticsPage = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-amber-600 font-medium">Active Clients</p>
-                  <p className="text-2xl font-bold text-amber-900">
+                  <p className="text-sm font-inter font-medium text-primary">Active Clients</p>
+                  <p className="text-2xl font-poppins font-bold text-charcoal">
                     {clients.filter((c) => c.status === 'active').length}
                   </p>
                   <p className="text-xs text-amber-600 mt-1">
@@ -323,7 +329,7 @@ const AnalyticsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-poppins text-charcoal">
                 <Users className="h-5 w-5" />
                 Top Clients
               </CardTitle>
@@ -346,8 +352,10 @@ const AnalyticsPage = () => {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{client.name}</p>
-                          <p className="text-xs text-gray-500">{client.totalSessions} sessions</p>
+                          <p className="font-poppins font-medium text-charcoal">{client.name}</p>
+                          <p className="text-xs font-inter text-muted-foreground">
+                            {client.totalSessions} sessions
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -367,7 +375,7 @@ const AnalyticsPage = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-poppins text-charcoal">
                 <MapPin className="h-5 w-5" />
                 Location Preferences
               </CardTitle>
@@ -384,11 +392,17 @@ const AnalyticsPage = () => {
                     <div key={location} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {getLocationIcon(location)}
-                        <span className="text-sm font-medium capitalize">{location}</span>
+                        <span className="text-sm font-inter font-medium capitalize">
+                          {location}
+                        </span>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">{locationCount} sessions</p>
-                        <p className="text-xs text-gray-500">{locationPercentage.toFixed(1)}%</p>
+                        <p className="text-sm font-poppins font-semibold">
+                          {locationCount} sessions
+                        </p>
+                        <p className="text-xs font-inter text-muted-foreground">
+                          {locationPercentage.toFixed(1)}%
+                        </p>
                       </div>
                     </div>
                   );
