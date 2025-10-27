@@ -26,9 +26,18 @@ const initialState: BookingState = {
 
 export const fetchUserBookings = createAsyncThunk(
   'booking/fetchUserBookings',
-  async ({ date }: { date?: string }, { rejectWithValue }) => {
+  async (
+    params?: {
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      date?: string;
+    },
+    { rejectWithValue },
+  ) => {
     try {
-      const res = await getPatientBookings(date);
+      const res = await getPatientBookings(params);
       if (res.success && Array.isArray(res.data)) {
         return {
           bookings: res.data,

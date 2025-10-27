@@ -127,8 +127,8 @@ const FavoritesPage = () => {
       userRole="PATIENT"
       header={
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Favorites</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-poppins font-bold text-charcoal">My Favorites</h1>
+          <p className="font-inter text-muted-foreground">
             {favoritesList.length === 0
               ? 'No favorites yet'
               : `${favoritesList.length} saved freelancer${favoritesList.length !== 1 ? 's' : ''}`}
@@ -137,19 +137,19 @@ const FavoritesPage = () => {
       }
     >
       {favoritesList.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <div className="text-center py-12 bg-gradient-to-br from-mint/20 to-white rounded-2xl border border-sage/30">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-error/10 flex items-center justify-center">
             <span className="text-3xl">❤️</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
             No favorites yet
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+          <p className="font-inter text-muted-foreground mb-6 max-w-sm mx-auto">
             Start exploring freelancers and add them to your favorites to see them here.
           </p>
           <a
             href="/dashboard/explore"
-            className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-inter font-medium"
           >
             Explore Freelancers
           </a>

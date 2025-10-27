@@ -344,6 +344,20 @@ export interface AppointmentState {
 export type View = 'month' | 'week' | 'work_week' | 'day' | 'agenda';
 
 // Slot-related types
+export interface SlotStats {
+  totalSlots: number;
+  bookedSlots: number;
+  availableSlots: number;
+  revenue: number;
+}
+
+export interface BookingStats {
+  totalBookings: number;
+  upcomingBookings: number;
+  completedBookings: number;
+  cancelledBookings: number;
+}
+
 export interface Slot {
   id: string;
   freelancerId: string;

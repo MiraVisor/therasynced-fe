@@ -10,7 +10,7 @@ import {
   Plus,
   TrendingUp,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -31,10 +31,11 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { getDecodedToken } from '@/lib/utils';
+import * as slotApi from '@/redux/api/slotApi';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { deleteSlot, fetchMySlots } from '@/redux/slices/slotSlice';
 import { RootState } from '@/redux/store';
-import { Slot } from '@/types/types';
+import { Slot, SlotStats } from '@/types/types';
 
 const SlotsPage = () => {
   const dispatch = useAppDispatch();
@@ -47,6 +48,8 @@ const SlotsPage = () => {
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [slotStats, setSlotStats] = useState<SlotStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
 
   const fetchSlotsForWeek = async (weekStartDate: Date, resetSlots = false) => {
     const decodedToken = getDecodedToken();
@@ -66,7 +69,7 @@ const SlotsPage = () => {
       const response = await dispatch(
         fetchMySlots({
           page: 1,
-          limit: 100,
+          limit: 1000,
           freelancerId,
           weekStart: weekStart.toISOString(),
           weekEnd: weekEnd.toISOString(),
@@ -86,6 +89,24 @@ const SlotsPage = () => {
     }
   };
 
+  const fetchSlotStats = useCallback(async () => {
+    setIsLoadingStats(true);
+    try {
+      const response = await slotApi.getMySlotsStats();
+      setSlotStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch slot stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  }, []);
+
+  // Fetch stats only once on initial load
+  useEffect(() => {
+    fetchSlotStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     fetchSlotsForWeek(currentWeekStart, true);
   }, [dispatch, currentWeekStart]);
@@ -93,6 +114,7 @@ const SlotsPage = () => {
   const handleSlotCreateSuccess = () => {
     setShowCreateSlotForm(false);
     fetchSlotsForWeek(currentWeekStart, true);
+    fetchSlotStats();
   };
 
   const handleSlotClick = (slot: Slot) => {
@@ -113,6 +135,7 @@ const SlotsPage = () => {
     try {
       await dispatch(deleteSlot(selectedSlot.id) as any).unwrap();
       toast.success('Slot deleted successfully');
+      fetchSlotStats();
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete slot');
       fetchSlotsForWeek(currentWeekStart, true);
@@ -146,14 +169,28 @@ const SlotsPage = () => {
   };
 
   const getSlotsForDate = (date: Date) => {
+    const weekStart = startOfWeek(currentWeekStart, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+
     return slots.filter((slot) => {
       const slotDate = new Date(slot.startTime);
-      return isSameDay(slotDate, date);
+      // Only show slots that fall within the current week
+      return slotDate >= weekStart && slotDate < weekEnd && isSameDay(slotDate, date);
     });
   };
 
-  // Calculate stats for the week
-  const weeklyStats = useMemo(() => {
+  // Use API stats when available, fallback to calculated stats
+  const displayStats = useMemo(() => {
+    if (slotStats) {
+      return {
+        total: slotStats.totalSlots,
+        booked: slotStats.bookedSlots,
+        available: slotStats.availableSlots,
+        revenue: slotStats.revenue,
+      };
+    }
+
+    // Fallback calculation
     const bookedSlots = slots.filter((s) => s.status === 'BOOKED');
     const availableSlots = slots.filter((s) => s.status === 'AVAILABLE');
     const totalRevenue = bookedSlots.reduce((sum, slot) => sum + slot.basePrice, 0);
@@ -164,7 +201,7 @@ const SlotsPage = () => {
       available: availableSlots.length,
       revenue: totalRevenue,
     };
-  }, [slots]);
+  }, [slotStats, slots]);
 
   const weekDays = getWeekDays();
 
@@ -217,28 +254,28 @@ const SlotsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard
             title="Total Slots"
-            value={weeklyStats.total.toString()}
+            value={isLoadingStats ? '...' : displayStats.total.toString()}
             icon={Calendar}
             iconColor="text-info"
             iconBg="bg-info/10"
           />
           <EnhancedStatCard
             title="Booked"
-            value={weeklyStats.booked.toString()}
+            value={isLoadingStats ? '...' : displayStats.booked.toString()}
             icon={Clock}
             iconColor="text-success"
             iconBg="bg-success/10"
           />
           <EnhancedStatCard
             title="Available"
-            value={weeklyStats.available.toString()}
+            value={isLoadingStats ? '...' : displayStats.available.toString()}
             icon={TrendingUp}
             iconColor="text-primary"
             iconBg="bg-primary/10"
           />
           <EnhancedStatCard
             title="Revenue"
-            value={`€${weeklyStats.revenue}`}
+            value={isLoadingStats ? '...' : `€${displayStats.revenue.toFixed(2)}`}
             icon={DollarSign}
             iconColor="text-warning"
             iconBg="bg-warning/10"

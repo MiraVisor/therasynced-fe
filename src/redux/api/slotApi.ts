@@ -5,6 +5,7 @@ import {
   PaginationDto,
   ReserveSlotDto,
   Slot,
+  SlotStats,
   UpdateSlotDto,
 } from '@/types/types';
 
@@ -87,5 +88,12 @@ export const getMySlots = async (
       },
     },
   );
+  return response.data;
+};
+
+export const getMySlotsStats = async (): Promise<
+  ApiResponse<import('@/types/types').SlotStats>
+> => {
+  const response = await api.get('/slot/stats/my-slots');
   return response.data;
 };

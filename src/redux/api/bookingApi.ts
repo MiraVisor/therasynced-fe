@@ -1,5 +1,11 @@
 import api from '@/services/api';
-import { CancelBookingDto, CreateBookingDto, RescheduleBookingDto } from '@/types/types';
+import { ApiResponse } from '@/types/types';
+import {
+  BookingStats,
+  CancelBookingDto,
+  CreateBookingDto,
+  RescheduleBookingDto,
+} from '@/types/types';
 
 // Create booking
 export const createBooking = async (data: CreateBookingDto) => {
@@ -7,9 +13,15 @@ export const createBooking = async (data: CreateBookingDto) => {
   return response.data;
 };
 
-// Get patient bookings
-export const getPatientBookings = async (date?: string) => {
-  const response = await api.get('/booking/patient/all');
+// Get patient bookings with pagination and filtering
+export const getPatientBookings = async (params?: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  date?: string;
+}) => {
+  const response = await api.get('/booking/patient/all', { params });
   return response.data;
 };
 
@@ -91,5 +103,11 @@ export const getAdminBookingHistory = async (params?: {
 // Update booking notes
 export const updateBookingNotes = async (bookingId: string, notes: string) => {
   const response = await api.patch(`/booking/${bookingId}/notes`, { notes });
+  return response.data;
+};
+
+// Get patient booking stats
+export const getPatientBookingStats = async (): Promise<ApiResponse<BookingStats>> => {
+  const response = await api.get('/booking/patient/stats');
   return response.data;
 };

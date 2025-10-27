@@ -225,10 +225,10 @@ const UserOverview = () => {
       header={
         <div className="space-y-6">
           <div className="space-y-3">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-poppins font-bold text-charcoal">
               Find Your Perfect Freelancer
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
+            <p className="text-lg font-inter text-muted-foreground max-w-2xl">
               Connect with qualified mental health professionals who can help you on your journey to
               wellness
             </p>
@@ -242,11 +242,11 @@ const UserOverview = () => {
         {/* Results Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-poppins font-semibold text-charcoal">
               {loading ? 'Loading freelancers...' : `${filteredExperts.length} freelancers found`}
             </h2>
             {searchQuery && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm font-inter text-muted-foreground mt-1">
                 Results for {searchQuery}
               </p>
             )}
@@ -262,13 +262,13 @@ const UserOverview = () => {
           </div>
         ) : error ? (
           <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-error/10 rounded-full flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
               Unable to load freelancers
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+            <p className="font-inter text-muted-foreground mb-4">{error}</p>
             <Button
               onClick={() => dispatch(fetchFreelancers({ page: 1, limit: 12 }) as any)}
               className="bg-primary hover:bg-primary/90 text-white"
@@ -281,10 +281,10 @@ const UserOverview = () => {
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <Search className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
               No freelancers found
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="font-inter text-muted-foreground mb-4">
               {searchQuery
                 ? `No freelancers match your search for ${searchQuery}`
                 : 'Try adjusting your search criteria or filters'}

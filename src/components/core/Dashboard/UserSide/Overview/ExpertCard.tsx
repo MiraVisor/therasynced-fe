@@ -105,7 +105,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
   return (
     <>
-      <Card className="group  transition-all duration-300 border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 hover:border-primary/30 h-full flex flex-col">
+      <Card className="group transition-all duration-300 border-gray-200/80 dark:border-gray-700 overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm hover:border-primary/30 shadow-soft hover:shadow-soft-lg h-full flex flex-col">
         <CardHeader className="pb-3 px-4">
           {showFavoriteText && (
             <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-white">
@@ -161,27 +161,25 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
         <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
           {/* Expert Details */}
-          <div className="mb-4 space-y-2">
+          <div className="mb-4 space-y-2 bg-gradient-to-br from-mint/10 to-transparent rounded-lg p-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-500 dark:text-gray-400">Experience:</span>
-              <span className="font-medium text-gray-700 dark:text-gray-300">
-                {yearsOfExperience}
-              </span>
+              <span className="font-inter text-muted-foreground">Experience:</span>
+              <span className="font-poppins font-semibold text-charcoal">{yearsOfExperience}</span>
             </div>
             {cardInfo?.patientStories && (
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500 dark:text-gray-400">Reviews:</span>
-                <span className="font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-inter text-muted-foreground">Reviews:</span>
+                <span className="font-poppins font-semibold text-charcoal">
                   {cardInfo.patientStories}
                 </span>
               </div>
             )}
             {(availableSlots || 0) > 0 && (
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500 dark:text-gray-400">Availability:</span>
-                <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                <span className="font-inter text-muted-foreground">Availability:</span>
+                <div className="flex items-center gap-1 text-success">
                   <CheckCircle className="w-3 h-3" />
-                  <span className="font-medium">{availableSlots || 0} slots</span>
+                  <span className="font-poppins font-semibold">{availableSlots || 0} slots</span>
                 </div>
               </div>
             )}
