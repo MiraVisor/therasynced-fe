@@ -10,6 +10,7 @@ import {
   Plus,
   TrendingUp,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -19,6 +20,7 @@ import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageW
 import { CreateSlotForm } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/CreateSlotForm';
 import { DaySlotSection } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/DaySlotSection';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
+import { UpgradeModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/UpgradeModal';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,14 +34,18 @@ import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { getDecodedToken } from '@/lib/utils';
 import * as slotApi from '@/redux/api/slotApi';
+import { getMySubscription, getSubscriptionPlans } from '@/redux/api/subscriptionApi';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { useAppSelector } from '@/redux/hooks/useAppHooks';
 import { deleteSlot, fetchMySlots } from '@/redux/slices/slotSlice';
 import { RootState } from '@/redux/store';
 import { Slot, SlotStats } from '@/types/types';
 
 const SlotsPage = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { slots, isLoading, isCreating } = useSelector((state: RootState) => state.slot);
+  const { currentSubscription, plans } = useAppSelector((state) => state.subscription);
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -50,6 +56,7 @@ const SlotsPage = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [slotStats, setSlotStats] = useState<SlotStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const fetchSlotsForWeek = async (weekStartDate: Date, resetSlots = false) => {
     const decodedToken = getDecodedToken();
@@ -101,9 +108,11 @@ const SlotsPage = () => {
     }
   }, []);
 
-  // Fetch stats only once on initial load
+  // Fetch subscription and stats on mount
   useEffect(() => {
     fetchSlotStats();
+    dispatch(getMySubscription());
+    dispatch(getSubscriptionPlans());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -115,6 +124,30 @@ const SlotsPage = () => {
     setShowCreateSlotForm(false);
     fetchSlotsForWeek(currentWeekStart, true);
     fetchSlotStats();
+  };
+
+  const handleCreateSlotClick = () => {
+    // Check if user is inactive - redirect to subscription page
+    if (currentSubscription?.status === 'INACTIVE') {
+      toast.error('Please subscribe to create slots');
+      router.push('/dashboard/account?tab=subscription');
+      return;
+    }
+
+    // Check subscription limits before opening the form
+    if (currentSubscription?.plan) {
+      const maxSlots = currentSubscription.plan.maxSlots;
+      if (maxSlots !== null && slotStats && slotStats.totalSlots >= maxSlots) {
+        // Show upgrade modal
+        setShowUpgradeModal(true);
+        return;
+      }
+    }
+    setShowCreateSlotForm(true);
+  };
+
+  const handleUpgradeClose = () => {
+    setShowUpgradeModal(false);
   };
 
   const handleSlotClick = (slot: Slot) => {
@@ -228,11 +261,7 @@ const SlotsPage = () => {
                 Manage your availability and bookings for the week
               </p>
             </div>
-            <Button
-              onClick={() => setShowCreateSlotForm(true)}
-              disabled={isCreating}
-              className="h-11 px-6"
-            >
+            <Button onClick={handleCreateSlotClick} disabled={isCreating} className="h-11 px-6">
               {isCreating ? (
                 <>
                   <LoadingSpinner size="sm" className="mr-2" />
@@ -385,6 +414,18 @@ const SlotsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Upgrade Modal */}
+      {currentSubscription?.plan && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={handleUpgradeClose}
+          currentPlan={currentSubscription.plan}
+          availablePlans={plans}
+          currentSlots={slotStats?.totalSlots || 0}
+          maxSlots={currentSubscription.plan.maxSlots || 0}
+        />
+      )}
     </DashboardPageWrapper>
   );
 };

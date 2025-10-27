@@ -128,6 +128,17 @@ export const ENDPOINTS = {
     allCategories: '/categories/all',
     categoriesByJobTitle: (jobTitle: string) => `/service/categories/${jobTitle}`,
   },
+  // Subscription endpoints
+  subscription: {
+    plans: '/subscription/plans',
+    mySubscription: '/subscription/my-subscription',
+    subscribe: '/subscription/subscribe',
+    update: '/subscription/update',
+    cancel: '/subscription/cancel',
+    resume: '/subscription/resume',
+    billingPortal: '/subscription/billing-portal',
+    checkout: '/subscription/checkout',
+  },
 };
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;

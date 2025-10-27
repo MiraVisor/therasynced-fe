@@ -22,6 +22,7 @@ import { toast } from 'react-toastify';
 import { DatePicker } from '@/components/common/input/DatePicker';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import SubscriptionManagement from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionManagement';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -395,7 +396,7 @@ export default function AccountPage() {
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Shield },
     // { id: 'notifications', label: 'Notifications', icon: Bell },
-    ...(showBilling ? [{ id: 'billing', label: 'Billing', icon: CreditCard }] : []),
+    ...(showBilling ? [{ id: 'subscription', label: 'Subscription', icon: CreditCard }] : []),
     { id: 'help', label: 'Help & Support', icon: HelpCircle },
   ];
 
@@ -1083,7 +1084,7 @@ export default function AccountPage() {
         {activeSection === 'profile' && renderProfileSection()}
         {activeSection === 'account' && renderAccountSection()}
         {activeSection === 'notifications' && renderNotificationsSection()}
-        {activeSection === 'billing' && showBilling && renderBillingSection()}
+        {activeSection === 'subscription' && showBilling && <SubscriptionManagement />}
         {activeSection === 'help' && renderHelpSection()}
       </div>
 

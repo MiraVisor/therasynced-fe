@@ -1,9 +1,10 @@
 'use client';
 
-import { Calendar, Clock, MapPin, Video } from 'lucide-react';
+import { Calendar, Clock, Euro, ExternalLink, MapPin, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
@@ -134,74 +135,133 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
   };
 
   const LocationIcon = getLocationIcon(booking);
+  const freelancerName = getExpertName(booking);
 
   return (
-    <Card className={`border-2 ${getUrgencyColor()} transition-all duration-200 hover:shadow-lg`}>
-      <CardContent className="p-8">
-        <div className="flex items-center gap-6">
-          {/* Therapist Photo */}
-          <div className="flex-shrink-0">
-            <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-2xl flex-shrink-0">
-              {getExpertName(booking)?.charAt(0).toUpperCase()}
+    <Card
+      className={`border-2 ${getUrgencyColor()} transition-all duration-200 hover:shadow-lg relative overflow-hidden`}
+    >
+      {/* Decorative gradient overlay */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+      <CardContent className="p-6 relative z-10">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left Section: Therapist Photo and Basic Info */}
+          <div className="flex items-start gap-4">
+            {/* Therapist Photo with improved styling */}
+            <div className="relative flex-shrink-0">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center font-semibold text-xl border-2 border-primary/20">
+                {freelancerName?.charAt(0).toUpperCase()}
+              </div>
+              {isToday && (
+                <Badge className="absolute -bottom-1 -right-1 bg-green-500 hover:bg-green-600 text-white border-2 border-white">
+                  Today
+                </Badge>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              {/* Header with name and verification */}
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                  {freelancerName}
+                </h2>
+                <VerificationBadge
+                  status={booking?.slot?.freelancer?.verificationStatus}
+                  size="sm"
+                />
+              </div>
+
+              {/* Job title or specialty */}
+              {booking?.slot?.freelancer?.mainJobTitle && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  {booking.slot.freelancer.mainJobTitle.name}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Appointment Details */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {getExpertName(booking)}
-                  </h2>
-                  <VerificationBadge
-                    status={booking?.slot?.freelancer?.verificationStatus}
-                    size="md"
-                  />
-                </div>
+          {/* Middle Section: Appointment Details */}
+          <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-4">
+            {/* Date */}
+            <div className="flex items-start gap-2">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {getBookingDate(booking)}
+                </p>
+              </div>
+            </div>
 
-                <div className="flex items-center gap-6 text-lg text-gray-600 dark:text-gray-400 mb-3">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    <span>{getBookingDate(booking)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    <span>{getBookingTime(booking)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <LocationIcon className="w-5 h-5" />
-                    <span>{getBookingLocation(booking)}</span>
-                  </div>
-                </div>
-
+            {/* Time */}
+            <div className="flex items-start gap-2">
+              <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Time</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {getBookingTime(booking)}
+                </p>
                 {isWithin24Hours && timeUntil && (
-                  <div className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
-                    <Clock className="w-4 h-4" />
-                    <span>{timeUntil}</span>
-                  </div>
-                )}
-
-                {booking?.totalAmount && (
-                  <div className="text-xl font-semibold text-gray-900 dark:text-white mt-2">
-                    €{booking.totalAmount}
-                  </div>
+                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">
+                    {timeUntil}
+                  </p>
                 )}
               </div>
+            </div>
 
-              {/* Action Button */}
-              <div className="flex-shrink-0 ml-6">
+            {/* Location */}
+            <div className="flex items-start gap-2">
+              <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
+                <LocationIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Location</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {getBookingLocation(booking)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Section: Price and Actions */}
+          <div className="flex flex-col items-end justify-between gap-4 md:border-l md:pl-6 md:border-gray-200 dark:md:border-gray-700">
+            {booking?.totalAmount && (
+              <div className="text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Amount</p>
+                <div className="flex items-center gap-1 text-2xl font-bold text-primary">
+                  <Euro className="w-5 h-5" />
+                  <span>{booking.totalAmount}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 w-full md:w-auto">
+              <Button
+                onClick={() => router.push('/dashboard/my-bookings')}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-white px-6 py-2 text-base font-semibold w-full md:w-auto"
+              >
+                View Details
+                <ExternalLink className="w-4 h-4 ml-2" />
+              </Button>
+              {isWithin24Hours && (
                 <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/10 dark:text-green-400"
                   onClick={() => {
-                    console.log('Join session:', booking);
                     // TODO: Implement join session logic
                   }}
-                  size="lg"
-                  className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold"
                 >
+                  <Clock className="w-4 h-4 mr-2" />
                   Join Session
                 </Button>
-              </div>
+              )}
             </div>
           </div>
         </div>

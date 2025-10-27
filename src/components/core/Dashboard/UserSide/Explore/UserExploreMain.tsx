@@ -180,7 +180,7 @@ const UserExploreMain = () => {
           setAllTimeBookings(result.payload || []);
         }
       } catch (error) {
-        console.error('Error fetching all-time bookings:', error);
+        // Error fetching all-time bookings
       } finally {
         setAllTimeBookingsLoading(false);
       }

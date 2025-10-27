@@ -6,6 +6,7 @@ import { HeroSection } from '@/components/ui/hero-section';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
+import TrialBanner from '../Subscription/TrialBanner';
 import Charts from './Charts';
 import Stats from './Stats';
 import TodayAppointments from './TodayAppointments';
@@ -26,6 +27,9 @@ const FreelancerHome = () => {
       header={<h2 className="text-2xl font-poppins font-bold text-charcoal">Platform Overview</h2>}
     >
       <div className="flex flex-col gap-6 lg:gap-8">
+        {/* Trial Banner */}
+        <TrialBanner />
+
         {/* Hero Section */}
         <HeroSection quickStats={quickStats} />
 

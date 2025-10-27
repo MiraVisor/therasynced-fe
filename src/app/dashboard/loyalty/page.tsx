@@ -46,7 +46,7 @@ export default function LoyaltyPage() {
           dispatch(getRedemptionHistory() as any),
         ]);
       } catch (error) {
-        console.error('Error fetching loyalty data:', error);
+        // Error fetching loyalty data
       }
     };
 

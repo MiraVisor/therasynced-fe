@@ -137,7 +137,6 @@ const BookingStatsComponent = ({
             interactive
             onClick={() => {
               // Navigate to details or filter
-              console.log('Clicked:', stat.title);
             }}
           />
         );

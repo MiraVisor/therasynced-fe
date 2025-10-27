@@ -75,7 +75,6 @@ const Stats = () => {
             interactive
             onClick={() => {
               // Navigate to details or show modal
-              console.log('Clicked:', data.title);
             }}
           />
         );

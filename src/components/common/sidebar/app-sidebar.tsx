@@ -20,6 +20,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 
+import SubscriptionBadge from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -192,6 +193,12 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             className="transition-transform duration-300"
           />
         </div>
+        {/* Subscription Badge for Freelancers */}
+        {userRole === 'FREELANCER' && (
+          <div className="mt-4 px-2">
+            <SubscriptionBadge />
+          </div>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className={cn(isMobile && 'group-data-[collapsible=icon]:block')}>

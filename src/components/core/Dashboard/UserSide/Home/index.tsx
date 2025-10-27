@@ -1,40 +1,70 @@
 'use client';
 
-import { Calendar, Heart, MessageCircle, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import { HeroSection } from '@/components/ui/hero-section';
+import LoadingSpinner from '@/components/ui/loading-spinner';
+import { getPatientBookingHistory } from '@/redux/api/bookingApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
-import Charts from './Charts';
-import Stats from './Stats';
-import UpcomingSessionsList from './UpcomingSessionsList';
+import BookingHistoryChart from './BookingHistoryChart';
+import FavoriteFreelancersCarousel from './FavoriteFreelancersCarousel';
+import NextAppointmentHero from './NextAppointmentHero';
+import RecentBookingActivity from './RecentBookingActivity';
 
 const UserHome = () => {
   const { role } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [nextAppointment, setNextAppointment] = useState<any>(null);
 
-  const quickStats = [
-    {
-      label: 'Today&apos;s Sessions',
-      value: '2',
-      icon: <Calendar className="h-4 w-4 text-primary" />,
-    },
-    {
-      label: 'Upcoming',
-      value: '5',
-      icon: <MessageCircle className="h-4 w-4 text-info" />,
-    },
-    {
-      label: 'Favorites',
-      value: '8',
-      icon: <Heart className="h-4 w-4 text-error" />,
-    },
-    {
-      label: 'Avg Rating',
-      value: '4.9',
-      icon: <Star className="h-4 w-4 text-warning" />,
-    },
-  ];
+  // Fetch next appointment
+  useEffect(() => {
+    const fetchNextAppointment = async () => {
+      try {
+        const response = await getPatientBookingHistory({
+          page: 1,
+          limit: 10,
+          sortBy: 'slot.startTime',
+          sortOrder: 'asc',
+        });
+
+        if (response.success && Array.isArray(response.data)) {
+          // Find the next upcoming appointment
+          const now = new Date();
+          const upcomingAppointments = response.data.filter((booking: any) => {
+            if (!booking?.slot?.startTime) return false;
+            const bookingDate = new Date(booking.slot.startTime);
+            return bookingDate > now;
+          });
+
+          if (upcomingAppointments.length > 0) {
+            setNextAppointment(upcomingAppointments[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch next appointment:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNextAppointment();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <DashboardPageWrapper
+        userRole={role}
+        header={
+          <h2 className="text-2xl font-poppins font-bold text-charcoal">Dashboard Overview</h2>
+        }
+      >
+        <div className="flex items-center justify-center h-64">
+          <LoadingSpinner size="lg" />
+        </div>
+      </DashboardPageWrapper>
+    );
+  }
 
   return (
     <DashboardPageWrapper
@@ -42,21 +72,17 @@ const UserHome = () => {
       header={<h2 className="text-2xl font-poppins font-bold text-charcoal">Dashboard Overview</h2>}
     >
       <div className="flex flex-col gap-6 lg:gap-8">
-        {/* Hero Section */}
-        <HeroSection quickStats={quickStats} />
+        {/* Next Appointment Hero */}
+        <NextAppointmentHero booking={nextAppointment} loading={false} />
 
-        {/* Stats Cards */}
-        <Stats />
+        {/* Booking History Chart */}
+        <BookingHistoryChart />
 
-        {/* Charts and Upcoming Sessions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-          <div className="lg:col-span-2">
-            <Charts />
-          </div>
-          <div className="lg:col-span-1">
-            <UpcomingSessionsList />
-          </div>
-        </div>
+        {/* Favorite Freelancers Carousel */}
+        <FavoriteFreelancersCarousel />
+
+        {/* Recent Booking Activity */}
+        <RecentBookingActivity />
       </div>
     </DashboardPageWrapper>
   );

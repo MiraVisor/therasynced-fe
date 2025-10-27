@@ -51,7 +51,6 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
         const freelancerData = JSON.parse(decodeURIComponent(dataParam));
         setFreelancer(freelancerData);
       } catch (error) {
-        console.error('Failed to parse freelancer data from URL:', error);
         // Fallback to slot data
         const firstSlot = slots && slots.length > 0 ? slots[0] : null;
         if (firstSlot) {

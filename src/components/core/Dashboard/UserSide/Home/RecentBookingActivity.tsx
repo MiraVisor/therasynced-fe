@@ -1,0 +1,226 @@
+'use client';
+
+import { Calendar, Clock, MapPin, MoreVertical, Video } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import LoadingSpinner from '@/components/ui/loading-spinner';
+import { getPatientBookingHistory } from '@/redux/api/bookingApi';
+
+interface RecentBookingActivityProps {
+  className?: string;
+}
+
+interface Booking {
+  id: string;
+  slot: {
+    startTime: string;
+    locationType: string;
+    freelancer: {
+      id: string;
+      name: string;
+    };
+  };
+  status: string;
+  totalAmount: number;
+}
+
+const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
+  const router = useRouter();
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRecentBookings = async () => {
+      try {
+        setLoading(true);
+        const response = await getPatientBookingHistory({
+          page: 1,
+          limit: 5,
+          sortBy: 'slot.startTime',
+          sortOrder: 'desc',
+        });
+
+        if (response.success && Array.isArray(response.data)) {
+          setRecentBookings(response.data.slice(0, 5));
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to load recent bookings');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentBookings();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const getLocationIcon = (locationType: string) => {
+    return locationType === 'VIRTUAL' ? Video : MapPin;
+  };
+
+  const getLocationText = (locationType: string) => {
+    switch (locationType) {
+      case 'OFFICE':
+        return 'Office';
+      case 'VIRTUAL':
+        return 'Online';
+      case 'HOME':
+        return 'Home Visit';
+      default:
+        return 'Virtual';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'CONFIRMED':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'RESCHEDULED':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className={className}>
+        <CardContent className="flex items-center justify-center h-64">
+          <LoadingSpinner size="md" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || recentBookings.length === 0) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
+            Recent Activity
+          </CardTitle>
+          <CardDescription>Your recent booking activity</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center h-48 text-center">
+            <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {error || 'No recent bookings'}
+            </p>
+            {!error && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Your booking history will appear here
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
+          Recent Activity
+        </CardTitle>
+        <CardDescription>Your recent booking activity</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {recentBookings.map((booking) => {
+            const LocationIcon = getLocationIcon(booking.slot.locationType);
+
+            return (
+              <div
+                key={booking.id}
+                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-all duration-200"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                      {booking.slot.freelancer?.name || 'Unknown Therapist'}
+                    </h3>
+                    <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{formatDate(booking.slot.startTime)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatTime(booking.slot.startTime)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <LocationIcon className="w-4 h-4" />
+                      <span>{getLocationText(booking.slot.locationType)}</span>
+                    </div>
+                  </div>
+                  {booking.totalAmount && (
+                    <div className="mt-2">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        €{booking.totalAmount}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-4">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => router.push(`/dashboard/my-bookings`)}>
+                      View Details
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            );
+          })}
+        </div>
+        <Button
+          variant="outline"
+          className="w-full mt-4"
+          onClick={() => router.push('/dashboard/my-bookings')}
+        >
+          View All Bookings
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default RecentBookingActivity;

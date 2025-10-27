@@ -839,3 +839,84 @@ export interface UploadedFile {
   format: string;
   originalName: string;
 }
+
+// Subscription System Types
+export type PlanType = 'BASIC' | 'STANDARD' | 'PREMIUM';
+
+export type SubscriptionStatus =
+  | 'TRIALING'
+  | 'ACTIVE'
+  | 'PAST_DUE'
+  | 'CANCELED'
+  | 'UNPAID'
+  | 'INACTIVE';
+
+export interface SubscriptionPlan {
+  id: string;
+  name: PlanType;
+  displayName: string;
+  description: string;
+  price: number;
+  billingInterval: string;
+  stripePriceId: string;
+  maxSlots: number | null; // null = unlimited
+  commissionRate: number;
+  features: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Subscription {
+  id: string | null;
+  userId: string;
+  planId?: string;
+  plan?: SubscriptionPlan;
+  status: SubscriptionStatus;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd?: boolean;
+  trialStart?: string;
+  trialEnd?: string;
+  trialEndsAt?: string; // New field from API
+  canceledAt?: string | null;
+  createdAt?: string;
+  subscription?: Subscription | null; // Nested subscription details if active
+  isInTrial?: boolean;
+  message?: string; // Message from API when inactive
+}
+
+export interface SubscriptionCreationData {
+  subscription: Subscription;
+  clientSecret: string;
+}
+
+export interface UpdateSubscriptionDto {
+  planType: PlanType;
+}
+
+export interface CancelSubscriptionDto {
+  reason?: string;
+}
+
+export interface SubscriptionPlansResponse {
+  success: boolean;
+  data: SubscriptionPlan[];
+}
+
+export interface SubscriptionResponse {
+  success: boolean;
+  data: Subscription;
+}
+
+export interface CreateSubscriptionResponseData {
+  success: boolean;
+  data: SubscriptionCreationData;
+}
+
+export interface BillingPortalResponse {
+  success: boolean;
+  data: {
+    url: string;
+  };
+}

@@ -26,30 +26,8 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
 
   if (!freelancer) return null;
 
-  // Mock available slots - in real app, this would come from API
-  const availableSlots = [
-    {
-      id: '1',
-      startTime: '2025-01-20T10:00:00.000Z',
-      endTime: '2025-01-20T11:00:00.000Z',
-      locationType: 'VIRTUAL',
-      price: freelancer.pricing?.online?.min || 0,
-    },
-    {
-      id: '2',
-      startTime: '2025-01-20T14:00:00.000Z',
-      endTime: '2025-01-20T15:00:00.000Z',
-      locationType: 'VIRTUAL',
-      price: freelancer.pricing?.online?.min || 0,
-    },
-    {
-      id: '3',
-      startTime: '2025-01-21T09:00:00.000Z',
-      endTime: '2025-01-21T10:00:00.000Z',
-      locationType: 'OFFICE',
-      price: freelancer.pricing?.office?.min || 0,
-    },
-  ];
+  // No slots available - redirect to booking page
+  const availableSlots: any[] = [];
 
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
@@ -131,61 +109,72 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
           {/* Available Slots */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Available Times</h3>
-            <div className="grid gap-3">
-              {availableSlots.map((slot) => {
-                const LocationIcon = getLocationIcon(slot.locationType);
-                const isSelected = selectedSlot?.id === slot.id;
+            {availableSlots.length > 0 ? (
+              <div className="grid gap-3">
+                {availableSlots.map((slot) => {
+                  const LocationIcon = getLocationIcon(slot.locationType);
+                  const isSelected = selectedSlot?.id === slot.id;
 
-                return (
-                  <Card
-                    key={slot.id}
-                    className={`cursor-pointer transition-all duration-200 ${
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
-                    }`}
-                    onClick={() => setSelectedSlot(slot)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">{formatDate(slot.startTime)}</span>
+                  return (
+                    <Card
+                      key={slot.id}
+                      className={`cursor-pointer transition-all duration-200 ${
+                        isSelected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                      }`}
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">{formatDate(slot.startTime)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">{formatTime(slot.startTime)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <LocationIcon className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm text-gray-600 dark:text-gray-400">
+                                {getLocationText(slot.locationType)}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">{formatTime(slot.startTime)}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <LocationIcon className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {getLocationText(slot.locationType)}
-                            </span>
-                          </div>
+                          <div className="text-lg font-semibold text-primary">€{slot.price}</div>
                         </div>
-                        <div className="text-lg font-semibold text-primary">€{slot.price}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">No available slots at this time.</p>
+                <Button onClick={onClose} variant="outline">
+                  Close
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Book Button */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              onClick={handleBook}
-              disabled={!selectedSlot}
-              className="flex-1 bg-primary hover:bg-primary/90 text-white"
-            >
-              Book Session - €{selectedSlot?.price || 0}
-            </Button>
-            <Button onClick={onClose} variant="outline" className="px-6">
-              Cancel
-            </Button>
-          </div>
+          {availableSlots.length > 0 && (
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={handleBook}
+                disabled={!selectedSlot}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              >
+                Book Session - €{selectedSlot?.price || 0}
+              </Button>
+              <Button onClick={onClose} variant="outline" className="px-6">
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
