@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -23,6 +23,7 @@ const validAuthTypes = ['sign-up', 'sign-in'];
 
 export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const [currentView, setCurrentView] = useState<AuthView>(authtype as AuthView);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -48,8 +49,9 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     dispatch(signUpUser(data))
       .unwrap()
       .then((res) => {
-        toast.success(res?.message || 'Account created! Please check your email for verification.');
-        setCurrentView('email-verification');
+        toast.success(res?.message || 'Account created successfully!');
+        // Redirect to dashboard
+        router.push('/dashboard');
       })
       .catch((err) => {
         toast.error(err?.message || 'Sign-Up Failed');

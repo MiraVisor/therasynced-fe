@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom utilities */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -52,10 +61,24 @@
 :root {
   --radius: 0.625rem;
 
-  /* Brand Colors */
+  /* Brand Colors - Primary Green */
   --primary: #007745;
   --primary-foreground: #ffffff;
 
+  /* New Soft Palette */
+  --sage-green: #8fbc8f; /* softer green for backgrounds */
+  --mint: #e8f5e9; /* light backgrounds */
+  --teal: #26a69a; /* secondary actions */
+  --warm-gray: #f5f5f5; /* neutral backgrounds */
+  --charcoal: #2c3e50; /* text */
+
+  /* Status Colors - Softer Versions */
+  --success: #4caf50;
+  --warning: #ffa726;
+  --error: #ef5350;
+  --info: #42a5f5;
+
+  /* Existing Colors */
   --secondary: #e6f2ed; /* light green-gray */
   --secondary-foreground: #003e2e;
 
@@ -65,7 +88,7 @@
   --accent: #d9f8e6; /* minty light green */
   --accent-foreground: #004d36;
 
-  --destructive: #e03e2d; /* bold red-orange */
+  --destructive: #ef5350; /* softer red */
   --destructive-foreground: #ffffff;
 
   --border: #d6e5dd;
@@ -73,7 +96,7 @@
   --ring: #007745;
 
   --background: #fcfcfc;
-  --foreground: #1b1c37;
+  --foreground: #2c3e50;
   --black: #000000;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

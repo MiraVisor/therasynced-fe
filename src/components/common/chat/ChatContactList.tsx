@@ -4,10 +4,10 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { Search, User } from 'lucide-react';
 import { useState } from 'react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 import { cn } from '@/lib/utils';
 import { ChatContact } from '@/services/chatService';
 
@@ -113,12 +113,12 @@ const ChatContactList: React.FC<ChatContactListProps> = ({
                 )}
               >
                 <div className="relative">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={contact.profilePicture} alt={contact.name} />
-                    <AvatarFallback className="bg-green-100 text-green-700 font-medium">
-                      {getInitials(contact.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-lg flex-shrink-0">
+                    {getInitials(contact.name)}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1">
+                    <VerificationBadge status={contact.verificationStatus} size="sm" />
+                  </div>
                 </div>
 
                 <div className="ml-3 flex-1 min-w-0 overflow-hidden">

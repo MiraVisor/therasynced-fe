@@ -1,12 +1,101 @@
+// Job Title interface for freelancers
+export interface JobTitle {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface JobTitlesResponse {
+  success: boolean;
+  data: JobTitle[];
+}
+
+// First Aid Certificate Status
+export type FirstAidCertificateStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+// Cloudinary Upload Response
+export interface CloudinaryUploadResponse {
+  url: string;
+  publicId: string;
+  success: boolean;
+  error?: string;
+}
+
+// Freelancer File Type
+export type FreelancerFileType =
+  | 'CERTIFICATE'
+  | 'VERIFICATION_DOCUMENT'
+  | 'PROFILE_PICTURE'
+  | 'OTHER';
+
+// Individual File Structure (from backend)
+export interface BackendFile {
+  url: string;
+  type: string;
+  uploadedAt: string;
+  fileSize: number;
+  format: string;
+  originalName: string;
+  status?: string;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+}
+
+// Backend Response Structure
+export interface FreelancerFilesResponse {
+  profilePicture?: BackendFile;
+  firstAidCertificate?: BackendFile;
+  verificationDocuments?: BackendFile[];
+}
+
+// Flattened File for DataTable
+export interface FreelancerFile {
+  id: string;
+  fileName: string;
+  fileType: FreelancerFileType;
+  url: string;
+  publicId?: string;
+  fileSize: number;
+  uploadedAt: string;
+  status?: string;
+  format?: string;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+}
+
+// Service Category interface
+export interface ServiceCategory {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+}
+
+// First Aid Certificate Info
+export interface FirstAidCertificateInfo {
+  firstAidCertificateUrl: string;
+  firstAidCertificateStatus: FirstAidCertificateStatus;
+  firstAidCertificateApprovedAt: Date | null;
+  firstAidCertificateRejectedAt: Date | null;
+  firstAidCertificateRejectionReason: string | null;
+}
+
 export interface registerUserTypes {
   name: string;
   email: string;
   role: string;
   password: string;
   profilePicture?: string;
-  gender: string;
-  dob: string;
-  city: string;
+  gender?: string;
+  dob?: string;
+  city?: string;
+  // New optional fields for freelancers
+  mainJobTitle?: JobTitle;
+  clinicAddress?: string;
+  firstAidCertificateUrl?: string;
+  verificationDocuments?: string[];
 }
 
 // New DTOs to match backend
@@ -16,9 +105,14 @@ export interface SignUpDto {
   role: string;
   password: string;
   profilePicture?: string;
-  gender: string;
-  dob: string;
-  city: string;
+  gender?: string;
+  dob?: string;
+  city?: string;
+  // New optional fields for freelancers
+  mainJobTitle?: JobTitle;
+  clinicAddress?: string;
+  firstAidCertificateUrl?: string;
+  verificationDocuments?: string[];
 }
 
 export interface LoginDto {
@@ -56,6 +150,9 @@ export interface UpdateProfileDto {
   city?: string;
   gender?: string;
   dob?: string;
+  // New fields for freelancers
+  mainJobTitleId?: string; // Updated to match backend DTO
+  clinicAddress?: string;
 }
 
 // Backend response types
@@ -86,6 +183,19 @@ export interface BackendProfileResponse {
       authProvider: string;
       createdAt: string;
       updatedAt: string;
+      // New fields for enhanced user profile
+      mainJobTitle?: JobTitle;
+      clinicAddress?: string;
+      verificationDocuments?: string[];
+      verificationRequestedAt?: Date | null;
+      verificationApprovedAt?: Date | null;
+      verificationRejectedAt?: Date | null;
+      verificationRejectionReason?: string | null;
+      firstAidCertificateUrl?: string;
+      firstAidCertificateStatus?: FirstAidCertificateStatus;
+      firstAidCertificateApprovedAt?: Date | null;
+      firstAidCertificateRejectedAt?: Date | null;
+      firstAidCertificateRejectionReason?: string | null;
     };
     freelancerData?: any;
   };
@@ -126,8 +236,9 @@ export interface Expert {
   id: string;
   name: string;
   specialty: string;
+  jobTitle?: JobTitle; // Add job title field
   yearsOfExperience: string;
-  rating: number;
+  rating?: number;
   reviews: number;
   description: string;
   isFavorite?: boolean;
@@ -148,6 +259,17 @@ export interface Expert {
   isEmailVerified?: boolean;
   isActive?: boolean;
   authProvider?: string;
+  verificationStatus?:
+    | 'verified'
+    | 'pending'
+    | 'rejected'
+    | 'unverified'
+    | 'APPROVED'
+    | 'PENDING'
+    | 'REJECTED'
+    | 'UNVERIFIED';
+  // First aid certificate information
+  firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   // Slot information
   slots?: any[];
   slotSummary?: any;
@@ -181,8 +303,6 @@ export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELL
 
 export enum LocationType {
   HOME = 'HOME',
-  OFFICE = 'OFFICE',
-  VIRTUAL = 'VIRTUAL',
   CLINIC = 'CLINIC',
 }
 
@@ -196,6 +316,13 @@ export interface Appointment {
   description?: string;
   location: LocationType;
   notes: string;
+  // Additional fields for address display
+  locationType?: 'CLINIC' | 'HOME' | 'ONLINE';
+  clientAddress?: string | null;
+  freelancer?: {
+    clinicAddress?: string | null;
+    [key: string]: any;
+  };
 }
 
 export interface AppointmentFilters {
@@ -217,6 +344,20 @@ export interface AppointmentState {
 export type View = 'month' | 'week' | 'work_week' | 'day' | 'agenda';
 
 // Slot-related types
+export interface SlotStats {
+  totalSlots: number;
+  bookedSlots: number;
+  availableSlots: number;
+  revenue: number;
+}
+
+export interface BookingStats {
+  totalBookings: number;
+  upcomingBookings: number;
+  completedBookings: number;
+  cancelledBookings: number;
+}
+
 export interface Slot {
   id: string;
   freelancerId: string;
@@ -338,6 +479,8 @@ export interface PaginationDto {
   limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  weekStart?: string;
+  weekEnd?: string;
 }
 
 export interface ApiResponse<T = any> {
@@ -457,6 +600,28 @@ export interface Freelancer {
   isActive: boolean;
   isFavorite?: boolean;
   favoritedAt?: string;
+  verificationStatus?:
+    | 'verified'
+    | 'pending'
+    | 'rejected'
+    | 'unverified'
+    | 'APPROVED'
+    | 'PENDING'
+    | 'REJECTED'
+    | 'UNVERIFIED';
+  // New fields for enhanced freelancer profile
+  mainJobTitle?: JobTitle;
+  clinicAddress?: string;
+  verificationDocuments?: string[];
+  verificationRequestedAt?: Date | null;
+  verificationApprovedAt?: Date | null;
+  verificationRejectedAt?: Date | null;
+  verificationRejectionReason?: string | null;
+  firstAidCertificateUrl?: string;
+  firstAidCertificateStatus?: FirstAidCertificateStatus;
+  firstAidCertificateApprovedAt?: Date | null;
+  firstAidCertificateRejectedAt?: Date | null;
+  firstAidCertificateRejectionReason?: string | null;
   cardInfo: {
     name: string;
     title: string;
@@ -552,4 +717,206 @@ export interface NotificationFilters {
   limit?: number;
   type?: string;
   isRead?: boolean;
+}
+
+// Chat/Message types
+export interface Conversation {
+  id: string;
+  participant1Id: string;
+  participant2Id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Loyalty System Types
+export interface LoyaltyProfile {
+  id: string;
+  userId: string;
+  totalPoints: number;
+  availablePoints: number;
+  tier: LoyaltyTier;
+  tierBenefits: string[];
+  nextTier: LoyaltyTier;
+  pointsToNextTier: number;
+  pointTransactions: PointTransaction[];
+  redemptions: Redemption[];
+}
+
+export type LoyaltyTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+
+export interface PointTransaction {
+  id: string;
+  loyaltyProfileId: string;
+  points: number;
+  type: 'EARNED' | 'SPENT' | 'EXPIRED';
+  description: string;
+  bookingId?: string;
+  createdAt: string;
+}
+
+export interface LoyaltyReward {
+  id: string;
+  name: string;
+  description: string;
+  pointsCost: number;
+  category: string;
+  isActive: boolean;
+  imageUrl?: string;
+  createdAt: string;
+}
+
+export interface Redemption {
+  id: string;
+  loyaltyProfileId: string;
+  rewardId: string;
+  reward: LoyaltyReward;
+  pointsSpent: number;
+  status: 'PENDING' | 'FULFILLED' | 'CANCELLED';
+  fulfilledAt?: string;
+  createdAt: string;
+}
+
+// Complaint System Types
+export type ComplaintStatus = 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
+
+export type ComplaintCategory =
+  | 'HARASSMENT'
+  | 'UNPROFESSIONAL_BEHAVIOR'
+  | 'SAFETY_CONCERN'
+  | 'NO_SHOW'
+  | 'LATE_CANCELLATION'
+  | 'INAPPROPRIATE_CONDUCT'
+  | 'POOR_SERVICE_QUALITY'
+  | 'OTHER';
+
+export interface Complaint {
+  id: string;
+  reporterId: string;
+  reporter: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  reportedUserId: string;
+  reportedUser: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  category: ComplaintCategory;
+  reason: string;
+  description: string;
+  evidence: string[];
+  status: ComplaintStatus;
+  adminResponse?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateComplaintDto {
+  reportedUserId: string;
+  category: ComplaintCategory;
+  reason: string;
+  description: string;
+  evidence?: string[];
+}
+
+// File Upload Types
+export interface FileUploadResponse {
+  success: boolean;
+  data: {
+    secureUrl: string;
+    publicId: string;
+    format: string;
+    originalName: string;
+  };
+}
+
+export interface UploadedFile {
+  url: string;
+  publicId: string;
+  format: string;
+  originalName: string;
+}
+
+// Subscription System Types
+export type PlanType = 'BASIC' | 'STANDARD' | 'PREMIUM';
+
+export type SubscriptionStatus =
+  | 'TRIALING'
+  | 'ACTIVE'
+  | 'PAST_DUE'
+  | 'CANCELED'
+  | 'UNPAID'
+  | 'INACTIVE';
+
+export interface SubscriptionPlan {
+  id: string;
+  name: PlanType;
+  displayName: string;
+  description: string;
+  price: number;
+  billingInterval: string;
+  stripePriceId: string;
+  maxSlots: number | null; // null = unlimited
+  commissionRate: number;
+  features: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Subscription {
+  id: string | null;
+  userId: string;
+  planId?: string;
+  plan?: SubscriptionPlan;
+  status: SubscriptionStatus;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd?: boolean;
+  trialStart?: string;
+  trialEnd?: string;
+  trialEndsAt?: string; // New field from API
+  canceledAt?: string | null;
+  createdAt?: string;
+  subscription?: Subscription | null; // Nested subscription details if active
+  isInTrial?: boolean;
+  message?: string; // Message from API when inactive
+}
+
+export interface SubscriptionCreationData {
+  subscription: Subscription;
+  clientSecret: string;
+}
+
+export interface UpdateSubscriptionDto {
+  planType: PlanType;
+}
+
+export interface CancelSubscriptionDto {
+  reason?: string;
+}
+
+export interface SubscriptionPlansResponse {
+  success: boolean;
+  data: SubscriptionPlan[];
+}
+
+export interface SubscriptionResponse {
+  success: boolean;
+  data: Subscription;
+}
+
+export interface CreateSubscriptionResponseData {
+  success: boolean;
+  data: SubscriptionCreationData;
+}
+
+export interface BillingPortalResponse {
+  success: boolean;
+  data: {
+    url: string;
+  };
 }

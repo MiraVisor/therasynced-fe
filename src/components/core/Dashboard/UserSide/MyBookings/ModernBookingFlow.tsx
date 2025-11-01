@@ -112,7 +112,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
             setFreelancerServices(servicesResponse.data);
           }
         } catch (error) {
-          console.error('Failed to fetch freelancer services:', error);
           setFreelancerServices([]);
         }
       };
@@ -168,7 +167,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       );
       setDatePage(datePage + 1);
     } catch (error) {
-      console.error('Failed to load more slots:', error);
+      // Failed to load more slots
     } finally {
       setLoadingMoreSlots(false);
     }
@@ -176,19 +175,13 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
   // Handle slot selection with reservation
   const handleSlotSelection = (slotId: string) => {
-    console.log('Slot selection triggered:', slotId);
-    console.log('Current selected time:', selectedTime);
-    console.log('Current reserved slots:', reservedSlots);
-
     // Release previously selected slot if any
     if (selectedTime && selectedTime !== slotId) {
-      console.log('Releasing previous slot:', selectedTime);
       releaseSlot(selectedTime);
     }
 
     // Reserve the new slot
     if (slotId !== selectedTime) {
-      console.log('Reserving new slot:', slotId);
       reserveSlot(slotId, 300000); // 5 minutes reservation
       toast.info('Slot reserved for 5 minutes. Complete your booking to confirm.');
     }
@@ -208,11 +201,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       cleanupReservations();
     };
   }, [cleanupReservations]);
-
-  // Debug: Monitor reserved slots changes
-  useEffect(() => {
-    console.log('Reserved slots changed:', reservedSlots);
-  }, [reservedSlots]);
 
   // Extract freelancer info from props or API data
   const firstSlot = slots && slots.length > 0 ? slots[0] : null;

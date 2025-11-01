@@ -4,23 +4,36 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
+import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
 import { Expert } from '@/types/types';
 
 interface ExpertCardProps extends Expert {
   showFavoriteText?: boolean;
   imageUrl?: string;
+  verificationStatus?:
+    | 'verified'
+    | 'pending'
+    | 'rejected'
+    | 'unverified'
+    | 'APPROVED'
+    | 'PENDING'
+    | 'REJECTED'
+    | 'UNVERIFIED';
+  firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 const ExpertCard: React.FC<ExpertCardProps> = ({
   id,
   name,
   specialty,
+  jobTitle,
   yearsOfExperience,
   rating,
   description,
@@ -32,10 +45,13 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   pricing,
   availableSlots,
   cardInfo,
+  verificationStatus = 'unverified',
+  firstAidCertificateStatus,
 }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
@@ -85,11 +101,11 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   // Get session type icons
 
   // Get freelancer info from the available props
-  const freelancerName = name || cardInfo?.name || 'Unknown';
+  const freelancerName = name || cardInfo?.name;
 
   return (
     <>
-      <Card className="group  transition-all duration-300 border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 hover:border-primary/30 h-full flex flex-col">
+      <Card className="group transition-all duration-300 border-gray-200/80 dark:border-gray-700 overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm hover:border-primary/30 shadow-soft hover:shadow-soft-lg h-full flex flex-col">
         <CardHeader className="pb-3 px-4">
           {showFavoriteText && (
             <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-white">
@@ -99,26 +115,33 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <Avatar className="w-10 h-10 rounded-full border-2 border-primary group-hover:border-primary/40 transition-colors flex-shrink-0">
-                <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
-                  {freelancerName.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                {freelancerName?.charAt(0).toUpperCase()}
+              </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-1 truncate transition-colors">
-                  {freelancerName}
-                </h4>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate transition-colors">
+                    {freelancerName}
+                  </h4>
+                  <VerificationBadge status={verificationStatus} size="sm" />
+                </div>
+                {rating && rating > 0 ? (
+                  <div className="flex items-center gap-1 mt-2">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
                         className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                       />
                     ))}
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                      ({rating})
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-600 font-medium">({rating?.toFixed(1)})</span>
-                </div>
+                ) : (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    No ratings yet
+                  </div>
+                )}
               </div>
             </div>
 
@@ -137,7 +160,32 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         </CardHeader>
 
         <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
-          {/* Price and Actions */}
+          {/* Expert Details */}
+          <div className="mb-4 space-y-2 bg-gradient-to-br from-mint/10 to-transparent rounded-lg p-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-inter text-muted-foreground">Experience:</span>
+              <span className="font-poppins font-semibold text-charcoal">{yearsOfExperience}</span>
+            </div>
+            {cardInfo?.patientStories && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-inter text-muted-foreground">Reviews:</span>
+                <span className="font-poppins font-semibold text-charcoal">
+                  {cardInfo.patientStories}
+                </span>
+              </div>
+            )}
+            {(availableSlots || 0) > 0 && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-inter text-muted-foreground">Availability:</span>
+                <div className="flex items-center gap-1 text-success">
+                  <CheckCircle className="w-3 h-3" />
+                  <span className="font-poppins font-semibold">{availableSlots || 0} slots</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
           <div className="mt-auto space-y-3">
             <div className="flex flex-col md:flex-row gap-2">
               <Button
@@ -152,7 +200,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 onClick={handleBookNow}
               >
                 Book Now
-                <Calendar className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
@@ -161,125 +208,178 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
       {/* Profile Dialog */}
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-        <DialogContent className="max-w-[95vw] lg:max-w-2xl max-h-[90vh] lg:max-h-[80vh] overflow-y-auto mx-4 lg:mx-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-              {name}&apos;s Profile
+        <DialogContent className="max-w-[95vw] lg:max-w-3xl max-h-[90vh] lg:max-h-[85vh] overflow-y-auto mx-4 lg:mx-auto">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white text-center">
+              Freelancer Profile
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 lg:space-y-6">
-            {/* Profile Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
-              <Avatar className="w-16 h-16 lg:w-12 lg:h-12 rounded-full border-2 border-primary mx-auto lg:mx-0">
-                <AvatarFallback className="text-2xl lg:text-2xl font-semibold bg-primary/10 text-primary">
-                  {name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 text-center lg:text-left">
-                <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-1">
-                  {name}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{specialty}</p>
-                <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-4 text-xs lg:text-sm">
-                  <div className="flex items-center justify-center lg:justify-start gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3 h-3 lg:w-4 lg:h-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                      />
-                    ))}
-                    <span className="text-gray-600 font-medium">({rating?.toFixed(1)})</span>
-                  </div>
-                  <div className="flex items-center justify-center lg:justify-start gap-2 lg:gap-4">
-                    <span className="text-gray-500 hidden lg:inline">•</span>
-                    <span className="text-gray-600">{yearsOfExperience}</span>
-                    {cardInfo?.patientStories && (
-                      <>
-                        <span className="text-gray-500 hidden lg:inline">•</span>
-                        <span className="text-gray-600">{cardInfo.patientStories} reviews</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                {(availableSlots || 0) > 0 && (
-                  <div className="mt-2 flex items-center justify-center lg:justify-start gap-1 text-xs lg:text-sm text-green-600 dark:text-green-400 font-medium">
-                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4" />
-                    <span>{availableSlots || 0} slots available</span>
-                  </div>
-                )}
+          <div className="space-y-6">
+            {/* Simple Profile Header */}
+            <div className="text-center pb-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{name}</h3>
+                <VerificationBadge status={verificationStatus} size="md" />
               </div>
+              {jobTitle?.name && (
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">{jobTitle.name}</p>
+              )}
+              {firstAidCertificateStatus === 'APPROVED' && (
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  First Aid Certificate: Approved
+                </p>
+              )}
             </div>
 
-            {/* About Section */}
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm lg:text-base">
-                About
+            {/* About Section with Clear Label */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                About This Freelancer
               </h4>
-              <p className="text-gray-600 dark:text-gray-400 text-xs lg:text-sm leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                 {description}
               </p>
             </div>
 
-            {/* Services */}
+            {/* Services Section with Clear Label */}
             {services.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm lg:text-base">
-                  Services
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                  <span className="w-2 h-2 bg-primary rounded-full"></span>
+                  Services Offered
                 </h4>
-                <div className="space-y-2 lg:space-y-3">
-                  {services.slice(0, 4).map((service: any, index: number) => (
-                    <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-lg ">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className=" text-xs lg:text-sm">{service.name}</span>
-                      </div>
-                      {service.description && (
-                        <p className="text-xs text-gray-600 line-clamp-2">{service.description}</p>
-                      )}
-                      {service.locationTypes && service.locationTypes.length > 0 && (
-                        <div className="flex gap-1 mt-2">
-                          {service.locationTypes.map((type: string, idx: number) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {type === 'VIRTUAL'
-                                ? 'Online'
-                                : type === 'OFFICE'
-                                  ? 'Office'
-                                  : type === 'HOME'
-                                    ? 'Home'
-                                    : type}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                <div className="flex flex-wrap gap-2">
+                  {services.map((service: any, index: number) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition-colors dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                    >
+                      {service.name}
+                    </Badge>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col lg:flex-row gap-2 lg:gap-3 pt-4">
+            {/* Session Types with Clear Label */}
+            {sessionTypes && sessionTypes.length > 0 && (
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                  <span className="w-2 h-2 bg-primary rounded-full"></span>
+                  Session Types Available
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {sessionTypes.map((type: string, index: number) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="px-3 py-1.5 text-xs font-medium capitalize"
+                    >
+                      {type} Session
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pricing Information with Clear Label */}
+            {pricing && (
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                  <span className="w-2 h-2 bg-primary rounded-full"></span>
+                  Pricing Information
+                </h4>
+                <div className="space-y-2">
+                  {pricing.online && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Online Sessions:</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        ${pricing.online.min} - ${pricing.online.max}
+                      </span>
+                    </div>
+                  )}
+                  {pricing.office && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Office Sessions:</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        ${pricing.office.min} - ${pricing.office.max}
+                      </span>
+                    </div>
+                  )}
+                  {pricing.home && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Home Visits:</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        ${pricing.home.min} - ${pricing.home.max}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons with Clear Labels */}
+            <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              {/* Primary Action - Book a Session */}
               <Button
-                variant="outline"
-                className="flex-1 h-10 lg:h-11 text-sm border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
-                onClick={() => setShowProfileDialog(false)}
-              >
-                Close
-              </Button>
-              <Button
-                className="flex-1 bg-primary hover:bg-primary/90 h-10 lg:h-11 text-sm"
+                className="w-full bg-primary hover:bg-primary/90 h-12 text-base font-semibold shadow-md"
                 onClick={() => {
                   setShowProfileDialog(false);
                   handleBookNow();
                 }}
+                tabIndex={1}
+                autoFocus
               >
-                Book Session
-                <Calendar className="w-4 h-4 ml-2" />
+                Book a Session
+              </Button>
+
+              {/* Secondary Actions Row */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-10 text-sm border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 flex items-center justify-center gap-2"
+                  onClick={handleFavorite}
+                  tabIndex={2}
+                >
+                  <Heart
+                    className={`w-4 h-4 ${isFavorite ? 'fill-current text-red-500' : 'text-gray-500'}`}
+                  />
+                  {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 h-10 text-sm border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                  onClick={() => setShowReportDialog(true)}
+                  tabIndex={3}
+                >
+                  Report/Block
+                </Button>
+              </div>
+
+              {/* Close Button */}
+              <Button
+                variant="ghost"
+                className="w-full h-10 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                onClick={() => setShowProfileDialog(false)}
+                tabIndex={4}
+              >
+                Close Profile
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Report Dialog */}
+      <ReportFreelancerDialog
+        isOpen={showReportDialog}
+        onClose={() => setShowReportDialog(false)}
+        freelancerId={id}
+        freelancerName={name}
+      />
     </>
   );
 };

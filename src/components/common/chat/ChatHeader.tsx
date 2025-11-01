@@ -2,8 +2,8 @@
 
 import { ArrowLeft, Phone, Video } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { VerificationBadge } from '@/components/ui/verification-badge';
 import { cn } from '@/lib/utils';
 import { ChatContact } from '@/services/chatService';
 
@@ -85,12 +85,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           )}
 
           <div className="relative">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={contact.profilePicture} alt={contact.name} />
-              <AvatarFallback className="bg-green-100 text-green-700 font-medium">
-                {getInitials(contact.name)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm flex-shrink-0">
+              {contact.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="absolute -bottom-1 -right-1">
+              <VerificationBadge status={contact.verificationStatus} size="sm" />
+            </div>
             {contact.isOnline && (
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
             )}

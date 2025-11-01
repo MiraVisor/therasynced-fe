@@ -178,7 +178,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
             {/* Messages */}
             <div className="space-y-3">
               {groupMessages.map((message) => {
-                const isOwnMessage = message.sender.id === currentUserId;
+                const isOwnMessage = message.users.id === currentUserId;
 
                 return (
                   <div
@@ -187,12 +187,9 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
                   >
                     {!isOwnMessage && (
                       <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
-                        <AvatarImage
-                          src={message.sender.profilePicture}
-                          alt={message.sender.name}
-                        />
+                        <AvatarImage src={message.users.profilePicture} alt={message.users.name} />
                         <AvatarFallback className="bg-green-100 text-green-700 text-xs">
-                          {getInitials(message.sender.name)}
+                          {message.users.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                     )}
@@ -228,12 +225,9 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
                     {isOwnMessage && (
                       <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
-                        <AvatarImage
-                          src={message.sender.profilePicture}
-                          alt={message.sender.name}
-                        />
+                        <AvatarImage src={message.users.profilePicture} alt={message.users.name} />
                         <AvatarFallback className="bg-green-100 text-green-700 text-xs">
-                          {getInitials(message.sender.name)}
+                          {message.users.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                     )}

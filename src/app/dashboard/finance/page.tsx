@@ -58,11 +58,7 @@ const mockTransactions = [
 export default function FinancePage() {
   return (
     <DashboardPageWrapper
-      header={
-        <h1 className="font-open-sans font-semibold text-[24px] leading-[100%] text-black">
-          Finance
-        </h1>
-      }
+      header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Finance</h1>}
     >
       <div className="space-y-6">
         {/* Stats Cards */}

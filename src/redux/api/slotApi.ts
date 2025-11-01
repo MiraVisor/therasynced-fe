@@ -5,6 +5,7 @@ import {
   PaginationDto,
   ReserveSlotDto,
   Slot,
+  SlotStats,
   UpdateSlotDto,
 } from '@/types/types';
 
@@ -14,7 +15,7 @@ export const createSlot = async (data: CreateSlotsDto): Promise<ApiResponse<Slot
 };
 
 export const getSlots = async (params: PaginationDto): Promise<ApiResponse<Slot[]>> => {
-  const response = await api.post('/slot/my-slots', params);
+  const response = await api.post('/slot/list', params);
   return response.data;
 };
 
@@ -51,5 +52,48 @@ export const getFreelancerAvailableSlots = async (
   freelancerId: string,
 ): Promise<ApiResponse<Slot[]>> => {
   const response = await api.get(`/slot/freelancer/${freelancerId}/available`);
+  return response.data;
+};
+
+export const getBookedSlots = async (params: PaginationDto): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.post('/slot/booked-slots', params);
+  return response.data;
+};
+
+export const getAvailableSlots = async (freelancerId: string): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.get(`/slot/available/${freelancerId}`);
+  return response.data;
+};
+
+export const getMySlots = async (
+  params: PaginationDto & {
+    freelancerId?: string;
+    weekStart?: string;
+    weekEnd?: string;
+  },
+): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.post(
+    '/slot/list',
+    {
+      freelancerId: params.freelancerId,
+      weekStart: params.weekStart,
+      weekEnd: params.weekEnd,
+    },
+    {
+      params: {
+        page: params.page,
+        limit: params.limit,
+        sortBy: params.sortBy || 'startTime',
+        sortOrder: params.sortOrder || 'asc',
+      },
+    },
+  );
+  return response.data;
+};
+
+export const getMySlotsStats = async (): Promise<
+  ApiResponse<import('@/types/types').SlotStats>
+> => {
+  const response = await api.get('/slot/stats/my-slots');
   return response.data;
 };

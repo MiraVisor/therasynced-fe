@@ -1,14 +1,17 @@
 'use client';
 
 import {
+  Award,
   BarChart,
   Calendar,
   FileText,
+  Heart,
   Home,
   LogOut,
   Map,
   MessageSquare,
   Settings,
+  Shield,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -17,6 +20,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 
+import SubscriptionBadge from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,9 +59,19 @@ const navigationLinks = {
       icon: Map,
     },
     {
+      name: 'Favorites',
+      url: '/dashboard/favorites',
+      icon: Heart,
+    },
+    {
       name: 'My Bookings',
       url: '/dashboard/my-bookings',
       icon: Calendar,
+    },
+    {
+      name: 'Loyalty',
+      url: '/dashboard/loyalty',
+      icon: Award,
     },
     {
       name: 'Messages',
@@ -87,9 +101,19 @@ const navigationLinks = {
       icon: Calendar,
     },
     {
+      name: 'Loyalty',
+      url: '/dashboard/loyalty',
+      icon: Award,
+    },
+    {
       name: 'Messages',
       url: '/dashboard/messages',
       icon: MessageSquare,
+    },
+    {
+      name: 'Verification',
+      url: '/dashboard/verification',
+      icon: Shield,
     },
     {
       name: 'Analytics',
@@ -169,6 +193,12 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             className="transition-transform duration-300"
           />
         </div>
+        {/* Subscription Badge for Freelancers */}
+        {userRole === 'FREELANCER' && (
+          <div className="mt-4 px-2">
+            <SubscriptionBadge />
+          </div>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className={cn(isMobile && 'group-data-[collapsible=icon]:block')}>

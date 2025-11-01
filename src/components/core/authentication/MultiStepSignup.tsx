@@ -9,52 +9,34 @@ import { z } from 'zod';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
-import { genderOptions, roleOptions } from '@/config/onboardingConfig';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { cn } from '@/lib/utils';
-import { BACKEND_URL } from '@/services/endpoints';
+import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
+import { JobTitle } from '@/types/types';
 
-// Zod schema for form validation
+// Define options locally since onboarding config is removed
+const genderOptions = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer-not-to-say', label: 'Prefer not to say' },
+];
+
+const roleOptions = [
+  { value: 'patient', label: 'Patient' },
+  { value: 'freelancer', label: 'Freelancer' },
+];
+
+// Simplified Zod schema for form validation
 const signupSchema = z
   .object({
     name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
-    gender: z.string().min(1, 'Gender is required'),
-    dob: z
-      .string()
-      .min(1, 'Date of birth is required')
-      .refine((date) => {
-        if (!date) return false;
-        // Handle YYYY-MM-DD format without timezone conversion
-        const dateParts = date.split('-');
-        if (dateParts.length !== 3) return false;
-
-        const year = parseInt(dateParts[0]);
-        const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
-        const day = parseInt(dateParts[2]);
-        const selectedDate = new Date(year, month, day);
-
-        // Validate the date is valid and matches input
-        if (
-          isNaN(selectedDate.getTime()) ||
-          selectedDate.getFullYear() !== year ||
-          selectedDate.getMonth() !== month ||
-          selectedDate.getDate() !== day
-        ) {
-          return false;
-        }
-
-        const today = new Date();
-        const age = today.getFullYear() - selectedDate.getFullYear();
-        const monthDiff = today.getMonth() - selectedDate.getMonth();
-        const isBirthdayPassed =
-          monthDiff > 0 || (monthDiff === 0 && today.getDate() >= selectedDate.getDate());
-        const actualAge = isBirthdayPassed ? age : age - 1;
-        return actualAge >= 18;
-      }, 'You must be at least 18 years old to register'),
-    city: z.string().min(1, 'Location is required'),
-    role: z.string().min(1, 'Role is required'),
     email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
+    role: z.string().min(1, 'Role is required'),
+    mainJobTitleId: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -70,13 +52,9 @@ interface MultiStepSignupProps {
 }
 
 const steps = [
-  { id: 1, title: 'Name', description: 'Your full name' },
-  { id: 2, title: 'Gender', description: 'Your gender' },
-  { id: 3, title: 'Birth Date', description: 'Date of birth' },
-  { id: 4, title: 'Location', description: 'Where you are' },
-  { id: 5, title: 'Role', description: "How you'll use the platform" },
-  { id: 6, title: 'Account', description: 'Email or OAuth' },
-  { id: 7, title: 'Password', description: 'Secure password' },
+  { id: 1, title: 'Account', description: 'Create your account' },
+  { id: 2, title: 'Role', description: "How you'll use the platform" },
+  { id: 3, title: 'Job Title', description: 'Select your specialization' },
 ];
 
 export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiStepSignupProps) {
@@ -85,6 +63,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [authMethod, setAuthMethod] = useState<'email' | 'oauth' | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
+  const [isLoadingJobTitles, setIsLoadingJobTitles] = useState(false);
 
   const {
     register,
@@ -97,13 +77,10 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: '',
-      gender: '',
-      dob: '',
-      city: '',
-      role: '',
       email: '',
       password: '',
       confirmPassword: '',
+      role: '',
     },
     mode: 'onChange',
   });
@@ -113,25 +90,13 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     const validateCurrentStepFields = async () => {
       switch (currentStep) {
         case 1:
-          await trigger('name');
+          await trigger(['name', 'email', 'password', 'confirmPassword']);
           break;
         case 2:
-          await trigger('gender');
-          break;
-        case 3:
-          await trigger('dob');
-          break;
-        case 4:
-          await trigger('city');
-          break;
-        case 5:
           await trigger('role');
           break;
-        case 6:
-          // Step 6 doesn't need validation, just auth method selection
-          break;
-        case 7:
-          await trigger(['password', 'confirmPassword']);
+        case 3:
+          await trigger('mainJobTitleId');
           break;
       }
     };
@@ -139,24 +104,55 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     validateCurrentStepFields();
   }, [currentStep, trigger]);
 
+  // Fetch job titles when on step 3 and role is freelancer
+  useEffect(() => {
+    const loadJobTitles = async () => {
+      const role = getValues('role');
+      if (currentStep === 3 && role === 'freelancer' && jobTitles.length === 0) {
+        setIsLoadingJobTitles(true);
+        try {
+          const response = await api.get(ENDPOINTS.public.jobTitles);
+          if (response.data.success && Array.isArray(response.data.data)) {
+            setJobTitles(response.data.data);
+          }
+        } catch (error) {
+          toast.error('Failed to load job titles');
+        } finally {
+          setIsLoadingJobTitles(false);
+        }
+      }
+    };
+
+    loadJobTitles();
+  }, [currentStep]);
+
   const nextStep = async () => {
-    if (currentStep === 6 && authMethod === 'oauth') {
+    if (currentStep === 1 && authMethod === 'oauth') {
       // Handle OAuth signup
       handleOAuthSignup('google');
       return;
     }
 
     const isValid = await validateCurrentStep();
-    if (isValid && currentStep < steps.length) {
+    if (!isValid) return;
+
+    // Special handling for step 2 -> 3: Skip job title for patients
+    if (currentStep === 2) {
+      const role = getValues('role');
+      if (role === 'patient') {
+        // Patients don't need job title, go directly to submit
+        handleSubmit();
+        return;
+      }
+    }
+
+    if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const prevStep = () => {
     if (currentStep > 1) {
-      if (currentStep === 7) {
-        setAuthMethod(null);
-      }
       setCurrentStep(currentStep - 1);
     }
   };
@@ -164,20 +160,15 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const validateCurrentStep = async () => {
     switch (currentStep) {
       case 1:
-        return await trigger('name');
+        return await trigger(['name', 'email', 'password', 'confirmPassword']);
       case 2:
-        return await trigger('gender');
-      case 3:
-        return await trigger('dob');
-      case 4:
-        return await trigger('city');
-      case 5:
         return await trigger('role');
-      case 6:
-        // Step 6 doesn't need validation, just auth method selection
-        return true;
-      case 7:
-        return await trigger(['email', 'password', 'confirmPassword']);
+      case 3:
+        const role = getValues('role');
+        if (role === 'freelancer') {
+          return await trigger('mainJobTitleId');
+        }
+        return true; // Skip job title for patients
       default:
         return false;
     }
@@ -187,36 +178,33 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     switch (currentStep) {
       case 1:
         const name = getValues('name');
-        return name && name.length >= 2 && !errors.name;
-      case 2:
-        const gender = getValues('gender');
-        return gender && !errors.gender;
-      case 3:
-        const dob = getValues('dob');
-        return dob && !errors.dob;
-      case 4:
-        const city = getValues('city');
-        return city && !errors.city;
-      case 5:
-        const role = getValues('role');
-        return role && !errors.role;
-      case 6:
-        // Step 6 just needs an auth method selected
-        return authMethod === 'email' || authMethod === 'oauth';
-      case 7:
         const email = getValues('email');
         const password = getValues('password');
         const confirmPassword = getValues('confirmPassword');
         return (
+          name &&
+          name.length >= 2 &&
+          !errors.name &&
           email &&
           email.includes('@') &&
           !errors.email &&
           password &&
+          password.length >= 8 &&
+          !errors.password &&
           confirmPassword &&
           password === confirmPassword &&
-          !errors.password &&
           !errors.confirmPassword
         );
+      case 2:
+        const role = getValues('role');
+        return role && !errors.role;
+      case 3:
+        const selectedRole = getValues('role');
+        if (selectedRole === 'freelancer') {
+          const jobTitleId = getValues('mainJobTitleId');
+          return jobTitleId && !errors.mainJobTitleId;
+        }
+        return true; // Skip job title for patients
       default:
         return false;
     }
@@ -228,6 +216,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     const transformedData = {
       ...submitData,
       role: submitData.role.toUpperCase(),
+      // Only include job title if it's for a freelancer
+      mainJobTitleId: submitData.mainJobTitleId || undefined,
     };
     onSubmit(transformedData);
   };
@@ -246,7 +236,6 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       // Redirect to Google OAuth
       window.location.href = googleAuthUrl;
     } catch (error) {
-      console.error('Google sign-in error:', error);
       setIsGoogleLoading(false);
       toast.error('Failed to initiate Google sign-in');
     }
@@ -271,88 +260,304 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         return (
           <div className="w-full max-w-md space-y-6 px-4">
             <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">What&apos;s your name?</h3>
-              <p className="text-sm text-gray-600">
-                Enter your full name as it appears on official documents
-              </p>
+              <h3 className="text-xl font-bold text-gray-900">Create your account</h3>
+              <p className="text-sm text-gray-600">Enter your details to get started</p>
             </div>
 
             <div className="space-y-4">
-              <input
-                type="text"
-                {...register('name')}
-                className={cn(
-                  'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                  errors.name
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                    : 'border-gray-200 focus:border-primary',
+              {/* Name Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Full Name</label>
+                <input
+                  type="text"
+                  {...register('name')}
+                  className={cn(
+                    'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
+                    errors.name
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                      : 'border-gray-200 focus:border-primary',
+                  )}
+                  placeholder="Enter your full name"
+                  autoFocus
+                />
+                {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Email Address</label>
+                <input
+                  type="email"
+                  {...register('email')}
+                  className={cn(
+                    'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
+                    errors.email
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                      : 'border-gray-200 focus:border-primary',
+                  )}
+                  placeholder="Enter your email address"
+                />
+                {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    {...register('password')}
+                    className={cn(
+                      'w-full h-12 px-4 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
+                      errors.password
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-200 focus:border-primary',
+                    )}
+                    placeholder="Create a strong password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm">{errors.password.message}</p>
                 )}
-                placeholder="Enter your full name"
-                autoFocus
-              />
-              {/* {errors.name && (
-                <p className="text-red-500 text-sm flex items-center gap-1">
-                  <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                  {errors.name.message}
-                </p>
-              )} */}
+                <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    {...register('confirmPassword')}
+                    className={cn(
+                      'w-full h-12 px-4 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
+                      errors.confirmPassword
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-200 focus:border-primary',
+                    )}
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
+                )}
+              </div>
             </div>
           </div>
         );
 
       case 2:
         return (
-          <div className="w-full max-w-md space-y-6 px-4">
+          <div className="w-full max-w-lg space-y-6 px-4">
             <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">What&apos;s your gender?</h3>
-              <p className="text-sm text-gray-600">This helps us personalize your experience</p>
+              <h3 className="text-xl font-bold text-gray-900">How will you use Therasynced?</h3>
+              <p className="text-sm text-gray-600">
+                Choose the option that best describes your needs
+              </p>
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                {genderOptions.map((option) => {
-                  const IconComponent = option.icon;
-                  return (
-                    <label
-                      key={option.value}
+              {roleOptions.map((option) => {
+                return (
+                  <label
+                    key={option.value}
+                    className={cn(
+                      'flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2',
+                      watch('role') === option.value
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-primary/30 hover:bg-primary/5',
+                    )}
+                    onClick={async () => {
+                      setValue('role', option.value);
+                      await trigger('role');
+                    }}
+                  >
+                    <div
                       className={cn(
-                        'flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-primary/20',
-                        watch('gender') === option.value
-                          ? 'border-primary bg-primary/5 text-primary'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-primary/30 hover:bg-primary/5',
+                        'p-2 rounded-lg',
+                        watch('role') === option.value ? 'bg-primary text-white' : 'bg-gray-100',
                       )}
-                      onClick={async () => {
-                        setValue('gender', option.value);
-                        await trigger('gender');
-                      }}
-                      onKeyDown={async (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          setValue('gender', option.value);
-                          await trigger('gender');
-                        }
-                      }}
-                      tabIndex={0}
-                      role="radio"
-                      aria-checked={watch('gender') === option.value}
                     >
-                      <IconComponent className="h-5 w-5" />
-                      <span className="font-medium">{option.label}</span>
-                    </label>
-                  );
-                })}
+                      <span className="text-lg">{option.value === 'patient' ? '👤' : '💼'}</span>
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-semibold text-base">{option.label}</span>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {option.value === 'patient'
+                          ? 'Book appointments and connect with healthcare professionals'
+                          : 'Provide services and manage your practice'}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+
+            {/* OAuth Options */}
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="flex items-center">
+                  <div className="flex-1 border-t border-gray-200"></div>
+                  <span className="px-3 text-xs text-gray-500 font-medium">or</span>
+                  <div className="flex-1 border-t border-gray-200"></div>
+                </div>
               </div>
-              {/* {errors.gender && (
-                <p className="text-red-500 text-sm flex items-center gap-1 mt-2">
+
+              {/* Google OAuth */}
+              <Button
+                variant="outline"
+                onClick={() => handleAuthMethodSelect('oauth')}
+                disabled={isGoogleLoading}
+                className={cn(
+                  'w-full h-12 flex items-center justify-center gap-3 px-4 rounded-lg border transition-all duration-200 text-sm font-medium shadow-sm',
+                  authMethod === 'oauth'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300',
+                  isGoogleLoading && 'opacity-50 cursor-not-allowed',
+                )}
+              >
+                {isGoogleLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  <>
+                    <Chrome className="h-5 w-5" />
+                    Continue with Google
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 3:
+        const selectedRole = getValues('role');
+        // Only show job title for freelancers
+        if (selectedRole !== 'freelancer') {
+          return null;
+        }
+
+        if (isLoadingJobTitles) {
+          return (
+            <div className="w-full max-w-lg space-y-6 px-4 flex items-center justify-center py-12">
+              <LoadingSpinner />
+            </div>
+          );
+        }
+
+        return (
+          <div className="w-full max-w-lg space-y-6 px-4">
+            <div className="text-center space-y-3">
+              <h3 className="text-xl font-bold text-gray-900">Select Your Job Title</h3>
+              <p className="text-sm text-gray-600">
+                Choose the job title that best describes your specialization
+              </p>
+            </div>
+
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {jobTitles.map((jobTitle) => (
+                <label
+                  key={jobTitle.id}
+                  className={cn(
+                    'flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2',
+                    watch('mainJobTitleId') === jobTitle.id
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 bg-white hover:border-primary/30 hover:bg-primary/5',
+                  )}
+                  onClick={() => {
+                    setValue('mainJobTitleId', jobTitle.id);
+                    trigger('mainJobTitleId');
+                  }}
+                >
+                  <div
+                    className={cn(
+                      'mt-0.5 w-4 h-4 border-2 rounded flex items-center justify-center',
+                      watch('mainJobTitleId') === jobTitle.id
+                        ? 'border-primary bg-primary'
+                        : 'border-gray-300',
+                    )}
+                  >
+                    {watch('mainJobTitleId') === jobTitle.id && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold text-base text-gray-900">{jobTitle.name}</span>
+                    {jobTitle.description && (
+                      <p className="text-sm text-gray-600 mt-1">{jobTitle.description}</p>
+                    )}
+                  </div>
+                </label>
+              ))}
+
+              {jobTitles.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No job titles available at the moment.
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // Old unused cases - kept for reference but not in the flow anymore
+      case 4:
+        return (
+          <div className="w-full max-w-md space-y-6 px-4">
+            <div className="text-center space-y-3">
+              <h3 className="text-xl font-bold text-gray-900">Where are you located?</h3>
+              <p className="text-sm text-gray-600">This helps us connect you with local services</p>
+            </div>
+
+            <div className="space-y-4">
+              <div
+                className={cn(
+                  'border rounded-lg',
+                  errors['city' as keyof typeof errors] ? 'border-red-500' : 'border-gray-200',
+                )}
+              >
+                <LocationDropdown
+                  value={watch('city' as any)}
+                  onValueChange={(value) => {
+                    setValue('city' as any, value);
+                    trigger('city' as any);
+                  }}
+                  placeholder="Select your city"
+                  searchPlaceholder="Search locations..."
+                  emptyMessage="No location found."
+                />
+              </div>
+              {/* {errors.city && (
+                <p className="text-red-500 text-sm flex items-center gap-1">
                   <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                  {errors.gender.message}
+                  {errors.city.message}
                 </p>
               )} */}
             </div>
           </div>
         );
 
-      case 3:
+      // This is the old DOB step - not in use anymore but keeping for reference
+      case 999:
         return (
           <div className="w-full max-w-md space-y-6 px-4">
             <div className="text-center space-y-3">
@@ -364,10 +569,10 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
               <input
                 type="date"
                 value={
-                  getValues('dob')
+                  getValues('dob' as any)
                     ? (() => {
                         try {
-                          return getValues('dob');
+                          return getValues('dob' as any);
                         } catch {
                           return '';
                         }
@@ -376,7 +581,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 }
                 className={cn(
                   'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                  errors.dob
+                  errors['dob' as keyof typeof errors]
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                     : 'border-gray-200 focus:border-primary',
                 )}
@@ -415,26 +620,26 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                         selectedDate.getDate() === day
                       ) {
                         // Store as YYYY-MM-DD format without timezone conversion
-                        setValue('dob', inputValue);
-                        trigger('dob');
+                        setValue('dob' as any, inputValue);
+                        trigger('dob' as any);
                       }
                     } catch (error) {
                       // If date conversion fails, just clear the value
-                      setValue('dob', '');
+                      setValue('dob' as any, '');
                     }
                   } else if (!inputValue) {
                     // Clear the value if input is empty
-                    setValue('dob', '');
-                    trigger('dob');
+                    setValue('dob' as any, '');
+                    trigger('dob' as any);
                   }
                   // For incomplete dates, don't update the form value yet
                 }}
                 autoFocus
               />
-              {errors.dob && (
+              {errors['dob' as keyof typeof errors] && (
                 <p className="text-red-500 text-sm flex items-center gap-1 mt-2">
                   <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                  {errors.dob.message}
+                  {errors['dob' as keyof typeof errors]?.message}
                 </p>
               )}
             </div>
@@ -453,14 +658,14 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
               <div
                 className={cn(
                   'border rounded-lg',
-                  errors.city ? 'border-red-500' : 'border-gray-200',
+                  errors['city' as keyof typeof errors] ? 'border-red-500' : 'border-gray-200',
                 )}
               >
                 <LocationDropdown
-                  value={watch('city')}
+                  value={watch('city' as any)}
                   onValueChange={(value) => {
-                    setValue('city', value);
-                    trigger('city');
+                    setValue('city' as any, value);
+                    trigger('city' as any);
                   }}
                   placeholder="Select your city"
                   searchPlaceholder="Search locations..."
@@ -489,7 +694,6 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
             <div className="space-y-4">
               {roleOptions.map((option) => {
-                const IconComponent = option.icon;
                 return (
                   <label
                     key={option.value}
@@ -510,7 +714,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                         watch('role') === option.value ? 'bg-primary text-white' : 'bg-gray-100',
                       )}
                     >
-                      <IconComponent className="h-5 w-5" />
+                      <span className="text-lg">{option.value === 'patient' ? '👤' : '💼'}</span>
                     </div>
                     <div className="flex-1">
                       <span className="font-semibold text-base">{option.label}</span>
@@ -802,15 +1006,9 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
             disabled={!isStepValid()}
             className="h-10 px-3 sm:px-4 rounded-lg font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 shadow-sm text-sm"
           >
-            <span className="hidden sm:inline">
-              {currentStep === 6 && authMethod === 'oauth' ? 'Continue with Google' : 'Continue'}
-            </span>
-            <span className="sm:hidden">
-              {currentStep === 6 && authMethod === 'oauth' ? 'Google' : 'Next'}
-            </span>
-            {currentStep !== 6 || authMethod !== 'oauth' ? (
-              <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
-            ) : null}
+            <span className="hidden sm:inline">Continue</span>
+            <span className="sm:hidden">Next</span>
+            <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
           </Button>
         ) : (
           <Button

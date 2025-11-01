@@ -117,7 +117,7 @@ const MessagesPage = () => {
       id: message.id,
       content: message.content,
       timestamp: message.createdAt,
-      isFromMe: message.sender.id !== selectedContact.id,
+      isFromMe: message.users.id !== selectedContact.id,
       isRead: message.isRead,
       type: 'text' as const,
     }));
@@ -281,13 +281,7 @@ const MessagesPage = () => {
                       <div className="relative">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={contact.avatar} alt={contact.name} />
-                          <AvatarFallback>
-                            {contact.name
-                              .split(' ')
-                              .map((n) => n[0])
-                              .join('')
-                              .toUpperCase()}
-                          </AvatarFallback>
+                          <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -336,13 +330,7 @@ const MessagesPage = () => {
                           src={selectedContact.profilePicture}
                           alt={selectedContact.name}
                         />
-                        <AvatarFallback>
-                          {selectedContact.name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()}
-                        </AvatarFallback>
+                        <AvatarFallback>{selectedContact.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                     </div>
                     <div>

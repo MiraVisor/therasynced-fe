@@ -16,8 +16,51 @@ import {
 } from '@/components/ui/command';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { irishLocations } from '@/config/onboardingConfig';
 import { cn } from '@/lib/utils';
+
+// Define Irish locations locally since onboarding config is removed
+const irishLocations = [
+  'Dublin',
+  'Cork',
+  'Limerick',
+  'Galway',
+  'Waterford',
+  'Drogheda',
+  'Swords',
+  'Dundalk',
+  'Bray',
+  'Navan',
+  'Ennis',
+  'Kilkenny',
+  'Carlow',
+  'Tralee',
+  'Newbridge',
+  'Naas',
+  'Athlone',
+  'Portlaoise',
+  'Mullingar',
+  'Wexford',
+  'Sligo',
+  'Clonmel',
+  'Navan',
+  'Celbridge',
+  'Leixlip',
+  'Tullamore',
+  'Killarney',
+  'Arklow',
+  'Cobh',
+  'Castlebar',
+  'Midleton',
+  'Mallow',
+  'Ballina',
+  'Enniscorthy',
+  'Wicklow',
+  'Cavan',
+  'Shannon',
+  'Kilcock',
+  'Roscommon',
+  'Dungarvan',
+];
 
 // Convert irishLocations to the format expected by the dropdown
 const locationOptions = irishLocations.map((location) => ({
@@ -51,14 +94,17 @@ export function LocationDropdown({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: undefined, // We'll handle validation manually
     defaultValues: {
-      location: value || '',
+      location: value && value.trim() !== '' ? value : '',
     },
   });
 
   // Update form value when prop changes
   React.useEffect(() => {
-    if (value !== form.getValues('location')) {
-      form.setValue('location', value || '');
+    const currentValue = form.getValues('location');
+    const newValue = value && value.trim() !== '' ? value : '';
+
+    if (newValue !== currentValue) {
+      form.setValue('location', newValue);
     }
   }, [value, form]);
 
@@ -77,11 +123,12 @@ export function LocationDropdown({
                     role="combobox"
                     className={cn(
                       'w-full justify-between h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring transition-colors text-gray-700',
-                      !field.value && 'text-muted-foreground',
+                      (!field.value || field.value.trim() === '') && 'text-muted-foreground',
                     )}
                   >
-                    {field.value
-                      ? locationOptions.find((location) => location.value === field.value)?.label
+                    {field.value && field.value.trim() !== ''
+                      ? locationOptions.find((location) => location.value === field.value)?.label ||
+                        field.value
                       : placeholder}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>

@@ -201,7 +201,7 @@ const chatSlice = createSlice({
         state.messages[conversationId].push(message);
 
         // Update unread count if message is not from current user
-        if (message.sender.id !== currentUserId) {
+        if (message.users.id !== currentUserId) {
           state.unreadCounts[conversationId] = (state.unreadCounts[conversationId] || 0) + 1;
         }
 
@@ -217,12 +217,12 @@ const chatSlice = createSlice({
           contact.lastMessage = {
             content: message.content,
             createdAt: message.createdAt,
-            isFromMe: message.sender.id === currentUserId,
+            isFromMe: message.users.id === currentUserId,
             isRead: message.isRead,
           };
 
           // Update contact's unread count
-          if (message.sender.id !== currentUserId) {
+          if (message.users.id !== currentUserId) {
             const oldCount = contact.unreadCount || 0;
             contact.unreadCount = oldCount + 1;
             console.log(

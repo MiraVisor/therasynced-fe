@@ -23,6 +23,15 @@ export interface ChatContact {
     status: string;
   };
   isOnline?: boolean;
+  verificationStatus?:
+    | 'verified'
+    | 'pending'
+    | 'rejected'
+    | 'unverified'
+    | 'APPROVED'
+    | 'PENDING'
+    | 'REJECTED'
+    | 'UNVERIFIED';
 }
 
 export interface ChatMessage {
@@ -30,7 +39,7 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   isRead: boolean;
-  sender: {
+  users: {
     id: string;
     name: string;
     profilePicture: string;

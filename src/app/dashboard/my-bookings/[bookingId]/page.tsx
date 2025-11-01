@@ -163,17 +163,17 @@ export default function BookingDetailsPage() {
                       <div className="flex items-start gap-4">
                         <Avatar className="h-16 w-16">
                           <AvatarFallback className="text-lg font-bold">
-                            {freelancer?.name?.charAt(0) || 'H'}
+                            {freelancer?.name?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-3">
                           <div>
                             <h3 className="text-lg font-semibold text-gray-900">
-                              {freelancer?.name || 'Unknown'}
+                              {freelancer?.name}
                             </h3>
-                            <p className="text-gray-600">
-                              {freelancer?.specialty || 'Healthcare Professional'}
-                            </p>
+                            {freelancer?.jobTitle?.name && (
+                              <p className="text-gray-600">{freelancer.jobTitle.name}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-500">
                             {freelancer?.rating && (
@@ -226,16 +226,46 @@ export default function BookingDetailsPage() {
                             </p>
                           </div>
                         </div>
-                        {location && (
-                          <div className="flex items-center gap-3">
-                            <MapPin className="h-5 w-5 text-gray-400" />
-                            <div>
-                              <p className="text-sm text-gray-500">Location</p>
-                              <p className="font-medium">{location.name}</p>
-                              <p className="text-sm text-gray-600">{location.address}</p>
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm text-gray-500">Location</p>
+                            {(() => {
+                              // Show appropriate location based on type
+                              if (slot?.locationType === 'ONLINE') {
+                                return <p className="font-medium">Online</p>;
+                              } else if (
+                                slot?.locationType === 'CLINIC' &&
+                                freelancer?.clinicAddress
+                              ) {
+                                return (
+                                  <>
+                                    <p className="font-medium">Clinic</p>
+                                    <p className="text-sm text-gray-600">
+                                      {freelancer.clinicAddress}
+                                    </p>
+                                  </>
+                                );
+                              } else if (slot?.locationType === 'HOME' && booking.clientAddress) {
+                                return (
+                                  <>
+                                    <p className="font-medium">Your Home</p>
+                                    <p className="text-sm text-gray-600">{booking.clientAddress}</p>
+                                  </>
+                                );
+                              } else if (location) {
+                                return (
+                                  <>
+                                    <p className="font-medium">{location.name}</p>
+                                    <p className="text-sm text-gray-600">{location.address}</p>
+                                  </>
+                                );
+                              } else {
+                                return <p className="font-medium">Not specified</p>;
+                              }
+                            })()}
                           </div>
-                        )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

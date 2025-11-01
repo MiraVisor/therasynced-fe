@@ -18,12 +18,12 @@ const ChartTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-100">
-        <p className="text-sm font-medium text-gray-700 mb-1">{label}</p>
+        <p className="text-sm font-medium text-charcoal mb-1">{label}</p>
         <div className="space-y-1">
-          <p className="text-sm text-[#E69DB8]">
+          <p className="text-sm text-teal">
             Current Week: <span className="font-medium">{payload[0].value}</span>
           </p>
-          <p className="text-sm text-[#E9A5F1]">
+          <p className="text-sm text-primary">
             Last Week: <span className="font-medium">{payload[1].value}</span>
           </p>
         </div>
@@ -35,23 +35,23 @@ const ChartTooltipContent = ({ active, payload, label }: any) => {
 
 const Charts = () => {
   return (
-    <Card className="w-full border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl lg:rounded-2xl">
-      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white px-4 lg:px-5 py-4 lg:py-5">
-        <CardTitle className="text-base lg:text-lg font-semibold text-gray-800">
+    <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
+      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
+        <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
           Weekly Appointments
         </CardTitle>
-        <CardDescription className="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">
+        <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
           Current vs Last Week
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex items-center justify-center w-full h-[300px] lg:h-[400px]">
+      <CardContent className="flex items-center justify-center w-full h-[300px] lg:h-[400px] p-6">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
             margin={{
               left: 0,
               right: 0,
-              top: 0,
+              top: 20,
               bottom: 0,
             }}
           >
@@ -61,31 +61,34 @@ const Charts = () => {
               tickLine={false}
               axisLine={false}
               tickMargin={6}
-              tick={{ fill: '#4b5563', fontSize: 12 }}
+              tick={{ fill: '#2C3E50', fontSize: 12 }}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={6}
-              tick={{ fill: '#4b5563', fontSize: 12 }}
+              tick={{ fill: '#2C3E50', fontSize: 12 }}
             />
-            <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'rgba(0, 0, 0, 0.03)' }} />
+            <Tooltip
+              content={<ChartTooltipContent />}
+              cursor={{ fill: 'rgba(38, 166, 154, 0.1)' }}
+            />
 
             <Bar
               dataKey="current"
-              name="current"
-              fill="#E69DB8"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={40}
-              className="hover:fill-[#E69DB8]/80 transition-colors duration-200"
+              name="Current Week"
+              fill="#26A69A"
+              radius={[6, 6, 0, 0]}
+              maxBarSize={50}
+              className="hover:fill-teal transition-all duration-200"
             />
             <Bar
               dataKey="last"
-              name="last"
-              fill="#E9A5F1"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={40}
-              className="hover:fill-[#E9A5F1]/80 transition-colors duration-200"
+              name="Last Week"
+              fill="#007745"
+              radius={[6, 6, 0, 0]}
+              maxBarSize={50}
+              className="hover:fill-primary transition-all duration-200"
             />
           </BarChart>
         </ResponsiveContainer>

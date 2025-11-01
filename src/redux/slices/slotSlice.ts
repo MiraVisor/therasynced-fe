@@ -110,12 +110,33 @@ export const checkExpiredReservations = createAsyncThunk(
   },
 );
 
+export const fetchMySlots = createAsyncThunk(
+  'slot/fetchMySlots',
+  async (params: PaginationDto & { freelancerId?: string }, { rejectWithValue }) => {
+    try {
+      const response = await slotApi.getMySlots(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch my slots');
+    }
+  },
+);
+
 const slotSlice = createSlice({
   name: 'slot',
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    setSlots: (state, action) => {
+      state.slots = action.payload;
+    },
+    appendSlots: (state, action) => {
+      // Append only unique slots (based on ID)
+      const existingIds = new Set(state.slots.map((s) => s.id));
+      const newSlots = action.payload.filter((slot: Slot) => !existingIds.has(slot.id));
+      state.slots = [...state.slots, ...newSlots];
     },
   },
   extraReducers: (builder) => {
@@ -273,9 +294,51 @@ const slotSlice = createSlice({
       .addCase(checkExpiredReservations.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      // Fetch my slots
+      .addCase(fetchMySlots.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchMySlots.fulfilled, (state, action) => {
+        state.isLoading = false;
+
+        // Handle the new response structure with data and pagination
+        const slots = action.payload.data || [];
+
+        // Transform the slots to match our expected structure
+        const transformedSlots = slots.map((slot: any) => ({
+          id: slot.id,
+          freelancerId: slot.freelancerId,
+          freelancerName: slot.freelancerName,
+          profilePicture: slot.profilePicture,
+          averageRating: slot.averageRating,
+          numberOfRatings: slot.numberOfRatings,
+          locationType: slot.locationType,
+          location: slot.location || undefined,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          duration: slot.duration,
+          basePrice: slot.basePrice,
+          status: slot.status,
+          notes: slot.notes,
+          availableServices: slot.availableServices || [],
+          booking: slot.booking || null,
+          createdAt: slot.createdAt,
+          updatedAt: slot.updatedAt,
+        }));
+
+        // For week-based fetching, we replace the slots (no pagination needed)
+        state.slots = transformedSlots;
+        state.pagination = action.payload.pagination || null;
+        state.error = null;
+      })
+      .addCase(fetchMySlots.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError } = slotSlice.actions;
+export const { clearError, setSlots, appendSlots } = slotSlice.actions;
 export default slotSlice.reducer;

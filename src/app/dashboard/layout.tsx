@@ -2,10 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { getDecodedToken } from '@/lib/utils';
+import { getCookie, getDecodedToken } from '@/lib/utils';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,16 +17,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const checkAuth = () => {
-      // Check if user is authenticated
-      if (!isAuthenticated) {
+      // First, check if token exists in cookie (direct check, no Redux dependency)
+      const tokenFromCookie = getCookie('token');
+
+      if (!tokenFromCookie) {
+        // No token at all, redirect to login
         setIsRedirecting(true);
         router.push('/authentication/sign-in');
         return;
       }
 
-      // Check if token is valid
+      // Token exists, now validate it
       const decodedToken = getDecodedToken();
       if (!decodedToken) {
+        // Token is invalid, redirect to login
         setIsRedirecting(true);
         router.push('/authentication/sign-in');
         return;
@@ -34,14 +39,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Check if token is expired
       const currentTime = Math.floor(Date.now() / 1000);
       if (decodedToken.exp && decodedToken.exp < currentTime) {
+        // Token is expired, redirect to login
         setIsRedirecting(true);
         router.push('/authentication/sign-in');
         return;
       }
 
-      // Check if role is set
-      if (!userRole) {
-        return; // Still loading
+      // Token is valid, wait for Redux state to initialize
+      if (!isAuthenticated || !userRole) {
+        // Redux state not initialized yet, wait
+        return;
       }
 
       // All checks passed
