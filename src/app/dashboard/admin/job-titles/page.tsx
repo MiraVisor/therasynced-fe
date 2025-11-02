@@ -22,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useJobTitles } from '@/hooks/useJobTitles';
 import adminJobTitleService, {
   type CreateJobTitleDto,
   type JobTitleResponse,
@@ -29,8 +30,13 @@ import adminJobTitleService, {
 } from '@/services/adminJobTitleService';
 
 const JobTitlesPage = () => {
-  const [jobTitles, setJobTitles] = useState<JobTitleResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // State for dialogs and forms
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -38,24 +44,25 @@ const JobTitlesPage = () => {
   const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchJobTitles = async () => {
-    try {
-      setLoading(true);
-      const response = await adminJobTitleService.getAll();
-      if (response.success) {
-        const data = response.data || [];
-        setJobTitles(data);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch job titles');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Debounce search query
   useEffect(() => {
-    fetchJobTitles();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Reset to page 1 when search changes
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
+
+  // Fetch job titles with pagination and search
+  const { jobTitles, loading, initialLoading, error, pagination } = useJobTitles({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+  });
 
   const handleCreate = async () => {
     try {
@@ -65,7 +72,7 @@ const JobTitlesPage = () => {
         toast.success('Job title created successfully');
         setIsCreateDialogOpen(false);
         setFormData({ name: '', description: '' });
-        fetchJobTitles();
+        // Data will be refetched automatically by the hook
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to create job title');
@@ -88,7 +95,7 @@ const JobTitlesPage = () => {
         setIsEditDialogOpen(false);
         setSelectedJobTitle(null);
         setFormData({ name: '', description: '' });
-        fetchJobTitles();
+        // Data will be refetched automatically by the hook
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to update job title');
@@ -106,7 +113,7 @@ const JobTitlesPage = () => {
         toast.success('Job title deleted successfully');
         setIsDeleteDialogOpen(false);
         setSelectedJobTitle(null);
-        fetchJobTitles();
+        // Data will be refetched automatically by the hook
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete job title');
@@ -200,6 +207,32 @@ const JobTitlesPage = () => {
     },
   ];
 
+  if (error) {
+    return (
+      <DashboardPageWrapper
+        header={
+          <div className="flex items-center justify-between w-full">
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Job Titles</h1>
+            <Button
+              onClick={() => {
+                setFormData({ name: '', description: '' });
+                setIsCreateDialogOpen(true);
+              }}
+              className="font-inter"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Job Title
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex items-center justify-center h-64">
+          <div className="font-open-sans text-lg text-error">Error: {error}</div>
+        </div>
+      </DashboardPageWrapper>
+    );
+  }
+
   return (
     <DashboardPageWrapper
       header={
@@ -226,10 +259,24 @@ const JobTitlesPage = () => {
           title="All Job Titles"
           searchKey="name"
           searchPlaceholder="Search job titles..."
-          enableSorting
-          enableFiltering
-          enablePagination
-          pageSize={10}
+          enableSorting={false}
+          enableFiltering={true}
+          enableColumnVisibility={true}
+          enablePagination={true}
+          showSearch={true}
+          showSorting={false}
+          initialLoading={initialLoading}
+          loading={loading}
+          externalSearchValue={searchQuery}
+          onExternalSearchChange={(value) => setSearchQuery(value)}
+          externalPageIndex={page - 1}
+          externalPageSize={pageSize}
+          totalPages={pagination?.totalPages}
+          onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
+          onExternalPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize);
+            setPage(1);
+          }}
         />
 
         {/* Create Dialog */}
