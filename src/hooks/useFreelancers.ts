@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import freelancerService from '@/services/freelancerService';
 import { Freelancer } from '@/types/types';
@@ -25,9 +25,13 @@ export const useFreelancers = (params?: UseFreelancersParams) => {
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
 
+  const isFirstLoad = useRef(true);
+
   const fetchFreelancers = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!isFirstLoad.current) {
+        setLoading(true);
+      }
       setError(null);
 
       const response = await freelancerService.getAllFreelancers(params);
@@ -43,6 +47,7 @@ export const useFreelancers = (params?: UseFreelancersParams) => {
     } finally {
       setLoading(false);
       setInitialLoading(false);
+      isFirstLoad.current = false;
     }
   }, [params?.page, params?.limit, params?.name]);
 

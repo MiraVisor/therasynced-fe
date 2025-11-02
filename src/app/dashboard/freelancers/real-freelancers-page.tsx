@@ -191,22 +191,6 @@ const RealFreelancersPage = () => {
     name: debouncedSearch || undefined,
   });
 
-  // Handle search from DataTable
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-  };
-
-  // Handle page change
-  const handlePageChange = (newPageIndex: number) => {
-    setPage(newPageIndex + 1); // DataTable uses 0-based index
-  };
-
-  // Handle page size change
-  const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize);
-    setPage(1);
-  };
-
   // Calculate stats
   const totalFreelancers = pagination?.total || 0;
   const activeFreelancers = freelancers.filter((f) => f.isActive).length;
@@ -277,82 +261,32 @@ const RealFreelancersPage = () => {
         })}
       </div>
 
-      {/* Freelancers Table with built-in search (debounced) */}
+      {/* Freelancers Table with built-in pagination */}
       <DataTable
         columns={freelancerColumns}
         data={freelancers}
         title="All Freelancers"
         searchKey="name"
-        searchPlaceholder="Search freelancers by name..."
+        searchPlaceholder="Search by name..."
         enableSorting={false}
         enableFiltering={true}
         enableColumnVisibility={true}
-        enablePagination={false}
+        enablePagination={true}
         showSearch={true}
         showSorting={false}
         initialLoading={initialLoading}
         loading={loading}
         externalSearchValue={searchQuery}
         onExternalSearchChange={(value) => setSearchQuery(value)}
+        externalPageIndex={page - 1}
+        externalPageSize={pageSize}
+        totalPages={pagination?.totalPages}
+        onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
+        onExternalPageSizeChange={(newPageSize) => {
+          setPageSize(newPageSize);
+          setPage(1);
+        }}
       />
-
-      {/* Custom Pagination */}
-      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Rows per page:</span>
-          <select
-            value={pageSize}
-            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-            className="border rounded px-3 py-1.5 text-sm"
-          >
-            {[5, 10, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">
-            Page {page} of {pagination?.totalPages || 1}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(1)}
-              disabled={page === 1 || loading}
-            >
-              First
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              disabled={page === 1 || loading}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev + 1)}
-              disabled={!pagination?.hasNext || loading}
-            >
-              Next
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(pagination?.totalPages || 1)}
-              disabled={page === pagination?.totalPages || loading}
-            >
-              Last
-            </Button>
-          </div>
-        </div>
-      </div>
 
       {/* Summary */}
       <div className="mt-4 text-sm text-gray-500">
