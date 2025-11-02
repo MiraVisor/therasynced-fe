@@ -52,6 +52,9 @@ interface DataTableProps<TData, TValue> {
   showSorting?: boolean;
   loading?: boolean;
   initialLoading?: boolean;
+  // External search control (for server-side search with debouncing)
+  externalSearchValue?: string;
+  onExternalSearchChange?: (value: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -70,6 +73,8 @@ export function DataTable<TData, TValue>({
   showSorting = true,
   loading = false,
   initialLoading = false,
+  externalSearchValue,
+  onExternalSearchChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -126,8 +131,18 @@ export function DataTable<TData, TValue>({
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={searchPlaceholder}
-                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-                onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+                value={
+                  onExternalSearchChange
+                    ? (externalSearchValue ?? '')
+                    : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
+                }
+                onChange={(event) => {
+                  if (onExternalSearchChange) {
+                    onExternalSearchChange(event.target.value);
+                  } else {
+                    table.getColumn(searchKey)?.setFilterValue(event.target.value);
+                  }
+                }}
                 className="pl-8 border-gray-200 w-full"
               />
             </div>

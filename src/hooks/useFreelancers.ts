@@ -3,30 +3,48 @@ import { useCallback, useEffect, useState } from 'react';
 import freelancerService from '@/services/freelancerService';
 import { Freelancer } from '@/types/types';
 
-export const useFreelancers = (params?: { limit?: number; page?: number }) => {
+interface UseFreelancersParams {
+  limit?: number;
+  page?: number;
+  name?: string;
+}
+
+interface PaginationData {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export const useFreelancers = (params?: UseFreelancersParams) => {
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationData | null>(null);
 
   const fetchFreelancers = useCallback(async () => {
     try {
-      setInitialLoading(true);
+      setLoading(true);
       setError(null);
 
       const response = await freelancerService.getAllFreelancers(params);
 
       if (response.success) {
         setFreelancers(response.data);
+        setPagination(response.pagination);
       } else {
         setError(response.message || 'Failed to fetch freelancers');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred while fetching freelancers');
     } finally {
+      setLoading(false);
       setInitialLoading(false);
     }
-  }, [params]);
+  }, [params?.page, params?.limit, params?.name]);
 
   const toggleFavorite = useCallback(async (freelancerId: string) => {
     try {
@@ -61,6 +79,7 @@ export const useFreelancers = (params?: { limit?: number; page?: number }) => {
     loading,
     initialLoading,
     error,
+    pagination,
     toggleFavorite,
     refetch: fetchFreelancers,
   };

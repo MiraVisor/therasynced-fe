@@ -2,6 +2,7 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Clock, Heart, MapPin, Star, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -164,11 +165,50 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
 ];
 
 const RealFreelancersPage = () => {
-  // Fetch all freelancers
-  const { freelancers, loading, initialLoading, error } = useFreelancers();
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Reset to page 1 when search changes
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
+
+  // Fetch freelancers with pagination and search
+  const { freelancers, loading, initialLoading, error, pagination } = useFreelancers({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+  });
+
+  // Handle search from DataTable
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  // Handle page change
+  const handlePageChange = (newPageIndex: number) => {
+    setPage(newPageIndex + 1); // DataTable uses 0-based index
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
 
   // Calculate stats
-  const totalFreelancers = freelancers.length;
+  const totalFreelancers = pagination?.total || 0;
   const activeFreelancers = freelancers.filter((f) => f.isActive).length;
 
   const stats = [
@@ -237,25 +277,88 @@ const RealFreelancersPage = () => {
         })}
       </div>
 
-      {/* Freelancers Table */}
+      {/* Freelancers Table with built-in search (debounced) */}
       <DataTable
         columns={freelancerColumns}
         data={freelancers}
         title="All Freelancers"
         searchKey="name"
-        searchPlaceholder="Search freelancers..."
-        enableSorting={true}
+        searchPlaceholder="Search freelancers by name..."
+        enableSorting={false}
         enableFiltering={true}
         enableColumnVisibility={true}
-        enablePagination={true}
-        pageSize={10}
-        pageSizeOptions={[5, 10, 20, 50]}
+        enablePagination={false}
+        showSearch={true}
+        showSorting={false}
         initialLoading={initialLoading}
         loading={loading}
+        externalSearchValue={searchQuery}
+        onExternalSearchChange={(value) => setSearchQuery(value)}
       />
 
+      {/* Custom Pagination */}
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            className="border rounded px-3 py-1.5 text-sm"
+          >
+            {[5, 10, 20, 50].map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600">
+            Page {page} of {pagination?.totalPages || 1}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(1)}
+              disabled={page === 1 || loading}
+            >
+              First
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              disabled={page === 1 || loading}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((prev) => prev + 1)}
+              disabled={!pagination?.hasNext || loading}
+            >
+              Next
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(pagination?.totalPages || 1)}
+              disabled={page === pagination?.totalPages || loading}
+            >
+              Last
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Summary */}
-      <div className="mt-4 text-sm text-gray-500">Showing {freelancers.length} freelancers</div>
+      <div className="mt-4 text-sm text-gray-500">
+        Showing {freelancers.length} of {totalFreelancers} freelancers
+        {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
+      </div>
     </DashboardPageWrapper>
   );
 };
