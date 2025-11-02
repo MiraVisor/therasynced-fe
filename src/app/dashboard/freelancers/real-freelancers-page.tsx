@@ -2,16 +2,15 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Clock, Heart, MapPin, Star, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import { useFavoriteFreelancers, useFreelancers } from '@/hooks/useFreelancers';
+import { useFreelancers } from '@/hooks/useFreelancers';
 import { Freelancer } from '@/types/types';
 
 // Column definitions for freelancers table
@@ -166,26 +165,35 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
 ];
 
 const RealFreelancersPage = () => {
-  const [activeTab, setActiveTab] = useState('all');
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Fetch all freelancers
-  const { freelancers, loading: allLoading, error: allError } = useFreelancers();
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Reset to page 1 when search changes
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 500); // 500ms debounce delay
 
-  // Fetch favorite freelancers
-  const {
-    favoriteFreelancers,
-    loading: favoritesLoading,
-    error: favoritesError,
-  } = useFavoriteFreelancers();
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
 
-  const currentFreelancers = activeTab === 'all' ? freelancers : favoriteFreelancers;
-  const currentLoading = activeTab === 'all' ? allLoading : favoritesLoading;
-  const currentError = activeTab === 'all' ? allError : favoritesError;
+  // Fetch freelancers with pagination and search
+  const { freelancers, loading, initialLoading, error, pagination } = useFreelancers({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+  });
 
   // Calculate stats
-  const totalFreelancers = freelancers.length;
+  const totalFreelancers = pagination?.total || 0;
   const activeFreelancers = freelancers.filter((f) => f.isActive).length;
-  const favoriteCount = favoriteFreelancers.length;
 
   const stats = [
     {
@@ -212,36 +220,15 @@ const RealFreelancersPage = () => {
         () => activeFreelancers + Math.floor(Math.random() * 3),
       ),
     },
-    {
-      title: 'Favorite Freelancers',
-      value: favoriteCount.toString(),
-      trend: { value: 0, isUp: true, label: 'total' },
-      icon: Heart,
-      iconColor: 'text-error',
-      iconBg: 'bg-error/10',
-      sparklineData: Array.from({ length: 7 }, () => favoriteCount + Math.floor(Math.random() * 2)),
-    },
   ];
 
-  if (currentLoading) {
+  if (error) {
     return (
       <DashboardPageWrapper
         header={<h2 className="font-poppins font-bold text-2xl text-charcoal">Freelancers</h2>}
       >
         <div className="flex items-center justify-center h-64">
-          <div className="font-open-sans text-lg">Loading freelancers...</div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
-
-  if (currentError) {
-    return (
-      <DashboardPageWrapper
-        header={<h2 className="font-poppins font-bold text-2xl text-charcoal">Freelancers</h2>}
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="font-open-sans text-lg text-error">Error: {currentError}</div>
+          <div className="font-open-sans text-lg text-error">Error: {error}</div>
         </div>
       </DashboardPageWrapper>
     );
@@ -252,7 +239,7 @@ const RealFreelancersPage = () => {
       header={<h2 className="font-poppins font-bold text-2xl text-charcoal">Freelancers</h2>}
     >
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -274,50 +261,37 @@ const RealFreelancersPage = () => {
         })}
       </div>
 
-      {/* Tabs for All vs Favorites */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="all">All Freelancers</TabsTrigger>
-          <TabsTrigger value="favorites">Favorites</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="mt-4">
-          <DataTable
-            columns={freelancerColumns}
-            data={currentFreelancers}
-            title="All Freelancers"
-            searchKey="name"
-            searchPlaceholder="Search freelancers..."
-            enableSorting={true}
-            enableFiltering={true}
-            enableColumnVisibility={true}
-            enablePagination={true}
-            pageSize={10}
-            pageSizeOptions={[5, 10, 20, 50]}
-          />
-        </TabsContent>
-
-        <TabsContent value="favorites" className="mt-6">
-          <DataTable
-            columns={freelancerColumns}
-            data={currentFreelancers}
-            title="Favorite Freelancers"
-            searchKey="name"
-            searchPlaceholder="Search favorite freelancers..."
-            enableSorting={true}
-            enableFiltering={true}
-            enableColumnVisibility={true}
-            enablePagination={true}
-            pageSize={10}
-            pageSizeOptions={[5, 10, 20, 50]}
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Freelancers Table with built-in pagination */}
+      <DataTable
+        columns={freelancerColumns}
+        data={freelancers}
+        title="All Freelancers"
+        searchKey="name"
+        searchPlaceholder="Search by name..."
+        enableSorting={false}
+        enableFiltering={true}
+        enableColumnVisibility={true}
+        enablePagination={true}
+        showSearch={true}
+        showSorting={false}
+        initialLoading={initialLoading}
+        loading={loading}
+        externalSearchValue={searchQuery}
+        onExternalSearchChange={(value) => setSearchQuery(value)}
+        externalPageIndex={page - 1}
+        externalPageSize={pageSize}
+        totalPages={pagination?.totalPages}
+        onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
+        onExternalPageSizeChange={(newPageSize) => {
+          setPageSize(newPageSize);
+          setPage(1);
+        }}
+      />
 
       {/* Summary */}
       <div className="mt-4 text-sm text-gray-500">
-        Showing {currentFreelancers.length} freelancers
-        {activeTab === 'favorites' && <span> • Only showing favorited freelancers</span>}
+        Showing {freelancers.length} of {totalFreelancers} freelancers
+        {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
       </div>
     </DashboardPageWrapper>
   );

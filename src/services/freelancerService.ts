@@ -6,7 +6,7 @@ import { ENDPOINTS } from './endpoints';
 // API Functions
 export const freelancerService = {
   // Get all freelancers (future slots only)
-  getAllFreelancers: async (params?: { limit?: number; page?: number }) => {
+  getAllFreelancers: async (params?: { limit?: number; page?: number; name?: string }) => {
     const response = await api.get(ENDPOINTS.freelancer.all, { params });
     return response.data;
   },

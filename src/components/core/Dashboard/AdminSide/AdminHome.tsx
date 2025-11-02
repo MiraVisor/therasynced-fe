@@ -59,11 +59,12 @@ const AdminHome = () => {
     <DashboardPageWrapper
       userRole={role}
       header={
-        <div className="flex w-full items-center gap-4">
+        <div className="flex flex-col sm:flex-row w-full items-start gap-4">
           <div className="flex-shrink-0">
             <h1 className="font-poppins font-bold text-2xl text-charcoal">Dashboard Overview</h1>
           </div>
-          <div className="flex-grow flex justify-end max-w-md">
+
+          <div className="flex-grow flex justify-end max-w-md sm:max-w-sm md:max-w-md  w-full sm:w-auto">
             <SearchBar placeholder={'Search'} />
           </div>
         </div>

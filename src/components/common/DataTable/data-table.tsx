@@ -52,6 +52,15 @@ interface DataTableProps<TData, TValue> {
   showSorting?: boolean;
   loading?: boolean;
   initialLoading?: boolean;
+  // External search control (for server-side search with debouncing)
+  externalSearchValue?: string;
+  onExternalSearchChange?: (value: string) => void;
+  // External pagination control (for server-side pagination)
+  externalPageIndex?: number;
+  externalPageSize?: number;
+  totalPages?: number;
+  onExternalPageChange?: (pageIndex: number) => void;
+  onExternalPageSizeChange?: (pageSize: number) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -70,6 +79,13 @@ export function DataTable<TData, TValue>({
   showSorting = true,
   loading = false,
   initialLoading = false,
+  externalSearchValue,
+  onExternalSearchChange,
+  externalPageIndex,
+  externalPageSize,
+  totalPages,
+  onExternalPageChange,
+  onExternalPageSizeChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -77,13 +93,23 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState({});
   const [isFiltering, setIsFiltering] = useState(false);
 
+  // External pagination state
+  const [internalPageIndex, setInternalPageIndex] = useState(0);
+  const [internalPageSize, setInternalPageSize] = useState(pageSize);
+
+  const currentPageIndex = onExternalPageChange ? (externalPageIndex ?? 0) : internalPageIndex;
+  const currentPageSize = onExternalPageSizeChange
+    ? (externalPageSize ?? pageSize)
+    : internalPageSize;
+
   const table = useReactTable({
     data,
     columns,
     onSortingChange: enableSorting ? setSorting : undefined,
     onColumnFiltersChange: enableFiltering ? setColumnFilters : undefined,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    getPaginationRowModel:
+      enablePagination && !onExternalPageChange ? getPaginationRowModel() : undefined,
     getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
     getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
     onColumnVisibilityChange: enableColumnVisibility ? setColumnVisibility : undefined,
@@ -93,12 +119,21 @@ export function DataTable<TData, TValue>({
       columnFilters: enableFiltering ? columnFilters : undefined,
       columnVisibility: enableColumnVisibility ? columnVisibility : undefined,
       rowSelection,
+      ...(enablePagination &&
+        !onExternalPageChange && {
+          pagination: {
+            pageIndex: currentPageIndex,
+            pageSize: currentPageSize,
+          },
+        }),
     },
     initialState: {
       pagination: {
-        pageSize,
+        pageSize: currentPageSize,
       },
     },
+    pageCount: totalPages,
+    manualPagination: !!onExternalPageChange,
   });
   const [firstWord, ...rest] = (title ?? '').split(' ');
   const restTitle = rest.join(' ');
@@ -126,8 +161,18 @@ export function DataTable<TData, TValue>({
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={searchPlaceholder}
-                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-                onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+                value={
+                  onExternalSearchChange
+                    ? (externalSearchValue ?? '')
+                    : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
+                }
+                onChange={(event) => {
+                  if (onExternalSearchChange) {
+                    onExternalSearchChange(event.target.value);
+                  } else {
+                    table.getColumn(searchKey)?.setFilterValue(event.target.value);
+                  }
+                }}
                 className="pl-8 border-gray-200 w-full"
               />
             </div>
@@ -220,13 +265,19 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center space-x-2">
             <p className="text-sm font-poppins font-medium text-table-row">Rows per page</p>
             <Select
-              value={`${table.getState().pagination.pageSize}`}
+              value={`${currentPageSize}`}
               onValueChange={(value) => {
-                table.setPageSize(Number(value));
+                const newPageSize = Number(value);
+                if (onExternalPageSizeChange) {
+                  onExternalPageSizeChange(newPageSize);
+                } else {
+                  setInternalPageSize(newPageSize);
+                  table.setPageSize(newPageSize);
+                }
               }}
             >
               <SelectTrigger className="h-8 w-[70px] font-poppins border-gray-200">
-                <SelectValue placeholder={table.getState().pagination.pageSize} />
+                <SelectValue placeholder={currentPageSize} />
               </SelectTrigger>
               <SelectContent side="top">
                 {pageSizeOptions.map((pageSize) => (
@@ -240,14 +291,20 @@ export function DataTable<TData, TValue>({
 
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 lg:space-x-8">
             <div className="flex w-full sm:w-[100px] items-center justify-center text-sm font-poppins font-medium text-table-row">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              Page {currentPageIndex + 1} of {totalPages || table.getPageCount()}
             </div>
             <div className="flex items-center space-x-1">
               <Button
                 variant="outline"
                 className="hidden lg:flex h-8 w-8 p-0 font-poppins border-gray-200 hover:bg-gray-50"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
+                onClick={() => {
+                  if (onExternalPageChange) {
+                    onExternalPageChange(0);
+                  } else {
+                    table.setPageIndex(0);
+                  }
+                }}
+                disabled={currentPageIndex === 0}
               >
                 <span className="sr-only">Go to first page</span>
                 {'<<'}
@@ -255,8 +312,14 @@ export function DataTable<TData, TValue>({
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0 font-poppins border-gray-200 hover:bg-gray-50"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                onClick={() => {
+                  if (onExternalPageChange) {
+                    onExternalPageChange(currentPageIndex - 1);
+                  } else {
+                    table.previousPage();
+                  }
+                }}
+                disabled={currentPageIndex === 0}
               >
                 <span className="sr-only">Go to previous page</span>
                 {'<'}
@@ -264,11 +327,11 @@ export function DataTable<TData, TValue>({
 
               {/* Page Numbers - Hide on mobile, show on tablet+ */}
               <div className="hidden sm:flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
-                  const pageIndex = table.getState().pagination.pageIndex;
-                  const totalPages = table.getPageCount();
+                {Array.from({ length: Math.min(5, totalPages || table.getPageCount()) }, (_, i) => {
+                  const pageIndex = currentPageIndex;
+                  const totalPagesCount = totalPages || table.getPageCount();
                   let startPage = Math.max(0, pageIndex - 2);
-                  const endPage = Math.min(totalPages - 1, startPage + 4);
+                  const endPage = Math.min(totalPagesCount - 1, startPage + 4);
 
                   if (endPage - startPage < 4) {
                     startPage = Math.max(0, endPage - 4);
@@ -285,7 +348,13 @@ export function DataTable<TData, TValue>({
                             ? 'bg-primary text-white hover:bg-primary/90'
                             : 'border-gray-200 text-table-row hover:bg-gray-50'
                         }`}
-                        onClick={() => table.setPageIndex(page)}
+                        onClick={() => {
+                          if (onExternalPageChange) {
+                            onExternalPageChange(page);
+                          } else {
+                            table.setPageIndex(page);
+                          }
+                        }}
                       >
                         {page + 1}
                       </Button>
@@ -298,8 +367,14 @@ export function DataTable<TData, TValue>({
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0 font-poppins border-gray-200 hover:bg-gray-50"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                onClick={() => {
+                  if (onExternalPageChange) {
+                    onExternalPageChange(currentPageIndex + 1);
+                  } else {
+                    table.nextPage();
+                  }
+                }}
+                disabled={currentPageIndex >= (totalPages || table.getPageCount()) - 1}
               >
                 <span className="sr-only">Go to next page</span>
                 {'>'}
@@ -307,8 +382,14 @@ export function DataTable<TData, TValue>({
               <Button
                 variant="outline"
                 className="hidden lg:flex h-8 w-8 p-0 font-poppins border-gray-200 hover:bg-gray-50"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
+                onClick={() => {
+                  if (onExternalPageChange) {
+                    onExternalPageChange((totalPages || table.getPageCount()) - 1);
+                  } else {
+                    table.setPageIndex(table.getPageCount() - 1);
+                  }
+                }}
+                disabled={currentPageIndex >= (totalPages || table.getPageCount()) - 1}
               >
                 <span className="sr-only">Go to last page</span>
                 {'>>'}

@@ -1,22 +1,44 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import freelancerService from '@/services/freelancerService';
 import { Freelancer } from '@/types/types';
 
-export const useFreelancers = (params?: { limit?: number; page?: number }) => {
+interface UseFreelancersParams {
+  limit?: number;
+  page?: number;
+  name?: string;
+}
+
+interface PaginationData {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export const useFreelancers = (params?: UseFreelancersParams) => {
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationData | null>(null);
+
+  const isFirstLoad = useRef(true);
 
   const fetchFreelancers = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!isFirstLoad.current) {
+        setLoading(true);
+      }
       setError(null);
 
       const response = await freelancerService.getAllFreelancers(params);
 
       if (response.success) {
         setFreelancers(response.data);
+        setPagination(response.pagination);
       } else {
         setError(response.message || 'Failed to fetch freelancers');
       }
@@ -24,11 +46,14 @@ export const useFreelancers = (params?: { limit?: number; page?: number }) => {
       setError(err.message || 'An error occurred while fetching freelancers');
     } finally {
       setLoading(false);
+      setInitialLoading(false);
+      isFirstLoad.current = false;
     }
-  }, [params]);
+  }, [params?.page, params?.limit, params?.name]);
 
   const toggleFavorite = useCallback(async (freelancerId: string) => {
     try {
+      setLoading(true);
       const response = await freelancerService.toggleFavorite(freelancerId);
       if (response.success) {
         // Update the freelancer's favorite status in the list
@@ -45,6 +70,8 @@ export const useFreelancers = (params?: { limit?: number; page?: number }) => {
       }
     } catch (err: any) {
       throw new Error(err.message || 'Failed to toggle favorite');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -55,7 +82,9 @@ export const useFreelancers = (params?: { limit?: number; page?: number }) => {
   return {
     freelancers,
     loading,
+    initialLoading,
     error,
+    pagination,
     toggleFavorite,
     refetch: fetchFreelancers,
   };

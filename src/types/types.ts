@@ -481,6 +481,7 @@ export interface PaginationDto {
   sortOrder?: 'asc' | 'desc';
   weekStart?: string;
   weekEnd?: string;
+  name?: string;
 }
 
 export interface ApiResponse<T = any> {

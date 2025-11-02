@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
-import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { useVerifications } from '@/hooks/useVerifications';
 import adminVerificationService, {
   type PendingVerificationResponse,
 } from '@/services/adminVerificationService';
@@ -22,74 +22,107 @@ interface VerificationStats {
   total: number;
 }
 
+const statsConfig = [
+  {
+    key: 'total' as keyof VerificationStats,
+    title: 'Total Verifications',
+    icon: Shield,
+    iconColor: 'text-primary',
+    iconBg: 'bg-primary/10',
+  },
+  {
+    key: 'pending' as keyof VerificationStats,
+    title: 'Pending',
+    icon: Clock,
+    iconColor: 'text-warning',
+    iconBg: 'bg-warning/10',
+  },
+  {
+    key: 'approved' as keyof VerificationStats,
+    title: 'Approved',
+    icon: CheckCircle,
+    iconColor: 'text-success',
+    iconBg: 'bg-success/10',
+  },
+  {
+    key: 'rejected' as keyof VerificationStats,
+    title: 'Rejected',
+    icon: XCircle,
+    iconColor: 'text-error',
+    iconBg: 'bg-error/10',
+  },
+];
+
 const VerificationsPage = () => {
-  const [verifications, setVerifications] = useState<PendingVerificationResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>(
+    undefined,
+  );
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Reset to page 1 when search changes
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
+
+  // Fetch verifications with pagination, search, and status filter
+  const { verifications, loading, initialLoading, error, pagination } = useVerifications({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+    status: statusFilter,
+  });
+
+  // Calculate stats - we'll need to fetch these separately or from the API
   const [stats, setStats] = useState<VerificationStats>({
     pending: 0,
     approved: 0,
     rejected: 0,
     total: 0,
   });
-  const [statusFilter, setStatusFilter] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | 'all'>(
-    'PENDING',
-  );
-  const [searchQuery, setSearchQuery] = useState('');
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchVerifications = async () => {
-    try {
-      setLoading(true);
-      const status = statusFilter === 'all' ? undefined : statusFilter;
-      const response = status
-        ? await adminVerificationService.getByStatus(status)
-        : await adminVerificationService.getPending();
-
-      if (response.success) {
-        const data = response.data || [];
-        setVerifications(data);
-      }
-
-      // Calculate stats from all statuses
-      const [pendingResponse, approvedResponse, rejectedResponse] = await Promise.all([
-        adminVerificationService.getByStatus('PENDING'),
-        adminVerificationService.getByStatus('APPROVED'),
-        adminVerificationService.getByStatus('REJECTED'),
-      ]);
-
-      const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
-      const approved = approvedResponse.success ? (approvedResponse.data || []).length : 0;
-      const rejected = rejectedResponse.success ? (rejectedResponse.data || []).length : 0;
-
-      setStats({
-        pending,
-        approved,
-        rejected,
-        total: pending + approved + rejected,
-      });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch verifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch stats separately
   useEffect(() => {
-    fetchVerifications();
-  }, [statusFilter]);
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const [pendingResponse, approvedResponse, rejectedResponse] = await Promise.all([
+          adminVerificationService.getByStatus('PENDING'),
+          adminVerificationService.getByStatus('APPROVED'),
+          adminVerificationService.getByStatus('REJECTED'),
+        ]);
 
-  const filteredVerifications = verifications.filter((verification) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      verification.name.toLowerCase().includes(query) ||
-      verification.email.toLowerCase().includes(query)
-    );
-  });
+        const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
+        const approved = approvedResponse.success ? (approvedResponse.data || []).length : 0;
+        const rejected = rejectedResponse.success ? (rejectedResponse.data || []).length : 0;
 
-  const handleResetFilters = () => {
-    setStatusFilter('PENDING');
-    setSearchQuery('');
-  };
+        setStats({
+          pending,
+          approved,
+          rejected,
+          total: pending + approved + rejected,
+        });
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const columns: ColumnDef<PendingVerificationResponse>[] = [
     {
@@ -158,15 +191,15 @@ const VerificationsPage = () => {
     },
   ];
 
-  if (loading && verifications.length === 0) {
+  if (error) {
     return (
       <DashboardPageWrapper
         header={
           <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Queue</h1>
         }
       >
-        <div className="flex items-center justify-center h-96">
-          <LoadingSpinner size="lg" />
+        <div className="flex items-center justify-center h-64">
+          <div className="font-open-sans text-lg text-error">Error: {error}</div>
         </div>
       </DashboardPageWrapper>
     );
@@ -179,74 +212,109 @@ const VerificationsPage = () => {
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <EnhancedStatCard
-            title="Total Verifications"
-            value={stats.total.toString()}
-            icon={Shield}
-            iconColor="text-primary"
-            iconBg="bg-primary/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.total)}
-          />
-          <EnhancedStatCard
-            title="Pending"
-            value={stats.pending.toString()}
-            icon={Clock}
-            iconColor="text-warning"
-            iconBg="bg-warning/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.pending)}
-          />
-          <EnhancedStatCard
-            title="Approved"
-            value={stats.approved.toString()}
-            icon={CheckCircle}
-            iconColor="text-success"
-            iconBg="bg-success/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.approved)}
-          />
-          <EnhancedStatCard
-            title="Rejected"
-            value={stats.rejected.toString()}
-            icon={XCircle}
-            iconColor="text-error"
-            iconBg="bg-error/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.rejected)}
-          />
+          {statsConfig.map((config) => (
+            <EnhancedStatCard
+              key={config.key}
+              title={config.title}
+              value={stats[config.key].toString()}
+              icon={config.icon}
+              iconColor={config.iconColor}
+              iconBg={config.iconBg}
+              sparklineData={Array.from({ length: 7 }, () => stats[config.key])}
+              loading={statsLoading}
+            />
+          ))}
         </div>
 
-        {/* Filters */}
-        <FilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by freelancer name or email..."
-          filters={[
-            {
-              key: 'status',
-              label: 'Status',
-              value: statusFilter,
-              options: [
-                { label: 'Pending', value: 'PENDING' },
-                { label: 'Approved', value: 'APPROVED' },
-                { label: 'Rejected', value: 'REJECTED' },
-                { label: 'All', value: 'all' },
-              ],
-              onValueChange: (value) => setStatusFilter(value as typeof statusFilter),
-            },
-          ]}
-          onReset={handleResetFilters}
-        />
+        {/* Status Filter */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setStatusFilter(undefined);
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === undefined
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            All ({stats.total})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter('PENDING');
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === 'PENDING'
+                ? 'bg-warning text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Pending ({stats.pending})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter('APPROVED');
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === 'APPROVED'
+                ? 'bg-success text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Approved ({stats.approved})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter('REJECTED');
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === 'REJECTED'
+                ? 'bg-error text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Rejected ({stats.rejected})
+          </button>
+        </div>
 
         {/* Verifications Table */}
         <DataTable
           columns={columns}
-          data={filteredVerifications}
-          title={`${statusFilter === 'all' ? 'All' : statusFilter} Verifications`}
+          data={verifications}
+          title={`${statusFilter || 'All'} Verifications`}
           searchKey="name"
           searchPlaceholder="Search verifications..."
-          enableSorting
-          enableFiltering
-          enablePagination
-          pageSize={10}
+          enableSorting={false}
+          enableFiltering={true}
+          enableColumnVisibility={true}
+          enablePagination={true}
+          showSearch={true}
+          showSorting={false}
+          initialLoading={initialLoading}
+          loading={loading}
+          externalSearchValue={searchQuery}
+          onExternalSearchChange={(value) => setSearchQuery(value)}
+          externalPageIndex={page - 1}
+          externalPageSize={pageSize}
+          totalPages={pagination?.totalPages}
+          onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
+          onExternalPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize);
+            setPage(1);
+          }}
         />
+
+        {/* Summary */}
+        <div className="mt-4 text-sm text-gray-500">
+          Showing {verifications.length} of {pagination?.total || 0} verifications
+          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
+          {statusFilter && ` with status "${statusFilter}"`}
+        </div>
       </div>
     </DashboardPageWrapper>
   );
