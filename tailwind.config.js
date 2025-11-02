@@ -8,6 +8,9 @@ module.exports = {
   darkMode: ['class'], // no need to repeat 'class'
   theme: {
     extend: {
+      screens: {
+        mdx: { max: '820px' },
+      },
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
