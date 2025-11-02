@@ -122,7 +122,7 @@ export function LocationDropdown({
                     variant="outline"
                     role="combobox"
                     className={cn(
-                      'w-full justify-between h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring transition-colors text-gray-700',
+                      'w-full h-10 justify-between font-inter border-gray-300 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-all duration-200 text-sm',
                       (!field.value || field.value.trim() === '') && 'text-muted-foreground',
                     )}
                   >
