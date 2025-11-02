@@ -1,21 +1,39 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle, ChevronLeft, ChevronRight, Chrome, Eye, EyeOff, Mail } from 'lucide-react';
+import { format } from 'date-fns';
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Chrome,
+  Eye,
+  EyeOff,
+  Mail,
+  MapPin,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
+import { ImprovedDatePicker } from '@/components/common/input/ImprovedDatePicker';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import api from '@/services/api';
-import { ENDPOINTS } from '@/services/endpoints';
-import { JobTitle } from '@/types/types';
+import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { BACKEND_URL } from '@/services/endpoints';
 
-// Define options locally since onboarding config is removed
+// Define options locally
 const genderOptions = [
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
@@ -28,20 +46,49 @@ const roleOptions = [
   { value: 'freelancer', label: 'Freelancer' },
 ];
 
-// Simplified Zod schema for form validation
+// Updated Zod schema for form validation
 const signupSchema = z
   .object({
     name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
     email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    password: z.string().optional(),
+    confirmPassword: z.string().optional(),
+    dob: z
+      .date()
+      .optional()
+      .refine(
+        (date) => {
+          if (!date) return true;
+          const today = new Date();
+          const minAge = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+          return date <= minAge;
+        },
+        { message: 'You must be at least 18 years old' },
+      ),
+    gender: z.string().optional(),
+    city: z.string().optional(),
     role: z.string().min(1, 'Role is required'),
-    mainJobTitleId: z.string().optional(),
+    clinicAddress: z.string().optional(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
+  .refine((data) => {
+    // Password only required if not OAuth
+    if (!data.password && !data.email?.includes('@oauth')) {
+      return false;
+    }
+    return true;
+  }, 'Password is required')
+  .refine(
+    (data) => {
+      if (data.password && data.password !== data.confirmPassword) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Passwords don't match",
+      path: ['confirmPassword'],
+    },
+  );
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -51,28 +98,23 @@ interface MultiStepSignupProps {
   isLoading?: boolean;
 }
 
-const steps = [
-  { id: 1, title: 'Account', description: 'Create your account' },
-  { id: 2, title: 'Role', description: "How you'll use the platform" },
-  { id: 3, title: 'Job Title', description: 'Select your specialization' },
-];
-
 export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiStepSignupProps) {
+  const dispatch = useAppDispatch();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [authMethod, setAuthMethod] = useState<'email' | 'oauth' | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
-  const [isLoadingJobTitles, setIsLoadingJobTitles] = useState(false);
+  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
+  const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
 
   const {
     register,
     setValue,
     getValues,
     trigger,
-    formState: { errors },
     watch,
+    formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -80,70 +122,125 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       email: '',
       password: '',
       confirmPassword: '',
+      dob: undefined,
+      gender: '',
+      city: '',
       role: '',
+      clinicAddress: '',
     },
     mode: 'onChange',
   });
 
-  // Trigger validation when step changes to ensure existing values are validated
+  const selectedRole = watch('role');
+  const selectedDob = watch('dob');
+
+  // Determine steps based on role
+  const getSteps = () => {
+    if (selectedRole === 'patient') {
+      return [
+        { id: 1, title: 'Role', description: "How you'll use the platform" },
+        { id: 2, title: 'Account Setup', description: 'Create your account' },
+        { id: 3, title: 'Personal Details', description: 'Additional information' },
+      ];
+    } else if (selectedRole === 'freelancer') {
+      return [
+        { id: 1, title: 'Role', description: "How you'll use the platform" },
+        { id: 2, title: 'Account Setup', description: 'Create your account' },
+        { id: 3, title: 'Personal Details', description: 'Additional information' },
+        { id: 4, title: 'Clinic Address', description: 'Add your clinic address' },
+      ];
+    }
+    return [{ id: 1, title: 'Role', description: "How you'll use the platform" }];
+  };
+
+  const steps = getSteps();
+
+  // Request location permission on mount
   useEffect(() => {
-    const validateCurrentStepFields = async () => {
-      switch (currentStep) {
-        case 1:
-          await trigger(['name', 'email', 'password', 'confirmPassword']);
-          break;
-        case 2:
-          await trigger('role');
-          break;
-        case 3:
-          await trigger('mainJobTitleId');
-          break;
+    const requestLocation = async () => {
+      if (!('geolocation' in navigator)) {
+        return;
       }
-    };
 
-    validateCurrentStepFields();
-  }, [currentStep, trigger]);
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: 60000,
+          });
+        });
 
-  // Fetch job titles when on step 3 and role is freelancer
-  useEffect(() => {
-    const loadJobTitles = async () => {
-      const role = getValues('role');
-      if (currentStep === 3 && role === 'freelancer' && jobTitles.length === 0) {
-        setIsLoadingJobTitles(true);
+        // Reverse geocode to get city name
         try {
-          const response = await api.get(ENDPOINTS.public.jobTitles);
-          if (response.data.success && Array.isArray(response.data.data)) {
-            setJobTitles(response.data.data);
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
+          );
+          const data = await response.json();
+          if (data.city) {
+            setValue('city', data.city);
+            setLocationPermissionGranted(true);
+            toast.success(`Location found: ${data.city}`);
           }
         } catch (error) {
-          toast.error('Failed to load job titles');
-        } finally {
-          setIsLoadingJobTitles(false);
+          console.error('Geocoding error:', error);
         }
+      } catch (error) {
+        // User denied or error occurred
+        console.log('Location permission denied or unavailable');
       }
     };
 
-    loadJobTitles();
-  }, [currentStep]);
+    // Don't auto-request location - user will click button to request
+  }, [setValue]);
+
+  // Validate current step
+  const validateCurrentStep = async (): Promise<boolean> => {
+    switch (currentStep) {
+      case 1:
+        return await trigger('role');
+      case 2:
+        // Account setup: name, email, password
+        return await trigger(['name', 'email', 'password', 'confirmPassword']);
+      case 3:
+        // Personal details: DOB, gender, city
+        if (authMethod === 'email') {
+          return await trigger(['dob', 'gender', 'city']);
+        }
+        // For OAuth, only validate name and email were filled
+        return await trigger(['name', 'email']);
+      case 4:
+        // Clinic address for freelancer
+        if (selectedRole === 'freelancer') {
+          return await trigger('clinicAddress');
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
 
   const nextStep = async () => {
-    if (currentStep === 1 && authMethod === 'oauth') {
-      // Handle OAuth signup
-      handleOAuthSignup('google');
-      return;
-    }
-
     const isValid = await validateCurrentStep();
     if (!isValid) return;
 
-    // Special handling for step 2 -> 3: Skip job title for patients
-    if (currentStep === 2) {
-      const role = getValues('role');
-      if (role === 'patient') {
-        // Patients don't need job title, go directly to submit
-        handleSubmit();
-        return;
-      }
+    // Handle OAuth - on step 2 (account setup)
+    if (currentStep === 2 && authMethod === 'oauth') {
+      handleGoogleSignUp();
+      return;
+    }
+
+    // Special handling for completion
+    if (selectedRole === 'patient' && currentStep === 3) {
+      // Patient completes after personal details
+      handleSubmit();
+      return;
+    }
+
+    if (selectedRole === 'freelancer' && currentStep === 4) {
+      // Freelancer completes after clinic address
+      handleSubmit();
+      return;
     }
 
     if (currentStep < steps.length) {
@@ -157,748 +254,545 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     }
   };
 
-  const validateCurrentStep = async () => {
-    switch (currentStep) {
-      case 1:
-        return await trigger(['name', 'email', 'password', 'confirmPassword']);
-      case 2:
-        return await trigger('role');
-      case 3:
-        const role = getValues('role');
-        if (role === 'freelancer') {
-          return await trigger('mainJobTitleId');
-        }
-        return true; // Skip job title for patients
-      default:
-        return false;
+  const handleGoogleSignUp = async () => {
+    try {
+      setIsGoogleLoading(true);
+      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+      const googleAuthUrl = `${BACKEND_URL || 'http://localhost:4000'}/auth/google?returnUrl=${encodeURIComponent(currentUrl)}&signup=true`;
+      window.location.href = googleAuthUrl;
+    } catch (error) {
+      setIsGoogleLoading(false);
+      toast.error('Failed to initiate Google sign-up');
     }
   };
 
-  const isStepValid = () => {
-    switch (currentStep) {
-      case 1:
-        const name = getValues('name');
-        const email = getValues('email');
-        const password = getValues('password');
-        const confirmPassword = getValues('confirmPassword');
-        return (
-          name &&
-          name.length >= 2 &&
-          !errors.name &&
-          email &&
-          email.includes('@') &&
-          !errors.email &&
-          password &&
-          password.length >= 8 &&
-          !errors.password &&
-          confirmPassword &&
-          password === confirmPassword &&
-          !errors.confirmPassword
+  const handleLocationPermission = async () => {
+    setIsRequestingLocation(true);
+    try {
+      if (!('geolocation' in navigator)) {
+        toast.error('Geolocation is not supported by your browser');
+        setIsRequestingLocation(false);
+        return;
+      }
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 60000,
+        });
+      });
+
+      // Reverse geocode to get city
+      try {
+        const response = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
         );
-      case 2:
-        const role = getValues('role');
-        return role && !errors.role;
-      case 3:
-        const selectedRole = getValues('role');
-        if (selectedRole === 'freelancer') {
-          const jobTitleId = getValues('mainJobTitleId');
-          return jobTitleId && !errors.mainJobTitleId;
+        const data = await response.json();
+        if (data.city) {
+          setValue('city', data.city);
+          setLocationPermissionGranted(true);
+          toast.success(`Location found: ${data.city}`);
+        } else {
+          toast.error('Could not determine your city from location');
         }
-        return true; // Skip job title for patients
-      default:
-        return false;
+      } catch (error) {
+        toast.error('Failed to get city name from location');
+      }
+    } catch (error) {
+      toast.error('Location access denied or unavailable. Please select your city manually.');
+    } finally {
+      setIsRequestingLocation(false);
     }
   };
 
   const handleSubmit = () => {
     const formValues = getValues();
-    const { confirmPassword, ...submitData } = formValues;
     const transformedData = {
-      ...submitData,
-      role: submitData.role.toUpperCase(),
-      // Only include job title if it's for a freelancer
-      mainJobTitleId: submitData.mainJobTitleId || undefined,
+      name: formValues.name,
+      email: formValues.email,
+      password: formValues.password || undefined,
+      role: formValues.role.toUpperCase(),
+      dob: formValues.dob ? format(formValues.dob, 'yyyy-MM-dd') : undefined,
+      gender: formValues.gender || undefined,
+      city: formValues.city || undefined,
+      clinicAddress:
+        selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,
     };
+
+    // Remove undefined values
+    Object.keys(transformedData).forEach((key) => {
+      if (transformedData[key as keyof typeof transformedData] === undefined) {
+        delete transformedData[key as keyof typeof transformedData];
+      }
+    });
+
     onSubmit(transformedData);
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsGoogleLoading(true);
-
-      // Get the current URL to use as return URL
-      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-
-      // Construct the Google OAuth URL with return URL (matching GoogleSignInButton implementation)
-      const backendUrl = BACKEND_URL || 'http://localhost:4000';
-      const googleAuthUrl = `${backendUrl}/auth/google?returnUrl=${encodeURIComponent(currentUrl)}`;
-
-      // Redirect to Google OAuth
-      window.location.href = googleAuthUrl;
-    } catch (error) {
-      setIsGoogleLoading(false);
-      toast.error('Failed to initiate Google sign-in');
-    }
-  };
-
-  const handleOAuthSignup = (provider: string) => {
-    if (provider === 'google') {
-      handleGoogleSignIn();
-    }
-  };
-
-  const handleAuthMethodSelect = (method: 'email' | 'oauth') => {
-    setAuthMethod(method);
-    if (method === 'oauth') {
-      // For OAuth, we can proceed directly or handle it differently
+  const isStepValid = (): boolean => {
+    switch (currentStep) {
+      case 1:
+        return !!getValues('role') && !errors.role;
+      case 2:
+        // Account setup: name, email, password
+        const name = getValues('name');
+        const email = getValues('email');
+        const password = getValues('password');
+        return (
+          !!name &&
+          name.length >= 2 &&
+          !errors.name &&
+          !!email &&
+          email.includes('@') &&
+          !errors.email &&
+          (authMethod === 'oauth' || (!!password && !errors.password))
+        );
+      case 3:
+        // Personal details: DOB required, gender and city optional
+        const dob = getValues('dob');
+        return !!dob && !errors.dob;
+      case 4:
+        // Clinic address for freelancer (required)
+        const address = getValues('clinicAddress');
+        return !!address && address.trim().length > 0 && !errors.clinicAddress;
+      default:
+        return true;
     }
   };
 
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
+        // Role Selection
         return (
-          <div className="w-full max-w-md space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">Create your account</h3>
-              <p className="text-sm text-gray-600">Enter your details to get started</p>
+          <div className="w-full space-y-2">
+            <div className="text-center space-y-1 mb-4">
+              <h3 className="text-xl font-poppins font-bold text-charcoal">Choose Your Role</h3>
+              <p className="text-xs font-inter text-gray-600">
+                Select how you&apos;ll use the platform
+              </p>
             </div>
 
-            <div className="space-y-4">
-              {/* Name Field */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Full Name</label>
-                <input
-                  type="text"
-                  {...register('name')}
+            <div className="space-y-2">
+              {roleOptions.map((option) => (
+                <label
+                  key={option.value}
                   className={cn(
-                    'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                    errors.name
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-200 focus:border-primary',
+                    'flex items-center gap-3 p-2.5 border rounded-lg cursor-pointer transition-all duration-200',
+                    selectedRole === option.value
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-300 hover:border-gray-400',
                   )}
-                  placeholder="Enter your full name"
-                  autoFocus
-                />
-                {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-              </div>
-
-              {/* Email Field */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Email Address</label>
-                <input
-                  type="email"
-                  {...register('email')}
-                  className={cn(
-                    'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                    errors.email
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-200 focus:border-primary',
-                  )}
-                  placeholder="Enter your email address"
-                />
-                {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
-              </div>
-
-              {/* Password Field */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Password</label>
-                <div className="relative">
+                >
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    {...register('password')}
-                    className={cn(
-                      'w-full h-12 px-4 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                      errors.password
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-200 focus:border-primary',
-                    )}
-                    placeholder="Create a strong password"
+                    type="radio"
+                    {...register('role')}
+                    value={option.value}
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-red-500 text-sm">{errors.password.message}</p>
-                )}
-                <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
-              </div>
-
-              {/* Confirm Password Field */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Confirm Password</label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    {...register('confirmPassword')}
-                    className={cn(
-                      'w-full h-12 px-4 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                      errors.confirmPassword
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-200 focus:border-primary',
-                    )}
-                    placeholder="Confirm your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
-                )}
-              </div>
+                  <div className="flex-1">
+                    <div className="font-inter font-semibold text-charcoal text-sm">
+                      {option.label}
+                    </div>
+                    <div className="text-xs font-inter text-gray-600 mt-0.5">
+                      {option.value === 'patient'
+                        ? 'Book appointments and manage your health records'
+                        : 'Provide services and manage your practice'}
+                    </div>
+                  </div>
+                </label>
+              ))}
             </div>
+            {errors.role && (
+              <p className="text-red-500 text-xs font-inter mt-1">{errors.role.message}</p>
+            )}
           </div>
         );
 
       case 2:
+        // Account Setup: Authentication method + Basic info (name, email, password)
         return (
-          <div className="w-full max-w-lg space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">How will you use Therasynced?</h3>
-              <p className="text-sm text-gray-600">
-                Choose the option that best describes your needs
+          <div className="w-full space-y-2">
+            {/* Header */}
+            <div className="text-center space-y-1 mb-4">
+              <h3 className="text-xl font-poppins font-bold text-charcoal">
+                {authMethod === 'email' ? 'Create Your Account' : 'Choose Signup Method'}
+              </h3>
+              <p className="text-xs font-inter text-gray-600">
+                {authMethod === 'email'
+                  ? 'Enter your name, email, and create a password'
+                  : 'Continue with Google or use email'}
               </p>
             </div>
 
-            <div className="space-y-4">
-              {roleOptions.map((option) => {
-                return (
-                  <label
-                    key={option.value}
-                    className={cn(
-                      'flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2',
-                      watch('role') === option.value
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-primary/30 hover:bg-primary/5',
-                    )}
-                    onClick={async () => {
-                      setValue('role', option.value);
-                      await trigger('role');
-                    }}
-                  >
-                    <div
-                      className={cn(
-                        'p-2 rounded-lg',
-                        watch('role') === option.value ? 'bg-primary text-white' : 'bg-gray-100',
-                      )}
-                    >
-                      <span className="text-lg">{option.value === 'patient' ? '👤' : '💼'}</span>
+            {/* OAuth Option */}
+            {!authMethod && (
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setAuthMethod('oauth')}
+                  disabled={isGoogleLoading}
+                  className={cn(
+                    'w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg border transition-all duration-200 text-sm font-inter font-medium',
+                    authMethod === 'oauth'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-gray-300 hover:bg-gray-50',
+                    isGoogleLoading && 'opacity-50 cursor-not-allowed',
+                  )}
+                >
+                  {isGoogleLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                      <span>Signing up...</span>
                     </div>
-                    <div className="flex-1">
-                      <span className="font-semibold text-base">{option.label}</span>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {option.value === 'patient'
-                          ? 'Book appointments and connect with healthcare professionals'
-                          : 'Provide services and manage your practice'}
-                      </p>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
+                  ) : (
+                    <>
+                      <Chrome className="h-4 w-4" />
+                      Continue with Google
+                    </>
+                  )}
+                </Button>
 
-            {/* OAuth Options */}
-            <div className="space-y-4">
-              <div className="relative">
-                <div className="flex items-center">
-                  <div className="flex-1 border-t border-gray-200"></div>
-                  <span className="px-3 text-xs text-gray-500 font-medium">or</span>
-                  <div className="flex-1 border-t border-gray-200"></div>
+                <div className="relative py-1">
+                  <div className="flex items-center">
+                    <div className="flex-1 border-t border-gray-200"></div>
+                    <span className="px-2 text-xs text-gray-500 font-inter">or</span>
+                    <div className="flex-1 border-t border-gray-200"></div>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setAuthMethod('email')}
+                  className={cn(
+                    'w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg border transition-all duration-200 text-sm font-inter font-medium',
+                    authMethod === 'email'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-gray-300 hover:bg-gray-50',
+                  )}
+                >
+                  <Mail className="h-4 w-4" />
+                  Continue with Email
+                </Button>
+              </div>
+            )}
+
+            {/* Email Entry Form */}
+            {authMethod === 'email' && (
+              <div className="space-y-2">
+                {/* Name Field */}
+                <div className="space-y-1">
+                  <label htmlFor="name" className="text-xs font-inter font-medium text-gray-700">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    {...register('name')}
+                    id="name"
+                    aria-label="Full name"
+                    aria-invalid={!!errors.name}
+                    aria-describedby={errors.name ? 'name-error' : undefined}
+                    className={cn(
+                      'w-full h-10 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                      errors.name
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-300 focus:border-primary',
+                    )}
+                    placeholder="Enter your full name"
+                    autoFocus
+                  />
+                  {errors.name && (
+                    <p
+                      id="name-error"
+                      className="text-red-500 text-xs font-inter mt-0.5"
+                      role="alert"
+                    >
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email Field */}
+                <div className="space-y-1">
+                  <label htmlFor="email" className="text-xs font-inter font-medium text-gray-700">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    {...register('email')}
+                    id="email"
+                    aria-label="Email address"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    className={cn(
+                      'w-full h-10 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                      errors.email
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-300 focus:border-primary',
+                    )}
+                    placeholder="Enter your email address"
+                  />
+                  {errors.email && (
+                    <p
+                      id="email-error"
+                      className="text-red-500 text-xs font-inter mt-0.5"
+                      role="alert"
+                    >
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password Field */}
+                <div className="space-y-1">
+                  <label className="text-xs font-inter font-medium text-gray-700">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      {...register('password')}
+                      className={cn(
+                        'w-full h-10 px-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                        errors.password
+                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-gray-300 focus:border-primary',
+                      )}
+                      placeholder="Create a password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-xs font-inter mt-0.5">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password Field */}
+                <div className="space-y-1">
+                  <label className="text-xs font-inter font-medium text-gray-700">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      {...register('confirmPassword')}
+                      className={cn(
+                        'w-full h-10 px-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                        errors.confirmPassword
+                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-gray-300 focus:border-primary',
+                      )}
+                      placeholder="Confirm password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs font-inter mt-0.5">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
                 </div>
               </div>
+            )}
 
-              {/* Google OAuth */}
-              <Button
-                variant="outline"
-                onClick={() => handleAuthMethodSelect('oauth')}
-                disabled={isGoogleLoading}
-                className={cn(
-                  'w-full h-12 flex items-center justify-center gap-3 px-4 rounded-lg border transition-all duration-200 text-sm font-medium shadow-sm',
-                  authMethod === 'oauth'
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300',
-                  isGoogleLoading && 'opacity-50 cursor-not-allowed',
-                )}
-              >
-                {isGoogleLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-                    <span>Signing in...</span>
-                  </div>
-                ) : (
-                  <>
-                    <Chrome className="h-5 w-5" />
-                    Continue with Google
-                  </>
-                )}
-              </Button>
-            </div>
+            {/* OAuth Pre-filled Info */}
+            {authMethod === 'oauth' && watch('name') && (
+              <div className="space-y-2 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                <p className="text-xs font-inter text-gray-600">
+                  We&apos;ll use the following information from your Google account:
+                </p>
+                <div className="space-y-1">
+                  <p className="text-sm font-inter font-medium text-charcoal">
+                    Name: {watch('name')}
+                  </p>
+                  <p className="text-sm font-inter font-medium text-charcoal">
+                    Email: {watch('email')}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         );
 
       case 3:
-        const selectedRole = getValues('role');
-        // Only show job title for freelancers
-        if (selectedRole !== 'freelancer') {
-          return null;
-        }
-
-        if (isLoadingJobTitles) {
-          return (
-            <div className="w-full max-w-lg space-y-6 px-4 flex items-center justify-center py-12">
-              <LoadingSpinner />
-            </div>
-          );
-        }
-
+        // Personal Details: DOB, Gender, City
         return (
-          <div className="w-full max-w-lg space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">Select Your Job Title</h3>
-              <p className="text-sm text-gray-600">
-                Choose the job title that best describes your specialization
+          <div className="w-full space-y-2">
+            {/* Header */}
+            <div className="text-center space-y-1 mb-4">
+              <h3 className="text-xl font-poppins font-bold text-charcoal">Personal Details</h3>
+              <p className="text-xs font-inter text-gray-600">
+                Share some additional information about yourself
               </p>
             </div>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {jobTitles.map((jobTitle) => (
-                <label
-                  key={jobTitle.id}
-                  className={cn(
-                    'flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2',
-                    watch('mainJobTitleId') === jobTitle.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 bg-white hover:border-primary/30 hover:bg-primary/5',
-                  )}
-                  onClick={() => {
-                    setValue('mainJobTitleId', jobTitle.id);
-                    trigger('mainJobTitleId');
+            <div className="space-y-2">
+              {/* Date of Birth Field */}
+              <div className="space-y-1">
+                <label htmlFor="dob" className="text-xs font-inter font-medium text-gray-700">
+                  Date of Birth
+                </label>
+                <ImprovedDatePicker
+                  id="dob"
+                  value={selectedDob}
+                  onChange={(date) => {
+                    if (date instanceof Date) {
+                      setValue('dob', date, { shouldValidate: true });
+                    } else {
+                      setValue('dob', undefined, { shouldValidate: true });
+                    }
+                  }}
+                  error={!!errors.dob}
+                  placeholder="DD/MM/YYYY"
+                  aria-label="Date of birth"
+                  aria-invalid={!!errors.dob}
+                  aria-describedby={errors.dob ? 'dob-error' : undefined}
+                />
+                {errors.dob && (
+                  <p id="dob-error" className="text-red-500 text-xs font-inter mt-0.5" role="alert">
+                    {errors.dob.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Gender Field */}
+              <div className="space-y-1">
+                <label htmlFor="gender" className="text-xs font-inter font-medium text-gray-700">
+                  Gender
+                </label>
+                <Select
+                  value={watch('gender') || ''}
+                  onValueChange={(value) => {
+                    setValue('gender', value);
+                    trigger('gender');
                   }}
                 >
-                  <div
+                  <SelectTrigger
+                    id="gender"
+                    aria-label="Gender"
+                    aria-invalid={!!errors.gender}
+                    aria-describedby={errors.gender ? 'gender-error' : undefined}
                     className={cn(
-                      'mt-0.5 w-4 h-4 border-2 rounded flex items-center justify-center',
-                      watch('mainJobTitleId') === jobTitle.id
-                        ? 'border-primary bg-primary'
-                        : 'border-gray-300',
+                      'w-full h-10 font-inter text-sm',
+                      errors.gender && 'border-red-500 focus:border-red-500',
                     )}
                   >
-                    {watch('mainJobTitleId') === jobTitle.id && (
-                      <div className="w-2 h-2 bg-white rounded-full" />
-                    )}
-                  </div>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {genderOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="font-inter">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.gender && (
+                  <p
+                    id="gender-error"
+                    className="text-red-500 text-xs font-inter mt-0.5"
+                    role="alert"
+                  >
+                    {errors.gender.message}
+                  </p>
+                )}
+              </div>
+
+              {/* City Field */}
+              <div className="space-y-1">
+                <label className="text-xs font-inter font-medium text-gray-700">City</label>
+                <div className="flex gap-2">
                   <div className="flex-1">
-                    <span className="font-semibold text-base text-gray-900">{jobTitle.name}</span>
-                    {jobTitle.description && (
-                      <p className="text-sm text-gray-600 mt-1">{jobTitle.description}</p>
-                    )}
+                    <LocationDropdown
+                      value={watch('city') || ''}
+                      onValueChange={(value) => setValue('city', value)}
+                      placeholder="Select your city"
+                      searchPlaceholder="Search locations..."
+                      emptyMessage="No location found."
+                    />
                   </div>
-                </label>
-              ))}
-
-              {jobTitles.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No job titles available at the moment.
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleLocationPermission}
+                    disabled={isRequestingLocation || locationPermissionGranted}
+                    className="h-10 px-3 border-gray-300"
+                    title="Get location"
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-            </div>
-          </div>
-        );
-
-      // Old unused cases - kept for reference but not in the flow anymore
-      case 4:
-        return (
-          <div className="w-full max-w-md space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">Where are you located?</h3>
-              <p className="text-sm text-gray-600">This helps us connect you with local services</p>
-            </div>
-
-            <div className="space-y-4">
-              <div
-                className={cn(
-                  'border rounded-lg',
-                  errors['city' as keyof typeof errors] ? 'border-red-500' : 'border-gray-200',
+                {errors.city && (
+                  <p className="text-red-500 text-xs font-inter mt-0.5">{errors.city.message}</p>
                 )}
-              >
-                <LocationDropdown
-                  value={watch('city' as any)}
-                  onValueChange={(value) => {
-                    setValue('city' as any, value);
-                    trigger('city' as any);
-                  }}
-                  placeholder="Select your city"
-                  searchPlaceholder="Search locations..."
-                  emptyMessage="No location found."
-                />
               </div>
-              {/* {errors.city && (
-                <p className="text-red-500 text-sm flex items-center gap-1">
-                  <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                  {errors.city.message}
-                </p>
-              )} */}
             </div>
           </div>
         );
 
-      // This is the old DOB step - not in use anymore but keeping for reference
-      case 999:
+      case 4:
+        // Clinic Address (Freelancer only)
         return (
-          <div className="w-full max-w-md space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">When were you born?</h3>
-              <p className="text-sm text-gray-600">You must be at least 18 years old to register</p>
+          <div className="w-full space-y-2">
+            <div className="text-center space-y-1 mb-4">
+              <h3 className="text-xl font-poppins font-bold text-charcoal">Clinic Address</h3>
+              <p className="text-xs font-inter text-gray-600">Enter your clinic address</p>
             </div>
 
-            <div className="space-y-4">
-              <input
-                type="date"
-                value={
-                  getValues('dob' as any)
-                    ? (() => {
-                        try {
-                          return getValues('dob' as any);
-                        } catch {
-                          return '';
-                        }
-                      })()
-                    : ''
-                }
+            <div className="space-y-1">
+              <label
+                className="text-xs font-inter font-medium text-gray-700"
+                htmlFor="clinicAddress"
+              >
+                Clinic Address
+              </label>
+              <textarea
+                {...register('clinicAddress', {
+                  required: 'Clinic address is required',
+                  minLength: {
+                    value: 5,
+                    message: 'Address must be at least 5 characters',
+                  },
+                })}
+                id="clinicAddress"
+                rows={3}
+                aria-label="Clinic address"
+                aria-invalid={!!errors.clinicAddress}
+                aria-describedby={errors.clinicAddress ? 'clinicAddress-error' : undefined}
                 className={cn(
-                  'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                  errors['dob' as keyof typeof errors]
+                  'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter resize-none',
+                  errors.clinicAddress
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                    : 'border-gray-200 focus:border-primary',
+                    : 'border-gray-300 focus:border-primary',
                 )}
-                max={(() => {
-                  const today = new Date();
-                  const eighteenYearsAgo = new Date(
-                    today.getFullYear() - 18,
-                    today.getMonth(),
-                    today.getDate(),
-                  );
-                  // Format as YYYY-MM-DD without timezone conversion
-                  const year = eighteenYearsAgo.getFullYear();
-                  const month = String(eighteenYearsAgo.getMonth() + 1).padStart(2, '0');
-                  const day = String(eighteenYearsAgo.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                })()}
-                min="1900-01-01"
-                onChange={(e) => {
-                  const inputValue = e.target.value;
-
-                  // Only process if we have a complete date (YYYY-MM-DD format)
-                  if (inputValue && inputValue.length === 10 && inputValue.includes('-')) {
-                    try {
-                      // Validate the date format without timezone conversion
-                      const dateParts = inputValue.split('-');
-                      const year = parseInt(dateParts[0]);
-                      const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
-                      const day = parseInt(dateParts[2]);
-                      const selectedDate = new Date(year, month, day);
-
-                      // Check if the date is valid and matches the input
-                      if (
-                        !isNaN(selectedDate.getTime()) &&
-                        selectedDate.getFullYear() === year &&
-                        selectedDate.getMonth() === month &&
-                        selectedDate.getDate() === day
-                      ) {
-                        // Store as YYYY-MM-DD format without timezone conversion
-                        setValue('dob' as any, inputValue);
-                        trigger('dob' as any);
-                      }
-                    } catch (error) {
-                      // If date conversion fails, just clear the value
-                      setValue('dob' as any, '');
-                    }
-                  } else if (!inputValue) {
-                    // Clear the value if input is empty
-                    setValue('dob' as any, '');
-                    trigger('dob' as any);
-                  }
-                  // For incomplete dates, don't update the form value yet
-                }}
-                autoFocus
+                placeholder="Enter your clinic address"
               />
-              {errors['dob' as keyof typeof errors] && (
-                <p className="text-red-500 text-sm flex items-center gap-1 mt-2">
-                  <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                  {errors['dob' as keyof typeof errors]?.message}
+              {errors.clinicAddress && (
+                <p
+                  id="clinicAddress-error"
+                  className="text-red-500 text-xs font-inter mt-0.5"
+                  role="alert"
+                >
+                  {errors.clinicAddress.message}
                 </p>
               )}
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="w-full max-w-md space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">Where are you located?</h3>
-              <p className="text-sm text-gray-600">This helps us connect you with local services</p>
-            </div>
-
-            <div className="space-y-4">
-              <div
-                className={cn(
-                  'border rounded-lg',
-                  errors['city' as keyof typeof errors] ? 'border-red-500' : 'border-gray-200',
-                )}
-              >
-                <LocationDropdown
-                  value={watch('city' as any)}
-                  onValueChange={(value) => {
-                    setValue('city' as any, value);
-                    trigger('city' as any);
-                  }}
-                  placeholder="Select your city"
-                  searchPlaceholder="Search locations..."
-                  emptyMessage="No location found."
-                />
-              </div>
-              {/* {errors.city && (
-                <p className="text-red-500 text-sm flex items-center gap-1">
-                  <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                  {errors.city.message}
-                </p>
-              )} */}
-            </div>
-          </div>
-        );
-
-      case 5:
-        return (
-          <div className="w-full max-w-lg space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">How will you use Therasynced?</h3>
-              <p className="text-sm text-gray-600">
-                Choose the option that best describes your needs
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {roleOptions.map((option) => {
-                return (
-                  <label
-                    key={option.value}
-                    className={cn(
-                      'flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2',
-                      watch('role') === option.value
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-primary/30 hover:bg-primary/5',
-                    )}
-                    onClick={async () => {
-                      setValue('role', option.value);
-                      await trigger('role');
-                    }}
-                  >
-                    <div
-                      className={cn(
-                        'p-2 rounded-lg',
-                        watch('role') === option.value ? 'bg-primary text-white' : 'bg-gray-100',
-                      )}
-                    >
-                      <span className="text-lg">{option.value === 'patient' ? '👤' : '💼'}</span>
-                    </div>
-                    <div className="flex-1">
-                      <span className="font-semibold text-base">{option.label}</span>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {option.value === 'patient'
-                          ? 'Book appointments and connect with healthcare professionals'
-                          : 'Provide services and manage your practice'}
-                      </p>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-            {/* {errors.role && (
-              <p className="text-red-500 text-sm flex items-center gap-1">
-                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                {errors.role.message}
-              </p>
-            )} */}
-          </div>
-        );
-
-      case 6:
-        return (
-          <div className="w-full max-w-md space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">Create your account</h3>
-              <p className="text-sm text-gray-600">Choose how you want to sign up</p>
-            </div>
-
-            <div className="space-y-4">
-              {/* OAuth Option */}
-              <Button
-                variant="outline"
-                onClick={() => handleAuthMethodSelect('oauth')}
-                disabled={isGoogleLoading}
-                className={cn(
-                  'w-full h-12 flex items-center justify-center gap-3 px-4 rounded-lg border transition-all duration-200 text-sm font-medium shadow-sm',
-                  authMethod === 'oauth'
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300',
-                  isGoogleLoading && 'opacity-50 cursor-not-allowed',
-                )}
-              >
-                {isGoogleLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-                    <span>Signing in...</span>
-                  </div>
-                ) : (
-                  <>
-                    <Chrome className="h-5 w-5" />
-                    Continue with Google
-                  </>
-                )}
-              </Button>
-
-              <div className="relative">
-                <div className="flex items-center">
-                  <div className="flex-1 border-t border-gray-200"></div>
-                  <span className="px-3 text-xs text-gray-500 font-medium">or</span>
-                  <div className="flex-1 border-t border-gray-200"></div>
-                </div>
-              </div>
-
-              {/* Email Option */}
-              <Button
-                variant="outline"
-                onClick={() => handleAuthMethodSelect('email')}
-                className={cn(
-                  'w-full h-12 flex items-center justify-center gap-3 px-4 rounded-lg border transition-all duration-200 text-sm font-medium shadow-sm',
-                  authMethod === 'email'
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300',
-                )}
-              >
-                <Mail className="h-5 w-5" />
-                Continue with Email
-              </Button>
-            </div>
-          </div>
-        );
-
-      case 7:
-        return (
-          <div className="w-full max-w-md space-y-6 px-4">
-            <div className="text-center space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">Create your account</h3>
-              <p className="text-sm text-gray-600">Enter your email and create a secure password</p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Email Address</label>
-                <input
-                  type="email"
-                  {...register('email')}
-                  className={cn(
-                    'w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-base shadow-sm',
-                    errors.email
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-200 focus:border-primary',
-                  )}
-                  placeholder="Enter your email address"
-                  onBlur={(e) => {
-                    const email = e.target.value;
-                    if (email && email.includes('@') && email.includes('.') && email.length > 5) {
-                      trigger('email');
-                    }
-                  }}
-                  autoFocus
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-sm flex items-center gap-1">
-                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    {...register('password')}
-                    className={cn(
-                      'w-full h-10 px-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm shadow-sm',
-                      errors.password
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-200 focus:border-primary',
-                    )}
-                    placeholder="Create a strong password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-md hover:bg-gray-100"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-                {/* {errors.password && (
-                  <p className="text-red-500 text-sm flex items-center gap-1">
-                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                    {errors.password.message}
-                  </p>
-                )} */}
-                <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Confirm Password</label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    {...register('confirmPassword')}
-                    className={cn(
-                      'w-full h-10 px-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm shadow-sm',
-                      errors.confirmPassword
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-200 focus:border-primary',
-                    )}
-                    placeholder="Confirm your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-md hover:bg-gray-100"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-                {/* {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm flex items-center gap-1">
-                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                    {errors.confirmPassword.message}
-                  </p>
-                )} */}
-              </div>
             </div>
           </div>
         );
@@ -908,117 +802,91 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     }
   };
 
+  // Only show step indicator after role selection (step 1)
+  const showStepIndicator = currentStep > 1;
+  const displayStep = currentStep - 1; // Step number to display (starts from 1 after role selection)
+  const totalSteps = selectedRole === 'patient' ? 2 : selectedRole === 'freelancer' ? 3 : 2; // Total steps after role selection (account setup + personal details + clinic address for freelancer)
+  const stepsToShow = steps.filter((step) => step.id > 1); // Steps to show in progress bar (exclude role selection)
+
   return (
-    <div className="h-[600px] flex flex-col">
-      {/* Progress Bar */}
-      <div className="space-y-3 mb-4 px-2">
-        {/* Mobile Progress Bar */}
-        <div className="block sm:hidden">
-          <div className="flex justify-center items-center">
-            <div className="flex items-center space-x-1">
-              {steps.map((step, index) => (
-                <div key={step.id} className="flex items-center">
-                  <div
-                    className={cn(
-                      'w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-200 shadow-sm',
-                      currentStep > step.id
-                        ? 'bg-primary text-white'
-                        : currentStep === step.id
-                          ? 'bg-primary text-white'
-                          : 'bg-gray-200 text-gray-500',
-                    )}
-                  >
-                    {currentStep > step.id ? <CheckCircle className="h-3 w-3" /> : step.id}
-                  </div>
-                  {index < steps.length - 1 && (
+    <div className="w-full flex flex-col space-y-6">
+      {/* Progress Bar - Only show after role selection */}
+      {showStepIndicator && (
+        <div className="flex-shrink-0">
+          <div className="flex justify-center items-center mb-2">
+            <div className="flex items-center space-x-2">
+              {stepsToShow.map((step, index) => {
+                const stepNumber = step.id - 1;
+                const isActive = currentStep === step.id;
+                const isCompleted = currentStep > step.id;
+                return (
+                  <div key={step.id} className="flex items-center">
                     <div
                       className={cn(
-                        'w-2 h-0.5 mx-0.5 transition-all duration-200 rounded-full',
-                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200',
+                        'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 font-inter',
+                        isCompleted
+                          ? 'bg-primary text-white'
+                          : isActive
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-200 text-gray-500',
                       )}
-                    />
-                  )}
-                </div>
-              ))}
+                    >
+                      {isCompleted ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                    </div>
+                    {index < stepsToShow.length - 1 && (
+                      <div
+                        className={cn(
+                          'w-8 h-0.5 mx-1 transition-all duration-200',
+                          isCompleted ? 'bg-primary' : 'bg-gray-200',
+                        )}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
-
-        {/* Desktop Progress Bar */}
-        <div className="hidden sm:block">
-          <div className="flex justify-center items-center">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div
-                  className={cn(
-                    'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-200 shadow-sm',
-                    currentStep > step.id
-                      ? 'bg-primary text-white'
-                      : currentStep === step.id
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 text-gray-500',
-                  )}
-                >
-                  {currentStep > step.id ? <CheckCircle className="h-3 w-3" /> : step.id}
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={cn(
-                      'w-4 h-0.5 mx-1 transition-all duration-200 rounded-full',
-                      currentStep > step.id ? 'bg-primary' : 'bg-gray-200',
-                    )}
-                  />
-                )}
-              </div>
-            ))}
+          <div className="text-center">
+            <p className="text-xs font-inter text-gray-600 font-medium">
+              Step {displayStep} of {totalSteps}
+            </p>
           </div>
         </div>
-
-        <div className="text-center">
-          <p className="text-xs text-gray-600 font-medium">
-            Step {currentStep} of {steps.length}
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* Step Content */}
-      <div className="flex-1 overflow-y-auto flex items-center justify-center">
-        {renderStepContent()}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full">{renderStepContent()}</div>
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between gap-3 px-4 mt-4">
+      <div className="flex-shrink-0 flex justify-between gap-3 pt-4 border-t border-gray-200">
         <Button
           variant="outline"
           onClick={currentStep === 1 ? onBack : prevStep}
-          className="h-10 px-3 sm:px-4 rounded-lg transition-all duration-200 font-medium shadow-sm text-sm"
+          className="h-10 px-4 rounded-lg transition-all duration-200 font-inter font-medium text-sm border-gray-300 hover:bg-gray-50"
         >
-          <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">
-            {currentStep === 1 ? 'Back to Login' : 'Previous'}
-          </span>
-          <span className="sm:hidden">{currentStep === 1 ? 'Back' : 'Prev'}</span>
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          <span>{currentStep === 1 ? 'Back to Login' : 'Previous'}</span>
         </Button>
 
         {currentStep < steps.length ? (
           <Button
             onClick={nextStep}
             disabled={!isStepValid()}
-            className="h-10 px-3 sm:px-4 rounded-lg font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 shadow-sm text-sm"
+            className="h-10 px-6 rounded-lg font-inter font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 text-sm"
           >
-            <span className="hidden sm:inline">Continue</span>
-            <span className="sm:hidden">Next</span>
-            <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
+            <span>Continue</span>
+            <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
           <Button
             onClick={handleSubmit}
             disabled={!isStepValid() || isLoading}
-            className="h-10 px-3 sm:px-4 rounded-lg font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 shadow-sm text-sm"
+            className="h-10 px-6 rounded-lg font-inter font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 text-sm"
             isLoading={isLoading}
           >
-            <span className="hidden sm:inline">Complete Signup</span>
-            <span className="sm:hidden">Complete</span>
+            Complete Signup
           </Button>
         )}
       </div>

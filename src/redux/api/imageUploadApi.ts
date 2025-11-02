@@ -30,7 +30,7 @@ export const uploadVerificationDocument = createAsyncThunk(
   async (file: File, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-      formData.append('document', file);
+      formData.append('documents', file);
 
       const response = await api.post(ENDPOINTS.image.uploadVerificationDocument, formData, {
         headers: {

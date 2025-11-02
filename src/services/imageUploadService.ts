@@ -71,7 +71,7 @@ export const validateFile = (
 // Get the correct field name based on the endpoint
 const getFieldName = (endpoint: string): string => {
   if (endpoint.includes('/verification-document')) {
-    return 'document';
+    return 'documents'; // Backend expects 'documents' (plural)
   } else if (endpoint.includes('/first-aid-certificate')) {
     return 'certificate';
   } else {

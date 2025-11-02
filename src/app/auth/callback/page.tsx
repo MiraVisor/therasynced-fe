@@ -20,15 +20,38 @@ export default function AuthCallbackPage() {
         const success = searchParams.get('success');
         const error = searchParams.get('error');
         const returnUrl = searchParams.get('returnUrl');
+        const isSignup = searchParams.get('signup') === 'true';
+        const userData = searchParams.get('userData'); // OAuth user data if available
 
         if (error) {
           toast.error(decodeURIComponent(error));
-          router.push('/authentication/sign-in');
+          router.push(isSignup ? '/authentication/sign-up' : '/authentication/sign-in');
           return;
         }
 
         if (success === 'true' && token) {
-          // Store the token in cookies (same as normal login)
+          // For signup flow, check if role selection is needed
+          if (isSignup) {
+            // Check if user needs to complete signup (role selection, etc.)
+            // If userData exists, we can prefill the signup form
+            const signupUrl = new URL('/authentication/sign-up', window.location.origin);
+            if (userData) {
+              try {
+                const parsedData = JSON.parse(decodeURIComponent(userData));
+                signupUrl.searchParams.set(
+                  'oauthData',
+                  encodeURIComponent(JSON.stringify(parsedData)),
+                );
+              } catch (e) {
+                console.error('Failed to parse userData:', e);
+              }
+            }
+            signupUrl.searchParams.set('token', token);
+            router.push(signupUrl.toString());
+            return;
+          }
+
+          // For login flow, store token and redirect
           if (typeof window !== 'undefined') {
             setCookie('token', token);
           }
@@ -55,12 +78,13 @@ export default function AuthCallbackPage() {
           router.push(finalUrl);
         } else {
           toast.error('Authentication failed');
-          router.push('/authentication/sign-in');
+          router.push(isSignup ? '/authentication/sign-up' : '/authentication/sign-in');
         }
       } catch (error) {
         console.error('Auth callback error:', error);
         toast.error('Authentication failed');
-        router.push('/authentication/sign-in');
+        const isSignup = searchParams.get('signup') === 'true';
+        router.push(isSignup ? '/authentication/sign-up' : '/authentication/sign-in');
       } finally {
         setIsProcessing(false);
       }

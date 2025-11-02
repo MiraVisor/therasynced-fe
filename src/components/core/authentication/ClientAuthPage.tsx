@@ -50,7 +50,7 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
       .unwrap()
       .then((res) => {
         toast.success(res?.message || 'Account created successfully!');
-        // Redirect to dashboard
+        // Redirect to dashboard (no email verification needed)
         router.push('/dashboard');
       })
       .catch((err) => {
@@ -96,40 +96,76 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-6 px-4 bg-[url('/svgs/signup_bg.svg')] bg-cover bg-center bg-no-repeat">
-      <div className="bg-background rounded-lg shadow-lg max-w-md w-full px-6 py-3 min-h-[650px]">
-        <div className="flex justify-center mb-1">
-          <Image
-            src="/svgs/therasynced_logo.svg"
-            alt="Therasynced Logo"
-            width={86}
-            height={77}
-            priority={true}
-          />
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Full Page Content - Centered */}
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
+        <div className="w-full max-w-lg">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/svgs/therasynced_logo.svg"
+              alt="Therasynced Logo"
+              width={100}
+              height={90}
+              priority={true}
+            />
+          </div>
+
+          {/* Form Content - No card styling */}
+          <div className="w-full min-h-[500px] flex flex-col">
+            {/* Form - Takes full height */}
+            <div className="flex-1 min-h-0 flex flex-col">{renderAuthForm()}</div>
+
+            {/* Footer - Toggle between sign in/sign up */}
+            {(currentView === 'sign-in' || currentView === 'sign-up') && (
+              <div className="mt-6 pt-4 border-t border-gray-200 flex-shrink-0">
+                <div className="text-center">
+                  <p className="text-xs font-inter text-gray-600 mb-2">
+                    {currentView === 'sign-up'
+                      ? 'Already have an account?'
+                      : "Don't have an account?"}
+                  </p>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentView(currentView === 'sign-up' ? 'sign-in' : 'sign-up');
+                      window.history.pushState(
+                        {},
+                        '',
+                        `/authentication/${currentView === 'sign-up' ? 'sign-in' : 'sign-up'}`,
+                      );
+                    }}
+                    className="text-xs font-inter font-semibold text-primary hover:text-primary/80 transition-colors duration-200 inline-flex items-center gap-1"
+                  >
+                    {currentView === 'sign-up' ? 'Sign In' : 'Create Account'}
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Text */}
+          <div className="mt-6 text-center">
+            <p className="text-xs font-inter text-gray-500">
+              By continuing, you agree to our{' '}
+              <a href="/terms" className="text-primary hover:underline">
+                Terms of Service
+              </a>{' '}
+              and{' '}
+              <a href="/privacy" className="text-primary hover:underline">
+                Privacy Policy
+              </a>
+            </p>
+          </div>
         </div>
-
-        {renderAuthForm()}
-
-        {(currentView === 'sign-in' || currentView === 'sign-up') && (
-          <p className="text-center text-[var(--primary)] mt-6 text-sm">
-            {currentView === 'sign-up' ? 'Already have an Account?' : "Don't have an Account?"}{' '}
-            <a
-              href={`/authentication/${currentView === 'sign-up' ? 'sign-in' : 'sign-up'}`}
-              className="text-[var(--primary)] font-semibold hover:underline"
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentView(currentView === 'sign-up' ? 'sign-in' : 'sign-up');
-                window.history.pushState(
-                  {},
-                  '',
-                  `/authentication/${currentView === 'sign-up' ? 'sign-in' : 'sign-up'}`,
-                );
-              }}
-            >
-              {currentView === 'sign-up' ? 'Log In' : 'Sign Up'}
-            </a>
-          </p>
-        )}
       </div>
     </div>
   );

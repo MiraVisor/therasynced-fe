@@ -1,10 +1,11 @@
 'use client';
 
 import {
+  AlertTriangle,
   Award,
   BarChart,
+  Briefcase,
   Calendar,
-  FileText,
   Heart,
   Home,
   LogOut,
@@ -12,6 +13,7 @@ import {
   MessageSquare,
   Settings,
   Shield,
+  Tag,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -138,9 +140,24 @@ const navigationLinks = {
       icon: Users,
     },
     {
-      name: 'Reviews & Reports',
-      url: '/dashboard/review-approvals',
-      icon: FileText,
+      name: 'Verification Queue',
+      url: '/dashboard/admin/verifications',
+      icon: Shield,
+    },
+    {
+      name: 'Complaints',
+      url: '/dashboard/admin/complaints',
+      icon: AlertTriangle,
+    },
+    {
+      name: 'Job Titles',
+      url: '/dashboard/admin/job-titles',
+      icon: Briefcase,
+    },
+    {
+      name: 'Service Categories',
+      url: '/dashboard/admin/service-categories',
+      icon: Tag,
     },
     {
       name: 'Bookings',

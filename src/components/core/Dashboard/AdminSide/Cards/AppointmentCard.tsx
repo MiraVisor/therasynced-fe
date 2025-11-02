@@ -1,5 +1,9 @@
 import React from 'react';
 
+import { Badge } from '@/components/ui/badge';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { cn } from '@/lib/utils';
+
 export type AppointmentStatus = 'in-progress' | 'scheduled' | 'cancelled';
 
 interface AppointmentCardProps {
@@ -15,10 +19,10 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   condition,
   status,
 }) => {
-  const statusClasses = {
-    'in-progress': 'bg-green-100 text-green-700',
-    scheduled: 'bg-gray-200 text-gray-700',
-    cancelled: 'bg-red-100 text-red-700',
+  const statusStyles = {
+    'in-progress': 'bg-success/10 text-success border-success/20',
+    scheduled: 'bg-info/10 text-info border-info/20',
+    cancelled: 'bg-error/10 text-error border-error/20',
   };
 
   const statusLabels = {
@@ -28,16 +32,21 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between py-4 border-b border-gray-100 last:border-none">
-      <div>
-        <h4 className="font-medium text-sm">{name}</h4>
-        <p className="text-xs text-gray-500">
-          {time} | {condition}
-        </p>
+    <EnhancedCard variant="default" className="p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="font-inter font-medium text-sm text-foreground">{name}</h4>
+          <p className="font-open-sans text-xs text-muted-foreground mt-1">
+            {time} | {condition}
+          </p>
+        </div>
+        <Badge
+          variant="outline"
+          className={cn('px-3 py-1.5 text-xs font-inter', statusStyles[status])}
+        >
+          {statusLabels[status]}
+        </Badge>
       </div>
-      <span className={`px-3 py-1.5 text-xs rounded-md ${statusClasses[status]}`}>
-        {statusLabels[status]}
-      </span>
-    </div>
+    </EnhancedCard>
   );
 };

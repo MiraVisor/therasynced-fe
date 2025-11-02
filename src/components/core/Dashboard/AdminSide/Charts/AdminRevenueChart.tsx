@@ -44,9 +44,11 @@ export function AdminRevenueChart({
   }));
 
   return (
-    <div className="bg-white rounded-xl border p-6 shadow-sm">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200/80 dark:border-gray-700/50 p-6 shadow-soft">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-semibold">Monthly Revenue</h2>
+        <h2 className="font-poppins text-xl font-semibold text-charcoal dark:text-foreground">
+          Monthly Revenue
+        </h2>
         <div className="flex items-center gap-2">
           <Select value={month} onValueChange={onMonthChange}>
             <SelectTrigger className="w-[180px]">

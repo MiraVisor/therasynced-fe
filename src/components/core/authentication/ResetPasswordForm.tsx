@@ -64,8 +64,8 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
     return (
       <div className="space-y-8">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold text-gray-900">Invalid Reset Link</h2>
-          <p className="text-sm text-gray-600">
+          <h2 className="text-2xl font-poppins font-bold text-charcoal">Invalid Reset Link</h2>
+          <p className="text-sm font-inter text-gray-600">
             This password reset link is invalid or has expired.
           </p>
         </div>
@@ -74,7 +74,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
           <button
             type="button"
             onClick={onBackToSignIn}
-            className="text-sm text-primary hover:text-primary/80 hover:underline font-medium transition-all duration-200 flex items-center gap-2 mx-auto"
+            className="text-sm font-inter font-medium text-primary hover:text-primary/80 transition-colors duration-200 inline-flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Sign In
@@ -106,8 +106,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
             </div>
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-gray-900">Password Reset Successful!</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="text-lg font-poppins font-semibold text-charcoal">
+              Password Reset Successful!
+            </h3>
+            <p className="text-sm font-inter text-gray-600">
               Your password has been successfully reset. You can now sign in with your new password.
             </p>
           </div>
@@ -115,7 +117,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
 
         <Button
           onClick={onBackToSignIn}
-          className="w-full h-12 font-semibold rounded-xl transition-all duration-200 bg-primary text-white hover:bg-primary/90 text-sm"
+          className="w-full h-12 font-inter font-semibold rounded-lg transition-all duration-200 bg-primary text-white hover:bg-primary/90 text-sm"
         >
           Sign In
         </Button>
@@ -127,19 +129,19 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-gray-900">Reset Your Password</h2>
-        <p className="text-sm text-gray-600">Enter your new password below</p>
+        <h2 className="text-2xl font-poppins font-bold text-charcoal">Reset Your Password</h2>
+        <p className="text-sm font-inter text-gray-600">Enter your new password below</p>
       </div>
 
       <form onSubmit={handleResetPassword} className="space-y-6">
         <div className="space-y-3">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <label className="text-sm font-inter font-medium text-gray-700 flex items-center gap-2">
             New Password
           </label>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
-              className="w-full h-12 px-4 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white text-sm"
+              className="w-full h-12 px-4 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white text-base font-inter shadow-sm"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password"
@@ -159,13 +161,13 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <label className="text-sm font-inter font-medium text-gray-700 flex items-center gap-2">
             Confirm New Password
           </label>
           <div className="relative">
             <input
               type={showConfirmPassword ? 'text' : 'password'}
-              className="w-full h-12 px-4 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white text-sm"
+              className="w-full h-12 px-4 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white text-base font-inter shadow-sm"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
@@ -185,7 +187,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
         </div>
 
         {error && (
-          <p className="text-red-500 text-xs flex items-center gap-1">
+          <p className="text-red-500 text-sm font-inter flex items-center gap-1" role="alert">
             <span className="w-1 h-1 bg-red-500 rounded-full"></span>
             {error}
           </p>
@@ -195,7 +197,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
           type="submit"
           disabled={loading}
           isLoading={loading}
-          className="w-full h-12 font-semibold rounded-xl transition-all duration-200 bg-primary text-white hover:bg-primary/90 text-sm"
+          className="w-full h-12 font-inter font-semibold rounded-lg transition-all duration-200 bg-primary text-white hover:bg-primary/90 text-sm"
         >
           {loading ? 'Resetting...' : 'Reset Password'}
         </Button>
@@ -205,7 +207,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
             type="button"
             onClick={onBackToSignIn}
             disabled={loading}
-            className="text-sm text-primary hover:text-primary/80 hover:underline font-medium transition-all duration-200 flex items-center gap-2 mx-auto"
+            className="text-sm font-inter font-medium text-primary hover:text-primary/80 transition-colors duration-200 inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Sign In
