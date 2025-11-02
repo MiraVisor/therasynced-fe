@@ -4,6 +4,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 import { EnhancedCard } from './enhanced-card';
+import { EnhancedStatCardSkeleton } from './skeletons/EnhancedStatCardSkeleton';
 import { Sparkline } from './sparkline';
 
 export interface EnhancedStatCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -20,6 +21,7 @@ export interface EnhancedStatCardProps extends React.HTMLAttributes<HTMLDivEleme
   sparklineData?: number[];
   interactive?: boolean;
   onClick?: () => void;
+  loading?: boolean;
 }
 
 export const EnhancedStatCard: React.FC<EnhancedStatCardProps> = ({
@@ -32,9 +34,14 @@ export const EnhancedStatCard: React.FC<EnhancedStatCardProps> = ({
   sparklineData,
   interactive = false,
   onClick,
+  loading = false,
   className,
   ...props
 }) => {
+  if (loading) {
+    return <EnhancedStatCardSkeleton />;
+  }
+
   return (
     <EnhancedCard
       variant="default"
