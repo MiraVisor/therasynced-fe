@@ -230,6 +230,19 @@ const VerificationsPage = () => {
         <div className="flex gap-2">
           <button
             onClick={() => {
+              setStatusFilter(undefined);
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === undefined
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            All ({stats.total})
+          </button>
+          <button
+            onClick={() => {
               setStatusFilter('PENDING');
               setPage(1);
             }}
@@ -266,19 +279,6 @@ const VerificationsPage = () => {
             }`}
           >
             Rejected ({stats.rejected})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter(undefined);
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === undefined
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All ({stats.total})
           </button>
         </div>
 
