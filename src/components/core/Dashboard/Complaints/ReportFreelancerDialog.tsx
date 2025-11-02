@@ -35,7 +35,6 @@ const complaintSchema = z.object({
   category: z.string().min(1, 'Please select a category'),
   reason: z.string().min(3, 'Reason must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  evidence: z.string().optional(),
 });
 
 type ComplaintFormData = z.infer<typeof complaintSchema>;
@@ -80,7 +79,6 @@ export const ReportFreelancerDialog = ({
       category: '',
       reason: '',
       description: '',
-      evidence: '',
     },
   });
 
@@ -93,7 +91,7 @@ export const ReportFreelancerDialog = ({
           category: data.category as ComplaintCategory,
           reason: data.reason,
           description: data.description,
-          evidence: data.evidence ? [data.evidence] : [],
+          evidence: [],
         }) as any,
       );
 
@@ -187,19 +185,6 @@ export const ReportFreelancerDialog = ({
                 {errors.description.message}
               </p>
             )}
-          </div>
-
-          {/* Evidence */}
-          <div className="space-y-2">
-            <Label htmlFor="evidence">Evidence (Optional)</Label>
-            <Input
-              id="evidence"
-              {...register('evidence')}
-              placeholder="Paste a URL to screenshots, images, or other evidence"
-            />
-            <p className="text-xs text-gray-500">
-              You can provide links to screenshots or other supporting evidence
-            </p>
           </div>
 
           {/* Warning */}

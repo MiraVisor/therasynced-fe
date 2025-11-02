@@ -1,5 +1,8 @@
 import React from 'react';
 
+import { Button } from '@/components/ui/button';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
+
 interface ApplicationCardProps {
   name: string;
   specialty: string;
@@ -8,17 +11,16 @@ interface ApplicationCardProps {
 
 export const ApplicationCard: React.FC<ApplicationCardProps> = ({ name, specialty, onReview }) => {
   return (
-    <div className="flex items-center justify-between py-4 border-b border-gray-100 last:border-none">
-      <div>
-        <h4 className="font-medium text-sm">{name}</h4>
-        <p className="text-xs text-gray-500">{specialty}</p>
+    <EnhancedCard variant="default" className="p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="font-inter font-medium text-sm text-foreground">{name}</h4>
+          <p className="font-open-sans text-xs text-muted-foreground mt-1">{specialty}</p>
+        </div>
+        <Button onClick={onReview} size="sm" className="font-inter font-medium text-xs">
+          Review
+        </Button>
       </div>
-      <button
-        onClick={onReview}
-        className="px-4 py-1.5 text-xs bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
-      >
-        Review
-      </button>
-    </div>
+    </EnhancedCard>
   );
 };

@@ -1,11 +1,12 @@
 'use client';
 
-import Image from 'next/image';
-import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { StatsCard } from '@/components/core/Dashboard/AdminSide/Cards/StatsCard';
-import { DataTable } from '@/components/common/DataTable/data-table';
-import { Badge } from '@/components/ui/badge';
 import type { ColumnDef } from '@tanstack/react-table';
+import { Calendar, Users, XCircle } from 'lucide-react';
+
+import { DataTable } from '@/components/common/DataTable/data-table';
+import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { Badge } from '@/components/ui/badge';
+import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 
 // ----------------------
 // 📊 Mock Stats
@@ -14,23 +15,29 @@ const mockStats = [
   {
     title: "Today's Appointments",
     value: '40',
-    trend: { value: 0, isUp: true, timeframe: 'today' },
-    icon: '/svgs/UsersIcon.svg',
-    bgColor: '#e5e4ff',
+    trend: { value: 0, isUp: true, label: 'today' },
+    icon: Calendar,
+    iconColor: 'text-primary',
+    iconBg: 'bg-primary/10',
+    sparklineData: [35, 38, 40, 38, 42, 40, 40],
   },
   {
     title: 'Canceled Appointments',
     value: '05',
-    trend: { value: 0, isUp: false, timeframe: 'today' },
-    icon: '/svgs/ClientsIcon.svg',
-    bgColor: '#ffe5e5',
+    trend: { value: 0, isUp: false, label: 'today' },
+    icon: XCircle,
+    iconColor: 'text-error',
+    iconBg: 'bg-error/10',
+    sparklineData: [7, 6, 5, 6, 5, 5, 5],
   },
   {
     title: 'Therapists Online',
     value: '20',
-    trend: { value: 0, isUp: true, timeframe: 'now' },
-    icon: '/svgs/CalendarIcon.svg',
-    bgColor: '#d9f7e8',
+    trend: { value: 0, isUp: true, label: 'now' },
+    icon: Users,
+    iconColor: 'text-success',
+    iconBg: 'bg-success/10',
+    sparklineData: [18, 19, 20, 19, 21, 20, 20],
   },
 ];
 
@@ -75,7 +82,7 @@ const mockBookings = [
 // ----------------------
 // ✅ Booking Table Columns
 // ----------------------
-type Booking = typeof mockBookings[0];
+type Booking = (typeof mockBookings)[0];
 
 const bookingColumns: ColumnDef<Booking>[] = [
   { accessorKey: 'id', header: 'ID' },
@@ -111,25 +118,30 @@ const bookingColumns: ColumnDef<Booking>[] = [
 export default function AdminBookingsPage() {
   return (
     <DashboardPageWrapper
-      header={
-        <h1 className="font-open-sans font-semibold text-[24px] leading-[100%] text-black">
-          Appointments
-        </h1>
-      }
+      header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Appointments</h1>}
     >
-      <div className="space-y-6">
+      <div className="space-y-6 lg:space-y-8">
         {/* 🔹 Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockStats.map((stat, index) => (
-            <StatsCard
-              key={index}
-              title={stat.title}
-              value={stat.value}
-              trend={stat.trend}
-              icon={<Image src={stat.icon} alt={stat.title} width={24} height={24} />}
-              bgColor={stat.bgColor}
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockStats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <EnhancedStatCard
+                key={index}
+                title={stat.title}
+                value={stat.value}
+                trend={stat.trend}
+                icon={Icon}
+                iconColor={stat.iconColor}
+                iconBg={stat.iconBg}
+                sparklineData={stat.sparklineData}
+                interactive
+                onClick={() => {
+                  // Navigate to details or show modal
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* 📋 Appointments Table */}

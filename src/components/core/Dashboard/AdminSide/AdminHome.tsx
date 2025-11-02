@@ -1,8 +1,9 @@
 'use client';
 
-import Image from 'next/image';
+import { Calendar, DollarSign, UserCheck, Users } from 'lucide-react';
 import { useState } from 'react';
 
+import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
@@ -16,7 +17,6 @@ import {
 import { ApplicationCard } from './Cards/ApplicationCard';
 import { AppointmentCard } from './Cards/AppointmentCard';
 import { CardContainer } from './Cards/CardContainer';
-import { StatsCard } from './Cards/StatsCard';
 import { AdminRevenueChart } from './Charts/AdminRevenueChart';
 
 type IconName = 'users' | 'clients' | 'calendar' | 'money';
@@ -24,18 +24,25 @@ type IconName = 'users' | 'clients' | 'calendar' | 'money';
 const AdminHome = () => {
   const { role } = useAuth();
 
-  // Map icons to their components
-  const iconComponents = {
-    users: <Image src="/svgs/UsersIcon.svg" alt="Users" width={24} height={24} />,
-    clients: <Image src="/svgs/ClientsIcon.svg" alt="Clients" width={24} height={24} />,
-    calendar: <Image src="/svgs/CalendarIcon.svg" alt="Calendar" width={24} height={24} />,
-    money: <Image src="/svgs/MoneyIcon.svg" alt="Money" width={24} height={24} />,
+  // Map icons to Lucide icons for EnhancedStatCard
+  const iconMap = {
+    users: Users,
+    clients: UserCheck,
+    calendar: Calendar,
+    money: DollarSign,
   };
-  const iconBgColors: Record<IconName, string> = {
-    users: '#e5e4ff',
-    clients: '#fff3d6',
-    calendar: '#ffded1',
-    money: '#d9f7e8',
+
+  // Map icon names to semantic colors
+  const iconColors: Record<IconName, { iconColor: string; iconBg: string }> = {
+    users: { iconColor: 'text-info', iconBg: 'bg-info/10' },
+    clients: { iconColor: 'text-warning', iconBg: 'bg-warning/10' },
+    calendar: { iconColor: 'text-error', iconBg: 'bg-error/10' },
+    money: { iconColor: 'text-primary', iconBg: 'bg-primary/10' },
+  };
+
+  // Generate sparkline data for each stat
+  const generateSparklineData = (baseValue: number) => {
+    return Array.from({ length: 7 }, (_, i) => baseValue + (Math.random() - 0.5) * 20);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,9 +61,7 @@ const AdminHome = () => {
       header={
         <div className="flex w-full items-center gap-4">
           <div className="flex-shrink-0">
-            <h1 className="font-open-sans font-semibold text-[24px] leading-[100%] text-black">
-              Dashboard Overview
-            </h1>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Dashboard Overview</h1>
           </div>
           <div className="flex-grow flex justify-end max-w-md">
             <SearchBar placeholder={'Search'} />
@@ -64,23 +69,39 @@ const AdminHome = () => {
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {mockStatsData.map((stat, index) => (
-            <StatsCard
-              key={index}
-              title={stat.title}
-              value={stat.value}
-              trend={stat.trend}
-              icon={iconComponents[stat.iconName as IconName]}
-              bgColor={iconBgColors[stat.iconName as IconName]}
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {mockStatsData.map((stat, index) => {
+            const Icon = iconMap[stat.iconName as IconName];
+            const colors = iconColors[stat.iconName as IconName];
+            const numericValue = parseInt(stat.value.replace(/[^0-9]/g, '')) || 1000;
+
+            return (
+              <EnhancedStatCard
+                key={index}
+                title={stat.title}
+                value={stat.value}
+                trend={{
+                  value: stat.trend.value,
+                  isUp: stat.trend.isUp,
+                  label: stat.trend.timeframe,
+                }}
+                icon={Icon}
+                iconColor={colors.iconColor}
+                iconBg={colors.iconBg}
+                sparklineData={generateSparklineData(numericValue)}
+                interactive
+                onClick={() => {
+                  // Navigate to details or show modal
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* Applications and Appointments */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           <CardContainer title="New Therapist Applications">
             {mockApplicationsData.map((application) => (
               <ApplicationCard

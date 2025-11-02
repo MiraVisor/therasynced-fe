@@ -1,5 +1,8 @@
 import React, { ReactNode } from 'react';
 
+import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { cn } from '@/lib/utils';
+
 interface CardContainerProps {
   title: string;
   children: ReactNode;
@@ -12,9 +15,11 @@ export const CardContainer: React.FC<CardContainerProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`bg-white rounded-lg shadow-sm p-5 ${className}`}>
-      <h3 className="text-base font-medium mb-4 border-b border-gray-200 pb-2">{title}</h3>
-      {children}
-    </div>
+    <EnhancedCard variant="default" className={cn('p-6', className)}>
+      <h3 className="font-poppins text-lg font-semibold text-foreground mb-4 border-b border-border pb-3">
+        {title}
+      </h3>
+      <div className="space-y-4">{children}</div>
+    </EnhancedCard>
   );
 };

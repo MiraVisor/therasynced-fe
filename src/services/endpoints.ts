@@ -139,6 +139,55 @@ export const ENDPOINTS = {
     billingPortal: '/subscription/billing-portal',
     checkout: '/subscription/checkout',
   },
+  // Admin endpoints
+  admin: {
+    // Job titles management
+    jobTitles: {
+      create: '/admin/job-titles',
+      getAll: '/admin/job-titles',
+      getActive: '/admin/job-titles/active',
+      getById: (id: string) => `/admin/job-titles/${id}`,
+      update: (id: string) => `/admin/job-titles/${id}`,
+      delete: (id: string) => `/admin/job-titles/${id}`,
+    },
+    // Service categories management
+    serviceCategories: {
+      create: '/admin/service-categories',
+      getAll: '/admin/service-categories',
+      getGrouped: '/admin/service-categories/grouped',
+      getByJobTitle: (jobTitleId: string) => `/admin/service-categories/job-title/${jobTitleId}`,
+      getById: (id: string) => `/admin/service-categories/${id}`,
+      update: (id: string) => `/admin/service-categories/${id}`,
+      delete: (id: string) => `/admin/service-categories/${id}`,
+    },
+    // Verification management
+    verification: {
+      getPending: '/freelancer/admin/verifications/pending',
+      getAll: '/freelancer/admin/verifications/all',
+      getDetails: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}`,
+      approve: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/approve`,
+      reject: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/reject`,
+      getByStatus: (status: string) => `/freelancer/admin/verifications/all?status=${status}`,
+      approveCertificate: (freelancerId: string) =>
+        `/freelancer/admin/verification/${freelancerId}/certificate/approve`,
+      rejectCertificate: (freelancerId: string) =>
+        `/freelancer/admin/verification/${freelancerId}/certificate/reject`,
+    },
+    // Complaint management
+    complaint: {
+      getAll: '/complaint/admin/all',
+      getDetails: (complaintId: string) => `/complaint/admin/${complaintId}`,
+      updateStatus: (complaintId: string) => `/complaint/admin/${complaintId}/status`,
+      takeAction: (complaintId: string) => `/complaint/admin/${complaintId}/action`,
+    },
+    // Subscription management
+    subscription: {
+      getAll: '/admin/subscriptions',
+      getStats: '/admin/subscriptions/stats',
+      getUserSubscription: (userId: string) => `/admin/subscriptions/user/${userId}`,
+      overrideAccess: (userId: string) => `/admin/subscriptions/user/${userId}/override`,
+    },
+  },
 };
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;

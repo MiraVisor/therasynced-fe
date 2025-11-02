@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Divider } from '@/components/ui/Divider';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { Separator } from '@/components/ui/separator';
 
 type Transaction = {
   name: string;
@@ -14,26 +15,30 @@ type Props = {
 
 export const TotalTransactionList = ({ transactions }: Props) => {
   return (
-    <div className="bg-white rounded-xl border shadow-sm py-4 pl-4 pr-0 w-full">
-      <div className="pr-3">
-        <h3 className="text-md font-semibold mb-4">Total Transaction</h3>
-        <Divider className="mt-6 bg-[#000000] mb-3 mr-2" />
+    <EnhancedCard variant="default" className="p-6 w-full">
+      <div>
+        <h3 className="font-poppins text-lg font-semibold text-foreground mb-4">
+          Total Transaction
+        </h3>
+        <Separator className="mb-4" />
       </div>
 
-      <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+      <div className="space-y-4 max-h-[400px] overflow-y-auto">
         {transactions.map((tx, index) => (
-          <>
-            <div key={index} className="flex justify-between items-center text-sm">
+          <React.Fragment key={index}>
+            <div className="flex justify-between items-center">
               <div>
-                <div className="font-medium text-black">{tx.name}</div>
-                <div className="text-gray-500">{tx.date} | Therapy Session</div>
+                <div className="font-inter font-medium text-sm text-foreground">{tx.name}</div>
+                <div className="font-open-sans text-xs text-muted-foreground mt-1">
+                  {tx.date} | Therapy Session
+                </div>
               </div>
-              <div className="font-semibold">${tx.amount}</div>
+              <div className="font-poppins font-semibold text-sm text-foreground">${tx.amount}</div>
             </div>
-            {index < transactions.length - 1 && <Divider className="my-2 text-gray-200" />}
-          </>
+            {index < transactions.length - 1 && <Separator className="my-2" />}
+          </React.Fragment>
         ))}
       </div>
-    </div>
+    </EnhancedCard>
   );
 };

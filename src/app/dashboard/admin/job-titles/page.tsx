@@ -1,0 +1,356 @@
+'use client';
+
+import { ColumnDef } from '@tanstack/react-table';
+import { Edit, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+
+import { DataTable } from '@/components/common/DataTable/data-table';
+import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
+import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
+import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import adminJobTitleService, {
+  type CreateJobTitleDto,
+  type JobTitleResponse,
+  type UpdateJobTitleDto,
+} from '@/services/adminJobTitleService';
+
+const JobTitlesPage = () => {
+  const [jobTitles, setJobTitles] = useState<JobTitleResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedJobTitle, setSelectedJobTitle] = useState<JobTitleResponse | null>(null);
+  const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchJobTitles = async () => {
+    try {
+      setLoading(true);
+      const response = await adminJobTitleService.getAll();
+      if (response.success) {
+        const data = response.data || [];
+        setJobTitles(data);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to fetch job titles');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchJobTitles();
+  }, []);
+
+  const handleCreate = async () => {
+    try {
+      setIsSubmitting(true);
+      const response = await adminJobTitleService.create(formData);
+      if (response.success) {
+        toast.success('Job title created successfully');
+        setIsCreateDialogOpen(false);
+        setFormData({ name: '', description: '' });
+        fetchJobTitles();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create job title');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedJobTitle) return;
+    try {
+      setIsSubmitting(true);
+      const updateData: UpdateJobTitleDto = {
+        name: formData.name,
+        description: formData.description,
+      };
+      const response = await adminJobTitleService.update(selectedJobTitle.id, updateData);
+      if (response.success) {
+        toast.success('Job title updated successfully');
+        setIsEditDialogOpen(false);
+        setSelectedJobTitle(null);
+        setFormData({ name: '', description: '' });
+        fetchJobTitles();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update job title');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedJobTitle) return;
+    try {
+      setIsSubmitting(true);
+      const response = await adminJobTitleService.delete(selectedJobTitle.id);
+      if (response.success) {
+        toast.success('Job title deleted successfully');
+        setIsDeleteDialogOpen(false);
+        setSelectedJobTitle(null);
+        fetchJobTitles();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete job title');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (jobTitle: JobTitleResponse) => {
+    setSelectedJobTitle(jobTitle);
+    setFormData({
+      name: jobTitle.name,
+      description: jobTitle.description || '',
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (jobTitle: JobTitleResponse) => {
+    setSelectedJobTitle(jobTitle);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const columns: ColumnDef<JobTitleResponse>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) => (
+        <div className="font-inter font-medium text-foreground">{row.original.name}</div>
+      ),
+    },
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      cell: ({ row }) => (
+        <div className="font-open-sans text-sm text-muted-foreground max-w-md truncate">
+          {row.original.description || '-'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'freelancerCount',
+      header: 'Freelancers',
+      cell: ({ row }) => (
+        <Badge variant="outline" className="font-inter">
+          {row.original.freelancerCount || 0}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'serviceCategoryCount',
+      header: 'Service Categories',
+      cell: ({ row }) => (
+        <Badge variant="outline" className="font-inter">
+          {row.original.serviceCategoryCount || 0}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.isActive ? 'ACTIVE' : 'INACTIVE'} size="sm" />
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const jobTitle = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEdit(jobTitle)}
+              className="font-inter"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteClick(jobTitle)}
+              className="text-error hover:text-error font-inter"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
+  return (
+    <DashboardPageWrapper
+      header={
+        <div className="flex items-center justify-between w-full">
+          <h1 className="font-poppins font-bold text-2xl text-charcoal">Job Titles</h1>
+          <Button
+            onClick={() => {
+              setFormData({ name: '', description: '' });
+              setIsCreateDialogOpen(true);
+            }}
+            className="font-inter"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Job Title
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-6 lg:space-y-8">
+        {/* Job Titles Table */}
+        <DataTable
+          columns={columns}
+          data={jobTitles}
+          title="All Job Titles"
+          searchKey="name"
+          searchPlaceholder="Search job titles..."
+          enableSorting
+          enableFiltering
+          enablePagination
+          pageSize={10}
+        />
+
+        {/* Create Dialog */}
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="font-poppins font-semibold">Create Job Title</DialogTitle>
+              <DialogDescription className="font-open-sans">
+                Add a new job title to the platform
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name" className="font-inter font-medium">
+                  Name *
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Physiotherapy"
+                  className="font-open-sans mt-2"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="description" className="font-inter font-medium">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Job title description..."
+                  className="font-open-sans mt-2"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleCreate} disabled={isSubmitting || !formData.name}>
+                {isSubmitting ? 'Creating...' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="font-poppins font-semibold">Edit Job Title</DialogTitle>
+              <DialogDescription className="font-open-sans">
+                Update job title information
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name" className="font-inter font-medium">
+                  Name *
+                </Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Physiotherapy"
+                  className="font-open-sans mt-2"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description" className="font-inter font-medium">
+                  Description
+                </Label>
+                <Textarea
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Job title description..."
+                  className="font-open-sans mt-2"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdate} disabled={isSubmitting || !formData.name}>
+                {isSubmitting ? 'Updating...' : 'Update'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation */}
+        <ConfirmationDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleDelete}
+          title="Delete Job Title"
+          description={`Are you sure you want to delete "${selectedJobTitle?.name}"? This action cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          variant="destructive"
+          isLoading={isSubmitting}
+        />
+      </div>
+    </DashboardPageWrapper>
+  );
+};
+
+export default JobTitlesPage;

@@ -1,13 +1,14 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, Heart, MapPin, Star } from 'lucide-react';
+import { ArrowUpDown, Clock, Heart, MapPin, Star, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useFavoriteFreelancers, useFreelancers } from '@/hooks/useFreelancers';
@@ -182,32 +183,53 @@ const RealFreelancersPage = () => {
   const currentError = activeTab === 'all' ? allError : favoritesError;
 
   // Calculate stats
+  const totalFreelancers = freelancers.length;
+  const activeFreelancers = freelancers.filter((f) => f.isActive).length;
+  const favoriteCount = favoriteFreelancers.length;
+
   const stats = [
     {
       title: 'Total Freelancers',
-      value: freelancers.length.toString(),
-      icon: <Star className="h-6 w-6" />,
-      bgColor: '#e8ebfd',
+      value: totalFreelancers.toString(),
+      trend: { value: 0, isUp: true, label: 'all time' },
+      icon: Users,
+      iconColor: 'text-info',
+      iconBg: 'bg-info/10',
+      sparklineData: Array.from(
+        { length: 7 },
+        () => totalFreelancers + Math.floor(Math.random() * 5),
+      ),
     },
     {
       title: 'Active Freelancers',
-      value: freelancers.filter((f) => f.isActive).length.toString(),
-      icon: <Clock className="h-6 w-6" />,
-      bgColor: '#e7fdf1',
+      value: activeFreelancers.toString(),
+      trend: { value: 0, isUp: true, label: 'currently' },
+      icon: Clock,
+      iconColor: 'text-success',
+      iconBg: 'bg-success/10',
+      sparklineData: Array.from(
+        { length: 7 },
+        () => activeFreelancers + Math.floor(Math.random() * 3),
+      ),
     },
     {
       title: 'Favorite Freelancers',
-      value: favoriteFreelancers.length.toString(),
-      icon: <Heart className="h-6 w-6" />,
-      bgColor: '#fde8e7',
+      value: favoriteCount.toString(),
+      trend: { value: 0, isUp: true, label: 'total' },
+      icon: Heart,
+      iconColor: 'text-error',
+      iconBg: 'bg-error/10',
+      sparklineData: Array.from({ length: 7 }, () => favoriteCount + Math.floor(Math.random() * 2)),
     },
   ];
 
   if (currentLoading) {
     return (
-      <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Freelancers</h2>}>
+      <DashboardPageWrapper
+        header={<h2 className="font-poppins font-bold text-2xl text-charcoal">Freelancers</h2>}
+      >
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading freelancers...</div>
+          <div className="font-open-sans text-lg">Loading freelancers...</div>
         </div>
       </DashboardPageWrapper>
     );
@@ -215,9 +237,11 @@ const RealFreelancersPage = () => {
 
   if (currentError) {
     return (
-      <DashboardPageWrapper header={<h2 className="text-xl font-semibold">Freelancers</h2>}>
+      <DashboardPageWrapper
+        header={<h2 className="font-poppins font-bold text-2xl text-charcoal">Freelancers</h2>}
+      >
         <div className="flex items-center justify-center h-64">
-          <div className="text-red-600">Error: {currentError}</div>
+          <div className="font-open-sans text-lg text-error">Error: {currentError}</div>
         </div>
       </DashboardPageWrapper>
     );
@@ -225,32 +249,29 @@ const RealFreelancersPage = () => {
 
   return (
     <DashboardPageWrapper
-      header={
-        <div className="flex items-center space-x-2">
-          <h2 className="font-poppins text-[22px] font-bold tracking-tight">
-            <span className="text-black">All </span>
-            <span className="text-primary">Freelancers</span>
-          </h2>
-        </div>
-      }
+      header={<h2 className="font-poppins font-bold text-2xl text-charcoal">Freelancers</h2>}
     >
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-lg p-6 shadow-sm border"
-            style={{ backgroundColor: stat.bgColor }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-              <div className="p-2 rounded-full bg-white">{stat.icon}</div>
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <EnhancedStatCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              trend={stat.trend}
+              icon={Icon}
+              iconColor={stat.iconColor}
+              iconBg={stat.iconBg}
+              sparklineData={stat.sparklineData}
+              interactive
+              onClick={() => {
+                // Navigate to details or show modal
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Tabs for All vs Favorites */}
