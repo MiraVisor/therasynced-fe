@@ -1,7 +1,8 @@
 'use client';
 
 import { Calendar, DollarSign, UserCheck, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
@@ -10,7 +11,6 @@ import adminOverviewService from '@/services/adminOverviewService';
 import { AdminOverviewDto } from '@/services/adminOverviewService';
 
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
-import { SearchBar } from '../SearchBar';
 import { AdminRevenueChart } from './Charts/AdminRevenueChart';
 
 type IconName = 'users' | 'clients' | 'calendar' | 'money';
@@ -19,7 +19,7 @@ const AdminHome = () => {
   const { role } = useAuth();
   const [overviewData, setOverviewData] = useState<AdminOverviewDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
 
   // Map icons to Lucide icons for EnhancedStatCard
   const iconMap = {
@@ -39,15 +39,19 @@ const AdminHome = () => {
 
   // Fetch overview data
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     const fetchOverview = async () => {
       try {
         setIsLoading(true);
-        setError(null);
         const data = await adminOverviewService.getOverview();
         setOverviewData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load overview data');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load overview data';
+        toast.error(`Error loading overview data: ${errorMessage}`);
         console.error('Error fetching admin overview:', err);
+        setOverviewData(null); // Ensure data is null to show empty state
       } finally {
         setIsLoading(false);
       }
@@ -84,50 +88,48 @@ const AdminHome = () => {
   const lossData = chartData.map((item) => item.loss || 0);
 
   // Prepare stats data from API
-  const statsData = overviewData
-    ? [
-        {
-          title: 'Total Users',
-          value: formatNumber(overviewData.totalUsers.value),
-          trend: {
-            value: Math.abs(overviewData.totalUsers.percentageChange),
-            isUp: overviewData.totalUsers.percentageChange >= 0,
-            timeframe: overviewData.totalUsers.comparisonPeriod,
-          },
-          iconName: 'users' as IconName,
-        },
-        {
-          title: 'Active Clients',
-          value: formatNumber(overviewData.activeClients.value),
-          trend: {
-            value: Math.abs(overviewData.activeClients.percentageChange),
-            isUp: overviewData.activeClients.percentageChange >= 0,
-            timeframe: overviewData.activeClients.comparisonPeriod,
-          },
-          iconName: 'clients' as IconName,
-        },
-        {
-          title: 'Sessions This Month',
-          value: formatCurrency(overviewData.sessionsThisMonth.value),
-          trend: {
-            value: Math.abs(overviewData.sessionsThisMonth.percentageChange),
-            isUp: overviewData.sessionsThisMonth.percentageChange >= 0,
-            timeframe: overviewData.sessionsThisMonth.comparisonPeriod,
-          },
-          iconName: 'calendar' as IconName,
-        },
-        {
-          title: 'Revenue',
-          value: formatCurrency(overviewData.revenue.value),
-          trend: {
-            value: Math.abs(overviewData.revenue.percentageChange),
-            isUp: overviewData.revenue.percentageChange >= 0,
-            timeframe: overviewData.revenue.comparisonPeriod,
-          },
-          iconName: 'money' as IconName,
-        },
-      ]
-    : [];
+  const statsData = [
+    {
+      title: 'Total Users',
+      value: formatNumber(overviewData?.totalUsers?.value || 0),
+      trend: {
+        value: Math.abs(overviewData?.totalUsers?.percentageChange || 0),
+        isUp: (overviewData?.totalUsers?.percentageChange || 0) >= 0,
+        timeframe: overviewData?.totalUsers?.comparisonPeriod || 'N/A',
+      },
+      iconName: 'users' as IconName,
+    },
+    {
+      title: 'Active Clients',
+      value: formatNumber(overviewData?.activeClients?.value || 0),
+      trend: {
+        value: Math.abs(overviewData?.activeClients?.percentageChange || 0),
+        isUp: (overviewData?.activeClients?.percentageChange || 0) >= 0,
+        timeframe: overviewData?.activeClients?.comparisonPeriod || 'N/A',
+      },
+      iconName: 'clients' as IconName,
+    },
+    {
+      title: 'Sessions This Month',
+      value: formatCurrency(overviewData?.sessionsThisMonth?.value || 0),
+      trend: {
+        value: Math.abs(overviewData?.sessionsThisMonth?.percentageChange || 0),
+        isUp: (overviewData?.sessionsThisMonth?.percentageChange || 0) >= 0,
+        timeframe: overviewData?.sessionsThisMonth?.comparisonPeriod || 'N/A',
+      },
+      iconName: 'calendar' as IconName,
+    },
+    {
+      title: 'Revenue',
+      value: formatCurrency(overviewData?.revenue?.value || 0),
+      trend: {
+        value: Math.abs(overviewData?.revenue?.percentageChange || 0),
+        isUp: (overviewData?.revenue?.percentageChange || 0) >= 0,
+        timeframe: overviewData?.revenue?.comparisonPeriod || 'N/A',
+      },
+      iconName: 'money' as IconName,
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -143,28 +145,6 @@ const AdminHome = () => {
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <LoadingSpinner size="lg" />
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
-
-  if (error) {
-    return (
-      <DashboardPageWrapper
-        userRole={role}
-        header={
-          <div className="flex flex-col sm:flex-row w-full items-start gap-4">
-            <div className="flex-shrink-0">
-              <h1 className="font-poppins font-bold text-2xl text-charcoal">Dashboard Overview</h1>
-            </div>
-          </div>
-        }
-      >
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-error mb-4">Error loading overview data</p>
-            <p className="text-gray-600 text-sm">{error}</p>
-          </div>
         </div>
       </DashboardPageWrapper>
     );
