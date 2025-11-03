@@ -156,6 +156,13 @@ const VerificationsPage = () => {
     fetchStats();
   }, []);
 
+  // Show error as toast when it occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to load verifications: ${error}`);
+    }
+  }, [error]);
+
   // Function to refetch stats
   const refetchStats = async () => {
     try {
@@ -334,17 +341,6 @@ const VerificationsPage = () => {
       header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Queue</h1>}
     >
       <div className="space-y-6 lg:space-y-8">
-        {/* Error Alert */}
-        {error && (
-          <div className="bg-error/10 border border-error/20 rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-error" />
-              <span className="font-medium text-error">Error loading verifications</span>
-            </div>
-            <p className="text-sm text-error/80 mt-1">{error}</p>
-          </div>
-        )}
-
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {statsConfig.map((config) => (
