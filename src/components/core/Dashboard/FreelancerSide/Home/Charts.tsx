@@ -3,16 +3,11 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FreelancerDashboardOverview } from '@/types/types';
 
-const chartData = [
-  { day: 'Mon', current: 4, last: 3 },
-  { day: 'Tue', current: 6, last: 4 },
-  { day: 'Wed', current: 5, last: 5 },
-  { day: 'Thu', current: 7, last: 6 },
-  { day: 'Fri', current: 8, last: 7 },
-  { day: 'Sat', current: 3, last: 2 },
-  { day: 'Sun', current: 2, last: 1 },
-];
+interface ChartsProps {
+  dashboardData: FreelancerDashboardOverview | null;
+}
 
 const ChartTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -33,7 +28,37 @@ const ChartTooltipContent = ({ active, payload, label }: any) => {
   return null;
 };
 
-const Charts = () => {
+const Charts = ({ dashboardData }: ChartsProps) => {
+  // Transform API data to chart format
+  const getChartData = () => {
+    if (!dashboardData?.weeklyAppointments) {
+      // Return empty data if not loaded
+      return [
+        { day: 'Mon', current: 0, last: 0 },
+        { day: 'Tue', current: 0, last: 0 },
+        { day: 'Wed', current: 0, last: 0 },
+        { day: 'Thu', current: 0, last: 0 },
+        { day: 'Fri', current: 0, last: 0 },
+        { day: 'Sat', current: 0, last: 0 },
+        { day: 'Sun', current: 0, last: 0 },
+      ];
+    }
+
+    const { currentWeek, lastWeek } = dashboardData.weeklyAppointments;
+
+    return [
+      { day: 'Mon', current: currentWeek.monday, last: lastWeek.monday },
+      { day: 'Tue', current: currentWeek.tuesday, last: lastWeek.tuesday },
+      { day: 'Wed', current: currentWeek.wednesday, last: lastWeek.wednesday },
+      { day: 'Thu', current: currentWeek.thursday, last: lastWeek.thursday },
+      { day: 'Fri', current: currentWeek.friday, last: lastWeek.friday },
+      { day: 'Sat', current: currentWeek.saturday, last: lastWeek.saturday },
+      { day: 'Sun', current: currentWeek.sunday, last: lastWeek.sunday },
+    ];
+  };
+
+  const chartData = getChartData();
+
   return (
     <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
       <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">

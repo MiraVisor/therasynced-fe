@@ -26,6 +26,8 @@ interface AdminRevenueChartProps {
   xLabels: string[];
   profitData: number[];
   lossData: number[];
+  title?: string;
+  showSelector?: boolean;
 }
 
 export function AdminRevenueChart({
@@ -35,6 +37,8 @@ export function AdminRevenueChart({
   xLabels,
   profitData,
   lossData,
+  title = 'Monthly Revenue',
+  showSelector = true,
 }: AdminRevenueChartProps) {
   // Transform the data into the format Recharts expects
   const data = xLabels.map((label, index) => ({
@@ -47,23 +51,25 @@ export function AdminRevenueChart({
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200/80 dark:border-gray-700/50 p-6 shadow-soft">
       <div className="flex items-center justify-between mb-8">
         <h2 className="font-poppins text-xl font-semibold text-charcoal dark:text-foreground">
-          Monthly Revenue
+          {title}
         </h2>
-        <div className="flex items-center gap-2">
-          <Select value={month} onValueChange={onMonthChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select month" />
-            </SelectTrigger>
+        {showSelector && months.length > 1 && (
+          <div className="flex items-center gap-2">
+            <Select value={month} onValueChange={onMonthChange}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select month" />
+              </SelectTrigger>
 
-            <SelectContent>
-              {months.map((m) => (
-                <SelectItem key={m} value={m}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+              <SelectContent>
+                {months.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       <div className="h-[300px] w-full">

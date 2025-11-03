@@ -1,28 +1,25 @@
 'use client';
 
 import { Calendar, DollarSign, UserCheck, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useAuth } from '@/redux/hooks/useAppHooks';
+import adminOverviewService from '@/services/adminOverviewService';
+import { AdminOverviewDto } from '@/services/adminOverviewService';
 
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
 import { SearchBar } from '../SearchBar';
-import {
-  mockApplicationsData,
-  mockAppointmentsData,
-  mockChartData,
-  mockStatsData,
-} from '../mockData';
-import { ApplicationCard } from './Cards/ApplicationCard';
-import { AppointmentCard } from './Cards/AppointmentCard';
-import { CardContainer } from './Cards/CardContainer';
 import { AdminRevenueChart } from './Charts/AdminRevenueChart';
 
 type IconName = 'users' | 'clients' | 'calendar' | 'money';
 
 const AdminHome = () => {
   const { role } = useAuth();
+  const [overviewData, setOverviewData] = useState<AdminOverviewDto | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Map icons to Lucide icons for EnhancedStatCard
   const iconMap = {
@@ -40,20 +37,138 @@ const AdminHome = () => {
     money: { iconColor: 'text-primary', iconBg: 'bg-primary/10' },
   };
 
-  // Generate sparkline data for each stat
-  const generateSparklineData = (baseValue: number) => {
-    return Array.from({ length: 7 }, (_, i) => baseValue + (Math.random() - 0.5) * 20);
+  // Fetch overview data
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await adminOverviewService.getOverview();
+        setOverviewData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load overview data');
+        console.error('Error fetching admin overview:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOverview();
+  }, []);
+
+  // Format currency value
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleReviewApplication = (_id: number) => {
-    // Handle application review - would typically connect to an API
+  // Format number value
+  const formatNumber = (value: number): string => {
+    return new Intl.NumberFormat('en-US').format(value);
   };
 
-  const [selectedMonth, setSelectedMonth] = useState<typeof mockChartData.defaultMonth>(
-    mockChartData.defaultMonth,
-  );
-  const chart = mockChartData.data[selectedMonth as keyof typeof mockChartData.data];
+  // Transform chart data from API format to chart component format
+  const chartData = overviewData?.monthlyRevenueChart || [];
+  const xLabels =
+    chartData.length > 0
+      ? chartData.map((item) => {
+          const date = new Date(item.date);
+          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        })
+      : [];
+  const profitData = chartData.map((item) => item.profit || 0);
+  const lossData = chartData.map((item) => item.loss || 0);
+
+  // Prepare stats data from API
+  const statsData = overviewData
+    ? [
+        {
+          title: 'Total Users',
+          value: formatNumber(overviewData.totalUsers.value),
+          trend: {
+            value: Math.abs(overviewData.totalUsers.percentageChange),
+            isUp: overviewData.totalUsers.percentageChange >= 0,
+            timeframe: overviewData.totalUsers.comparisonPeriod,
+          },
+          iconName: 'users' as IconName,
+        },
+        {
+          title: 'Active Clients',
+          value: formatNumber(overviewData.activeClients.value),
+          trend: {
+            value: Math.abs(overviewData.activeClients.percentageChange),
+            isUp: overviewData.activeClients.percentageChange >= 0,
+            timeframe: overviewData.activeClients.comparisonPeriod,
+          },
+          iconName: 'clients' as IconName,
+        },
+        {
+          title: 'Sessions This Month',
+          value: formatCurrency(overviewData.sessionsThisMonth.value),
+          trend: {
+            value: Math.abs(overviewData.sessionsThisMonth.percentageChange),
+            isUp: overviewData.sessionsThisMonth.percentageChange >= 0,
+            timeframe: overviewData.sessionsThisMonth.comparisonPeriod,
+          },
+          iconName: 'calendar' as IconName,
+        },
+        {
+          title: 'Revenue',
+          value: formatCurrency(overviewData.revenue.value),
+          trend: {
+            value: Math.abs(overviewData.revenue.percentageChange),
+            isUp: overviewData.revenue.percentageChange >= 0,
+            timeframe: overviewData.revenue.comparisonPeriod,
+          },
+          iconName: 'money' as IconName,
+        },
+      ]
+    : [];
+
+  if (isLoading) {
+    return (
+      <DashboardPageWrapper
+        userRole={role}
+        header={
+          <div className="flex flex-col sm:flex-row w-full items-start gap-4">
+            <div className="flex-shrink-0">
+              <h1 className="font-poppins font-bold text-2xl text-charcoal">Dashboard Overview</h1>
+            </div>
+          </div>
+        }
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <LoadingSpinner size="lg" />
+        </div>
+      </DashboardPageWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardPageWrapper
+        userRole={role}
+        header={
+          <div className="flex flex-col sm:flex-row w-full items-start gap-4">
+            <div className="flex-shrink-0">
+              <h1 className="font-poppins font-bold text-2xl text-charcoal">Dashboard Overview</h1>
+            </div>
+          </div>
+        }
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-error mb-4">Error loading overview data</p>
+            <p className="text-gray-600 text-sm">{error}</p>
+          </div>
+        </div>
+      </DashboardPageWrapper>
+    );
+  }
 
   return (
     <DashboardPageWrapper
@@ -63,20 +178,15 @@ const AdminHome = () => {
           <div className="flex-shrink-0">
             <h1 className="font-poppins font-bold text-2xl text-charcoal">Dashboard Overview</h1>
           </div>
-
-          <div className="flex-grow flex justify-end max-w-md sm:max-w-sm md:max-w-md  w-full sm:w-auto">
-            <SearchBar placeholder={'Search'} />
-          </div>
         </div>
       }
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockStatsData.map((stat, index) => {
+          {statsData.map((stat, index) => {
             const Icon = iconMap[stat.iconName as IconName];
             const colors = iconColors[stat.iconName as IconName];
-            const numericValue = parseInt(stat.value.replace(/[^0-9]/g, '')) || 1000;
 
             return (
               <EnhancedStatCard
@@ -91,7 +201,6 @@ const AdminHome = () => {
                 icon={Icon}
                 iconColor={colors.iconColor}
                 iconBg={colors.iconBg}
-                sparklineData={generateSparklineData(numericValue)}
                 interactive
                 onClick={() => {
                   // Navigate to details or show modal
@@ -101,40 +210,16 @@ const AdminHome = () => {
           })}
         </div>
 
-        {/* Applications and Appointments */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          <CardContainer title="New Therapist Applications">
-            {mockApplicationsData.map((application) => (
-              <ApplicationCard
-                key={application.id}
-                name={application.name}
-                specialty={application.specialty}
-                onReview={() => handleReviewApplication(application.id)}
-              />
-            ))}
-          </CardContainer>
-
-          <CardContainer title="Today's Appointments">
-            {mockAppointmentsData.map((appointment) => (
-              <AppointmentCard
-                key={appointment.id}
-                name={appointment.name}
-                time={appointment.time}
-                condition={appointment.condition}
-                status={appointment.status}
-              />
-            ))}
-          </CardContainer>
-        </div>
-
         {/* Revenue Chart */}
         <AdminRevenueChart
-          month={selectedMonth}
-          months={mockChartData.months}
-          onMonthChange={setSelectedMonth}
-          xLabels={chart.xLabels}
-          profitData={chart.profitData}
-          lossData={chart.lossData}
+          month="Current Month"
+          months={['Current Month']}
+          onMonthChange={() => {}}
+          xLabels={xLabels.length > 0 ? xLabels : ['1', '5', '10', '15', '20', '25', '30']}
+          profitData={profitData.length > 0 ? profitData : [0, 0, 0, 0, 0, 0, 0]}
+          lossData={lossData.length > 0 ? lossData : [0, 0, 0, 0, 0, 0, 0]}
+          title="Monthly Revenue"
+          showSelector={false}
         />
       </div>
     </DashboardPageWrapper>

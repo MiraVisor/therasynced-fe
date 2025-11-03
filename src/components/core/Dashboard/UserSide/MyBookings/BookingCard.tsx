@@ -37,8 +37,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
   const getStatusText = (status: string) => {
     if (status === 'CONFIRMED') {
-      return new Date(booking.slot.startTime) > new Date() ? 'Upcoming' : 'Completed';
+      return new Date(booking.slot.startTime) > new Date() ? 'Upcoming' : 'Confirmed';
     }
+    if (status === 'RESCHEDULED') return 'Rescheduled';
+    if (status === 'CANCELLED') return 'Cancelled';
     return status.charAt(0) + status.slice(1).toLowerCase();
   };
 

@@ -232,22 +232,10 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               )}
             </div>
 
-            {/* About Section with Clear Label */}
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                About This Freelancer
-              </h4>
-              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                {description}
-              </p>
-            </div>
-
             {/* Services Section with Clear Label */}
             {services.length > 0 && (
               <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
                   Services Offered
                 </h4>
                 <div className="flex flex-wrap gap-2">

@@ -142,10 +142,10 @@ const ComplaintsPage = () => {
       header: 'Reporter',
       cell: ({ row }) => (
         <div>
-          <div className="font-inter font-medium text-sm text-foreground">
+          <div className="font-inter font-medium text-sm text-charcoal">
             {row.original.reporter.name}
           </div>
-          <div className="font-open-sans text-xs text-muted-foreground">
+          <div className="font-inter text-xs text-muted-foreground">
             {row.original.reporter.email}
           </div>
         </div>
@@ -156,10 +156,10 @@ const ComplaintsPage = () => {
       header: 'Reported User',
       cell: ({ row }) => (
         <div>
-          <div className="font-inter font-medium text-sm text-foreground">
+          <div className="font-inter font-medium text-sm text-charcoal">
             {row.original.reportedUser.name}
           </div>
-          <div className="font-open-sans text-xs text-muted-foreground">
+          <div className="font-inter text-xs text-muted-foreground">
             {row.original.reportedUser.email}
           </div>
         </div>
@@ -175,15 +175,6 @@ const ComplaintsPage = () => {
       ),
     },
     {
-      accessorKey: 'reason',
-      header: 'Reason',
-      cell: ({ row }) => (
-        <div className="font-open-sans text-sm text-foreground max-w-xs truncate">
-          {row.original.reason}
-        </div>
-      ),
-    },
-    {
       accessorKey: 'status',
       header: 'Status',
       cell: ({ row }) => <StatusBadge status={row.original.status} size="sm" />,
@@ -192,8 +183,12 @@ const ComplaintsPage = () => {
       accessorKey: 'createdAt',
       header: 'Created',
       cell: ({ row }) => (
-        <div className="font-open-sans text-xs text-muted-foreground">
-          {new Date(row.original.createdAt).toLocaleDateString()}
+        <div className="font-inter text-xs text-muted-foreground">
+          {new Date(row.original.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })}
         </div>
       ),
     },
@@ -205,7 +200,7 @@ const ComplaintsPage = () => {
           variant="ghost"
           size="sm"
           onClick={() => handleViewDetails(row.original.id)}
-          className="font-inter"
+          className="h-8 px-3 hover:bg-info/10 text-info font-inter"
         >
           <Eye className="h-4 w-4 mr-2" />
           View
@@ -231,7 +226,6 @@ const ComplaintsPage = () => {
             icon={FileText}
             iconColor="text-primary"
             iconBg="bg-primary/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.total)}
           />
           <EnhancedStatCard
             title="Pending"
@@ -239,7 +233,6 @@ const ComplaintsPage = () => {
             icon={AlertTriangle}
             iconColor="text-warning"
             iconBg="bg-warning/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.pending)}
           />
           <EnhancedStatCard
             title="Under Review"
@@ -247,7 +240,6 @@ const ComplaintsPage = () => {
             icon={Shield}
             iconColor="text-info"
             iconBg="bg-info/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.underReview)}
           />
           <EnhancedStatCard
             title="Resolved"
@@ -255,7 +247,6 @@ const ComplaintsPage = () => {
             icon={CheckCircle}
             iconColor="text-success"
             iconBg="bg-success/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.resolved)}
           />
           <EnhancedStatCard
             title="Dismissed"
@@ -263,7 +254,6 @@ const ComplaintsPage = () => {
             icon={XCircle}
             iconColor="text-error"
             iconBg="bg-error/10"
-            sparklineData={Array.from({ length: 7 }, () => stats.dismissed)}
           />
         </div>
 

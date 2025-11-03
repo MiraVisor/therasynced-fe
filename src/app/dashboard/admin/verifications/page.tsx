@@ -2,13 +2,24 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle, Clock, ExternalLink, FileText, Shield, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useVerifications } from '@/hooks/useVerifications';
 import adminVerificationService, {
@@ -54,6 +65,7 @@ const statsConfig = [
 ];
 
 const VerificationsPage = () => {
+  const router = useRouter();
   // State for pagination and search
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -62,6 +74,18 @@ const VerificationsPage = () => {
   const [statusFilter, setStatusFilter] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>(
     undefined,
   );
+
+  // Dialog states
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isCertificateApproveDialogOpen, setIsCertificateApproveDialogOpen] = useState(false);
+  const [isCertificateRejectDialogOpen, setIsCertificateRejectDialogOpen] = useState(false);
+  const [selectedFreelancer, setSelectedFreelancer] = useState<PendingVerificationResponse | null>(
+    null,
+  );
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [certificateRejectionReason, setCertificateRejectionReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Debounce search query
   useEffect(() => {
@@ -124,20 +148,118 @@ const VerificationsPage = () => {
     fetchStats();
   }, []);
 
+  // Handle approve verification
+  const handleApproveVerification = async () => {
+    if (!selectedFreelancer) return;
+    try {
+      setIsSubmitting(true);
+      const response = await adminVerificationService.approve({
+        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+      });
+      if (response.success) {
+        toast.success('Verification approved successfully');
+        setIsApproveDialogOpen(false);
+        setSelectedFreelancer(null);
+        // Refresh data
+        window.location.reload();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to approve verification');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle reject verification
+  const handleRejectVerification = async () => {
+    if (!selectedFreelancer || !rejectionReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const response = await adminVerificationService.reject({
+        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+        rejectionReason: rejectionReason.trim(),
+      });
+      if (response.success) {
+        toast.success('Verification rejected successfully');
+        setIsRejectDialogOpen(false);
+        setRejectionReason('');
+        setSelectedFreelancer(null);
+        // Refresh data
+        window.location.reload();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to reject verification');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle approve certificate
+  const handleApproveCertificate = async () => {
+    if (!selectedFreelancer) return;
+    try {
+      setIsSubmitting(true);
+      const response = await adminVerificationService.approveCertificate({
+        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+      });
+      if (response.success) {
+        toast.success('First Aid Certificate approved successfully');
+        setIsCertificateApproveDialogOpen(false);
+        setSelectedFreelancer(null);
+        // Refresh data
+        window.location.reload();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to approve certificate');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle reject certificate
+  const handleRejectCertificate = async () => {
+    if (!selectedFreelancer || !certificateRejectionReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const response = await adminVerificationService.rejectCertificate({
+        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+        rejectionReason: certificateRejectionReason.trim(),
+      });
+      if (response.success) {
+        toast.success('First Aid Certificate rejected successfully');
+        setIsCertificateRejectDialogOpen(false);
+        setCertificateRejectionReason('');
+        setSelectedFreelancer(null);
+        // Refresh data
+        window.location.reload();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to reject certificate');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const columns: ColumnDef<PendingVerificationResponse>[] = [
     {
       accessorKey: 'name',
       header: 'Freelancer',
       cell: ({ row }) => (
         <div>
-          <div className="font-inter font-medium text-foreground">{row.original.name}</div>
-          <div className="font-open-sans text-xs text-muted-foreground">{row.original.email}</div>
+          <div className="font-inter font-medium text-charcoal">{row.original.name}</div>
+          <div className="font-inter text-xs text-muted-foreground">{row.original.email}</div>
         </div>
       ),
     },
     {
       accessorKey: 'verificationStatus',
-      header: 'Status',
+      header: 'Verification Status',
       cell: ({ row }) => <StatusBadge status={row.original.verificationStatus} size="sm" />,
     },
     {
@@ -145,46 +267,83 @@ const VerificationsPage = () => {
       header: 'First Aid Certificate',
       cell: ({ row }) => {
         const certificateUrl = row.original.firstAidCertificateUrl;
+        const certificateStatus = row.original.firstAidCertificateStatus;
         if (!certificateUrl) {
-          return <span className="font-open-sans text-sm text-muted-foreground">Not uploaded</span>;
+          return <span className="font-inter text-sm text-muted-foreground">Not uploaded</span>;
         }
         return (
-          <a
-            href={certificateUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-inter text-sm text-primary hover:underline flex items-center gap-1"
-          >
-            <FileText className="h-4 w-4" />
-            View Certificate
-            <ExternalLink className="h-3 w-3" />
-          </a>
+          <div className="flex items-center gap-2">
+            <StatusBadge status={certificateStatus || 'PENDING'} size="sm" />
+            <a
+              href={certificateUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-inter text-xs text-primary hover:underline flex items-center gap-1"
+            >
+              <FileText className="h-3 w-3" />
+              View
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
         );
       },
     },
     {
-      id: 'verificationDocuments',
-      header: 'Verification Documents',
+      id: 'actions',
+      header: 'Actions',
       cell: ({ row }) => {
-        const documents = row.original.verificationDocuments || [];
-        if (documents.length === 0) {
-          return <span className="font-open-sans text-sm text-muted-foreground">No documents</span>;
-        }
+        const freelancer = row.original;
+        const verificationStatus = freelancer.verificationStatus;
+        const certificateStatus = freelancer.firstAidCertificateStatus;
+
         return (
-          <div className="flex flex-col gap-1">
-            {documents.map((url, index) => (
-              <a
-                key={index}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-inter text-sm text-primary hover:underline flex items-center gap-1"
-              >
-                <FileText className="h-3 w-3" />
-                doc_{index + 1}
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            ))}
+          <div className="flex items-center gap-2">
+            {/* Verification Status Actions */}
+            {verificationStatus === 'PENDING' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 border-success text-success hover:bg-success/10 font-inter"
+                  onClick={() => {
+                    setSelectedFreelancer(freelancer);
+                    setIsApproveDialogOpen(true);
+                  }}
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Approve
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 border-error text-error hover:bg-error/10 font-inter"
+                  onClick={() => {
+                    setSelectedFreelancer(freelancer);
+                    setIsRejectDialogOpen(true);
+                  }}
+                >
+                  <XCircle className="h-4 w-4 mr-1" />
+                  Reject
+                </Button>
+              </>
+            )}
+            {/* First Aid Certificate Actions */}
+            {freelancer.firstAidCertificateUrl && certificateStatus === 'PENDING' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-success hover:bg-success/10 font-inter"
+                  onClick={() => {
+                    setSelectedFreelancer(freelancer);
+                    setIsCertificateApproveDialogOpen(true);
+                  }}
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Cert
+                </Button>
+              </>
+            )}
           </div>
         );
       },
@@ -220,7 +379,6 @@ const VerificationsPage = () => {
               icon={config.icon}
               iconColor={config.iconColor}
               iconBg={config.iconBg}
-              sparklineData={Array.from({ length: 7 }, () => stats[config.key])}
               loading={statsLoading}
             />
           ))}
@@ -316,6 +474,127 @@ const VerificationsPage = () => {
           {statusFilter && ` with status "${statusFilter}"`}
         </div>
       </div>
+
+      {/* Approve Verification Dialog */}
+      <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve Verification</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to approve the verification for {selectedFreelancer?.name}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsApproveDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleApproveVerification} disabled={isSubmitting}>
+              {isSubmitting ? 'Approving...' : 'Approve'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Verification Dialog */}
+      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Verification</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting the verification for {selectedFreelancer?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Enter rejection reason..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsRejectDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRejectVerification}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Rejecting...' : 'Reject'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approve Certificate Dialog */}
+      <Dialog
+        open={isCertificateApproveDialogOpen}
+        onOpenChange={setIsCertificateApproveDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve First Aid Certificate</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to approve the first aid certificate for{' '}
+              {selectedFreelancer?.name}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCertificateApproveDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleApproveCertificate} disabled={isSubmitting}>
+              {isSubmitting ? 'Approving...' : 'Approve'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Certificate Dialog */}
+      <Dialog open={isCertificateRejectDialogOpen} onOpenChange={setIsCertificateRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject First Aid Certificate</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting the first aid certificate for{' '}
+              {selectedFreelancer?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Enter rejection reason..."
+              value={certificateRejectionReason}
+              onChange={(e) => setCertificateRejectionReason(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCertificateRejectDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRejectCertificate} disabled={isSubmitting}>
+              {isSubmitting ? 'Rejecting...' : 'Reject'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardPageWrapper>
   );
 };

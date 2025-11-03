@@ -188,16 +188,7 @@ const ServiceCategoriesPage = () => {
       accessorKey: 'name',
       header: 'Name',
       cell: ({ row }) => (
-        <div className="font-inter font-medium text-foreground">{row.original.name}</div>
-      ),
-    },
-    {
-      accessorKey: 'description',
-      header: 'Description',
-      cell: ({ row }) => (
-        <div className="font-open-sans text-sm text-muted-foreground max-w-md truncate">
-          {row.original.description || '-'}
-        </div>
+        <div className="font-inter font-medium text-charcoal">{row.original.name}</div>
       ),
     },
     {
@@ -225,15 +216,15 @@ const ServiceCategoriesPage = () => {
               variant="ghost"
               size="sm"
               onClick={() => handleEdit(category)}
-              className="font-inter"
+              className="h-8 w-8 p-0 hover:bg-info/10"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-4 w-4 text-info" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleDeleteClick(category)}
-              className="text-error hover:text-error font-inter"
+              className="h-8 w-8 p-0 text-error hover:bg-error/10"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

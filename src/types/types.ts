@@ -548,7 +548,7 @@ export interface Booking {
   id: string;
   slotId: string;
   clientId: string;
-  status: 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED';
+  status: 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED' | 'COMPLETED';
   totalAmount: number;
   createdById: string;
   createdByRole: string;
@@ -919,5 +919,48 @@ export interface BillingPortalResponse {
   success: boolean;
   data: {
     url: string;
+  };
+}
+
+// Freelancer Dashboard Types
+export interface TrendData {
+  value: number;
+  trendPercentage: number;
+  trendDirection: 'up' | 'down';
+  sparklineData: number[];
+}
+
+export interface WeeklyAppointments {
+  monday: number;
+  tuesday: number;
+  wednesday: number;
+  thursday: number;
+  friday: number;
+  saturday: number;
+  sunday: number;
+}
+
+export interface FreelancerDashboardOverview {
+  todayBookings: number;
+  todayRevenue: number; // Revenue in cents/base currency
+  unreadMessages: number;
+  growthPercentage: number;
+  totalAppointments: TrendData;
+  clientRating: TrendData;
+  newClients: TrendData;
+  weeklyRevenue: TrendData;
+  weeklyAppointments: {
+    currentWeek: WeeklyAppointments;
+    lastWeek: WeeklyAppointments;
+  };
+}
+
+export interface FreelancerDashboardOverviewResponse {
+  success: boolean;
+  message?: string;
+  data: FreelancerDashboardOverview;
+  meta?: {
+    timestamp?: string;
+    path?: string;
   };
 }

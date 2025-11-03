@@ -1,15 +1,25 @@
 'use client';
 
-import { addDays, eachDayOfInterval, endOfWeek, isSameDay, startOfWeek } from 'date-fns';
-import { Calendar, ChevronLeft, ChevronRight, Clock, Filter, Search, User } from 'lucide-react';
+import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Filter,
+  Search,
+  User,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBookings/BookingDetailsModal';
 import { DayBookingSection } from '@/components/core/Dashboard/UserSide/MyBookings/DayBookingSection';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -22,6 +32,7 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -58,7 +69,7 @@ const BookingStatsComponent = ({
         isUp: true,
         label: 'all time',
       },
-      icon: Calendar,
+      icon: CalendarIcon,
       iconBg: 'bg-info/10',
       iconColor: 'text-info',
       sparklineData: [8, 10, 12, 11, 13, 15, displayStats.totalBookings],
@@ -105,7 +116,7 @@ const BookingStatsComponent = ({
         isUp: false,
         label: 'this month',
       },
-      icon: Calendar,
+      icon: CalendarIcon,
       iconBg: 'bg-error/10',
       iconColor: 'text-error',
       sparklineData: [
@@ -203,6 +214,8 @@ export default function MyBookingsPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
@@ -267,6 +280,18 @@ export default function MyBookingsPage() {
     setShowCancelModal(true);
   };
 
+  const handleBookingClick = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowDetailsModal(true);
+  };
+
+  const handleReview = (booking: Booking) => {
+    // Navigate to review page or open review modal
+    // For now, we'll show a toast - you can implement a review modal/route later
+    toast.info('Review functionality coming soon');
+    // router.push(`/dashboard/bookings/${booking.id}/review`);
+  };
+
   const confirmCancel = async () => {
     if (!bookingToCancel) return;
 
@@ -292,11 +317,32 @@ export default function MyBookingsPage() {
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     if (direction === 'prev') {
-      setCurrentWeekStart(addDays(currentWeekStart, -7));
+      const newDate = addDays(currentWeekStart, -7);
+      // Ensure we're at the start of the week
+      setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
     } else {
-      setCurrentWeekStart(addDays(currentWeekStart, 7));
+      const newDate = addDays(currentWeekStart, 7);
+      // Ensure we're at the start of the week
+      setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
     }
   };
+
+  // Calendar date picker handler
+  const handleCalendarDateSelect = (date: Date | undefined) => {
+    if (date) {
+      // Navigate to the week containing the selected date
+      const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+      setCurrentWeekStart(weekStart);
+    }
+  };
+
+  // Get all days in the current week for highlighting
+  const getCurrentWeekDaysForHighlight = () => {
+    const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: currentWeekStart, end: weekEnd });
+  };
+
+  const currentWeekDays = getCurrentWeekDaysForHighlight();
 
   // Filter and sort bookings based on search, status, and date
   const filteredBookings = bookings
@@ -365,7 +411,7 @@ export default function MyBookingsPage() {
       {error && (
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-error/10 flex items-center justify-center">
-            <Calendar className="w-8 h-8 text-error" />
+            <CalendarIcon className="w-8 h-8 text-error" />
           </div>
           <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
             Error loading bookings
@@ -388,42 +434,68 @@ export default function MyBookingsPage() {
 
           {/* Week Navigation */}
           <div className="flex items-center justify-between gap-4 w-full">
-            <div className="flex items-center justify-between gap-4 w-full">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateWeek('prev')}
-                className="h-10 w-10 p-0"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateWeek('prev')}
+              className="h-10 w-10 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
 
-              <div className="text-base lg:text-lg font-poppins font-semibold text-charcoal">
-                {(() => {
-                  const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
-                  return `${currentWeekStart.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-                })()}
-              </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-10 px-4 font-poppins font-medium text-charcoal hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  <span className="text-base lg:text-lg">
+                    {`${format(currentWeekStart, 'do MMM')} - ${format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'do MMM')}`}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="center">
+                <Calendar
+                  mode="single"
+                  selected={currentWeekStart}
+                  onSelect={handleCalendarDateSelect}
+                  captionLayout="dropdown"
+                  fromYear={new Date().getFullYear() - 2}
+                  toYear={new Date().getFullYear() + 1}
+                  weekStartsOn={1}
+                  modifiers={{
+                    selectedWeek: currentWeekDays,
+                  }}
+                  modifiersClassNames={{
+                    selectedWeek: 'bg-primary/10 text-primary font-semibold',
+                  }}
+                  className="rounded-md border-0"
+                />
+                <div className="p-3 pt-0 border-t">
+                  <div className="text-xs font-inter text-muted-foreground text-center">
+                    Showing bookings for the week of {format(currentWeekStart, 'MMM d, yyyy')} -{' '}
+                    {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateWeek('next')}
-                className="h-10 w-10 p-0"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateWeek('next')}
+              className="h-10 w-10 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
 
           {/* Day Sections */}
           {bookings.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <Calendar className="w-8 h-8 text-gray-400" />
+                <CalendarIcon className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
                 No bookings this week
@@ -441,6 +513,7 @@ export default function MyBookingsPage() {
                     <DayBookingSection
                       date={date}
                       bookings={dayBookings}
+                      onBookingClick={handleBookingClick}
                       onMessage={handleMessage}
                       onReschedule={handleReschedule}
                       onCancel={handleCancel}
@@ -529,6 +602,18 @@ export default function MyBookingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        open={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+        booking={selectedBooking}
+        onMessage={handleMessage}
+        onReschedule={handleReschedule}
+        onCancel={handleCancel}
+        onReview={handleReview}
+        cancellingBookingId={cancellingBookingId}
+      />
     </DashboardPageWrapper>
   );
 }

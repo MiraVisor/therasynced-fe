@@ -141,14 +141,14 @@ const JobTitlesPage = () => {
       accessorKey: 'name',
       header: 'Name',
       cell: ({ row }) => (
-        <div className="font-inter font-medium text-foreground">{row.original.name}</div>
+        <div className="font-inter font-medium text-charcoal">{row.original.name}</div>
       ),
     },
     {
       accessorKey: 'description',
       header: 'Description',
       cell: ({ row }) => (
-        <div className="font-open-sans text-sm text-muted-foreground max-w-md truncate">
+        <div className="font-inter text-sm text-muted-foreground max-w-xs truncate">
           {row.original.description || '-'}
         </div>
       ),
@@ -157,7 +157,10 @@ const JobTitlesPage = () => {
       accessorKey: 'freelancerCount',
       header: 'Freelancers',
       cell: ({ row }) => (
-        <Badge variant="outline" className="font-inter">
+        <Badge
+          variant="outline"
+          className="font-inter text-xs px-2 py-1 bg-info/10 text-info border-info/20"
+        >
           {row.original.freelancerCount || 0}
         </Badge>
       ),
@@ -166,7 +169,10 @@ const JobTitlesPage = () => {
       accessorKey: 'serviceCategoryCount',
       header: 'Service Categories',
       cell: ({ row }) => (
-        <Badge variant="outline" className="font-inter">
+        <Badge
+          variant="outline"
+          className="font-inter text-xs px-2 py-1 bg-primary/10 text-primary border-primary/20"
+        >
           {row.original.serviceCategoryCount || 0}
         </Badge>
       ),
@@ -189,15 +195,15 @@ const JobTitlesPage = () => {
               variant="ghost"
               size="sm"
               onClick={() => handleEdit(jobTitle)}
-              className="font-inter"
+              className="h-8 w-8 p-0 hover:bg-info/10"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-4 w-4 text-info" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleDeleteClick(jobTitle)}
-              className="text-error hover:text-error font-inter"
+              className="h-8 w-8 p-0 text-error hover:bg-error/10"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

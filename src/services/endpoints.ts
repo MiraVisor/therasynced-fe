@@ -71,6 +71,10 @@ export const ENDPOINTS = {
     recentFavorite: '/freelancer/favorite/recent',
     files: '/freelancer/files', // Get all uploaded files
   },
+  // Dashboard endpoints
+  dashboard: {
+    freelancerOverview: '/dashboard/freelancer/overview',
+  },
   // Chat/messaging endpoints
   chat: {
     contacts: '/chat/contacts',
@@ -169,9 +173,9 @@ export const ENDPOINTS = {
       reject: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/reject`,
       getByStatus: (status: string) => `/freelancer/admin/verifications/all?status=${status}`,
       approveCertificate: (freelancerId: string) =>
-        `/freelancer/admin/verification/${freelancerId}/certificate/approve`,
+        `/freelancer/admin/first-aid-certificate/${freelancerId}/approve`,
       rejectCertificate: (freelancerId: string) =>
-        `/freelancer/admin/verification/${freelancerId}/certificate/reject`,
+        `/freelancer/admin/first-aid-certificate/${freelancerId}/reject`,
     },
     // Complaint management
     complaint: {
@@ -186,6 +190,20 @@ export const ENDPOINTS = {
       getStats: '/admin/subscriptions/stats',
       getUserSubscription: (userId: string) => `/admin/subscriptions/user/${userId}`,
       overrideAccess: (userId: string) => `/admin/subscriptions/user/${userId}/override`,
+    },
+    // Overview management
+    overview: {
+      get: '/admin/overview',
+    },
+    // Bookings management
+    bookings: {
+      getStats: '/admin/bookings/stats',
+      getAll: '/admin/bookings',
+    },
+    // Finance management
+    finance: {
+      getRevenue: '/admin/finance/revenue',
+      getSubscriptions: '/admin/finance/subscriptions',
     },
   },
 };

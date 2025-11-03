@@ -31,12 +31,12 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     },
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-inter font-medium text-charcoal">
           {row.original.cardInfo?.initials || row.original.name.charAt(0)}
         </div>
         <div>
-          <div className="font-medium">{row.original.name}</div>
-          <div className="text-sm text-gray-500">{row.original.email}</div>
+          <div className="font-inter font-medium text-charcoal">{row.original.name}</div>
+          <div className="font-inter text-xs text-muted-foreground">{row.original.email}</div>
         </div>
       </div>
     ),
@@ -46,8 +46,12 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     header: 'Specialization',
     cell: ({ row }) => (
       <div>
-        <div className="font-medium">{row.original.cardInfo?.mainService || 'General'}</div>
-        <div className="text-sm text-gray-500">{row.original.cardInfo?.yearsOfExperience}</div>
+        <div className="font-inter font-medium text-charcoal">
+          {row.original.cardInfo?.mainService || 'General'}
+        </div>
+        <div className="font-inter text-xs text-muted-foreground">
+          {row.original.cardInfo?.yearsOfExperience || '-'}
+        </div>
       </div>
     ),
   },
@@ -90,9 +94,9 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     accessorKey: 'city',
     header: 'Location',
     cell: ({ row }) => (
-      <div className="flex items-center gap-1">
-        <MapPin className="h-4 w-4 text-gray-500" />
-        <span>{row.original.city}</span>
+      <div className="flex items-center gap-1 font-inter text-sm text-foreground">
+        <MapPin className="h-4 w-4 text-muted-foreground" />
+        <span>{row.original.city || '-'}</span>
       </div>
     ),
   },
@@ -104,8 +108,8 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
       const totalSlots = row.original.slotSummary?.totalSlots || 0;
 
       return (
-        <div className="flex items-center gap-1">
-          <Clock className="h-4 w-4 text-gray-500" />
+        <div className="flex items-center gap-1 font-inter text-sm text-foreground">
+          <Clock className="h-4 w-4 text-muted-foreground" />
           <span>
             {availableSlots} of {totalSlots}
           </span>
@@ -117,23 +121,10 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     accessorKey: 'cardInfo.patientStories',
     header: 'Patients',
     cell: ({ row }) => (
-      <div className="text-center">{row.original.cardInfo?.patientStories || 0}</div>
+      <div className="font-inter text-sm text-foreground text-center">
+        {row.original.cardInfo?.patientStories || 0}
+      </div>
     ),
-  },
-  {
-    accessorKey: 'isFavorite',
-    header: 'Favorite',
-    cell: ({ row }) => {
-      const isFavorite = row.original.isFavorite;
-
-      return (
-        <div className="flex justify-center">
-          <Heart
-            className={`h-5 w-5 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-300'}`}
-          />
-        </div>
-      );
-    },
   },
   {
     accessorKey: 'isActive',
@@ -144,8 +135,10 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
       return (
         <Badge
           variant="outline"
-          className={`px-3 py-1 rounded-md ${
-            isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          className={`font-inter font-medium text-xs px-2 py-1 ${
+            isActive
+              ? 'bg-success/10 text-success border-success/20'
+              : 'bg-error/10 text-error border-error/20'
           }`}
         >
           {isActive ? 'Active' : 'Inactive'}
@@ -203,10 +196,6 @@ const RealFreelancersPage = () => {
       icon: Users,
       iconColor: 'text-info',
       iconBg: 'bg-info/10',
-      sparklineData: Array.from(
-        { length: 7 },
-        () => totalFreelancers + Math.floor(Math.random() * 5),
-      ),
     },
     {
       title: 'Active Freelancers',
@@ -215,10 +204,6 @@ const RealFreelancersPage = () => {
       icon: Clock,
       iconColor: 'text-success',
       iconBg: 'bg-success/10',
-      sparklineData: Array.from(
-        { length: 7 },
-        () => activeFreelancers + Math.floor(Math.random() * 3),
-      ),
     },
   ];
 
@@ -251,7 +236,6 @@ const RealFreelancersPage = () => {
               icon={Icon}
               iconColor={stat.iconColor}
               iconBg={stat.iconBg}
-              sparklineData={stat.sparklineData}
               interactive
               onClick={() => {
                 // Navigate to details or show modal

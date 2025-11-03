@@ -164,10 +164,12 @@ const ExpertCardSkeleton = () => (
 );
 
 const UserOverview = () => {
+  console.log('UserOverview component rendering');
   const dispatch = useDispatch();
   const { experts, loading, error, pagination, loadingMore } = useSelector(
     (state: RootState) => state.overview,
   );
+  console.log('Redux state - experts:', experts, 'loading:', loading, 'error:', error);
   const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -200,8 +202,18 @@ const UserOverview = () => {
   }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
+    console.log('useEffect triggered - experts:', experts, 'searchQuery:', searchQuery);
+    console.log('experts type:', typeof experts, 'isArray:', Array.isArray(experts));
+
+    if (!experts || !Array.isArray(experts)) {
+      console.warn('experts is not an array:', experts);
+      setFilteredExperts([]);
+      return;
+    }
+
     const mappedExperts = experts.map(mapFreelancerToExpert);
     let filtered = mappedExperts;
+    console.log('mappedExperts:', mappedExperts);
 
     // Apply search filter
     if (searchQuery) {
