@@ -109,7 +109,7 @@ const VerificationsPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch verifications with pagination, search, and status filter
-  const { verifications, loading, initialLoading, error, pagination } = useVerifications({
+  const { verifications, loading, initialLoading, error, pagination, refetch } = useVerifications({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
@@ -156,6 +156,33 @@ const VerificationsPage = () => {
     fetchStats();
   }, []);
 
+  // Function to refetch stats
+  const refetchStats = async () => {
+    try {
+      setStatsLoading(true);
+      const [pendingResponse, approvedResponse, rejectedResponse] = await Promise.all([
+        adminVerificationService.getByStatus('PENDING'),
+        adminVerificationService.getByStatus('APPROVED'),
+        adminVerificationService.getByStatus('REJECTED'),
+      ]);
+
+      const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
+      const approved = approvedResponse.success ? (approvedResponse.data || []).length : 0;
+      const rejected = rejectedResponse.success ? (rejectedResponse.data || []).length : 0;
+
+      setStats({
+        pending,
+        approved,
+        rejected,
+        total: pending + approved + rejected,
+      });
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
   // Handle action submission
   const handleActionSubmit = async () => {
     if (!selectedFreelancer || !selectedActionType || !selectedAction) return;
@@ -199,8 +226,9 @@ const VerificationsPage = () => {
           selectedActionType === 'verification' ? 'verification' : 'first aid certificate';
         toast.success(`${typeText} ${actionText} successfully`);
         handleCloseActionDialog();
-        // Refresh data
-        window.location.reload();
+        // Refresh data by triggering a re-fetch instead of full page reload
+        refetch();
+        refetchStats();
       }
     } catch (error: any) {
       toast.error(error.message || `Failed to ${selectedAction} ${selectedActionType}`);
@@ -301,25 +329,22 @@ const VerificationsPage = () => {
     },
   ];
 
-  if (error) {
-    return (
-      <DashboardPageWrapper
-        header={
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Queue</h1>
-        }
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="font-open-sans text-lg text-error">Error: {error}</div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
-
   return (
     <DashboardPageWrapper
       header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Queue</h1>}
     >
       <div className="space-y-6 lg:space-y-8">
+        {/* Error Alert */}
+        {error && (
+          <div className="bg-error/10 border border-error/20 rounded-lg p-4">
+            <div className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-error" />
+              <span className="font-medium text-error">Error loading verifications</span>
+            </div>
+            <p className="text-sm text-error/80 mt-1">{error}</p>
+          </div>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {statsConfig.map((config) => (
