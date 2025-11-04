@@ -8,16 +8,13 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
-import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
-import { ProfileCard } from '@/components/core/Dashboard/AdminSide/Components/ProfileCard';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import adminComplaintService, {
-  type ComplaintListResponse,
-} from '@/services/adminComplaintService';
-import { ComplaintCategory, ComplaintStatus } from '@/types/types';
+import { useComplaints } from '@/hooks/useComplaints';
+import adminComplaintService from '@/services/adminComplaintService';
+import { ComplaintStatus } from '@/types/types';
 
 interface ComplaintStats {
   total: number;
@@ -40,7 +37,7 @@ interface Complaint {
     email: string;
     role: string;
   };
-  category: ComplaintCategory;
+  category: string;
   reason: string;
   description: string;
   status: ComplaintStatus;
@@ -50,8 +47,35 @@ interface Complaint {
 
 const ComplaintsPage = () => {
   const router = useRouter();
-  const [complaints, setComplaints] = useState<Complaint[]>([]);
-  const [loading, setLoading] = useState(true);
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ComplaintStatus | undefined>(undefined);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Reset to page 1 when search changes
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
+
+  // Fetch complaints with pagination, search, and status filter
+  const { complaints, loading, initialLoading, error, pagination, refetch } = useComplaints({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+    status: statusFilter,
+  });
+
+  // Calculate stats - we'll need to fetch these separately or from the API
   const [stats, setStats] = useState<ComplaintStats>({
     total: 0,
     pending: 0,
@@ -59,82 +83,55 @@ const ComplaintsPage = () => {
     resolved: 0,
     dismissed: 0,
   });
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchComplaints = async () => {
-    try {
-      setLoading(true);
-      const filters: any = {};
-      if (selectedStatus !== 'all') filters.status = selectedStatus;
-      if (selectedCategory !== 'all') filters.category = selectedCategory;
-
-      const response = await adminComplaintService.getAll(undefined, filters);
-      if (response.success) {
-        const data = response.data || [];
-        setComplaints(data);
-        setStats({
-          total: data.length,
-          pending: data.filter((c) => c.status === 'PENDING').length,
-          underReview: data.filter((c) => c.status === 'UNDER_REVIEW').length,
-          resolved: data.filter((c) => c.status === 'RESOLVED').length,
-          dismissed: data.filter((c) => c.status === 'DISMISSED').length,
-        });
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch complaints');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch stats separately
   useEffect(() => {
-    fetchComplaints();
-  }, [selectedStatus, selectedCategory]);
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const [pendingResponse, underReviewResponse, resolvedResponse, dismissedResponse] =
+          await Promise.all([
+            adminComplaintService.getAll(undefined, { status: 'PENDING' }),
+            adminComplaintService.getAll(undefined, { status: 'UNDER_REVIEW' }),
+            adminComplaintService.getAll(undefined, { status: 'RESOLVED' }),
+            adminComplaintService.getAll(undefined, { status: 'DISMISSED' }),
+          ]);
+
+        const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
+        const underReview = underReviewResponse.success
+          ? (underReviewResponse.data || []).length
+          : 0;
+        const resolved = resolvedResponse.success ? (resolvedResponse.data || []).length : 0;
+        const dismissed = dismissedResponse.success ? (dismissedResponse.data || []).length : 0;
+
+        setStats({
+          pending,
+          underReview,
+          resolved,
+          dismissed,
+          total: pending + underReview + resolved + dismissed,
+        });
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // Show error as toast when it occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to load complaints: ${error}`);
+    }
+  }, [error]);
 
   const handleViewDetails = (complaintId: string) => {
     router.push(`/dashboard/admin/complaints/${complaintId}`);
   };
-
-  const handleResetFilters = () => {
-    setSelectedStatus('all');
-    setSelectedCategory('all');
-    setSearchQuery('');
-  };
-
-  const filteredComplaints = complaints.filter((complaint) => {
-    const matchesSearch =
-      searchQuery === '' ||
-      complaint.reporter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reporter.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reportedUser.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reportedUser.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesSearch;
-  });
-
-  const statusOptions = [
-    { label: 'All Statuses', value: 'all' },
-    { label: 'Pending', value: 'PENDING' },
-    { label: 'Under Review', value: 'UNDER_REVIEW' },
-    { label: 'Resolved', value: 'RESOLVED' },
-    { label: 'Dismissed', value: 'DISMISSED' },
-  ];
-
-  const categoryOptions = [
-    { label: 'All Categories', value: 'all' },
-    { label: 'Harassment', value: 'HARASSMENT' },
-    { label: 'Unprofessional Behavior', value: 'UNPROFESSIONAL_BEHAVIOR' },
-    { label: 'Safety Concern', value: 'SAFETY_CONCERN' },
-    { label: 'No Show', value: 'NO_SHOW' },
-    { label: 'Late Cancellation', value: 'LATE_CANCELLATION' },
-    { label: 'Inappropriate Conduct', value: 'INAPPROPRIATE_CONDUCT' },
-    { label: 'Poor Service Quality', value: 'POOR_SERVICE_QUALITY' },
-    { label: 'Other', value: 'OTHER' },
-  ];
 
   const columns: ColumnDef<Complaint>[] = [
     {
@@ -211,11 +208,7 @@ const ComplaintsPage = () => {
 
   return (
     <DashboardPageWrapper
-      header={
-        <div className="flex items-center justify-between w-full">
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Complaints Center</h1>
-        </div>
-      }
+      header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Complaints Center</h1>}
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
@@ -226,6 +219,7 @@ const ComplaintsPage = () => {
             icon={FileText}
             iconColor="text-primary"
             iconBg="bg-primary/10"
+            loading={statsLoading}
           />
           <EnhancedStatCard
             title="Pending"
@@ -233,6 +227,7 @@ const ComplaintsPage = () => {
             icon={AlertTriangle}
             iconColor="text-warning"
             iconBg="bg-warning/10"
+            loading={statsLoading}
           />
           <EnhancedStatCard
             title="Under Review"
@@ -240,6 +235,7 @@ const ComplaintsPage = () => {
             icon={Shield}
             iconColor="text-info"
             iconBg="bg-info/10"
+            loading={statsLoading}
           />
           <EnhancedStatCard
             title="Resolved"
@@ -247,6 +243,7 @@ const ComplaintsPage = () => {
             icon={CheckCircle}
             iconColor="text-success"
             iconBg="bg-success/10"
+            loading={statsLoading}
           />
           <EnhancedStatCard
             title="Dismissed"
@@ -254,45 +251,112 @@ const ComplaintsPage = () => {
             icon={XCircle}
             iconColor="text-error"
             iconBg="bg-error/10"
+            loading={statsLoading}
           />
         </div>
 
-        {/* Filters */}
-        <FilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by reporter, reported user, or reason..."
-          filters={[
-            {
-              key: 'status',
-              label: 'Status',
-              value: selectedStatus,
-              options: statusOptions,
-              onValueChange: setSelectedStatus,
-            },
-            {
-              key: 'category',
-              label: 'Category',
-              value: selectedCategory,
-              options: categoryOptions,
-              onValueChange: setSelectedCategory,
-            },
-          ]}
-          onReset={handleResetFilters}
-        />
+        {/* Status Filter */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setStatusFilter(undefined);
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === undefined
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            All ({stats.total})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter('PENDING');
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === 'PENDING'
+                ? 'bg-warning text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Pending ({stats.pending})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter('UNDER_REVIEW');
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === 'UNDER_REVIEW'
+                ? 'bg-info text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Under Review ({stats.underReview})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter('RESOLVED');
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === 'RESOLVED'
+                ? 'bg-success text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Resolved ({stats.resolved})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter('DISMISSED');
+              setPage(1);
+            }}
+            className={`px-4 py-2 rounded-md font-medium ${
+              statusFilter === 'DISMISSED'
+                ? 'bg-error text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Dismissed ({stats.dismissed})
+          </button>
+        </div>
 
         {/* Complaints Table */}
         <DataTable
           columns={columns}
-          data={filteredComplaints}
-          title="All Complaints"
+          data={complaints}
+          title={`${statusFilter || 'All'} Complaints`}
           searchKey="reason"
           searchPlaceholder="Search complaints..."
-          enableSorting
-          enableFiltering
-          enablePagination
-          pageSize={10}
+          enableSorting={false}
+          enableFiltering={true}
+          enableColumnVisibility={true}
+          enablePagination={true}
+          showSearch={true}
+          showSorting={false}
+          initialLoading={initialLoading}
+          loading={loading}
+          externalSearchValue={searchQuery}
+          onExternalSearchChange={(value) => setSearchQuery(value)}
+          externalPageIndex={page - 1}
+          externalPageSize={pageSize}
+          totalPages={pagination?.totalPages}
+          onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
+          onExternalPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize);
+            setPage(1);
+          }}
         />
+
+        {/* Summary */}
+        <div className="mt-4 text-sm text-gray-500">
+          Showing {complaints.length} of {pagination?.total || 0} complaints
+          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
+          {statusFilter && ` with status "${statusFilter}"`}
+        </div>
       </div>
     </DashboardPageWrapper>
   );
