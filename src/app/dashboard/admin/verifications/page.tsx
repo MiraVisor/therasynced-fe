@@ -16,6 +16,10 @@ import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
+import {
+  StatusFilter,
+  StatusFilterOption,
+} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import {
@@ -336,6 +340,35 @@ const VerificationsPage = () => {
     },
   ];
 
+  // Status filter options
+  const statusFilterOptions: StatusFilterOption<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>[] =
+    [
+      {
+        label: 'All',
+        value: undefined,
+        count: stats.total,
+        color: 'primary',
+      },
+      {
+        label: 'Pending',
+        value: 'PENDING' as const,
+        count: stats.pending,
+        color: 'warning',
+      },
+      {
+        label: 'Approved',
+        value: 'APPROVED' as const,
+        count: stats.approved,
+        color: 'success',
+      },
+      {
+        label: 'Rejected',
+        value: 'REJECTED' as const,
+        count: stats.rejected,
+        color: 'error',
+      },
+    ];
+
   return (
     <DashboardPageWrapper
       header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Queue</h1>}
@@ -357,60 +390,14 @@ const VerificationsPage = () => {
         </div>
 
         {/* Status Filter */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setStatusFilter(undefined);
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === undefined
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All ({stats.total})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('PENDING');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'PENDING'
-                ? 'bg-warning text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Pending ({stats.pending})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('APPROVED');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'APPROVED'
-                ? 'bg-success text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Approved ({stats.approved})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('REJECTED');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'REJECTED'
-                ? 'bg-error text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Rejected ({stats.rejected})
-          </button>
-        </div>
+        <StatusFilter<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>
+          options={statusFilterOptions}
+          selectedValue={statusFilter}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        />
 
         {/* Verifications Table */}
         <DataTable

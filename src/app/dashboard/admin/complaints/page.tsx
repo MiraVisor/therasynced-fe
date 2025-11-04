@@ -9,6 +9,10 @@ import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
+import {
+  StatusFilter,
+  StatusFilterOption,
+} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
@@ -245,6 +249,40 @@ const ComplaintsPage = () => {
     },
   ];
 
+  // Status filter options
+  const statusFilterOptions: StatusFilterOption<ComplaintStatus | undefined>[] = [
+    {
+      label: 'All',
+      value: undefined,
+      count: stats.total,
+      color: 'primary',
+    },
+    {
+      label: 'Pending',
+      value: 'PENDING' as ComplaintStatus,
+      count: stats.pending,
+      color: 'warning',
+    },
+    {
+      label: 'Under Review',
+      value: 'UNDER_REVIEW' as ComplaintStatus,
+      count: stats.underReview,
+      color: 'info',
+    },
+    {
+      label: 'Resolved',
+      value: 'RESOLVED' as ComplaintStatus,
+      count: stats.resolved,
+      color: 'success',
+    },
+    {
+      label: 'Dismissed',
+      value: 'DISMISSED' as ComplaintStatus,
+      count: stats.dismissed,
+      color: 'error',
+    },
+  ];
+
   // Render stat cards with responsive layout
   const renderStatCards = () => (
     <div
@@ -283,73 +321,14 @@ const ComplaintsPage = () => {
         {renderStatCards()}
 
         {/* Status Filter */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setStatusFilter(undefined);
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === undefined
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All ({stats.total})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('PENDING');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'PENDING'
-                ? 'bg-warning text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Pending ({stats.pending})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('UNDER_REVIEW');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'UNDER_REVIEW'
-                ? 'bg-info text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Under Review ({stats.underReview})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('RESOLVED');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'RESOLVED'
-                ? 'bg-success text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Resolved ({stats.resolved})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('DISMISSED');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'DISMISSED'
-                ? 'bg-error text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Dismissed ({stats.dismissed})
-          </button>
-        </div>
+        <StatusFilter<ComplaintStatus | undefined>
+          options={statusFilterOptions}
+          selectedValue={statusFilter}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        />
 
         {/* Complaints Table */}
         <DataTable
