@@ -206,54 +206,81 @@ const ComplaintsPage = () => {
     },
   ];
 
+  // Define stat cards configuration
+  const statCards = [
+    {
+      title: 'Total Complaints',
+      value: stats.total.toString(),
+      icon: FileText,
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
+    },
+    {
+      title: 'Pending',
+      value: stats.pending.toString(),
+      icon: AlertTriangle,
+      iconColor: 'text-warning',
+      iconBg: 'bg-warning/10',
+    },
+    {
+      title: 'Under Review',
+      value: stats.underReview.toString(),
+      icon: Shield,
+      iconColor: 'text-info',
+      iconBg: 'bg-info/10',
+    },
+    {
+      title: 'Resolved',
+      value: stats.resolved.toString(),
+      icon: CheckCircle,
+      iconColor: 'text-success',
+      iconBg: 'bg-success/10',
+    },
+    {
+      title: 'Dismissed',
+      value: stats.dismissed.toString(),
+      icon: XCircle,
+      iconColor: 'text-error',
+      iconBg: 'bg-error/10',
+    },
+  ];
+
+  // Render stat cards with responsive layout
+  const renderStatCards = () => (
+    <div
+      className="grid gap-6 
+      grid-cols-1 
+      sm:grid-cols-2 
+      lg:grid-cols-3 
+      xl:grid-cols-5"
+    >
+      {statCards.map((card, index) => (
+        <div
+          key={card.title}
+          className={`
+            ${index >= 3 ? 'lg:col-span-1 xl:col-span-1' : ''}
+          `}
+        >
+          <EnhancedStatCard
+            title={card.title}
+            value={card.value}
+            icon={card.icon}
+            iconColor={card.iconColor}
+            iconBg={card.iconBg}
+            loading={statsLoading}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <DashboardPageWrapper
       header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Complaints Center</h1>}
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <EnhancedStatCard
-            title="Total Complaints"
-            value={stats.total.toString()}
-            icon={FileText}
-            iconColor="text-primary"
-            iconBg="bg-primary/10"
-            loading={statsLoading}
-          />
-          <EnhancedStatCard
-            title="Pending"
-            value={stats.pending.toString()}
-            icon={AlertTriangle}
-            iconColor="text-warning"
-            iconBg="bg-warning/10"
-            loading={statsLoading}
-          />
-          <EnhancedStatCard
-            title="Under Review"
-            value={stats.underReview.toString()}
-            icon={Shield}
-            iconColor="text-info"
-            iconBg="bg-info/10"
-            loading={statsLoading}
-          />
-          <EnhancedStatCard
-            title="Resolved"
-            value={stats.resolved.toString()}
-            icon={CheckCircle}
-            iconColor="text-success"
-            iconBg="bg-success/10"
-            loading={statsLoading}
-          />
-          <EnhancedStatCard
-            title="Dismissed"
-            value={stats.dismissed.toString()}
-            icon={XCircle}
-            iconColor="text-error"
-            iconBg="bg-error/10"
-            loading={statsLoading}
-          />
-        </div>
+        {renderStatCards()}
 
         {/* Status Filter */}
         <div className="flex gap-2">
