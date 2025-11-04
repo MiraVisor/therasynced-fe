@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const media = window.matchMedia(query);
     if (media.matches !== matches) {
       setMatches(media.matches);
@@ -13,5 +15,6 @@ export function useMediaQuery(query: string): boolean {
     return () => media.removeEventListener('change', listener);
   }, [matches, query]);
 
-  return matches;
+  // Always return false until mounted to match server-side rendering
+  return isMounted ? matches : false;
 }

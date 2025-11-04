@@ -37,7 +37,12 @@ const nextConfig = {
   // Performance optimizations
   swcMinify: true,
   compiler: {
-    removeConsole: true,
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Ensure CSS is properly loaded
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
   },
   async headers() {
     return [

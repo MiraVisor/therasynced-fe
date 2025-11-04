@@ -17,6 +17,12 @@ export default function TrialBanner() {
 
   const [isDismissed, setIsDismissed] = useState(false);
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component is mounted before accessing localStorage
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     // Load subscription status
@@ -24,13 +30,16 @@ export default function TrialBanner() {
   }, [dispatch]);
 
   useEffect(() => {
+    // Only access localStorage after component is mounted
+    if (!isMounted) return;
+
     // Check if banner was dismissed today
     const today = new Date().toDateString();
     const dismissedDate = localStorage.getItem('trialBannerDismissed');
     if (dismissedDate === today) {
       setIsDismissed(true);
     }
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
     const endDate = currentSubscription?.trialEnd || currentSubscription?.trialEndsAt;
@@ -49,9 +58,10 @@ export default function TrialBanner() {
   };
 
   const isTrialActive = currentSubscription?.status === 'TRIALING';
-  const showBanner = isTrialActive && !isDismissed && daysRemaining !== null && daysRemaining > 0;
+  const showBanner =
+    isMounted && isTrialActive && !isDismissed && daysRemaining !== null && daysRemaining > 0;
 
-  if (isLoading || !showBanner || daysRemaining === null) {
+  if (!isMounted || isLoading || !showBanner || daysRemaining === null) {
     return null;
   }
 

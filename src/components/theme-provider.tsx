@@ -10,7 +10,8 @@ export function ThemeProvider({ children }: React.ComponentProps<typeof NextThem
       defaultTheme="light"
       forcedTheme="light"
       enableSystem={false}
-      disableTransitionOnChange={false}
+      disableTransitionOnChange
+      storageKey="therasynced-theme"
     >
       {children}
     </NextThemesProvider>
