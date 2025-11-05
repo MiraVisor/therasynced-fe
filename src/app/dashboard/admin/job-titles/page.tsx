@@ -84,16 +84,15 @@ const JobTitlesPage = () => {
         const response = await adminJobTitleService.getAll();
         if (response.success) {
           const allJobTitles = response.data || [];
-          console.log('allJobTitles:', allJobTitles);
           const total = allJobTitles.length;
-          const active = allJobTitles.filter((jt) => jt.isActive).length;
-          const inactive = allJobTitles.filter((jt) => !jt.isActive).length;
+          const active = allJobTitles.filter((jt: JobTitleResponse) => jt.isActive).length;
+          const inactive = allJobTitles.filter((jt: JobTitleResponse) => !jt.isActive).length;
           const totalFreelancers = allJobTitles.reduce(
-            (sum, jt) => sum + (jt._count?.users || 0),
+            (sum: number, jt: JobTitleResponse) => sum + (jt._count?.users || 0),
             0,
           );
           const totalServiceCategories = allJobTitles.reduce(
-            (sum, jt) => sum + (jt._count?.serviceCategories || 0),
+            (sum: number, jt: JobTitleResponse) => sum + (jt._count?.serviceCategories || 0),
             0,
           );
           setStats({ total, active, inactive, totalFreelancers, totalServiceCategories });

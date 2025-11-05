@@ -43,17 +43,17 @@ export const StatusFilter = <T = string,>({
   };
 
   return (
-    <div className={`flex gap-2 ${className}`}>
+    <div className={`flex flex-wrap gap-2 ${className}`}>
       {options.map((option) => {
         const isSelected = selectedValue === option.value;
         return (
           <button
             key={String(option.value)}
             onClick={() => onChange(option.value)}
-            className={`px-4 py-2 rounded-md font-medium transition-colors duration-200 ${getButtonStyles(
+            className={`px-3 py-2 rounded-md font-medium transition-colors duration-200 text-sm whitespace-nowrap ${getButtonStyles(
               option.color,
               isSelected,
-            )}`}
+            )} min-w-0 flex-shrink-0`}
           >
             {option.label} ({option.count})
           </button>
