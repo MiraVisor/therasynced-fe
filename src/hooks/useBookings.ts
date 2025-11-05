@@ -1,13 +1,76 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import adminBookingsService, { AdminBookingDto } from '@/services/adminBookingsService';
 import bookingService from '@/services/bookingService';
-import { Booking, PaginationDto } from '@/types/types';
+import { ApiResponse, Booking, PaginationDto } from '@/types/types';
 
 interface UseBookingsOptions {
   includePast?: boolean;
   date?: string;
   pagination?: PaginationDto;
 }
+
+interface UseAdminBookingsParams {
+  limit?: number;
+  page?: number;
+  search?: string;
+}
+
+interface PaginationData {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export const useAdminBookings = (params?: UseAdminBookingsParams) => {
+  const [bookings, setBookings] = useState<AdminBookingDto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationData | null>(null);
+
+  // Track if this is the first load
+  const isFirstLoad = useRef(true);
+
+  const fetchBookings = useCallback(async () => {
+    try {
+      // Only set loading to true for subsequent loads, not initial load
+      if (!isFirstLoad.current) {
+        setLoading(true);
+      }
+      setError(null);
+
+      const response = await adminBookingsService.getAll({
+        page: params?.page,
+        limit: params?.limit,
+        search: params?.search,
+      });
+
+      setBookings(response.bookings);
+      setPagination(response.pagination);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while fetching bookings');
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
+      isFirstLoad.current = false;
+    }
+  }, [params?.page, params?.limit, params?.search]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  return {
+    bookings,
+    loading,
+    initialLoading,
+    error,
+    pagination,
+    refetch: fetchBookings,
+  };
+};
 
 export const usePatientBookings = (options: UseBookingsOptions = {}) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
