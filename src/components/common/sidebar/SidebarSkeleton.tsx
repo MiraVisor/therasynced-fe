@@ -8,15 +8,20 @@ interface SidebarSkeletonProps {
 
 export function SidebarSkeleton({ className }: SidebarSkeletonProps) {
   return (
-    <div className={cn('hidden md:flex fixed inset-y-0 z-10 h-svh w-[16rem] left-0', className)}>
-      <div className="flex h-full w-full flex-col bg-sidebar rounded-md dark:border dark:border-[#007745] px-2 p-4">
+    <div
+      className={cn(
+        'hidden md:flex fixed inset-y-0 z-10 h-svh w-[14rem] left-0 p-4 bg-dashboard !border-r-0',
+        className,
+      )}
+    >
+      <div className="flex h-full w-full flex-col bg-sidebar rounded-md dark:border dark:border-[#007745] px-2">
         {/* Header skeleton - Logo */}
-        <div className="mx-auto w-full mb-6 px-2">
+        <div className="mx-auto w-full mb-6 px-2 py-6">
           <div className="h-10 w-36 bg-gray-200 dark:bg-gray-700/30 rounded-md animate-pulse mx-auto" />
         </div>
 
         {/* Navigation menu items skeleton */}
-        <div className="flex-1 space-y-2 px-2">
+        <div className="flex-1 space-y-4 px-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}

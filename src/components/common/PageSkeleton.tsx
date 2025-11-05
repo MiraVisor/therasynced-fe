@@ -10,7 +10,7 @@ interface PageSkeletonProps {
 
 export function PageSkeleton({ className, showHeader = true, rows = 6 }: PageSkeletonProps) {
   return (
-    <div className={cn('w-full space-y-6', className)}>
+    <div className={cn('w-full space-y-6 ml-11', className)}>
       {/* Header skeleton */}
       {showHeader && (
         <div className="space-y-3">

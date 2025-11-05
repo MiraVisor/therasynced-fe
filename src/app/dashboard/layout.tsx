@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <SidebarProvider>
       <div className="flex h-screen w-full">
         {/* Desktop Sidebar */}
-        {!isMounted ? (
+        {isMounted ? (
           <>
             <SidebarSkeleton />
             <SidebarSkeletonMobile />
@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
 
         <main className="flex-1 overflow-y-auto p-8 w-full bg-dashboard">
-          {!isMounted ? <AdminPageSkeleton /> : children}
+          {isMounted ? <AdminPageSkeleton /> : children}
         </main>
       </div>
     </SidebarProvider>
