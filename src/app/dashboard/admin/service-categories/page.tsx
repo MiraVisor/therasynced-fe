@@ -1,14 +1,18 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Edit, FolderTree, Plus, Trash2 } from 'lucide-react';
+import { CheckCircle, FileText, XCircle } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
-import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
+import {
+  StatusFilter,
+  StatusFilterOption,
+} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -29,26 +33,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import adminJobTitleService, { type JobTitleResponse } from '@/services/adminJobTitleService';
 import adminServiceCategoryService, {
   type CreateServiceCategoryDto,
-  type GroupedServiceCategoriesResponse,
   type ServiceCategoryResponse,
   type UpdateServiceCategoryDto,
 } from '@/services/adminServiceCategoryService';
 
 const ServiceCategoriesPage = () => {
-  const [view, setView] = useState<'table' | 'hierarchy'>('table');
   const [serviceCategories, setServiceCategories] = useState<ServiceCategoryResponse[]>([]);
-  const [groupedCategories, setGroupedCategories] = useState<GroupedServiceCategoriesResponse[]>(
-    [],
-  );
   const [jobTitles, setJobTitles] = useState<JobTitleResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedJobTitle, setSelectedJobTitle] = useState<string>('all');
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [selectedJobTitleFilter, setSelectedJobTitleFilter] = useState<string | undefined>(
+    undefined,
+  );
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -60,22 +64,29 @@ const ServiceCategoriesPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Stats state
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+  });
+
   const fetchServiceCategories = async () => {
     try {
       setLoading(true);
-      const [categoriesResponse, groupedResponse, jobTitlesResponse] = await Promise.all([
+      const [categoriesResponse, jobTitlesResponse] = await Promise.all([
         adminServiceCategoryService.getAll(),
-        adminServiceCategoryService.getGrouped(),
         adminJobTitleService.getActive(),
       ]);
 
       if (categoriesResponse.success) {
         const data = categoriesResponse.data || [];
         setServiceCategories(data);
-      }
-
-      if (groupedResponse.success) {
-        setGroupedCategories(groupedResponse.data || []);
+        // Calculate stats
+        const total = data.length;
+        const active = data.filter((cat) => cat.isActive).length;
+        const inactive = data.filter((cat) => !cat.isActive).length;
+        setStats({ total, active, inactive });
       }
 
       if (jobTitlesResponse.success) {
@@ -85,6 +96,7 @@ const ServiceCategoriesPage = () => {
       toast.error(error.message || 'Failed to fetch service categories');
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -92,13 +104,29 @@ const ServiceCategoriesPage = () => {
     fetchServiceCategories();
   }, []);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Reset to page 1 when search changes
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
+
   const filteredCategories = serviceCategories.filter((category) => {
     const matchesSearch =
-      category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesJobTitle = selectedJobTitle === 'all' || category.jobTitle.id === selectedJobTitle;
+      category.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      category.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchesJobTitle =
+      !selectedJobTitleFilter || category.jobTitle.id === selectedJobTitleFilter;
     return matchesSearch && matchesJobTitle;
   });
+
+  const totalPages = Math.ceil(filteredCategories.length / pageSize);
 
   const handleCreate = async () => {
     if (!formData.jobTitleId) {
@@ -178,11 +206,6 @@ const ServiceCategoriesPage = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleResetFilters = () => {
-    setSelectedJobTitle('all');
-    setSearchQuery('');
-  };
-
   const columns: ColumnDef<ServiceCategoryResponse>[] = [
     {
       accessorKey: 'name',
@@ -234,6 +257,46 @@ const ServiceCategoriesPage = () => {
     },
   ];
 
+  const statusFilterOptions: StatusFilterOption<string | undefined>[] = [
+    {
+      label: 'All Job Titles',
+      value: undefined,
+      count: serviceCategories.length,
+      color: 'primary',
+    },
+    ...jobTitles.map((jt) => ({
+      label: jt.name,
+      value: jt.id,
+      count: serviceCategories.filter((cat) => cat.jobTitle.id === jt.id).length,
+      color: 'default' as const,
+    })),
+  ];
+
+  // Define stat cards configuration
+  const statCards = [
+    {
+      title: 'Total Categories',
+      value: stats.total.toString(),
+      icon: FileText,
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
+    },
+    {
+      title: 'Active',
+      value: stats.active.toString(),
+      icon: CheckCircle,
+      iconColor: 'text-success',
+      iconBg: 'bg-success/10',
+    },
+    {
+      title: 'Inactive',
+      value: stats.inactive.toString(),
+      icon: XCircle,
+      iconColor: 'text-error',
+      iconBg: 'bg-error/10',
+    },
+  ];
+
   return (
     <DashboardPageWrapper
       header={
@@ -253,123 +316,65 @@ const ServiceCategoriesPage = () => {
       }
     >
       <div className="space-y-6 lg:space-y-8">
-        {/* Filters */}
-        <FilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search categories..."
-          filters={[
-            {
-              key: 'jobTitle',
-              label: 'Job Title',
-              value: selectedJobTitle,
-              options: [
-                { label: 'All Job Titles', value: 'all' },
-                ...jobTitles.map((jt) => ({ label: jt.name, value: jt.id })),
-              ],
-              onValueChange: setSelectedJobTitle,
-            },
-          ]}
-          onReset={handleResetFilters}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {statCards.map((card) => (
+            <EnhancedStatCard
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              icon={card.icon}
+              iconColor={card.iconColor}
+              iconBg={card.iconBg}
+              loading={initialLoading}
+            />
+          ))}
+        </div>
+
+        {/* Status Filter */}
+        <StatusFilter<string | undefined>
+          options={statusFilterOptions}
+          selectedValue={selectedJobTitleFilter}
+          onChange={(value) => {
+            setSelectedJobTitleFilter(value);
+            setPage(1);
+          }}
         />
 
-        {/* View Toggle */}
-        <Tabs value={view} onValueChange={(v) => setView(v as 'table' | 'hierarchy')}>
-          <TabsList className="grid w-full md:w-[400px] grid-cols-2">
-            <TabsTrigger value="table" className="font-inter">
-              Table View
-            </TabsTrigger>
-            <TabsTrigger value="hierarchy" className="font-inter">
-              Hierarchical View
-            </TabsTrigger>
-          </TabsList>
+        {/* Service Categories Table */}
+        <DataTable
+          columns={columns}
+          data={filteredCategories}
+          title={`${selectedJobTitleFilter ? jobTitles.find((jt) => jt.id === selectedJobTitleFilter)?.name || 'Unknown' : 'All'} Service Categories`}
+          searchKey="name"
+          searchPlaceholder="Search categories..."
+          enableSorting
+          enableFiltering
+          enablePagination={true}
+          showSearch={true}
+          showSorting={false}
+          initialLoading={initialLoading}
+          loading={loading}
+          externalSearchValue={searchQuery}
+          onExternalSearchChange={(value) => setSearchQuery(value)}
+          externalPageIndex={page - 1}
+          externalPageSize={pageSize}
+          totalPages={totalPages}
+          onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
+          onExternalPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize);
+            setPage(1);
+          }}
+        />
 
-          <TabsContent value="table" className="mt-4">
-            <DataTable
-              columns={columns}
-              data={filteredCategories}
-              title="All Service Categories"
-              searchKey="name"
-              searchPlaceholder="Search categories..."
-              enableSorting
-              enableFiltering
-              enablePagination
-              pageSize={10}
-            />
-          </TabsContent>
-
-          <TabsContent value="hierarchy" className="mt-4">
-            <div className="space-y-6">
-              {groupedCategories.length > 0 ? (
-                groupedCategories.map((group) => (
-                  <EnhancedCard key={group.jobTitleId} variant="default" className="p-6">
-                    <h3 className="font-poppins text-lg font-semibold text-foreground mb-4 border-b border-border pb-3">
-                      {group.jobTitleName}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {group.categories.length > 0 ? (
-                        group.categories.map((category) => (
-                          <div
-                            key={category.id}
-                            className="flex flex-col gap-2 p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="font-inter font-medium text-sm text-foreground truncate">
-                                  {category.name}
-                                </div>
-                                {category.description && (
-                                  <div className="font-open-sans text-xs text-muted-foreground mt-1 line-clamp-2">
-                                    {category.description}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 mt-auto pt-2 border-t border-border">
-                              <StatusBadge
-                                status={category.isActive ? 'ACTIVE' : 'INACTIVE'}
-                                size="sm"
-                              />
-                              <div className="flex items-center gap-1 ml-auto">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEdit(category)}
-                                  className="font-inter h-7 w-7 p-0"
-                                >
-                                  <Edit className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteClick(category)}
-                                  className="text-error hover:text-error font-inter h-7 w-7 p-0"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="font-open-sans text-sm text-muted-foreground col-span-full p-3">
-                          No categories for this job title
-                        </p>
-                      )}
-                    </div>
-                  </EnhancedCard>
-                ))
-              ) : (
-                <EnhancedCard variant="default" className="p-6 text-center">
-                  <FolderTree className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="font-open-sans text-base text-muted-foreground">
-                    No service categories found
-                  </p>
-                </EnhancedCard>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Summary */}
+        <div className="mt-4 text-sm text-gray-500">
+          Showing {Math.min(pageSize, filteredCategories.length - (page - 1) * pageSize)} of{' '}
+          {filteredCategories.length} categories
+          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
+          {selectedJobTitleFilter &&
+            ` with job title "${jobTitles.find((jt) => jt.id === selectedJobTitleFilter)?.name}"`}
+        </div>
 
         {/* Create Dialog */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
