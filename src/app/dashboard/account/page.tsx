@@ -406,7 +406,7 @@ export default function AccountPage() {
 
   const renderProfileSection = () => {
     if (isProfileLoading) {
-      return <ProfileSectionSkeleton />;
+      return <ProfileSectionSkeleton showProfessionalSection={role === ROLES.FREELANCER} />;
     }
 
     return (
