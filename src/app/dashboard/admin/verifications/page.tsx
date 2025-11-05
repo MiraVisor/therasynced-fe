@@ -10,7 +10,6 @@ import {
   Shield,
   XCircle,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -32,7 +31,6 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useVerifications } from '@/hooks/useVerifications';
 import adminVerificationService, {
   type PendingVerificationResponse,
@@ -77,7 +75,6 @@ const statsConfig = [
 ];
 
 const VerificationsPage = () => {
-  const router = useRouter();
   // State for pagination and search
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -107,7 +104,7 @@ const VerificationsPage = () => {
       if (searchQuery !== debouncedSearch) {
         setPage(1);
       }
-    }, 500); // 500ms debounce delay
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
@@ -151,7 +148,6 @@ const VerificationsPage = () => {
           total: pending + approved + rejected,
         });
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
       } finally {
         setStatsLoading(false);
       }
@@ -188,7 +184,6 @@ const VerificationsPage = () => {
         total: pending + approved + rejected,
       });
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
     } finally {
       setStatsLoading(false);
     }
@@ -241,8 +236,12 @@ const VerificationsPage = () => {
         refetch();
         refetchStats();
       }
-    } catch (error: any) {
-      toast.error(error.message || `Failed to ${selectedAction} ${selectedActionType}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || `Failed to ${selectedAction} ${selectedActionType}`);
+      } else {
+        toast.error(`Failed to ${selectedAction} ${selectedActionType}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

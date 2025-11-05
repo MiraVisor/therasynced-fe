@@ -84,8 +84,8 @@ const ServiceCategoriesPage = () => {
         setServiceCategories(data);
         // Calculate stats
         const total = data.length;
-        const active = data.filter((cat) => cat.isActive).length;
-        const inactive = data.filter((cat) => !cat.isActive).length;
+        const active = data.filter((cat: ServiceCategoryResponse) => cat.isActive).length;
+        const inactive = data.filter((cat: ServiceCategoryResponse) => !cat.isActive).length;
         setStats({ total, active, inactive });
       }
 
@@ -117,7 +117,7 @@ const ServiceCategoriesPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
 
-  const filteredCategories = serviceCategories.filter((category) => {
+  const filteredCategories = serviceCategories.filter((category: ServiceCategoryResponse) => {
     const matchesSearch =
       category.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
       category.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
@@ -267,7 +267,8 @@ const ServiceCategoriesPage = () => {
     ...jobTitles.map((jt) => ({
       label: jt.name,
       value: jt.id,
-      count: serviceCategories.filter((cat) => cat.jobTitle.id === jt.id).length,
+      count: serviceCategories.filter((cat: ServiceCategoryResponse) => cat.jobTitle.id === jt.id)
+        .length,
       color: 'default' as const,
     })),
   ];
