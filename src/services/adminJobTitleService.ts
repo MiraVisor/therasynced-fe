@@ -19,8 +19,10 @@ export interface JobTitleResponse {
   name: string;
   description?: string;
   isActive: boolean;
-  freelancerCount?: number;
-  serviceCategoryCount?: number;
+  _count?: {
+    serviceCategories: number;
+    users: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
