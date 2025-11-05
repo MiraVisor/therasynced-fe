@@ -37,10 +37,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
   Select,
   SelectContent,
@@ -48,6 +46,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AccountSectionSkeleton } from '@/components/ui/skeletons/AccountSectionSkeleton';
+import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkeleton';
+import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
@@ -100,7 +101,6 @@ export default function AccountPage() {
     confirmPassword: '',
   });
 
-  const [profileLoaded, setProfileLoaded] = useState(false);
   const [, setProfileUpdated] = useState(false);
 
   useEffect(() => {
@@ -162,12 +162,14 @@ export default function AccountPage() {
         userData = response.data.user;
       } else {
         toast.error('Invalid profile data received from server');
+        setIsProfileLoading(false);
         return;
       }
 
       // Validate that we have the minimum required data
       if (!userData || !userData.id) {
         toast.error('Profile data is incomplete');
+        setIsProfileLoading(false);
         return;
       }
 
@@ -210,7 +212,6 @@ export default function AccountPage() {
       };
 
       setFormData(newFormData);
-      setProfileLoaded(true);
     } catch (error: any) {
       // More specific error messages
       if (error?.status === 401) {
@@ -303,11 +304,8 @@ export default function AccountPage() {
       if (response.success) {
         toast.success('Profile updated successfully');
         setProfileUpdated(true);
-        await loadUserProfile(); // Reload the profile to get updated data
-        // Show success state briefly
-        setProfileLoaded(true);
+        await loadUserProfile();
 
-        // Reset success state after 3 seconds
         setTimeout(() => setProfileUpdated(false), 3000);
       } else {
         toast.error(response.message || 'Failed to update profile');
@@ -406,221 +404,136 @@ export default function AccountPage() {
     { id: 'help', label: 'Help & Support', icon: HelpCircle },
   ];
 
-  const renderProfileSection = () => (
-    <div className="space-y-8">
-      {/* Profile Form */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
-        </div>
+  const renderProfileSection = () => {
+    if (isProfileLoading) {
+      return <ProfileSectionSkeleton />;
+    }
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-              Full Name
-            </Label>
-            <Input
-              id="name"
-              placeholder="Enter your full name"
-              value={formData.name || ''}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
-              disabled={isProfileLoading || isLoading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email Address
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={formData.email || ''}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
-              disabled
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role" className="text-sm font-medium text-gray-700">
-              Role
-            </Label>
-            <Input
-              id="role"
-              placeholder="Role"
-              value={
-                formData.role === ROLES.PATIENT
-                  ? 'User'
-                  : formData.role === ROLES.FREELANCER
-                    ? 'Freelancer'
-                    : formData.role === ROLES.ADMIN
-                      ? 'Admin'
-                      : 'Unknown'
-              }
-              className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
-              disabled
-            />
-            <p className="text-xs text-gray-500">Role cannot be changed</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-              City
-            </Label>
-
-            <div className="h-11">
-              <LocationDropdown
-                value={
-                  formData.city && formData.city.trim() !== '' ? formData.city : 'Select your city'
-                }
-                onValueChange={(value: string) => handleInputChange('city', value)}
-                placeholder="Select your city"
-                searchPlaceholder="Search locations..."
-                emptyMessage="No location found."
-                className="h-full"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
-              Gender
-            </Label>
-            <Select
-              value={formData.gender || ''}
-              onValueChange={(value) => handleInputChange('gender', value)}
-            >
-              <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors">
-                <SelectValue placeholder="Select your gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-                <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="dob" className="text-sm font-medium text-gray-700">
-              Date of Birth
-            </Label>
-
-            <div className="h-11">
-              <DatePicker
-                title=""
-                value={formData.dob ? new Date(formData.dob) : undefined}
-                onChange={(date) =>
-                  handleInputChange(
-                    'dob',
-                    date
-                      ? (() => {
-                          const year = date.getFullYear();
-                          const month = String(date.getMonth() + 1).padStart(2, '0');
-                          const day = String(date.getDate()).padStart(2, '0');
-                          return `${year}-${month}-${day}`;
-                        })()
-                      : '',
-                  )
-                }
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 pt-6">
-          <Button
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
-            onClick={handleProfileUpdate}
-            disabled={isLoading || isProfileLoading}
-          >
-            {isLoading ? (
-              <>Saving...</>
-            ) : (
-              <>
-                Save Changes
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* Professional Information Section - Only for Freelancers */}
-      {role === ROLES.FREELANCER && (
+    return (
+      <div className="space-y-8">
+        {/* Profile Form */}
         <div className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Professional Information</h3>
-            <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
-              Freelancer
-            </Badge>
+            <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Job Title */}
             <div className="space-y-2">
-              <Label htmlFor="jobTitle" className="text-sm font-medium text-gray-700">
-                Job Title
+              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                Full Name
+              </Label>
+              <Input
+                id="name"
+                placeholder="Enter your full name"
+                value={formData.name || ''}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+                disabled={isProfileLoading || isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email || ''}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
+                disabled
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role" className="text-sm font-medium text-gray-700">
+                Role
+              </Label>
+              <Input
+                id="role"
+                placeholder="Role"
+                value={
+                  formData.role === ROLES.PATIENT
+                    ? 'User'
+                    : formData.role === ROLES.FREELANCER
+                      ? 'Freelancer'
+                      : formData.role === ROLES.ADMIN
+                        ? 'Admin'
+                        : 'Unknown'
+                }
+                className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
+                disabled
+              />
+              <p className="text-xs text-gray-500">Role cannot be changed</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-sm font-medium text-gray-700">
+                City
+              </Label>
+
+              <div className="h-11">
+                <LocationDropdown
+                  value={
+                    formData.city && formData.city.trim() !== ''
+                      ? formData.city
+                      : 'Select your city'
+                  }
+                  onValueChange={(value: string) => handleInputChange('city', value)}
+                  placeholder="Select your city"
+                  searchPlaceholder="Search locations..."
+                  emptyMessage="No location found."
+                  className="h-full"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
+                Gender
               </Label>
               <Select
-                value={formData.mainJobTitle?.id || ''}
-                onValueChange={(value) => {
-                  const selectedJobTitle = jobTitles.find((jt) => jt.id === value);
-                  if (selectedJobTitle) {
-                    handleJobTitleChange(selectedJobTitle);
-                  }
-                }}
-                disabled={isProfileLoading || isLoading || isLoadingJobTitles}
+                value={formData.gender || ''}
+                onValueChange={(value) => handleInputChange('gender', value)}
               >
                 <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors">
-                  <SelectValue
-                    placeholder={
-                      isLoadingJobTitles
-                        ? 'Loading job titles...'
-                        : jobTitles.length === 0
-                          ? 'No job titles available'
-                          : 'Select your job title'
-                    }
-                  />
+                  <SelectValue placeholder="Select your gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  {jobTitles.length === 0 ? (
-                    <div className="px-2 py-1.5 text-sm text-gray-500 text-center">
-                      No job titles available
-                    </div>
-                  ) : (
-                    jobTitles.map((jobTitle) => (
-                      <SelectItem key={jobTitle.id} value={jobTitle.id}>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{jobTitle.name}</span>
-                          {jobTitle.description && (
-                            <span className="text-xs text-gray-500">- {jobTitle.description}</span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))
-                  )}
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Clinic Address */}
             <div className="space-y-2">
-              <Label htmlFor="clinicAddress" className="text-sm font-medium text-gray-700">
-                Clinic Address
+              <Label htmlFor="dob" className="text-sm font-medium text-gray-700">
+                Date of Birth
               </Label>
-              <Input
-                id="clinicAddress"
-                placeholder="Enter your clinic or practice address"
-                value={formData.clinicAddress || ''}
-                onChange={(e) => handleInputChange('clinicAddress', e.target.value)}
-                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
-                disabled={isProfileLoading || isLoading}
-              />
+
+              <div className="h-11">
+                <DatePicker
+                  title=""
+                  value={formData.dob ? new Date(formData.dob) : undefined}
+                  onChange={(date) =>
+                    handleInputChange(
+                      'dob',
+                      date
+                        ? (() => {
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                          })()
+                        : '',
+                    )
+                  }
+                />
+              </div>
             </div>
           </div>
 
@@ -641,194 +554,295 @@ export default function AccountPage() {
             </Button>
           </div>
         </div>
-      )}
-    </div>
-  );
 
-  const renderAccountSection = () => (
-    <div className="space-y-8">
-      {/* Account Status */}
-      {/* <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Account Status</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">Account Status</span>
+        {/* Professional Information Section - Only for Freelancers */}
+        {role === ROLES.FREELANCER && (
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Professional Information</h3>
+              <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+                Freelancer
+              </Badge>
             </div>
-            <Badge
-              className={
-                formData.isActive
-                  ? 'bg-green-100 text-green-800 border-green-200'
-                  : 'bg-red-100 text-red-800 border-red-200'
-              }
-            >
-              {formData.isActive ? 'Active' : 'Inactive'}
-            </Badge>
-          </div>
 
-          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-            <div className="flex items-center gap-3 mb-2">
-              <Mail className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">Email Verification</span>
-            </div>
-            <Badge
-              className={
-                formData.isEmailVerified
-                  ? 'bg-green-100 text-green-800 border-green-200'
-                  : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-              }
-            >
-              {formData.isEmailVerified ? 'Verified' : 'Not Verified'}
-            </Badge>
-          </div>
-
-          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-            <div className="flex items-center gap-3 mb-2">
-              <BadgeCheck className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium text-gray-700">Role</span>
-            </div>
-            <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-              {role?.toUpperCase() === 'PATIENT'
-                ? 'User'
-                : role?.toString() === ROLES.FREELANCER
-                  ? 'Freelancer'
-                  : role?.toString() === ROLES.ADMIN
-                    ? 'Admin'
-                    : 'Unknown'}
-            </Badge>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Email Management */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Email Management</h3>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newEmail" className="text-sm font-medium text-gray-700">
-              New Email Address
-            </Label>
-            <Input
-              id="newEmail"
-              type="email"
-              placeholder="Enter new email address"
-              autoComplete="off"
-              defaultValue=""
-              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
-            />
-          </div>
-          <Button
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6"
-            onClick={() => {
-              const newEmail = (document.getElementById('newEmail') as HTMLInputElement)?.value;
-              if (newEmail) {
-                handleEmailChange(newEmail);
-              } else {
-                toast.error('Please enter a new email address');
-              }
-            }}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Processing...' : 'Change Email'}
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Password Management */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Password Management</h3>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
-                Current Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="currentPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter current password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                  className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Job Title */}
+              <div className="space-y-2">
+                <Label htmlFor="jobTitle" className="text-sm font-medium text-gray-700">
+                  Job Title
+                </Label>
+                <Select
+                  value={formData.mainJobTitle?.id || ''}
+                  onValueChange={(value) => {
+                    const selectedJobTitle = jobTitles.find((jt) => jt.id === value);
+                    if (selectedJobTitle) {
+                      handleJobTitleChange(selectedJobTitle);
+                    }
+                  }}
+                  disabled={isProfileLoading || isLoading || isLoadingJobTitles}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
+                  <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors">
+                    <SelectValue
+                      placeholder={
+                        isLoadingJobTitles
+                          ? 'Loading job titles...'
+                          : jobTitles.length === 0
+                            ? 'No job titles available'
+                            : 'Select your job title'
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {jobTitles.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-gray-500 text-center">
+                        No job titles available
+                      </div>
+                    ) : (
+                      jobTitles.map((jobTitle) => (
+                        <SelectItem key={jobTitle.id} value={jobTitle.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{jobTitle.name}</span>
+                            {jobTitle.description && (
+                              <span className="text-xs text-gray-500">
+                                - {jobTitle.description}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Clinic Address */}
+              <div className="space-y-2">
+                <Label htmlFor="clinicAddress" className="text-sm font-medium text-gray-700">
+                  Clinic Address
+                </Label>
+                <Input
+                  id="clinicAddress"
+                  placeholder="Enter your clinic or practice address"
+                  value={formData.clinicAddress || ''}
+                  onChange={(e) => handleInputChange('clinicAddress', e.target.value)}
+                  className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+                  disabled={isProfileLoading || isLoading}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-6">
+              <Button
+                className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
+                onClick={handleProfileUpdate}
+                disabled={isLoading || isProfileLoading}
+              >
+                {isLoading ? (
+                  <>Saving...</>
+                ) : (
+                  <>
+                    Save Changes
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderAccountSection = () => {
+    if (isProfileLoading) {
+      return <AccountSectionSkeleton />;
+    }
+
+    return (
+      <div className="space-y-8">
+        {/* Account Status */}
+        {/* <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Account Status</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+              <div className="flex items-center gap-3 mb-2">
+                <Shield className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-medium text-gray-700">Account Status</span>
+              </div>
+              <Badge
+                className={
+                  formData.isActive
+                    ? 'bg-green-100 text-green-800 border-green-200'
+                    : 'bg-red-100 text-red-800 border-red-200'
+                }
+              >
+                {formData.isActive ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
+
+            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+              <div className="flex items-center gap-3 mb-2">
+                <Mail className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-medium text-gray-700">Email Verification</span>
+              </div>
+              <Badge
+                className={
+                  formData.isEmailVerified
+                    ? 'bg-green-100 text-green-800 border-green-200'
+                    : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                }
+              >
+                {formData.isEmailVerified ? 'Verified' : 'Not Verified'}
+              </Badge>
+            </div>
+
+            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+              <div className="flex items-center gap-3 mb-2">
+                <BadgeCheck className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-medium text-gray-700">Role</span>
+              </div>
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                {role?.toUpperCase() === 'PATIENT'
+                  ? 'User'
+                  : role?.toString() === ROLES.FREELANCER
+                    ? 'Freelancer'
+                    : role?.toString() === ROLES.ADMIN
+                      ? 'Admin'
+                      : 'Unknown'}
+              </Badge>
+            </div>
+          </div>
+        </div> */}
+
+        {/* Email Management */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Email Management</h3>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newEmail" className="text-sm font-medium text-gray-700">
+                New Email Address
+              </Label>
+              <Input
+                id="newEmail"
+                type="email"
+                placeholder="Enter new email address"
+                autoComplete="off"
+                defaultValue=""
+                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+              />
+            </div>
+            <Button
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6"
+              onClick={() => {
+                const newEmail = (document.getElementById('newEmail') as HTMLInputElement)?.value;
+                if (newEmail) {
+                  handleEmailChange(newEmail);
+                } else {
+                  toast.error('Please enter a new email address');
+                }
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Processing...' : 'Change Email'}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Password Management */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Password Management</h3>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
+                  Current Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="currentPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter current password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                    className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
+                  New Password
+                </Label>
+                <Input
+                  id="newPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter new password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                  className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+                />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
-                New Password
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Confirm New Password
               </Label>
               <Input
-                id="newPassword"
+                id="confirmPassword"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter new password"
-                value={passwordData.newPassword}
-                onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                placeholder="Confirm new password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
                 className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-              Confirm New Password
-            </Label>
-            <Input
-              id="confirmPassword"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Confirm new password"
-              value={passwordData.confirmPassword}
-              onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-              className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
-            />
+            <Button
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
+              onClick={handlePasswordUpdate}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Updating...' : 'Update Password'}
+              <Lock className="ml-2 h-4 w-4" />
+            </Button>
           </div>
+        </div>
 
-          <Button
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
-            onClick={handlePasswordUpdate}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Updating...' : 'Update Password'}
-            <Lock className="ml-2 h-4 w-4" />
-          </Button>
+        {/* Danger Zone */}
+        <div className="bg-white border border-red-200 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-red-800 mb-4">Danger Zone</h3>
+          <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+            <h4 className="font-medium text-red-800 mb-2">Delete Account</h4>
+            <p className="text-sm text-red-600 mb-4">
+              Once you delete your account, there is no going back. Please be certain.
+            </p>
+            <Button
+              className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
+              variant="destructive"
+              size="sm"
+              onClick={() => toast.info('Account deletion coming soon')}
+            >
+              Delete Account
+              <Trash2 className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
-
-      {/* Danger Zone */}
-      <div className="bg-white border border-red-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-red-800 mb-4">Danger Zone</h3>
-        <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-          <h4 className="font-medium text-red-800 mb-2">Delete Account</h4>
-          <p className="text-sm text-red-600 mb-4">
-            Once you delete your account, there is no going back. Please be certain.
-          </p>
-          <Button
-            className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
-            variant="destructive"
-            size="sm"
-            onClick={() => toast.info('Account deletion coming soon')}
-          >
-            Delete Account
-            <Trash2 className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderNotificationsSection = () => (
     <div className="space-y-8">
@@ -874,186 +888,87 @@ export default function AccountPage() {
     </div>
   );
 
-  const renderBillingSection = () => (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-gray-900">Current Plan</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Plan:</span>
-                <span className="font-medium text-gray-900">Free</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Status:</span>
-                <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
-                  Active
-                </Badge>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-gray-600">Next billing:</span>
-                <span className="text-sm text-gray-900">Never</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+  const renderHelpSection = () => {
+    if (isProfileLoading) {
+      return <HelpSectionSkeleton />;
+    }
 
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-gray-900">Payment Method</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-center py-6">
-              <CreditCard className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-sm text-gray-600 mb-4">No payment method added</p>
+    return (
+      <div className="space-y-8">
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Help & Support</h3>
+
+          <div className="space-y-6">
+            {/* Contact Admin Button */}
+            <div className="text-center py-8">
+              <h4 className="text-lg font-medium text-gray-900 mb-3">Need Help?</h4>
+              <p className="text-gray-600 mb-6">
+                Contact our admin team for personalized assistance
+              </p>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toast.info('Payment method functionality coming soon')}
-                className="border-primary"
+                className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-12 px-8"
+                onClick={() => toast.info('Contact admin functionality coming soon')}
               >
-                Add Payment Method
+                Contact Admin
+                <Mail className="h-4 w-4 ml-2" />
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Billing History</h3>
-        <div className="text-center py-12">
-          <CreditCard className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500 text-base">No billing history available</p>
-          <p className="text-gray-400 text-sm mt-1">Your billing history will appear here</p>
-        </div>
-      </div>
-    </div>
-  );
+            {/* FAQs */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-medium text-gray-900">Frequently Asked Questions</h4>
 
-  const renderHelpSection = () => (
-    <div className="space-y-8">
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Help & Support</h3>
-
-        <div className="space-y-6">
-          {/* Contact Admin Button */}
-          <div className="text-center py-8">
-            <h4 className="text-lg font-medium text-gray-900 mb-3">Need Help?</h4>
-            <p className="text-gray-600 mb-6">Contact our admin team for personalized assistance</p>
-            <Button
-              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-12 px-8"
-              onClick={() => toast.info('Contact admin functionality coming soon')}
-            >
-              Contact Admin
-              <Mail className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-
-          {/* FAQs */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-medium text-gray-900">Frequently Asked Questions</h4>
-
-            {[
-              {
-                id: 'faq1',
-                question: 'How do I update my profile information?',
-                answer:
-                  'You can update your profile information in the Profile tab. Simply edit the fields and click "Save Changes" to apply your updates.',
-              },
-              {
-                id: 'faq2',
-                question: 'How do I change my password?',
-                answer:
-                  'Go to the Account tab and use the Password Management section. Enter your current password, then your new password twice to confirm.',
-              },
-              {
-                id: 'faq3',
-                question: 'How do I manage my notification preferences?',
-                answer:
-                  'Navigate to the Notifications tab to configure your email, push, and SMS notification settings according to your preferences.',
-              },
-              {
-                id: 'faq4',
-                question: 'What should I do if I forgot my password?',
-                answer:
-                  'If you forgot your password, you can reset it through the login page. Click on "Forgot Password" and follow the instructions sent to your email.',
-              },
-            ].map((faq) => (
-              <div key={faq.id} className="border border-gray-200 rounded-lg">
-                <button
-                  className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                  onClick={() => toggleFaq(faq.id)}
-                >
-                  <span className="font-medium text-gray-900">{faq.question}</span>
-                  {expandedFaqs.has(faq.id) ? (
-                    <ChevronUp className="h-5 w-5 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-gray-500" />
+              {[
+                {
+                  id: 'faq1',
+                  question: 'How do I update my profile information?',
+                  answer:
+                    'You can update your profile information in the Profile tab. Simply edit the fields and click "Save Changes" to apply your updates.',
+                },
+                {
+                  id: 'faq2',
+                  question: 'How do I change my password?',
+                  answer:
+                    'Go to the Account tab and use the Password Management section. Enter your current password, then your new password twice to confirm.',
+                },
+                {
+                  id: 'faq3',
+                  question: 'How do I manage my notification preferences?',
+                  answer:
+                    'Navigate to the Notifications tab to configure your email, push, and SMS notification settings according to your preferences.',
+                },
+                {
+                  id: 'faq4',
+                  question: 'What should I do if I forgot my password?',
+                  answer:
+                    'If you forgot your password, you can reset it through the login page. Click on "Forgot Password" and follow the instructions sent to your email.',
+                },
+              ].map((faq) => (
+                <div key={faq.id} className="border border-gray-200 rounded-lg">
+                  <button
+                    className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    onClick={() => toggleFaq(faq.id)}
+                  >
+                    <span className="font-medium text-gray-900">{faq.question}</span>
+                    {expandedFaqs.has(faq.id) ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    )}
+                  </button>
+                  {expandedFaqs.has(faq.id) && (
+                    <div className="px-4 pb-4">
+                      <p className="text-gray-600 text-sm">{faq.answer}</p>
+                    </div>
                   )}
-                </button>
-                {expandedFaqs.has(faq.id) && (
-                  <div className="px-4 pb-4">
-                    <p className="text-gray-600 text-sm">{faq.answer}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-
-  if (!profileLoaded) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <LoadingSpinner />
-      </div>
     );
-  }
-
-  // Show error state if profile failed to load
-  if (!formData.id) {
-    return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Settings</h1>
-          <p className="text-gray-600 text-lg">Manage your account settings and preferences</p>
-        </div>
-
-        <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
-          <div className="text-red-600 mb-4">
-            <svg
-              className="mx-auto h-12 w-12"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-red-800 mb-2">Failed to Load Profile</h3>
-          <p className="text-red-600 mb-6">
-            We couldn&apos;t load your profile information. Please try again.
-          </p>
-          <Button
-            onClick={loadUserProfile}
-            className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 text-white"
-          >
-            Retry Loading Profile
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  };
 
   return (
     <DashboardPageWrapper
