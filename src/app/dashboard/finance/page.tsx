@@ -9,7 +9,6 @@ import {
   Clock,
   CreditCard,
   DollarSign,
-  Download,
   RefreshCw,
   TrendingUp,
   Users,
@@ -35,7 +34,11 @@ import {
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import LoadingSpinner from '@/components/ui/loading-spinner';
+import { ChartsSkeleton } from '@/components/ui/skeletons/ChartsSkeleton';
+import { PlansOverviewSkeleton } from '@/components/ui/skeletons/PlansOverviewSkeleton';
+import { RevenueMetricsSkeleton } from '@/components/ui/skeletons/RevenueMetricsSkeleton';
+import { SubscriptionAnalyticsSkeleton } from '@/components/ui/skeletons/SubscriptionAnalyticsSkeleton';
+import { SubscriptionStatusSkeleton } from '@/components/ui/skeletons/SubscriptionStatusSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import adminFinanceService, {
   AdminRevenueDto,
@@ -91,18 +94,6 @@ export default function FinancePage() {
   const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-US').format(value);
   };
-
-  if (isLoading && !revenueData && !subscriptionData) {
-    return (
-      <DashboardPageWrapper
-        header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Finance</h1>}
-      >
-        <div className="flex items-center justify-center min-h-[400px]">
-          <LoadingSpinner size="lg" />
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
 
   const statsData = revenueData
     ? [
@@ -213,18 +204,7 @@ export default function FinancePage() {
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => {
-                // Export functionality
-                toast.info('Export feature coming soon');
-              }}
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </Button> */}
+
             <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Updated just now</span>
@@ -250,6 +230,7 @@ export default function FinancePage() {
                   iconColor={stat.iconColor}
                   iconBg={stat.iconBg}
                   interactive
+                  loading={isLoading}
                   onClick={() => {
                     // Navigate to details or show modal
                   }}
@@ -259,424 +240,444 @@ export default function FinancePage() {
           </div>
 
           {/* Right: Revenue Metrics */}
-          <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10 rounded-xl p-6 border border-primary/20 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <CreditCard className="h-5 w-5 text-primary" />
+          {isLoading ? (
+            <RevenueMetricsSkeleton />
+          ) : (
+            <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10 rounded-xl p-6 border border-primary/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                  </div>
+                  <h2 className="font-poppins font-bold text-lg text-charcoal">Revenue Metrics</h2>
                 </div>
-                <h2 className="font-poppins font-bold text-lg text-charcoal">Revenue Metrics</h2>
+                <div className="text-xs text-gray-500 bg-white/60 px-2 py-1 rounded">
+                  Subscription
+                </div>
               </div>
-              <div className="text-xs text-gray-500 bg-white/60 px-2 py-1 rounded">
-                Subscription
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
+                      MRR
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
+                    {subscriptionData
+                      ? formatCurrency(subscriptionData.monthlyRecurringRevenue)
+                      : '$0'}
+                  </div>
+                  <div className="text-xs text-gray-500">Monthly Recurring</div>
+                </div>
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
+                      Monthly
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-info"></div>
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
+                    {subscriptionData ? formatCurrency(subscriptionData.monthlyRevenue) : '$0'}
+                  </div>
+                  {subscriptionData?.lastMonthRevenue !== undefined &&
+                  subscriptionData.lastMonthRevenue !== 0 ? (
+                    <div className="flex items-center gap-1">
+                      {subscriptionData.monthlyRevenue >= subscriptionData.lastMonthRevenue ? (
+                        <>
+                          <ArrowUpRight className="h-3 w-3 text-success" />
+                          <span className="text-xs text-success font-medium">
+                            {(
+                              ((subscriptionData.monthlyRevenue -
+                                subscriptionData.lastMonthRevenue) /
+                                subscriptionData.lastMonthRevenue) *
+                              100
+                            ).toFixed(1)}
+                            %
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <ArrowDownRight className="h-3 w-3 text-error" />
+                          <span className="text-xs text-error font-medium">
+                            {(
+                              ((subscriptionData.lastMonthRevenue -
+                                subscriptionData.monthlyRevenue) /
+                                subscriptionData.lastMonthRevenue) *
+                              100
+                            ).toFixed(1)}
+                            %
+                          </span>
+                        </>
+                      )}
+                      <span className="text-xs text-gray-400">vs last month</span>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-400">No comparison data</div>
+                  )}
+                </div>
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
+                      ARR
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-success"></div>
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
+                    {subscriptionData
+                      ? formatCurrency(subscriptionData.annualRecurringRevenue)
+                      : '$0'}
+                  </div>
+                  <div className="text-xs text-gray-500">Annual Recurring</div>
+                </div>
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
+                      ARPU
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-warning"></div>
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
+                    {subscriptionData
+                      ? formatCurrency(subscriptionData.averageRevenuePerSubscription)
+                      : '$0'}
+                  </div>
+                  <div className="text-xs text-gray-500">Avg per User</div>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
-                    MRR
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
-                  {subscriptionData
-                    ? formatCurrency(subscriptionData.monthlyRecurringRevenue)
-                    : '$0'}
-                </div>
-                <div className="text-xs text-gray-500">Monthly Recurring</div>
-              </div>
-              <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
-                    Monthly
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-info"></div>
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
-                  {subscriptionData ? formatCurrency(subscriptionData.monthlyRevenue) : '$0'}
-                </div>
-                {subscriptionData?.lastMonthRevenue !== undefined &&
-                subscriptionData.lastMonthRevenue !== 0 ? (
-                  <div className="flex items-center gap-1">
-                    {subscriptionData.monthlyRevenue >= subscriptionData.lastMonthRevenue ? (
-                      <>
-                        <ArrowUpRight className="h-3 w-3 text-success" />
-                        <span className="text-xs text-success font-medium">
-                          {(
-                            ((subscriptionData.monthlyRevenue - subscriptionData.lastMonthRevenue) /
-                              subscriptionData.lastMonthRevenue) *
-                            100
-                          ).toFixed(1)}
-                          %
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <ArrowDownRight className="h-3 w-3 text-error" />
-                        <span className="text-xs text-error font-medium">
-                          {(
-                            ((subscriptionData.lastMonthRevenue - subscriptionData.monthlyRevenue) /
-                              subscriptionData.lastMonthRevenue) *
-                            100
-                          ).toFixed(1)}
-                          %
-                        </span>
-                      </>
-                    )}
-                    <span className="text-xs text-gray-400">vs last month</span>
-                  </div>
-                ) : (
-                  <div className="text-xs text-gray-400">No comparison data</div>
-                )}
-              </div>
-              <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
-                    ARR
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-success"></div>
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
-                  {subscriptionData
-                    ? formatCurrency(subscriptionData.annualRecurringRevenue)
-                    : '$0'}
-                </div>
-                <div className="text-xs text-gray-500">Annual Recurring</div>
-              </div>
-              <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
-                    ARPU
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-warning"></div>
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
-                  {subscriptionData
-                    ? formatCurrency(subscriptionData.averageRevenuePerSubscription)
-                    : '$0'}
-                </div>
-                <div className="text-xs text-gray-500">Avg per User</div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Subscription Overview - Combined Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Subscription Status */}
-          <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="font-poppins font-bold text-lg text-charcoal">
-                  Subscription Status
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">Current subscription distribution</p>
+          {isLoading ? (
+            <SubscriptionStatusSkeleton />
+          ) : (
+            <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-poppins font-bold text-lg text-charcoal">
+                    Subscription Status
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">Current subscription distribution</p>
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                  <div className="text-xs font-inter text-gray-500 uppercase">Total</div>
+                  <div className="font-poppins font-bold text-charcoal">
+                    {subscriptionData
+                      ? formatNumber(
+                          subscriptionData.totalActive +
+                            subscriptionData.totalTrialing +
+                            subscriptionData.totalCanceled +
+                            subscriptionData.totalPastDue +
+                            subscriptionData.totalUnpaid,
+                        )
+                      : '0'}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                <div className="text-xs font-inter text-gray-500 uppercase">Total</div>
-                <div className="font-poppins font-bold text-charcoal">
-                  {subscriptionData
-                    ? formatNumber(
-                        subscriptionData.totalActive +
-                          subscriptionData.totalTrialing +
-                          subscriptionData.totalCanceled +
-                          subscriptionData.totalPastDue +
-                          subscriptionData.totalUnpaid,
-                      )
-                    : '0'}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="group flex flex-col items-center justify-center p-4 bg-success/5 rounded-lg border border-success/20 hover:bg-success/10 hover:border-success/30 transition-all cursor-pointer">
+                  <div className="p-2 bg-success/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                    <Users className="h-4 w-4 text-success" />
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal">
+                    {subscriptionData ? formatNumber(subscriptionData.totalActive) : '0'}
+                  </div>
+                  <div className="text-xs font-inter font-medium text-gray-600 mt-1">Active</div>
+                </div>
+                <div className="group flex flex-col items-center justify-center p-4 bg-warning/5 rounded-lg border border-warning/20 hover:bg-warning/10 hover:border-warning/30 transition-all cursor-pointer">
+                  <div className="p-2 bg-warning/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                    <Clock className="h-4 w-4 text-warning" />
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal">
+                    {subscriptionData ? formatNumber(subscriptionData.totalTrialing) : '0'}
+                  </div>
+                  <div className="text-xs font-inter font-medium text-gray-600 mt-1">Trialing</div>
+                </div>
+                <div className="group flex flex-col items-center justify-center p-4 bg-error/5 rounded-lg border border-error/20 hover:bg-error/10 hover:border-error/30 transition-all cursor-pointer">
+                  <div className="p-2 bg-error/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                    <XCircle className="h-4 w-4 text-error" />
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal">
+                    {subscriptionData ? formatNumber(subscriptionData.totalCanceled) : '0'}
+                  </div>
+                  <div className="text-xs font-inter font-medium text-gray-600 mt-1">Canceled</div>
+                </div>
+                <div className="group flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg border border-orange-200 hover:bg-orange-100 hover:border-orange-300 transition-all cursor-pointer">
+                  <div className="p-2 bg-orange-100 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                    <AlertTriangle className="h-4 w-4 text-orange-500" />
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal">
+                    {subscriptionData ? formatNumber(subscriptionData.totalPastDue) : '0'}
+                  </div>
+                  <div className="text-xs font-inter font-medium text-gray-600 mt-1">Past Due</div>
+                </div>
+                <div className="group flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 hover:border-red-300 transition-all cursor-pointer">
+                  <div className="p-2 bg-red-100 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                    <Zap className="h-4 w-4 text-red-500" />
+                  </div>
+                  <div className="font-poppins text-2xl font-bold text-charcoal">
+                    {subscriptionData ? formatNumber(subscriptionData.totalUnpaid) : '0'}
+                  </div>
+                  <div className="text-xs font-inter font-medium text-gray-600 mt-1">Unpaid</div>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <div className="group flex flex-col items-center justify-center p-4 bg-success/5 rounded-lg border border-success/20 hover:bg-success/10 hover:border-success/30 transition-all cursor-pointer">
-                <div className="p-2 bg-success/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                  <Users className="h-4 w-4 text-success" />
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal">
-                  {subscriptionData ? formatNumber(subscriptionData.totalActive) : '0'}
-                </div>
-                <div className="text-xs font-inter font-medium text-gray-600 mt-1">Active</div>
-              </div>
-              <div className="group flex flex-col items-center justify-center p-4 bg-warning/5 rounded-lg border border-warning/20 hover:bg-warning/10 hover:border-warning/30 transition-all cursor-pointer">
-                <div className="p-2 bg-warning/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                  <Clock className="h-4 w-4 text-warning" />
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal">
-                  {subscriptionData ? formatNumber(subscriptionData.totalTrialing) : '0'}
-                </div>
-                <div className="text-xs font-inter font-medium text-gray-600 mt-1">Trialing</div>
-              </div>
-              <div className="group flex flex-col items-center justify-center p-4 bg-error/5 rounded-lg border border-error/20 hover:bg-error/10 hover:border-error/30 transition-all cursor-pointer">
-                <div className="p-2 bg-error/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                  <XCircle className="h-4 w-4 text-error" />
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal">
-                  {subscriptionData ? formatNumber(subscriptionData.totalCanceled) : '0'}
-                </div>
-                <div className="text-xs font-inter font-medium text-gray-600 mt-1">Canceled</div>
-              </div>
-              <div className="group flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg border border-orange-200 hover:bg-orange-100 hover:border-orange-300 transition-all cursor-pointer">
-                <div className="p-2 bg-orange-100 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal">
-                  {subscriptionData ? formatNumber(subscriptionData.totalPastDue) : '0'}
-                </div>
-                <div className="text-xs font-inter font-medium text-gray-600 mt-1">Past Due</div>
-              </div>
-              <div className="group flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 hover:border-red-300 transition-all cursor-pointer">
-                <div className="p-2 bg-red-100 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                  <Zap className="h-4 w-4 text-red-500" />
-                </div>
-                <div className="font-poppins text-2xl font-bold text-charcoal">
-                  {subscriptionData ? formatNumber(subscriptionData.totalUnpaid) : '0'}
-                </div>
-                <div className="text-xs font-inter font-medium text-gray-600 mt-1">Unpaid</div>
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Subscription Analytics */}
-          <div className="bg-gradient-to-br from-info/5 via-info/3 to-info/10 rounded-xl p-6 border border-info/20 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-poppins font-bold text-lg text-charcoal">Analytics</h3>
-              <div className="p-1.5 bg-info/10 rounded-lg">
-                <TrendingUp className="h-4 w-4 text-info" />
-              </div>
-            </div>
-            <div className="space-y-3">
-              {/* Retention Rate - Highlighted */}
-              <div className="bg-white/90 backdrop-blur rounded-xl p-5 border border-info/20 hover:border-info/30 transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <div className="text-xs font-inter text-gray-500 uppercase tracking-wide mb-1">
-                      Retention Rate
-                    </div>
-                    <div className="font-poppins text-4xl font-bold text-charcoal">
-                      {subscriptionData ? `${subscriptionData.retentionRate}%` : '0%'}
-                    </div>
-                  </div>
-                  <div className="p-3 bg-success/10 rounded-full">
-                    <TrendingUp className="h-6 w-6 text-success" />
-                  </div>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-success to-success/70 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${subscriptionData ? subscriptionData.retentionRate : 0}%`,
-                    }}
-                  ></div>
+          {isLoading ? (
+            <SubscriptionAnalyticsSkeleton />
+          ) : (
+            <div className="bg-gradient-to-br from-info/5 via-info/3 to-info/10 rounded-xl p-6 border border-info/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-poppins font-bold text-lg text-charcoal">Analytics</h3>
+                <div className="p-1.5 bg-info/10 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-info" />
                 </div>
               </div>
-
-              {/* New & Canceled */}
-              <div className="grid grid-cols-1 gap-3">
-                <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100 hover:border-success/30 hover:bg-white transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-success/10 rounded-lg">
-                        <ArrowUpRight className="h-4 w-4 text-success" />
+              <div className="space-y-3">
+                {/* Retention Rate - Highlighted */}
+                <div className="bg-white/90 backdrop-blur rounded-xl p-5 border border-info/20 hover:border-info/30 transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="text-xs font-inter text-gray-500 uppercase tracking-wide mb-1">
+                        Retention Rate
                       </div>
-                      <div>
-                        <div className="text-xs font-inter text-gray-500">New this month</div>
-                        <div className="font-poppins text-2xl font-bold text-charcoal">
-                          {subscriptionData
-                            ? formatNumber(subscriptionData.newSubscriptionsThisMonth)
-                            : '0'}
+                      <div className="font-poppins text-4xl font-bold text-charcoal">
+                        {subscriptionData ? `${subscriptionData.retentionRate}%` : '0%'}
+                      </div>
+                    </div>
+                    <div className="p-3 bg-success/10 rounded-full">
+                      <TrendingUp className="h-6 w-6 text-success" />
+                    </div>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-success to-success/70 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${subscriptionData ? subscriptionData.retentionRate : 0}%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* New & Canceled */}
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100 hover:border-success/30 hover:bg-white transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-success/10 rounded-lg">
+                          <ArrowUpRight className="h-4 w-4 text-success" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-inter text-gray-500">New this month</div>
+                          <div className="font-poppins text-2xl font-bold text-charcoal">
+                            {subscriptionData
+                              ? formatNumber(subscriptionData.newSubscriptionsThisMonth)
+                              : '0'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100 hover:border-error/30 hover:bg-white transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-error/10 rounded-lg">
+                          <ArrowDownRight className="h-4 w-4 text-error" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-inter text-gray-500">
+                            Canceled this month
+                          </div>
+                          <div className="font-poppins text-2xl font-bold text-charcoal">
+                            {subscriptionData
+                              ? formatNumber(subscriptionData.canceledSubscriptionsThisMonth)
+                              : '0'}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100 hover:border-error/30 hover:bg-white transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-error/10 rounded-lg">
-                        <ArrowDownRight className="h-4 w-4 text-error" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-inter text-gray-500">Canceled this month</div>
-                        <div className="font-poppins text-2xl font-bold text-charcoal">
-                          {subscriptionData
-                            ? formatNumber(subscriptionData.canceledSubscriptionsThisMonth)
-                            : '0'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Churn Rate */}
-              {subscriptionData &&
-                subscriptionData.totalActive > 0 &&
-                subscriptionData.canceledSubscriptionsThisMonth > 0 && (
-                  <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-inter text-gray-500 uppercase tracking-wide">
-                        Churn Rate
-                      </span>
-                      <span className="text-xs font-medium text-error">This Month</span>
+                {/* Churn Rate */}
+                {subscriptionData &&
+                  subscriptionData.totalActive > 0 &&
+                  subscriptionData.canceledSubscriptionsThisMonth > 0 && (
+                    <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-inter text-gray-500 uppercase tracking-wide">
+                          Churn Rate
+                        </span>
+                        <span className="text-xs font-medium text-error">This Month</span>
+                      </div>
+                      <div className="font-poppins text-xl font-bold text-charcoal">
+                        {(
+                          (subscriptionData.canceledSubscriptionsThisMonth /
+                            subscriptionData.totalActive) *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </div>
                     </div>
-                    <div className="font-poppins text-xl font-bold text-charcoal">
-                      {(
-                        (subscriptionData.canceledSubscriptionsThisMonth /
-                          subscriptionData.totalActive) *
-                        100
-                      ).toFixed(1)}
-                      %
-                    </div>
-                  </div>
-                )}
+                  )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Plans Overview */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="font-poppins font-bold text-lg text-charcoal">
-                Subscription Plans Distribution
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">Active subscriptions by tier</p>
+        {isLoading ? (
+          <PlansOverviewSkeleton />
+        ) : (
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="font-poppins font-bold text-lg text-charcoal">
+                  Subscription Plans Distribution
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">Active subscriptions by tier</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-primary hover:text-primary/80"
+                onClick={() => {
+                  toast.info('Plan details coming soon');
+                }}
+              >
+                View Details
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2 text-primary hover:text-primary/80"
-              onClick={() => {
-                toast.info('Plan details coming soon');
-              }}
-            >
-              View Details
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-primary shadow-lg shadow-primary/30"></div>
-                    <span className="font-inter font-semibold text-gray-700">Basic Plan</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full bg-primary shadow-lg shadow-primary/30"></div>
+                      <span className="font-inter font-semibold text-gray-700">Basic Plan</span>
+                    </div>
+                    <div className="px-2 py-1 bg-primary/10 rounded text-xs font-medium text-primary">
+                      Starter
+                    </div>
                   </div>
-                  <div className="px-2 py-1 bg-primary/10 rounded text-xs font-medium text-primary">
-                    Starter
+                  <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
+                    {subscriptionData
+                      ? formatNumber(subscriptionData.subscriptionsByPlan.BASIC)
+                      : '0'}
                   </div>
-                </div>
-                <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
-                  {subscriptionData
-                    ? formatNumber(subscriptionData.subscriptionsByPlan.BASIC)
-                    : '0'}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">of active plans</span>
-                    <span className="font-semibold text-primary">
-                      {subscriptionData && subscriptionData.totalActive > 0
-                        ? `${Math.round((subscriptionData.subscriptionsByPlan.BASIC / subscriptionData.totalActive) * 100)}%`
-                        : '0%'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full transition-all duration-700 ease-out"
-                        style={{
-                          width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.BASIC / subscriptionData.totalActive) * 100) : 0}%`,
-                        }}
-                      ></div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">of active plans</span>
+                      <span className="font-semibold text-primary">
+                        {subscriptionData && subscriptionData.totalActive > 0
+                          ? `${Math.round((subscriptionData.subscriptionsByPlan.BASIC / subscriptionData.totalActive) * 100)}%`
+                          : '0%'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full transition-all duration-700 ease-out"
+                          style={{
+                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.BASIC / subscriptionData.totalActive) * 100) : 0}%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-info/10 to-info/5 p-6 border border-info/20 hover:border-info/40 hover:shadow-lg transition-all cursor-pointer">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-info/5 rounded-full -mr-16 -mt-16"></div>
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-info shadow-lg shadow-info/30"></div>
-                    <span className="font-inter font-semibold text-gray-700">Standard Plan</span>
+              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-info/10 to-info/5 p-6 border border-info/20 hover:border-info/40 hover:shadow-lg transition-all cursor-pointer">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-info/5 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full bg-info shadow-lg shadow-info/30"></div>
+                      <span className="font-inter font-semibold text-gray-700">Standard Plan</span>
+                    </div>
+                    <div className="px-2 py-1 bg-info/10 rounded text-xs font-medium text-info">
+                      Popular
+                    </div>
                   </div>
-                  <div className="px-2 py-1 bg-info/10 rounded text-xs font-medium text-info">
-                    Popular
+                  <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
+                    {subscriptionData
+                      ? formatNumber(subscriptionData.subscriptionsByPlan.STANDARD)
+                      : '0'}
                   </div>
-                </div>
-                <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
-                  {subscriptionData
-                    ? formatNumber(subscriptionData.subscriptionsByPlan.STANDARD)
-                    : '0'}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">of active plans</span>
-                    <span className="font-semibold text-info">
-                      {subscriptionData && subscriptionData.totalActive > 0
-                        ? `${Math.round((subscriptionData.subscriptionsByPlan.STANDARD / subscriptionData.totalActive) * 100)}%`
-                        : '0%'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-info to-info/70 h-full rounded-full transition-all duration-700 ease-out"
-                        style={{
-                          width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.STANDARD / subscriptionData.totalActive) * 100) : 0}%`,
-                        }}
-                      ></div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">of active plans</span>
+                      <span className="font-semibold text-info">
+                        {subscriptionData && subscriptionData.totalActive > 0
+                          ? `${Math.round((subscriptionData.subscriptionsByPlan.STANDARD / subscriptionData.totalActive) * 100)}%`
+                          : '0%'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-info to-info/70 h-full rounded-full transition-all duration-700 ease-out"
+                          style={{
+                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.STANDARD / subscriptionData.totalActive) * 100) : 0}%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-success/10 to-success/5 p-6 border border-success/20 hover:border-success/40 hover:shadow-lg transition-all cursor-pointer">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -mr-16 -mt-16"></div>
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full bg-success shadow-lg shadow-success/30"></div>
-                    <span className="font-inter font-semibold text-gray-700">Premium Plan</span>
+              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-success/10 to-success/5 p-6 border border-success/20 hover:border-success/40 hover:shadow-lg transition-all cursor-pointer">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full bg-success shadow-lg shadow-success/30"></div>
+                      <span className="font-inter font-semibold text-gray-700">Premium Plan</span>
+                    </div>
+                    <div className="px-2 py-1 bg-success/10 rounded text-xs font-medium text-success">
+                      Pro
+                    </div>
                   </div>
-                  <div className="px-2 py-1 bg-success/10 rounded text-xs font-medium text-success">
-                    Pro
+                  <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
+                    {subscriptionData
+                      ? formatNumber(subscriptionData.subscriptionsByPlan.PREMIUM)
+                      : '0'}
                   </div>
-                </div>
-                <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
-                  {subscriptionData
-                    ? formatNumber(subscriptionData.subscriptionsByPlan.PREMIUM)
-                    : '0'}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">of active plans</span>
-                    <span className="font-semibold text-success">
-                      {subscriptionData && subscriptionData.totalActive > 0
-                        ? `${Math.round((subscriptionData.subscriptionsByPlan.PREMIUM / subscriptionData.totalActive) * 100)}%`
-                        : '0%'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-success to-success/70 h-full rounded-full transition-all duration-700 ease-out"
-                        style={{
-                          width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.PREMIUM / subscriptionData.totalActive) * 100) : 0}%`,
-                        }}
-                      ></div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">of active plans</span>
+                      <span className="font-semibold text-success">
+                        {subscriptionData && subscriptionData.totalActive > 0
+                          ? `${Math.round((subscriptionData.subscriptionsByPlan.PREMIUM / subscriptionData.totalActive) * 100)}%`
+                          : '0%'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-success to-success/70 h-full rounded-full transition-all duration-700 ease-out"
+                          style={{
+                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.PREMIUM / subscriptionData.totalActive) * 100) : 0}%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Charts Section */}
         <Tabs defaultValue="revenue" className="w-full">
@@ -687,122 +688,177 @@ export default function FinancePage() {
           </TabsList>
 
           <TabsContent value="revenue" className="space-y-6">
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                Revenue Comparison
-              </h3>
-              <div className="h-[350px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={
-                      revenueData
-                        ? [
-                            { name: 'Total Revenue', value: revenueData.totalRevenue.value },
-                            { name: 'Avg Monthly', value: revenueData.averageMonthlyRevenue },
-                            { name: 'This Week', value: revenueData.revenueThisWeek },
-                            { name: 'This Year', value: revenueData.revenueThisYear },
-                          ]
-                        : [
-                            { name: 'Total Revenue', value: 0 },
-                            { name: 'Avg Monthly', value: 0 },
-                            { name: 'This Week', value: 0 },
-                            { name: 'This Year', value: 0 },
-                          ]
-                    }
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: '#888' }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: '#888' }}
-                      tickFormatter={(value) => `$${value / 1000}k`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '12px',
-                      }}
-                      formatter={(value: number) => formatCurrency(value)}
-                    />
-                    <Bar dataKey="value" fill="#5E54F3" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            {isLoading ? (
+              <ChartsSkeleton />
+            ) : (
+              <>
+                <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                  <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
+                    Revenue Comparison
+                  </h3>
+                  <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={
+                          revenueData
+                            ? [
+                                { name: 'Total Revenue', value: revenueData.totalRevenue.value },
+                                { name: 'Avg Monthly', value: revenueData.averageMonthlyRevenue },
+                                { name: 'This Week', value: revenueData.revenueThisWeek },
+                                { name: 'This Year', value: revenueData.revenueThisYear },
+                              ]
+                            : [
+                                { name: 'Total Revenue', value: 0 },
+                                { name: 'Avg Monthly', value: 0 },
+                                { name: 'This Week', value: 0 },
+                                { name: 'This Year', value: 0 },
+                              ]
+                        }
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12, fill: '#888' }}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12, fill: '#888' }}
+                          tickFormatter={(value) => `$${value / 1000}k`}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#fff',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            padding: '12px',
+                          }}
+                          formatter={(value: number) => formatCurrency(value)}
+                        />
+                        <Bar dataKey="value" fill="#5E54F3" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
 
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                Subscription Revenue Metrics
-              </h3>
-              <div className="h-[350px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={
-                      subscriptionData
-                        ? [
-                            { name: 'MRR', value: subscriptionData.monthlyRecurringRevenue },
-                            { name: 'Monthly', value: subscriptionData.monthlyRevenue },
-                            { name: 'Last Month', value: subscriptionData.lastMonthRevenue },
-                            { name: 'ARR', value: subscriptionData.annualRecurringRevenue },
-                          ]
-                        : [
-                            { name: 'MRR', value: 0 },
-                            { name: 'Monthly', value: 0 },
-                            { name: 'Last Month', value: 0 },
-                            { name: 'ARR', value: 0 },
-                          ]
-                    }
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: '#888' }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: '#888' }}
-                      tickFormatter={(value) => `$${value / 1000}k`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '12px',
-                      }}
-                      formatter={(value: number) => formatCurrency(value)}
-                    />
-                    <Bar dataKey="value" fill="#5E54F3" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+                <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                  <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
+                    Subscription Revenue Metrics
+                  </h3>
+                  <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={
+                          subscriptionData
+                            ? [
+                                { name: 'MRR', value: subscriptionData.monthlyRecurringRevenue },
+                                { name: 'Monthly', value: subscriptionData.monthlyRevenue },
+                                { name: 'Last Month', value: subscriptionData.lastMonthRevenue },
+                                { name: 'ARR', value: subscriptionData.annualRecurringRevenue },
+                              ]
+                            : [
+                                { name: 'MRR', value: 0 },
+                                { name: 'Monthly', value: 0 },
+                                { name: 'Last Month', value: 0 },
+                                { name: 'ARR', value: 0 },
+                              ]
+                        }
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12, fill: '#888' }}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12, fill: '#888' }}
+                          tickFormatter={(value) => `$${value / 1000}k`}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#fff',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            padding: '12px',
+                          }}
+                          formatter={(value: number) => formatCurrency(value)}
+                        />
+                        <Bar dataKey="value" fill="#5E54F3" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="status">
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                Subscription Status Distribution
-              </h3>
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={
-                        subscriptionData
+            {isLoading ? (
+              <ChartsSkeleton />
+            ) : (
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
+                  Subscription Status Distribution
+                </h3>
+                <div className="h-[400px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={
+                          subscriptionData
+                            ? [
+                                {
+                                  name: 'Active',
+                                  value: subscriptionData.totalActive,
+                                  color: '#10B981',
+                                },
+                                {
+                                  name: 'Trialing',
+                                  value: subscriptionData.totalTrialing,
+                                  color: '#F59E0B',
+                                },
+                                {
+                                  name: 'Canceled',
+                                  value: subscriptionData.totalCanceled,
+                                  color: '#EF4444',
+                                },
+                                {
+                                  name: 'Past Due',
+                                  value: subscriptionData.totalPastDue,
+                                  color: '#F97316',
+                                },
+                                {
+                                  name: 'Unpaid',
+                                  value: subscriptionData.totalUnpaid,
+                                  color: '#DC2626',
+                                },
+                              ]
+                            : [
+                                { name: 'Active', value: 0, color: '#10B981' },
+                                { name: 'Trialing', value: 0, color: '#F59E0B' },
+                                { name: 'Canceled', value: 0, color: '#EF4444' },
+                                { name: 'Past Due', value: 0, color: '#F97316' },
+                                { name: 'Unpaid', value: 0, color: '#DC2626' },
+                              ]
+                        }
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) =>
+                          percent > 0 ? `${name}: ${(percent * 100).toFixed(0)}%` : ''
+                        }
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {(subscriptionData
                           ? [
                               {
                                 name: 'Active',
@@ -837,151 +893,110 @@ export default function FinancePage() {
                               { name: 'Past Due', value: 0, color: '#F97316' },
                               { name: 'Unpaid', value: 0, color: '#DC2626' },
                             ]
-                      }
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) =>
-                        percent > 0 ? `${name}: ${(percent * 100).toFixed(0)}%` : ''
-                      }
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {(subscriptionData
-                        ? [
-                            {
-                              name: 'Active',
-                              value: subscriptionData.totalActive,
-                              color: '#10B981',
-                            },
-                            {
-                              name: 'Trialing',
-                              value: subscriptionData.totalTrialing,
-                              color: '#F59E0B',
-                            },
-                            {
-                              name: 'Canceled',
-                              value: subscriptionData.totalCanceled,
-                              color: '#EF4444',
-                            },
-                            {
-                              name: 'Past Due',
-                              value: subscriptionData.totalPastDue,
-                              color: '#F97316',
-                            },
-                            {
-                              name: 'Unpaid',
-                              value: subscriptionData.totalUnpaid,
-                              color: '#DC2626',
-                            },
-                          ]
-                        : [
-                            { name: 'Active', value: 0, color: '#10B981' },
-                            { name: 'Trialing', value: 0, color: '#F59E0B' },
-                            { name: 'Canceled', value: 0, color: '#EF4444' },
-                            { name: 'Past Due', value: 0, color: '#F97316' },
-                            { name: 'Unpaid', value: 0, color: '#DC2626' },
-                          ]
-                      ).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                        ).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
+            )}
           </TabsContent>
 
           <TabsContent value="plans">
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                Subscriptions by Plan
-              </h3>
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={
-                      subscriptionData
-                        ? [
-                            {
-                              name: 'Basic',
-                              value: subscriptionData.subscriptionsByPlan.BASIC,
-                              color: '#5E54F3',
-                            },
-                            {
-                              name: 'Standard',
-                              value: subscriptionData.subscriptionsByPlan.STANDARD,
-                              color: '#06B6D4',
-                            },
-                            {
-                              name: 'Premium',
-                              value: subscriptionData.subscriptionsByPlan.PREMIUM,
-                              color: '#10B981',
-                            },
-                          ]
-                        : [
-                            { name: 'Basic', value: 0, color: '#5E54F3' },
-                            { name: 'Standard', value: 0, color: '#06B6D4' },
-                            { name: 'Premium', value: 0, color: '#10B981' },
-                          ]
-                    }
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: '#888' }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: '#888' }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '12px',
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                      {(subscriptionData
-                        ? [
-                            {
-                              name: 'Basic',
-                              value: subscriptionData.subscriptionsByPlan.BASIC,
-                              color: '#5E54F3',
-                            },
-                            {
-                              name: 'Standard',
-                              value: subscriptionData.subscriptionsByPlan.STANDARD,
-                              color: '#06B6D4',
-                            },
-                            {
-                              name: 'Premium',
-                              value: subscriptionData.subscriptionsByPlan.PREMIUM,
-                              color: '#10B981',
-                            },
-                          ]
-                        : [
-                            { name: 'Basic', value: 0, color: '#5E54F3' },
-                            { name: 'Standard', value: 0, color: '#06B6D4' },
-                            { name: 'Premium', value: 0, color: '#10B981' },
-                          ]
-                      ).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+            {isLoading ? (
+              <ChartsSkeleton />
+            ) : (
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
+                  Subscriptions by Plan
+                </h3>
+                <div className="h-[400px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={
+                        subscriptionData
+                          ? [
+                              {
+                                name: 'Basic',
+                                value: subscriptionData.subscriptionsByPlan.BASIC,
+                                color: '#5E54F3',
+                              },
+                              {
+                                name: 'Standard',
+                                value: subscriptionData.subscriptionsByPlan.STANDARD,
+                                color: '#06B6D4',
+                              },
+                              {
+                                name: 'Premium',
+                                value: subscriptionData.subscriptionsByPlan.PREMIUM,
+                                color: '#10B981',
+                              },
+                            ]
+                          : [
+                              { name: 'Basic', value: 0, color: '#5E54F3' },
+                              { name: 'Standard', value: 0, color: '#06B6D4' },
+                              { name: 'Premium', value: 0, color: '#10B981' },
+                            ]
+                      }
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#888' }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#888' }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #e0e0e0',
+                          borderRadius: '8px',
+                          padding: '12px',
+                        }}
+                      />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {(subscriptionData
+                          ? [
+                              {
+                                name: 'Basic',
+                                value: subscriptionData.subscriptionsByPlan.BASIC,
+                                color: '#5E54F3',
+                              },
+                              {
+                                name: 'Standard',
+                                value: subscriptionData.subscriptionsByPlan.STANDARD,
+                                color: '#06B6D4',
+                              },
+                              {
+                                name: 'Premium',
+                                value: subscriptionData.subscriptionsByPlan.PREMIUM,
+                                color: '#10B981',
+                              },
+                            ]
+                          : [
+                              { name: 'Basic', value: 0, color: '#5E54F3' },
+                              { name: 'Standard', value: 0, color: '#06B6D4' },
+                              { name: 'Premium', value: 0, color: '#10B981' },
+                            ]
+                        ).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
