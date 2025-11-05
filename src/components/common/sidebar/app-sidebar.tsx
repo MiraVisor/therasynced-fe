@@ -19,7 +19,6 @@ import {
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import SubscriptionBadge from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionBadge';
@@ -176,18 +175,6 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const { state } = useSidebar();
   const links = userRole ? navigationLinks[userRole] : [];
   const totalUnreadCount = useSelector(selectTotalUnreadCount);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return null;
-  }
-
-  // Get unread message count for notification badge
-  // const { totalUnreadCount: chatTotalUnreadCount } = useChat();
 
   const handleNavigation = (url: string) => {
     router.push(url);
