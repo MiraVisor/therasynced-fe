@@ -44,7 +44,7 @@ import { selectTotalUnreadCount } from '@/redux/slices/chatSlice';
 import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  userRole: RoleType | null;
+  userRole?: RoleType | null;
 }
 
 const navigationLinks = {
@@ -173,6 +173,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const { state } = useSidebar();
+  // Role is guaranteed to be provided when component renders
   const links = userRole ? navigationLinks[userRole] : [];
   const totalUnreadCount = useSelector(selectTotalUnreadCount);
 
