@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import adminOverviewService from '@/services/adminOverviewService';
 import { AdminOverviewDto } from '@/services/adminOverviewService';
@@ -130,25 +129,6 @@ const AdminHome = () => {
       iconName: 'money' as IconName,
     },
   ];
-
-  if (isLoading) {
-    return (
-      <DashboardPageWrapper
-        userRole={role}
-        header={
-          <div className="flex flex-col sm:flex-row w-full items-start gap-4">
-            <div className="flex-shrink-0">
-              <h1 className="font-poppins font-bold text-2xl text-charcoal">Dashboard Overview</h1>
-            </div>
-          </div>
-        }
-      >
-        <div className="flex items-center justify-center min-h-[400px]">
-          <LoadingSpinner size="lg" />
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
 
   return (
     <DashboardPageWrapper
