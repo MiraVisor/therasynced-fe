@@ -17,7 +17,9 @@ export function SidebarSkeleton({ className }: SidebarSkeletonProps) {
       <div className="flex h-full w-full flex-col bg-sidebar rounded-md dark:border dark:border-[#007745] px-2">
         {/* Header skeleton - Logo */}
         <div className="mx-auto w-full mt-8 mb-6 px-2 py-8">
-          <div className="h-10 w-36 bg-gray-200 dark:bg-gray-700/30 rounded-md animate-pulse mx-auto" />
+          <div className="flex items-center justify-center px-2 mx-auto cursor-pointer min-h-[40px]">
+            <div className="h-[40px] w-[150px] bg-gray-200 dark:bg-gray-700/30 rounded-md animate-pulse" />
+          </div>
         </div>
 
         {/* Navigation menu items skeleton */}

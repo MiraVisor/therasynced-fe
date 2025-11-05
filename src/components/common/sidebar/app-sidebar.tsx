@@ -185,7 +185,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     <Sidebar variant="sidebar" collapsible={'icon'} className="p-4 bg-dashboard !border-r-0 ">
       <SidebarHeader className="mx-auto w-full ">
         <div
-          className="flex items-center justify-between gap-2 px-2 mx-auto cursor-pointer"
+          className="flex items-center justify-center px-2 mx-auto cursor-pointer min-h-[40px]"
           onClick={() => router.push('/dashboard')}
         >
           <Image
