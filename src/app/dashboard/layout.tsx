@@ -15,18 +15,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsMounted(true);
   }, []);
 
-  // Show sidebar skeleton until mounted and role is available
-  // Middleware handles auth redirect, so no need for client-side redirect here
-  const showSidebarSkeleton = !isMounted || !userRole;
+  // Show sidebar skeleton only on initial mount before role is available
+  const showSkeleton = !isMounted || !userRole;
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
-        {showSidebarSkeleton ? <SidebarSkeleton /> : <AppSidebar userRole={userRole} />}
+        {showSkeleton ? <SidebarSkeleton /> : <AppSidebar userRole={userRole} />}
         <main
-          className={`flex-1 overflow-y-auto p-8 w-full bg-dashboard ${showSidebarSkeleton ? 'ml-[16rem]' : ''}`}
+          className={`flex-1 overflow-y-auto p-8 w-full bg-dashboard ${showSkeleton ? 'ml-[16rem]' : ''}`}
         >
-          {children}
+          {showSkeleton ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </SidebarProvider>
