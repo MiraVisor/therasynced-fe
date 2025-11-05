@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
 import { SidebarSkeleton } from '@/components/common/sidebar/SidebarSkeleton';
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -25,13 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main
           className={`flex-1 overflow-y-auto p-8 w-full bg-dashboard ${showSkeleton ? 'ml-[16rem]' : ''}`}
         >
-          {showSkeleton ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            children
-          )}
+          {showSkeleton ? <AdminPageSkeleton /> : children}
         </main>
       </div>
     </SidebarProvider>
