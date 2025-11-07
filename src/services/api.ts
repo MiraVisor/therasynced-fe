@@ -1,8 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 
 import { getCookie, removeCookie } from '@/lib/utils';
-import { logout, setRole } from '@/redux/slices';
-import { store } from '@/redux/store';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
@@ -31,22 +29,17 @@ api.interceptors.request.use(
 // Response Interceptor
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Update role from server response if available
-    if (response.data?.data?.user?.role) {
-      store.dispatch(setRole(response.data.data.user.role));
-    }
     return response;
   },
   (error) => {
     // Handle unauthorized access
     if (error.response?.status === 401) {
-      // Only clear token and redirect for non-auth endpoints
+      // Only clear token for non-auth endpoints
       const isAuthEndpoint = error.config?.url?.startsWith('/auth/');
 
       if (!isAuthEndpoint) {
-        // Clear invalid token and logout user
+        // Clear invalid token
         removeCookie('token');
-        store.dispatch(logout());
 
         // Only redirect if we're not already on an auth page
         if (

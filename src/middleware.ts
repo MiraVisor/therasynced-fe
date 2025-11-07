@@ -15,23 +15,52 @@ export function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
   const isRootRoute = pathname === '/';
 
-  // If accessing protected route without token, redirect to authentication
-  if (isProtectedRoute && !token) {
+  // Validate token (check existence and expiration)
+  const isTokenValid = validateToken(token);
+
+  // If accessing protected route without valid token, redirect to authentication
+  if (isProtectedRoute && !isTokenValid) {
     return NextResponse.redirect(new URL('/authentication/sign-in', request.url));
   }
 
   // If accessing auth routes with valid token, redirect to dashboard
-  if (isAuthRoute && token) {
+  if (isAuthRoute && isTokenValid) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // If accessing root path with token, redirect to dashboard
-  if (isRootRoute && token) {
+  // If accessing root path with valid token, redirect to dashboard
+  if (isRootRoute && isTokenValid) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // Allow all other requests to proceed
   return NextResponse.next();
+}
+
+// Server-side token validation
+function validateToken(token: string | undefined): boolean {
+  if (!token) return false;
+
+  try {
+    // JWT is header.payload.signature
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+
+    // Decode payload (base64url to base64, then to string)
+    const payload = parts[1];
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decodedPayload = JSON.parse(atob(base64));
+
+    // Check if token is expired
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (decodedPayload.exp && decodedPayload.exp < currentTime) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 export const config = {

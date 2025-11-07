@@ -8,16 +8,17 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
-import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
-import { ProfileCard } from '@/components/core/Dashboard/AdminSide/Components/ProfileCard';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
+import {
+  StatusFilter,
+  StatusFilterOption,
+} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import adminComplaintService, {
-  type ComplaintListResponse,
-} from '@/services/adminComplaintService';
-import { ComplaintCategory, ComplaintStatus } from '@/types/types';
+import { useComplaints } from '@/hooks/useComplaints';
+import adminComplaintService from '@/services/adminComplaintService';
+import { ComplaintStatus } from '@/types/types';
 
 interface ComplaintStats {
   total: number;
@@ -40,7 +41,7 @@ interface Complaint {
     email: string;
     role: string;
   };
-  category: ComplaintCategory;
+  category: string;
   reason: string;
   description: string;
   status: ComplaintStatus;
@@ -50,8 +51,35 @@ interface Complaint {
 
 const ComplaintsPage = () => {
   const router = useRouter();
-  const [complaints, setComplaints] = useState<Complaint[]>([]);
-  const [loading, setLoading] = useState(true);
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ComplaintStatus | undefined>(undefined);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      // Reset to page 1 when search changes
+      if (searchQuery !== debouncedSearch) {
+        setPage(1);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
+
+  // Fetch complaints with pagination, search, and status filter
+  const { complaints, loading, initialLoading, error, pagination, refetch } = useComplaints({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+    status: statusFilter,
+  });
+
+  // Calculate stats - we'll need to fetch these separately or from the API
   const [stats, setStats] = useState<ComplaintStats>({
     total: 0,
     pending: 0,
@@ -59,82 +87,55 @@ const ComplaintsPage = () => {
     resolved: 0,
     dismissed: 0,
   });
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchComplaints = async () => {
-    try {
-      setLoading(true);
-      const filters: any = {};
-      if (selectedStatus !== 'all') filters.status = selectedStatus;
-      if (selectedCategory !== 'all') filters.category = selectedCategory;
-
-      const response = await adminComplaintService.getAll(undefined, filters);
-      if (response.success) {
-        const data = response.data || [];
-        setComplaints(data);
-        setStats({
-          total: data.length,
-          pending: data.filter((c) => c.status === 'PENDING').length,
-          underReview: data.filter((c) => c.status === 'UNDER_REVIEW').length,
-          resolved: data.filter((c) => c.status === 'RESOLVED').length,
-          dismissed: data.filter((c) => c.status === 'DISMISSED').length,
-        });
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch complaints');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch stats separately
   useEffect(() => {
-    fetchComplaints();
-  }, [selectedStatus, selectedCategory]);
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const [pendingResponse, underReviewResponse, resolvedResponse, dismissedResponse] =
+          await Promise.all([
+            adminComplaintService.getAll(undefined, { status: 'PENDING' }),
+            adminComplaintService.getAll(undefined, { status: 'UNDER_REVIEW' }),
+            adminComplaintService.getAll(undefined, { status: 'RESOLVED' }),
+            adminComplaintService.getAll(undefined, { status: 'DISMISSED' }),
+          ]);
+
+        const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
+        const underReview = underReviewResponse.success
+          ? (underReviewResponse.data || []).length
+          : 0;
+        const resolved = resolvedResponse.success ? (resolvedResponse.data || []).length : 0;
+        const dismissed = dismissedResponse.success ? (dismissedResponse.data || []).length : 0;
+
+        setStats({
+          pending,
+          underReview,
+          resolved,
+          dismissed,
+          total: pending + underReview + resolved + dismissed,
+        });
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // Show error as toast when it occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to load complaints: ${error}`);
+    }
+  }, [error]);
 
   const handleViewDetails = (complaintId: string) => {
     router.push(`/dashboard/admin/complaints/${complaintId}`);
   };
-
-  const handleResetFilters = () => {
-    setSelectedStatus('all');
-    setSelectedCategory('all');
-    setSearchQuery('');
-  };
-
-  const filteredComplaints = complaints.filter((complaint) => {
-    const matchesSearch =
-      searchQuery === '' ||
-      complaint.reporter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reporter.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reportedUser.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reportedUser.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      complaint.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesSearch;
-  });
-
-  const statusOptions = [
-    { label: 'All Statuses', value: 'all' },
-    { label: 'Pending', value: 'PENDING' },
-    { label: 'Under Review', value: 'UNDER_REVIEW' },
-    { label: 'Resolved', value: 'RESOLVED' },
-    { label: 'Dismissed', value: 'DISMISSED' },
-  ];
-
-  const categoryOptions = [
-    { label: 'All Categories', value: 'all' },
-    { label: 'Harassment', value: 'HARASSMENT' },
-    { label: 'Unprofessional Behavior', value: 'UNPROFESSIONAL_BEHAVIOR' },
-    { label: 'Safety Concern', value: 'SAFETY_CONCERN' },
-    { label: 'No Show', value: 'NO_SHOW' },
-    { label: 'Late Cancellation', value: 'LATE_CANCELLATION' },
-    { label: 'Inappropriate Conduct', value: 'INAPPROPRIATE_CONDUCT' },
-    { label: 'Poor Service Quality', value: 'POOR_SERVICE_QUALITY' },
-    { label: 'Other', value: 'OTHER' },
-  ];
 
   const columns: ColumnDef<Complaint>[] = [
     {
@@ -209,90 +210,159 @@ const ComplaintsPage = () => {
     },
   ];
 
+  // Define stat cards configuration
+  const statCards = [
+    {
+      title: 'Total Complaints',
+      value: stats.total.toString(),
+      icon: FileText,
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
+    },
+    {
+      title: 'Pending',
+      value: stats.pending.toString(),
+      icon: AlertTriangle,
+      iconColor: 'text-warning',
+      iconBg: 'bg-warning/10',
+    },
+    {
+      title: 'Under Review',
+      value: stats.underReview.toString(),
+      icon: Shield,
+      iconColor: 'text-info',
+      iconBg: 'bg-info/10',
+    },
+    {
+      title: 'Resolved',
+      value: stats.resolved.toString(),
+      icon: CheckCircle,
+      iconColor: 'text-success',
+      iconBg: 'bg-success/10',
+    },
+    {
+      title: 'Dismissed',
+      value: stats.dismissed.toString(),
+      icon: XCircle,
+      iconColor: 'text-error',
+      iconBg: 'bg-error/10',
+    },
+  ];
+
+  // Status filter options
+  const statusFilterOptions: StatusFilterOption<ComplaintStatus | undefined>[] = [
+    {
+      label: 'All',
+      value: undefined,
+      count: stats.total,
+      color: 'primary',
+    },
+    {
+      label: 'Pending',
+      value: 'PENDING' as ComplaintStatus,
+      count: stats.pending,
+      color: 'warning',
+    },
+    {
+      label: 'Under Review',
+      value: 'UNDER_REVIEW' as ComplaintStatus,
+      count: stats.underReview,
+      color: 'info',
+    },
+    {
+      label: 'Resolved',
+      value: 'RESOLVED' as ComplaintStatus,
+      count: stats.resolved,
+      color: 'success',
+    },
+    {
+      label: 'Dismissed',
+      value: 'DISMISSED' as ComplaintStatus,
+      count: stats.dismissed,
+      color: 'error',
+    },
+  ];
+
+  // Render stat cards with responsive layout
+  const renderStatCards = () => (
+    <div
+      className="grid gap-6 
+      grid-cols-1 
+      sm:grid-cols-2 
+      lg:grid-cols-3 
+      xl:grid-cols-5"
+    >
+      {statCards.map((card, index) => (
+        <div
+          key={card.title}
+          className={`
+            ${index >= 3 ? 'lg:col-span-1 xl:col-span-1' : ''}
+          `}
+        >
+          <EnhancedStatCard
+            title={card.title}
+            value={card.value}
+            icon={card.icon}
+            iconColor={card.iconColor}
+            iconBg={card.iconBg}
+            loading={statsLoading}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <DashboardPageWrapper
-      header={
-        <div className="flex items-center justify-between w-full">
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Complaints Center</h1>
-        </div>
-      }
+      header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Complaints Center</h1>}
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <EnhancedStatCard
-            title="Total Complaints"
-            value={stats.total.toString()}
-            icon={FileText}
-            iconColor="text-primary"
-            iconBg="bg-primary/10"
-          />
-          <EnhancedStatCard
-            title="Pending"
-            value={stats.pending.toString()}
-            icon={AlertTriangle}
-            iconColor="text-warning"
-            iconBg="bg-warning/10"
-          />
-          <EnhancedStatCard
-            title="Under Review"
-            value={stats.underReview.toString()}
-            icon={Shield}
-            iconColor="text-info"
-            iconBg="bg-info/10"
-          />
-          <EnhancedStatCard
-            title="Resolved"
-            value={stats.resolved.toString()}
-            icon={CheckCircle}
-            iconColor="text-success"
-            iconBg="bg-success/10"
-          />
-          <EnhancedStatCard
-            title="Dismissed"
-            value={stats.dismissed.toString()}
-            icon={XCircle}
-            iconColor="text-error"
-            iconBg="bg-error/10"
-          />
-        </div>
+        {renderStatCards()}
 
-        {/* Filters */}
-        <FilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search by reporter, reported user, or reason..."
-          filters={[
-            {
-              key: 'status',
-              label: 'Status',
-              value: selectedStatus,
-              options: statusOptions,
-              onValueChange: setSelectedStatus,
-            },
-            {
-              key: 'category',
-              label: 'Category',
-              value: selectedCategory,
-              options: categoryOptions,
-              onValueChange: setSelectedCategory,
-            },
-          ]}
-          onReset={handleResetFilters}
+        {/* Status Filter */}
+        <StatusFilter<ComplaintStatus | undefined>
+          options={statusFilterOptions}
+          selectedValue={statusFilter}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
         />
 
         {/* Complaints Table */}
         <DataTable
           columns={columns}
-          data={filteredComplaints}
-          title="All Complaints"
+          data={complaints}
+          title={`${statusFilter || 'All'} Complaints`}
           searchKey="reason"
           searchPlaceholder="Search complaints..."
-          enableSorting
-          enableFiltering
-          enablePagination
-          pageSize={10}
+          enableSorting={false}
+          enableFiltering={true}
+          enableColumnVisibility={true}
+          enablePagination={true}
+          showSearch={true}
+          showSorting={false}
+          initialLoading={initialLoading}
+          loading={loading}
+          externalSearchValue={searchQuery}
+          onExternalSearchChange={(value) => setSearchQuery(value)}
+          externalPageIndex={page - 1}
+          externalPageSize={pageSize}
+          totalPages={pagination?.totalPages}
+          onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
+          onExternalPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize);
+            setPage(1);
+          }}
         />
+
+        {/* Summary */}
+        <div className="mt-4 text-sm text-gray-500">
+          Showing {complaints.length} of {pagination?.total || 0} complaints
+          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
+          {statusFilter && ` with status "${statusFilter}"`}
+        </div>
       </div>
     </DashboardPageWrapper>
   );

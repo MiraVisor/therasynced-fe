@@ -44,7 +44,7 @@ import { selectTotalUnreadCount } from '@/redux/slices/chatSlice';
 import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  userRole: RoleType | null;
+  userRole?: RoleType | null;
 }
 
 const navigationLinks = {
@@ -173,11 +173,9 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const { state } = useSidebar();
+  // Role is guaranteed to be provided when component renders
   const links = userRole ? navigationLinks[userRole] : [];
   const totalUnreadCount = useSelector(selectTotalUnreadCount);
-
-  // Get unread message count for notification badge
-  // const { totalUnreadCount: chatTotalUnreadCount } = useChat();
 
   const handleNavigation = (url: string) => {
     router.push(url);
@@ -187,7 +185,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     <Sidebar variant="sidebar" collapsible={'icon'} className="p-4 bg-dashboard !border-r-0 ">
       <SidebarHeader className="mx-auto w-full ">
         <div
-          className="flex items-center justify-between gap-2 px-2 mx-auto cursor-pointer"
+          className="flex items-center justify-center px-2 mx-auto cursor-pointer min-h-[40px]"
           onClick={() => router.push('/dashboard')}
         >
           <Image
@@ -267,7 +265,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
               <Button
                 onClick={() => {
                   logout();
-                  router.push('/authentication/sign-in');
+                  window.location.href = '/authentication/sign-in';
                 }}
                 variant="ghost"
                 className="w-full gap-2"

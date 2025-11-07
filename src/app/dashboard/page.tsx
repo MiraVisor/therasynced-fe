@@ -3,79 +3,40 @@
 import dynamicImport from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
-import LoadingSpinner from '@/components/ui/loading-spinner';
-import { getDecodedToken } from '@/lib/utils';
-import { ROLES, RoleType } from '@/types/types';
+import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
+import { useAuth } from '@/redux/hooks/useAppHooks';
+import { ROLES } from '@/types/types';
 
 // Dynamically import components that use Redux to prevent SSR issues
 const AdminHome = dynamicImport(() => import('@/components/core/Dashboard/AdminSide/AdminHome'), {
   ssr: false,
-
-  loading: () => (
-    <div className="flex items-center justify-center h-full">
-      <LoadingSpinner size="lg" />
-    </div>
-  ),
+  loading: () => <AdminPageSkeleton />,
 });
 
 const FreelancerHome = dynamicImport(
   () => import('@/components/core/Dashboard/FreelancerSide/Home'),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-full">
-        <LoadingSpinner size="lg" />
-      </div>
-    ),
+    loading: () => <AdminPageSkeleton />,
   },
 );
 
 const UserHome = dynamicImport(() => import('@/components/core/Dashboard/UserSide/Home'), {
   ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full">
-      <LoadingSpinner size="lg" />
-    </div>
-  ),
+  loading: () => <AdminPageSkeleton />,
 });
 
-const UserExplore = dynamicImport(
-  () => import('@/components/core/Dashboard/UserSide/Explore/UserExploreMain'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-full">
-        <LoadingSpinner size="lg" />
-      </div>
-    ),
-  },
-);
-
 function DashboardContent() {
-  const [userRole, setUserRole] = useState<RoleType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { role: userRole } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Get role from token
-    const decodedToken = getDecodedToken();
-    setUserRole(decodedToken?.role as RoleType);
-    setIsLoading(false);
+    setIsMounted(true);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
-  if (!userRole) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+  // Show page skeleton until mounted and role is determined
+  if (!isMounted || !userRole) {
+    return <AdminPageSkeleton />;
   }
 
   return (
@@ -88,19 +49,5 @@ function DashboardContent() {
 }
 
 export default function DashboardHome() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
   return <DashboardContent />;
 }

@@ -1,13 +1,24 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle, Clock, ExternalLink, FileText, Shield, XCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import {
+  CheckCircle,
+  Clock,
+  ExternalLink,
+  FileText,
+  MoreHorizontal,
+  Shield,
+  XCircle,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
+import {
+  StatusFilter,
+  StatusFilterOption,
+} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +31,6 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useVerifications } from '@/hooks/useVerifications';
 import adminVerificationService, {
   type PendingVerificationResponse,
@@ -65,7 +75,6 @@ const statsConfig = [
 ];
 
 const VerificationsPage = () => {
-  const router = useRouter();
   // State for pagination and search
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -76,15 +85,15 @@ const VerificationsPage = () => {
   );
 
   // Dialog states
-  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
-  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [isCertificateApproveDialogOpen, setIsCertificateApproveDialogOpen] = useState(false);
-  const [isCertificateRejectDialogOpen, setIsCertificateRejectDialogOpen] = useState(false);
+  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
+  const [selectedActionType, setSelectedActionType] = useState<
+    'verification' | 'certificate' | null
+  >(null);
+  const [selectedAction, setSelectedAction] = useState<'approve' | 'reject' | null>(null);
   const [selectedFreelancer, setSelectedFreelancer] = useState<PendingVerificationResponse | null>(
     null,
   );
   const [rejectionReason, setRejectionReason] = useState('');
-  const [certificateRejectionReason, setCertificateRejectionReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Debounce search query
@@ -95,13 +104,13 @@ const VerificationsPage = () => {
       if (searchQuery !== debouncedSearch) {
         setPage(1);
       }
-    }, 500); // 500ms debounce delay
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
 
   // Fetch verifications with pagination, search, and status filter
-  const { verifications, loading, initialLoading, error, pagination } = useVerifications({
+  const { verifications, loading, initialLoading, error, pagination, refetch } = useVerifications({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
@@ -139,7 +148,6 @@ const VerificationsPage = () => {
           total: pending + approved + rejected,
         });
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
       } finally {
         setStatsLoading(false);
       }
@@ -148,102 +156,113 @@ const VerificationsPage = () => {
     fetchStats();
   }, []);
 
-  // Handle approve verification
-  const handleApproveVerification = async () => {
-    if (!selectedFreelancer) return;
+  // Show error as toast when it occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to load verifications: ${error}`);
+    }
+  }, [error]);
+
+  // Function to refetch stats
+  const refetchStats = async () => {
     try {
-      setIsSubmitting(true);
-      const response = await adminVerificationService.approve({
-        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+      setStatsLoading(true);
+      const [pendingResponse, approvedResponse, rejectedResponse] = await Promise.all([
+        adminVerificationService.getByStatus('PENDING'),
+        adminVerificationService.getByStatus('APPROVED'),
+        adminVerificationService.getByStatus('REJECTED'),
+      ]);
+
+      const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
+      const approved = approvedResponse.success ? (approvedResponse.data || []).length : 0;
+      const rejected = rejectedResponse.success ? (rejectedResponse.data || []).length : 0;
+
+      setStats({
+        pending,
+        approved,
+        rejected,
+        total: pending + approved + rejected,
       });
-      if (response.success) {
-        toast.success('Verification approved successfully');
-        setIsApproveDialogOpen(false);
-        setSelectedFreelancer(null);
-        // Refresh data
-        window.location.reload();
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to approve verification');
+    } catch (error) {
     } finally {
-      setIsSubmitting(false);
+      setStatsLoading(false);
     }
   };
 
-  // Handle reject verification
-  const handleRejectVerification = async () => {
-    if (!selectedFreelancer || !rejectionReason.trim()) {
+  // Handle action submission
+  const handleActionSubmit = async () => {
+    if (!selectedFreelancer || !selectedActionType || !selectedAction) return;
+
+    if (selectedAction === 'reject' && !rejectionReason.trim()) {
       toast.error('Please provide a rejection reason');
       return;
     }
+
     try {
       setIsSubmitting(true);
-      const response = await adminVerificationService.reject({
-        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
-        rejectionReason: rejectionReason.trim(),
-      });
-      if (response.success) {
-        toast.success('Verification rejected successfully');
-        setIsRejectDialogOpen(false);
-        setRejectionReason('');
-        setSelectedFreelancer(null);
-        // Refresh data
-        window.location.reload();
+      let response;
+
+      if (selectedActionType === 'verification') {
+        if (selectedAction === 'approve') {
+          response = await adminVerificationService.approve({
+            freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+          });
+        } else {
+          response = await adminVerificationService.reject({
+            freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+            rejectionReason: rejectionReason.trim(),
+          });
+        }
+      } else {
+        if (selectedAction === 'approve') {
+          response = await adminVerificationService.approveCertificate({
+            freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+          });
+        } else {
+          response = await adminVerificationService.rejectCertificate({
+            freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
+            rejectionReason: rejectionReason.trim(),
+          });
+        }
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to reject verification');
+
+      if (response.success) {
+        const actionText = selectedAction === 'approve' ? 'approved' : 'rejected';
+        const typeText =
+          selectedActionType === 'verification' ? 'verification' : 'first aid certificate';
+        toast.success(`${typeText} ${actionText} successfully`);
+        handleCloseActionDialog();
+        // Refresh data by triggering a re-fetch instead of full page reload
+        refetch();
+        refetchStats();
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || `Failed to ${selectedAction} ${selectedActionType}`);
+      } else {
+        toast.error(`Failed to ${selectedAction} ${selectedActionType}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handle approve certificate
-  const handleApproveCertificate = async () => {
-    if (!selectedFreelancer) return;
-    try {
-      setIsSubmitting(true);
-      const response = await adminVerificationService.approveCertificate({
-        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
-      });
-      if (response.success) {
-        toast.success('First Aid Certificate approved successfully');
-        setIsCertificateApproveDialogOpen(false);
-        setSelectedFreelancer(null);
-        // Refresh data
-        window.location.reload();
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to approve certificate');
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Handle opening action dialog
+  const handleOpenActionDialog = (freelancer: PendingVerificationResponse) => {
+    setSelectedFreelancer(freelancer);
+    setSelectedActionType(null);
+    setSelectedAction(null);
+    setRejectionReason('');
+    setIsActionDialogOpen(true);
   };
 
-  // Handle reject certificate
-  const handleRejectCertificate = async () => {
-    if (!selectedFreelancer || !certificateRejectionReason.trim()) {
-      toast.error('Please provide a rejection reason');
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      const response = await adminVerificationService.rejectCertificate({
-        freelancerId: selectedFreelancer.id || selectedFreelancer.freelancerId || '',
-        rejectionReason: certificateRejectionReason.trim(),
-      });
-      if (response.success) {
-        toast.success('First Aid Certificate rejected successfully');
-        setIsCertificateRejectDialogOpen(false);
-        setCertificateRejectionReason('');
-        setSelectedFreelancer(null);
-        // Refresh data
-        window.location.reload();
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to reject certificate');
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Handle closing action dialog
+  const handleCloseActionDialog = () => {
+    setIsActionDialogOpen(false);
+    setSelectedFreelancer(null);
+    setSelectedActionType(null);
+    setSelectedAction(null);
+    setRejectionReason('');
   };
 
   const columns: ColumnDef<PendingVerificationResponse>[] = [
@@ -296,73 +315,58 @@ const VerificationsPage = () => {
         const verificationStatus = freelancer.verificationStatus;
         const certificateStatus = freelancer.firstAidCertificateStatus;
 
+        // Show actions button if there are pending actions
+        const hasPendingActions =
+          verificationStatus === 'PENDING' ||
+          (freelancer.firstAidCertificateUrl && certificateStatus === 'PENDING');
+
+        if (!hasPendingActions) {
+          return <span className="text-muted-foreground text-sm">No actions available</span>;
+        }
+
         return (
-          <div className="flex items-center gap-2">
-            {/* Verification Status Actions */}
-            {verificationStatus === 'PENDING' && (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 border-success text-success hover:bg-success/10 font-inter"
-                  onClick={() => {
-                    setSelectedFreelancer(freelancer);
-                    setIsApproveDialogOpen(true);
-                  }}
-                >
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Approve
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 border-error text-error hover:bg-error/10 font-inter"
-                  onClick={() => {
-                    setSelectedFreelancer(freelancer);
-                    setIsRejectDialogOpen(true);
-                  }}
-                >
-                  <XCircle className="h-4 w-4 mr-1" />
-                  Reject
-                </Button>
-              </>
-            )}
-            {/* First Aid Certificate Actions */}
-            {freelancer.firstAidCertificateUrl && certificateStatus === 'PENDING' && (
-              <>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 text-success hover:bg-success/10 font-inter"
-                  onClick={() => {
-                    setSelectedFreelancer(freelancer);
-                    setIsCertificateApproveDialogOpen(true);
-                  }}
-                >
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Cert
-                </Button>
-              </>
-            )}
-          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8"
+            onClick={() => handleOpenActionDialog(freelancer)}
+          >
+            <MoreHorizontal className="h-4 w-4 mr-1" />
+            Actions
+          </Button>
         );
       },
     },
   ];
 
-  if (error) {
-    return (
-      <DashboardPageWrapper
-        header={
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Queue</h1>
-        }
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="font-open-sans text-lg text-error">Error: {error}</div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
+  // Status filter options
+  const statusFilterOptions: StatusFilterOption<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>[] =
+    [
+      {
+        label: 'All',
+        value: undefined,
+        count: stats.total,
+        color: 'primary',
+      },
+      {
+        label: 'Pending',
+        value: 'PENDING' as const,
+        count: stats.pending,
+        color: 'warning',
+      },
+      {
+        label: 'Approved',
+        value: 'APPROVED' as const,
+        count: stats.approved,
+        color: 'success',
+      },
+      {
+        label: 'Rejected',
+        value: 'REJECTED' as const,
+        count: stats.rejected,
+        color: 'error',
+      },
+    ];
 
   return (
     <DashboardPageWrapper
@@ -385,60 +389,14 @@ const VerificationsPage = () => {
         </div>
 
         {/* Status Filter */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setStatusFilter(undefined);
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === undefined
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All ({stats.total})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('PENDING');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'PENDING'
-                ? 'bg-warning text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Pending ({stats.pending})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('APPROVED');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'APPROVED'
-                ? 'bg-success text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Approved ({stats.approved})
-          </button>
-          <button
-            onClick={() => {
-              setStatusFilter('REJECTED');
-              setPage(1);
-            }}
-            className={`px-4 py-2 rounded-md font-medium ${
-              statusFilter === 'REJECTED'
-                ? 'bg-error text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Rejected ({stats.rejected})
-          </button>
-        </div>
+        <StatusFilter<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>
+          options={statusFilterOptions}
+          selectedValue={statusFilter}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        />
 
         {/* Verifications Table */}
         <DataTable
@@ -475,124 +433,149 @@ const VerificationsPage = () => {
         </div>
       </div>
 
-      {/* Approve Verification Dialog */}
-      <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
-        <DialogContent>
+      {/* Action Dialog */}
+      <Dialog open={isActionDialogOpen} onOpenChange={handleCloseActionDialog}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Approve Verification</DialogTitle>
+            <DialogTitle>Take Action</DialogTitle>
             <DialogDescription>
-              Are you sure you want to approve the verification for {selectedFreelancer?.name}?
+              Select the type of action you want to perform for {selectedFreelancer?.name}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsApproveDialogOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleApproveVerification} disabled={isSubmitting}>
-              {isSubmitting ? 'Approving...' : 'Approve'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Reject Verification Dialog */}
-      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject Verification</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting the verification for {selectedFreelancer?.name}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="Enter rejection reason..."
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              disabled={isSubmitting}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsRejectDialogOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRejectVerification}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Rejecting...' : 'Reject'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {!selectedActionType ? (
+            // Step 1: Select action type
+            <div className="space-y-4">
+              <div className="text-sm font-medium text-muted-foreground mb-4">
+                What would you like to act on?
+              </div>
+              <div className="space-y-2">
+                {selectedFreelancer?.verificationStatus === 'PENDING' && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => setSelectedActionType('verification')}
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Freelancer Verification
+                    <StatusBadge
+                      status={selectedFreelancer.verificationStatus}
+                      size="sm"
+                      className="ml-auto"
+                    />
+                  </Button>
+                )}
+                {selectedFreelancer?.firstAidCertificateUrl &&
+                  selectedFreelancer?.firstAidCertificateStatus === 'PENDING' && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => setSelectedActionType('certificate')}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      First Aid Certificate
+                      <StatusBadge
+                        status={selectedFreelancer.firstAidCertificateStatus || 'PENDING'}
+                        size="sm"
+                        className="ml-auto"
+                      />
+                    </Button>
+                  )}
+              </div>
+            </div>
+          ) : !selectedAction ? (
+            // Step 2: Select action (approve/reject)
+            <div className="space-y-4">
+              <div className="text-sm font-medium text-muted-foreground mb-4">
+                What action would you like to take for the{' '}
+                {selectedActionType === 'verification' ? 'verification' : 'certificate'}?
+              </div>
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-success border-success hover:bg-success/10"
+                  onClick={() => setSelectedAction('approve')}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Approve
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-error border-error hover:bg-error/10"
+                  onClick={() => setSelectedAction('reject')}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Reject
+                </Button>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedActionType(null)}
+                className="w-full"
+              >
+                ← Back to action type selection
+              </Button>
+            </div>
+          ) : (
+            // Step 3: Confirmation and rejection reason if needed
+            <div className="space-y-4">
+              <div className="text-sm">
+                You are about to{' '}
+                <span
+                  className={`font-medium ${selectedAction === 'approve' ? 'text-success' : 'text-error'}`}
+                >
+                  {selectedAction}
+                </span>{' '}
+                the{' '}
+                <span className="font-medium">
+                  {selectedActionType === 'verification'
+                    ? 'freelancer verification'
+                    : 'first aid certificate'}
+                </span>{' '}
+                for {selectedFreelancer?.name}.
+              </div>
 
-      {/* Approve Certificate Dialog */}
-      <Dialog
-        open={isCertificateApproveDialogOpen}
-        onOpenChange={setIsCertificateApproveDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Approve First Aid Certificate</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to approve the first aid certificate for{' '}
-              {selectedFreelancer?.name}?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsCertificateApproveDialogOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleApproveCertificate} disabled={isSubmitting}>
-              {isSubmitting ? 'Approving...' : 'Approve'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {selectedAction === 'reject' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Rejection Reason</label>
+                  <Input
+                    placeholder="Enter rejection reason..."
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                </div>
+              )}
 
-      {/* Reject Certificate Dialog */}
-      <Dialog open={isCertificateRejectDialogOpen} onOpenChange={setIsCertificateRejectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject First Aid Certificate</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting the first aid certificate for{' '}
-              {selectedFreelancer?.name}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="Enter rejection reason..."
-              value={certificateRejectionReason}
-              onChange={(e) => setCertificateRejectionReason(e.target.value)}
-              disabled={isSubmitting}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsCertificateRejectDialogOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleRejectCertificate} disabled={isSubmitting}>
-              {isSubmitting ? 'Rejecting...' : 'Reject'}
-            </Button>
-          </DialogFooter>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedAction(null)}
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                ← Back to action selection
+              </Button>
+            </div>
+          )}
+
+          {selectedAction && (
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCloseActionDialog} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleActionSubmit}
+                disabled={isSubmitting || (selectedAction === 'reject' && !rejectionReason.trim())}
+                variant={selectedAction === 'reject' ? 'destructive' : 'default'}
+              >
+                {isSubmitting
+                  ? `${selectedAction === 'approve' ? 'Approving' : 'Rejecting'}...`
+                  : `${selectedAction === 'approve' ? 'Approve' : 'Reject'}`}
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </DashboardPageWrapper>

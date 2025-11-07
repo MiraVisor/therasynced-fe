@@ -1,6 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
+import { CheckCircle, FileText, Folder, Users, XCircle } from 'lucide-react';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -19,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,6 +46,16 @@ const JobTitlesPage = () => {
   const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Stats state
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    totalFreelancers: 0,
+    totalServiceCategories: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -63,6 +75,37 @@ const JobTitlesPage = () => {
     limit: pageSize,
     name: debouncedSearch || undefined,
   });
+
+  // Fetch stats separately
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const response = await adminJobTitleService.getAll();
+        if (response.success) {
+          const allJobTitles = response.data || [];
+          const total = allJobTitles.length;
+          const active = allJobTitles.filter((jt: JobTitleResponse) => jt.isActive).length;
+          const inactive = allJobTitles.filter((jt: JobTitleResponse) => !jt.isActive).length;
+          const totalFreelancers = allJobTitles.reduce(
+            (sum: number, jt: JobTitleResponse) => sum + (jt._count?.users || 0),
+            0,
+          );
+          const totalServiceCategories = allJobTitles.reduce(
+            (sum: number, jt: JobTitleResponse) => sum + (jt._count?.serviceCategories || 0),
+            0,
+          );
+          setStats({ total, active, inactive, totalFreelancers, totalServiceCategories });
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleCreate = async () => {
     try {
@@ -161,7 +204,7 @@ const JobTitlesPage = () => {
           variant="outline"
           className="font-inter text-xs px-2 py-1 bg-info/10 text-info border-info/20"
         >
-          {row.original.freelancerCount || 0}
+          {row.original._count?.users || 0}
         </Badge>
       ),
     },
@@ -173,7 +216,7 @@ const JobTitlesPage = () => {
           variant="outline"
           className="font-inter text-xs px-2 py-1 bg-primary/10 text-primary border-primary/20"
         >
-          {row.original.serviceCategoryCount || 0}
+          {row.original._count?.serviceCategories || 0}
         </Badge>
       ),
     },
@@ -210,6 +253,45 @@ const JobTitlesPage = () => {
           </div>
         );
       },
+    },
+  ];
+
+  // Define stat cards configuration
+  const statCards = [
+    {
+      title: 'Total Job Titles',
+      value: stats.total.toString(),
+      icon: FileText,
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
+    },
+    {
+      title: 'Active',
+      value: stats.active.toString(),
+      icon: CheckCircle,
+      iconColor: 'text-success',
+      iconBg: 'bg-success/10',
+    },
+    {
+      title: 'Inactive',
+      value: stats.inactive.toString(),
+      icon: XCircle,
+      iconColor: 'text-error',
+      iconBg: 'bg-error/10',
+    },
+    {
+      title: 'Total Freelancers',
+      value: stats.totalFreelancers.toString(),
+      icon: Users,
+      iconColor: 'text-info',
+      iconBg: 'bg-info/10',
+    },
+    {
+      title: 'Total Service Categories',
+      value: stats.totalServiceCategories.toString(),
+      icon: Folder,
+      iconColor: 'text-warning',
+      iconBg: 'bg-warning/10',
     },
   ];
 
@@ -258,6 +340,21 @@ const JobTitlesPage = () => {
       }
     >
       <div className="space-y-6 lg:space-y-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {statCards.map((card) => (
+            <EnhancedStatCard
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              icon={card.icon}
+              iconColor={card.iconColor}
+              iconBg={card.iconBg}
+              loading={statsLoading}
+            />
+          ))}
+        </div>
+
         {/* Job Titles Table */}
         <DataTable
           columns={columns}
