@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import LoadingSpinner from '@/components/ui/loading-spinner';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { fetchAllFavoriteFreelancers } from '@/redux/slices/exploreSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../../components/core/Dashboard/DashboardPageWrapper';
-import ExpertCard from '../../../components/core/Dashboard/UserSide/Overview/ExpertCard';
+import { ExpertList } from '../../../components/core/Dashboard/UserSide/Overview/ExpertSection';
+import ExpertCardSkeleton from '../../../components/ui/skeletons/ExpertCardSkeleton';
 
 // Map freelancer data to Expert format (same as in UserExploreMain)
 const mapFreelancerToExpert = (freelancer: any): Expert => {
@@ -91,76 +93,162 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
   };
 };
 
+// Enhanced Search Component
+const FavoritesSearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    onSearch(value);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Input
+          type="text"
+          placeholder="Search your favorites by name, specialty, or keywords..."
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-10 pr-4 py-3 text-base border-gray-200 focus:border-primary focus:ring-primary"
+        />
+      </div>
+    </div>
+  );
+};
+
 const FavoritesPage = () => {
   const dispatch = useDispatch();
-  const { isAuthenticated } = useAuth();
-  const { favorites, loading } = useSelector((state: RootState) => state.explore as any);
+  const { favorites, loading, error } = useSelector((state: RootState) => state.explore as any);
+  const [filteredFavorites, setFilteredFavorites] = useState<Expert[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (!isAuthenticated) return;
     dispatch(fetchAllFavoriteFreelancers() as any);
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch]);
 
-  // Process favorites data - map through the same function as experts
-  const favoritesList = favorites?.map((favorite: any) => mapFreelancerToExpert(favorite)) || [];
+  useEffect(() => {
+    if (!favorites || !Array.isArray(favorites)) {
+      setFilteredFavorites([]);
+      return;
+    }
 
-  if (loading) {
-    return (
-      <DashboardPageWrapper
-        userRole="PATIENT"
-        header={
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Favorites</h1>
-            <p className="text-gray-600 dark:text-gray-400">Your saved freelancers</p>
-          </div>
-        }
-      >
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner />
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
+    try {
+      const mappedFavorites = favorites.map(mapFreelancerToExpert);
+      let filtered = mappedFavorites;
+
+      // Apply search filter
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (favorite) =>
+            favorite.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            favorite.specialty?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            favorite.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+      }
+
+      setFilteredFavorites(filtered);
+    } catch (error) {
+      // Handle mapping errors gracefully
+      setFilteredFavorites([]);
+    }
+  }, [favorites, searchQuery]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
 
   return (
     <DashboardPageWrapper
-      userRole="PATIENT"
       header={
-        <div className="space-y-1">
-          <h1 className="text-2xl font-poppins font-bold text-charcoal">My Favorites</h1>
-          <p className="font-inter text-muted-foreground">
-            {favoritesList.length === 0
-              ? 'No favorites yet'
-              : `${favoritesList.length} saved freelancer${favoritesList.length !== 1 ? 's' : ''}`}
-          </p>
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <h1 className="text-3xl font-poppins font-bold text-charcoal">My Favorites</h1>
+            <p className="text-lg font-inter text-muted-foreground max-w-2xl">
+              Your saved freelancers and preferred mental health professionals
+            </p>
+          </div>
+
+          <FavoritesSearchBar onSearch={handleSearch} />
         </div>
       }
     >
-      {favoritesList.length === 0 ? (
-        <div className="text-center py-12 bg-gradient-to-br from-mint/20 to-white rounded-2xl border border-sage/30">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-error/10 flex items-center justify-center">
-            <span className="text-3xl">❤️</span>
+      <div className="space-y-8">
+        {/* Results Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-poppins font-semibold text-charcoal">
+              {loading
+                ? 'Loading favorites...'
+                : `${filteredFavorites.length} saved freelancer${filteredFavorites.length !== 1 ? 's' : ''}`}
+            </h2>
+            {searchQuery && (
+              <p className="text-sm font-inter text-muted-foreground mt-1">
+                Results for &quot;{searchQuery}&quot;
+              </p>
+            )}
           </div>
-          <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
-            No favorites yet
-          </h3>
-          <p className="font-inter text-muted-foreground mb-6 max-w-sm mx-auto">
-            Start exploring freelancers and add them to your favorites to see them here.
-          </p>
-          <a
-            href="/dashboard/explore"
-            className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-inter font-medium"
-          >
-            Explore Freelancers
-          </a>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {favoritesList.map((freelancer: Expert) => (
-            <ExpertCard key={freelancer.id} {...freelancer} showFavoriteText={false} />
-          ))}
-        </div>
-      )}
+
+        {/* Content */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <ExpertCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 bg-error/10 rounded-full flex items-center justify-center">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
+              Unable to load favorites
+            </h3>
+            <p className="font-inter text-muted-foreground mb-4">{error}</p>
+            <Button
+              onClick={() => dispatch(fetchAllFavoriteFreelancers() as any)}
+              className="bg-primary hover:bg-primary/90 text-white"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : filteredFavorites.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
+              {searchQuery ? 'No favorites match your search' : 'No favorites yet'}
+            </h3>
+            <p className="font-inter text-muted-foreground mb-4">
+              {searchQuery
+                ? `No saved freelancers match "${searchQuery}". Try adjusting your search.`
+                : 'Start exploring freelancers and add them to your favorites to see them here.'}
+            </p>
+            <div className="flex gap-2 justify-center">
+              {searchQuery && (
+                <Button
+                  onClick={() => setSearchQuery('')}
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
+                >
+                  Clear Search
+                </Button>
+              )}
+              <Button
+                onClick={() => (window.location.href = '/dashboard/explore')}
+                className="bg-primary hover:bg-primary/90 text-white"
+              >
+                Explore Freelancers
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <ExpertList experts={filteredFavorites} />
+        )}
+      </div>
     </DashboardPageWrapper>
   );
 };
