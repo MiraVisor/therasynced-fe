@@ -443,11 +443,7 @@ export default function MyBookingsPage() {
               className="h-10 w-10 p-0"
               disabled={isNavigatingWeek}
             >
-              {isNavigatingWeek ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
+              <ChevronLeft className="h-4 w-4" />
             </Button>
 
             <Popover>
@@ -457,11 +453,8 @@ export default function MyBookingsPage() {
                   className="h-10 px-4 font-poppins font-medium text-charcoal hover:bg-gray-50 flex items-center gap-2"
                   disabled={isNavigatingWeek}
                 >
-                  {isNavigatingWeek ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <CalendarIcon className="h-4 w-4" />
-                  )}
+                  <CalendarIcon className="h-4 w-4" />
+
                   <span className="text-base lg:text-lg">
                     {`${format(currentWeekStart, 'do MMM')} - ${format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'do MMM')}`}
                   </span>
@@ -500,11 +493,7 @@ export default function MyBookingsPage() {
               className="h-10 w-10 p-0"
               disabled={isNavigatingWeek}
             >
-              {isNavigatingWeek ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
