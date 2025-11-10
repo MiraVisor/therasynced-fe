@@ -1,6 +1,13 @@
-export function EnhancedStatCardSkeleton() {
+export function EnhancedStatCardSkeleton({
+  bookingSkeleton = false,
+}: {
+  bookingSkeleton?: boolean;
+}) {
   return (
-    <div className="rounded-2xl border border-gray-200/80 bg-white/80 backdrop-blur-sm shadow-soft p-7">
+    <div
+      className={`rounded-2xl border border-gray-200/80 bg-white/80 backdrop-blur-sm shadow-soft p-6 
+        ${bookingSkeleton ? 'h-[200px]' : 'h-[140px]'}`}
+    >
       {/* Header with title and icon skeleton */}
       <div className="flex items-start justify-between">
         <div className="space-y-2 flex-1">

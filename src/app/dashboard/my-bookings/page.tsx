@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { BookingCardSkeleton } from '@/components/ui/skeletons/BookingCardSkeleton';
 import * as bookingApi from '@/redux/api/bookingApi';
 import { cancelUserBooking, fetchUserBookings } from '@/redux/slices/bookingSlice';
 import { RootState } from '@/redux/store';
@@ -63,7 +64,7 @@ const BookingStatsComponent = ({
   const statsData = [
     {
       title: 'Total Bookings',
-      value: isLoading ? '...' : displayStats.totalBookings.toString(),
+      value: displayStats.totalBookings.toString(),
       trend: {
         value: displayStats.totalBookings > 0 ? 15.2 : 0,
         isUp: true,
@@ -76,7 +77,7 @@ const BookingStatsComponent = ({
     },
     {
       title: 'Upcoming',
-      value: isLoading ? '...' : displayStats.upcomingBookings.toString(),
+      value: displayStats.upcomingBookings.toString(),
       trend: {
         value: displayStats.upcomingBookings > 0 ? 25.0 : 0,
         isUp: true,
@@ -89,7 +90,7 @@ const BookingStatsComponent = ({
     },
     {
       title: 'Completed',
-      value: isLoading ? '...' : displayStats.completedBookings.toString(),
+      value: displayStats.completedBookings.toString(),
       trend: {
         value: displayStats.completedBookings > 0 ? 30.5 : 0,
         isUp: true,
@@ -110,7 +111,7 @@ const BookingStatsComponent = ({
     },
     {
       title: 'Cancelled',
-      value: isLoading ? '...' : displayStats.cancelledBookings.toString(),
+      value: displayStats.cancelledBookings.toString(),
       trend: {
         value: displayStats.cancelledBookings > 0 ? -10.2 : 0,
         isUp: false,
@@ -146,6 +147,8 @@ const BookingStatsComponent = ({
             iconBg={stat.iconBg}
             sparklineData={stat.sparklineData}
             interactive
+            loading={isLoading}
+            bookingSkeleton={true}
             onClick={() => {
               // Navigate to details or filter
             }}
@@ -221,6 +224,7 @@ export default function MyBookingsPage() {
   );
   const [bookingStats, setBookingStats] = useState<BookingStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
 
   const fetchBookingStats = useCallback(async () => {
     setIsLoadingStats(true);
@@ -315,15 +319,20 @@ export default function MyBookingsPage() {
     }
   };
 
-  const navigateWeek = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      const newDate = addDays(currentWeekStart, -7);
-      // Ensure we're at the start of the week
-      setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
-    } else {
-      const newDate = addDays(currentWeekStart, 7);
-      // Ensure we're at the start of the week
-      setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
+  const navigateWeek = async (direction: 'prev' | 'next') => {
+    setIsNavigatingWeek(true);
+    try {
+      if (direction === 'prev') {
+        const newDate = addDays(currentWeekStart, -7);
+        // Ensure we're at the start of the week
+        setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
+      } else {
+        const newDate = addDays(currentWeekStart, 7);
+        // Ensure we're at the start of the week
+        setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
+      }
+    } finally {
+      setIsNavigatingWeek(false);
     }
   };
 
@@ -400,13 +409,6 @@ export default function MyBookingsPage() {
         </div>
       }
     >
-      {/* Loading State */}
-      {loading && (
-        <div className="flex h-full items-center justify-center ">
-          <LoadingSpinner size="lg" />
-        </div>
-      )}
-
       {/* Error State */}
       {error && (
         <div className="text-center py-12">
@@ -426,8 +428,8 @@ export default function MyBookingsPage() {
         </div>
       )}
 
-      {/* Main Content - Always show stats and navigation, even if no bookings */}
-      {!loading && !error && (
+      {/* Main Content - Always show stats and navigation, even during loading */}
+      {!error && (
         <div className="space-y-6">
           {/* Stats Section */}
           <BookingStatsComponent stats={bookingStats} isLoading={isLoadingStats} />
@@ -439,8 +441,13 @@ export default function MyBookingsPage() {
               size="sm"
               onClick={() => navigateWeek('prev')}
               className="h-10 w-10 p-0"
+              disabled={isNavigatingWeek}
             >
-              <ChevronLeft className="h-4 w-4" />
+              {isNavigatingWeek ? (
+                <LoadingSpinner size="sm" />
+              ) : (
+                <ChevronLeft className="h-4 w-4" />
+              )}
             </Button>
 
             <Popover>
@@ -448,8 +455,13 @@ export default function MyBookingsPage() {
                 <Button
                   variant="outline"
                   className="h-10 px-4 font-poppins font-medium text-charcoal hover:bg-gray-50 flex items-center gap-2"
+                  disabled={isNavigatingWeek}
                 >
-                  <CalendarIcon className="h-4 w-4" />
+                  {isNavigatingWeek ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <CalendarIcon className="h-4 w-4" />
+                  )}
                   <span className="text-base lg:text-lg">
                     {`${format(currentWeekStart, 'do MMM')} - ${format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'do MMM')}`}
                   </span>
@@ -486,13 +498,44 @@ export default function MyBookingsPage() {
               size="sm"
               onClick={() => navigateWeek('next')}
               className="h-10 w-10 p-0"
+              disabled={isNavigatingWeek}
             >
-              <ChevronRight className="h-4 w-4" />
+              {isNavigatingWeek ? (
+                <LoadingSpinner size="sm" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
             </Button>
           </div>
 
           {/* Day Sections */}
-          {bookings.length === 0 ? (
+          {loading ? (
+            <div className="space-y-4">
+              {weekDays.map((date) => (
+                <div key={date.toISOString()}>
+                  <div className="bg-white border border-gray-200 rounded-2xl shadow-soft overflow-hidden">
+                    <div className="p-4 lg:p-6">
+                      <div className="flex items-center gap-3 lg:gap-4 flex-1 text-left">
+                        <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded animate-pulse w-32" />
+                        <div className="flex gap-2">
+                          <div className="h-5 bg-gray-200 dark:bg-gray-700/20 rounded animate-pulse w-16" />
+                          <div className="h-5 bg-gray-200 dark:bg-gray-700/20 rounded animate-pulse w-16" />
+                          <div className="h-5 bg-gray-200 dark:bg-gray-700/20 rounded animate-pulse w-16" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-4 lg:px-6 pb-4 lg:pb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <BookingCardSkeleton key={i} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : bookings.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <CalendarIcon className="w-8 h-8 text-gray-400" />

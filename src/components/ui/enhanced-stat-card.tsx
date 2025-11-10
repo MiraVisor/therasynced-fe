@@ -22,6 +22,7 @@ export interface EnhancedStatCardProps extends React.HTMLAttributes<HTMLDivEleme
   interactive?: boolean;
   onClick?: () => void;
   loading?: boolean;
+  bookingSkeleton?: boolean;
 }
 
 export const EnhancedStatCard: React.FC<EnhancedStatCardProps> = ({
@@ -35,11 +36,12 @@ export const EnhancedStatCard: React.FC<EnhancedStatCardProps> = ({
   interactive = false,
   onClick,
   loading = false,
+  bookingSkeleton = false,
   className,
   ...props
 }) => {
   if (loading) {
-    return <EnhancedStatCardSkeleton />;
+    return <EnhancedStatCardSkeleton bookingSkeleton={bookingSkeleton} />;
   }
 
   return (
