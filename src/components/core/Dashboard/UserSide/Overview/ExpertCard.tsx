@@ -1,4 +1,4 @@
-import { CheckCircle, Heart, Star } from 'lucide-react';
+import { CheckCircle, Heart, Loader2, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -51,6 +51,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   const dispatch = useDispatch();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
 
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
@@ -81,6 +82,10 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
   const handleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isFavoriteLoading) return;
+
+    // Prevent multiple clicks
+    setIsFavoriteLoading(true);
     try {
       const result = await dispatch(favoriteFreelancer(id) as any).unwrap();
       if (result && typeof result === 'object' && 'favorited' in result) {
@@ -90,6 +95,8 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       }
     } catch (err: any) {
       toast.error('Failed to update favorite');
+    } finally {
+      setIsFavoriteLoading(false);
     }
   };
 
@@ -149,11 +156,16 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 isFavorite
                   ? 'text-red-500 bg-red-50 dark:bg-red-900/20'
                   : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-              }`}
+              } ${isFavoriteLoading ? 'cursor-not-allowed opacity-50' : ''}`}
               onClick={handleFavorite}
+              disabled={isFavoriteLoading}
               aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             >
-              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+              {isFavoriteLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+              )}
             </button>
           </div>
         </CardHeader>
