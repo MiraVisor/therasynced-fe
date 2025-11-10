@@ -2,11 +2,11 @@
 
 import { ArrowDown, ArrowUp, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { getPatientBookingHistory } from '@/redux/api/bookingApi';
 
 interface BookingHistoryChartProps {
@@ -126,6 +126,7 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
           });
         }
       } catch (err: any) {
+        toast.error(`Failed to load booking history: ${err.message || 'Unknown error'}`);
         setError(err.message || 'Failed to load booking history');
       } finally {
         setLoading(false);
@@ -137,9 +138,23 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardContent className="flex items-center justify-center h-48">
-          <LoadingSpinner size="md" />
+      <Card
+        className={`${className} border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl`}
+      >
+        <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-4">
+          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/4 mb-2 animate-pulse"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2 animate-pulse"></div>
+        </CardHeader>
+        <CardContent className="p-5">
+          <div className="grid grid-cols-3 gap-4 mb-5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="text-center">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-16 mx-auto mb-1 animate-pulse"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mx-auto animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+          <div className="h-[220px] bg-gray-100 dark:bg-gray-800/20 rounded animate-pulse"></div>
         </CardContent>
       </Card>
     );
@@ -147,9 +162,24 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
 
   if (error) {
     return (
-      <Card className={className}>
-        <CardContent className="flex items-center justify-center h-48">
-          <p className="text-sm text-muted-foreground">{error}</p>
+      <Card
+        className={`${className} border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl`}
+      >
+        <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-4">
+          <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
+            Booking History
+          </CardTitle>
+          <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
+            Your appointments over the last 12 weeks
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-5">
+          <div className="h-[220px] flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">Unable to load booking data</p>
+              <p className="text-xs text-muted-foreground">Please try refreshing the page</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );

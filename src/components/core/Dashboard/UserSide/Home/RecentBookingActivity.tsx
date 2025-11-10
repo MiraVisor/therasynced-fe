@@ -3,6 +3,7 @@
 import { Calendar, Clock, MapPin, MoreVertical, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { getPatientBookingHistory } from '@/redux/api/bookingApi';
 
 interface RecentBookingActivityProps {
@@ -54,8 +54,9 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
         if (response.success && Array.isArray(response.data)) {
           setRecentBookings(response.data.slice(0, 5));
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load recent bookings');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load recent bookings';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -63,6 +64,13 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
 
     fetchRecentBookings();
   }, []);
+
+  // Show toast error when error occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to load recent bookings: ${error}`);
+    }
+  }, [error]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -115,14 +123,48 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
   if (loading) {
     return (
       <Card className={className}>
-        <CardContent className="flex items-center justify-center h-64">
-          <LoadingSpinner size="md" />
+        <CardHeader>
+          <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
+            Recent Activity
+          </CardTitle>
+          <CardDescription>Your recent booking activity</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden relative"
+              >
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse"></div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {Array.from({ length: 3 }).map((_, j) => (
+                      <div key={j} className="flex items-center gap-1">
+                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse"></div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4 animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4 animate-pulse"></div>
         </CardContent>
       </Card>
     );
   }
 
-  if (error || recentBookings.length === 0) {
+  if (recentBookings.length === 0) {
     return (
       <Card className={className}>
         <CardHeader>
@@ -134,14 +176,10 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {error || 'No recent bookings'}
+            <p className="text-sm text-gray-500 dark:text-gray-400">No recent bookings</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Your booking history will appear here
             </p>
-            {!error && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Your booking history will appear here
-              </p>
-            )}
           </div>
         </CardContent>
       </Card>
