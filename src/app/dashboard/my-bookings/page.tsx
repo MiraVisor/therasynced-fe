@@ -485,7 +485,7 @@ export default function MyBookingsPage() {
                 </div>
               </PopoverContent>
             </Popover>
-
+            {/* <LoadingSpinner size="sm" /> */}
             <Button
               variant="outline"
               size="sm"
