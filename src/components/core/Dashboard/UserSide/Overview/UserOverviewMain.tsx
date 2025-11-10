@@ -7,9 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 import { fetchFreelancers, loadMoreFreelancers } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -98,12 +96,6 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
 // Enhanced Search and Filter Component
 const EnhancedSearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
-    sessionType: 'all',
-    priceRange: 'all',
-    rating: 'all',
-    availability: 'all',
-  });
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -128,35 +120,37 @@ const EnhancedSearchBar = ({ onSearch }: { onSearch: (query: string) => void }) 
 
 // Enhanced Loading Skeleton
 const ExpertCardSkeleton = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm min-h-[320px] flex flex-col animate-pulse">
     <div className="p-6 flex-1 flex flex-col">
       <div className="flex items-start space-x-4 mb-6">
-        <Skeleton className="w-20 h-20 rounded-full" />
+        <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
         <div className="flex-1 space-y-3">
-          <Skeleton className="h-6 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2 animate-pulse"></div>
           <div className="flex space-x-1">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="w-4 h-4 rounded" />
+              <div
+                key={i}
+                className="w-3 h-3 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse"
+              ></div>
             ))}
           </div>
-          <Skeleton className="h-6 w-20 rounded-full" />
+          <div className="h-5 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse"></div>
         </div>
       </div>
       <div className="space-y-2 mb-6">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-4 w-1/2" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full animate-pulse"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3 animate-pulse"></div>
       </div>
       <div className="flex space-x-2 mb-4">
-        <Skeleton className="h-4 w-16 rounded" />
-        <Skeleton className="h-4 w-20 rounded" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-16 animate-pulse"></div>
       </div>
-      <div className="mt-auto space-y-4">
-        <Skeleton className="h-8 w-24" />
+      <div className="mt-auto space-y-3">
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse"></div>
         <div className="flex space-x-2">
-          <Skeleton className="h-11 flex-1 rounded-lg" />
-          <Skeleton className="h-11 flex-1 rounded-lg" />
+          <div className="h-9 flex-1 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+          <div className="h-9 flex-1 bg-primary/20 dark:bg-primary/10 rounded-lg animate-pulse"></div>
         </div>
       </div>
     </div>
@@ -164,12 +158,10 @@ const ExpertCardSkeleton = () => (
 );
 
 const UserOverview = () => {
-  console.log('UserOverview component rendering');
   const dispatch = useDispatch();
   const { experts, loading, error, pagination, loadingMore } = useSelector(
     (state: RootState) => state.overview,
   );
-  console.log('Redux state - experts:', experts, 'loading:', loading, 'error:', error);
   const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -192,40 +184,35 @@ const UserOverview = () => {
     threshold: 200,
   });
 
-  const { isAuthenticated } = useAuth();
-
   useEffect(() => {
-    if (!isAuthenticated) {
-      return; // Don't make API calls if not authenticated
-    }
     dispatch(fetchFreelancers({ page: 1, limit: 6 }) as any);
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch]);
 
   useEffect(() => {
-    console.log('useEffect triggered - experts:', experts, 'searchQuery:', searchQuery);
-    console.log('experts type:', typeof experts, 'isArray:', Array.isArray(experts));
-
     if (!experts || !Array.isArray(experts)) {
-      console.warn('experts is not an array:', experts);
       setFilteredExperts([]);
       return;
     }
 
-    const mappedExperts = experts.map(mapFreelancerToExpert);
-    let filtered = mappedExperts;
-    console.log('mappedExperts:', mappedExperts);
+    try {
+      const mappedExperts = experts.map(mapFreelancerToExpert);
+      let filtered = mappedExperts;
 
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (expert) =>
-          expert.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          expert.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          expert.description.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
+      // Apply search filter
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (expert) =>
+            expert.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            expert.specialty?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            expert.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+      }
+
+      setFilteredExperts(filtered);
+    } catch (error) {
+      // Handle mapping errors gracefully
+      setFilteredExperts([]);
     }
-
-    setFilteredExperts(filtered);
   }, [experts, searchQuery]);
 
   const handleSearch = (query: string) => {
@@ -267,8 +254,8 @@ const UserOverview = () => {
 
         {/* Content */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            {Array.from({ length: 9 }).map((_, i) => (
               <ExpertCardSkeleton key={i} />
             ))}
           </div>
@@ -317,8 +304,8 @@ const UserOverview = () => {
             {hasNextPage && (
               <div ref={loadingRef} className="flex justify-center py-8">
                 {loadingMore ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                    {[1, 2, 3].map((i) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full">
+                    {Array.from({ length: 3 }).map((i) => (
                       <ExpertCardSkeleton key={`loading-${i}`} />
                     ))}
                   </div>

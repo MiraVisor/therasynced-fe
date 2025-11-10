@@ -1,11 +1,10 @@
-import { Calendar, CheckCircle, Heart, Star } from 'lucide-react';
+import { CheckCircle, Heart, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -105,7 +104,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
   return (
     <>
-      <Card className="group transition-all duration-300 border-gray-200/80 dark:border-gray-700 overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm hover:border-primary/30 shadow-soft hover:shadow-soft-lg h-full flex flex-col">
+      <Card className="group transition-all duration-300 border-gray-200/80 dark:border-gray-700 overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm hover:border-primary/30 shadow-soft hover:shadow-soft-lg min-h-[320px] flex flex-col">
         <CardHeader className="pb-3 px-4">
           {showFavoriteText && (
             <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-white">
@@ -115,7 +114,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-base flex-shrink-0 border-2 border-primary/20">
                 {freelancerName?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -133,12 +132,12 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                         className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                       />
                     ))}
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
                       ({rating})
                     </span>
                   </div>
                 ) : (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                     No ratings yet
                   </div>
                 )}
@@ -162,12 +161,12 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
           {/* Expert Details */}
           <div className="mb-4 space-y-2 bg-gradient-to-br from-mint/10 to-transparent rounded-lg p-3">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-sm">
               <span className="font-inter text-muted-foreground">Experience:</span>
               <span className="font-poppins font-semibold text-charcoal">{yearsOfExperience}</span>
             </div>
             {cardInfo?.patientStories && (
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-muted-foreground">Reviews:</span>
                 <span className="font-poppins font-semibold text-charcoal">
                   {cardInfo.patientStories}
@@ -175,7 +174,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               </div>
             )}
             {(availableSlots || 0) > 0 && (
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-muted-foreground">Availability:</span>
                 <div className="flex items-center gap-1 text-success">
                   <CheckCircle className="w-3 h-3" />
