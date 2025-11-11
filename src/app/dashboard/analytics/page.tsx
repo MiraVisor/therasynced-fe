@@ -164,6 +164,7 @@ const mockClients: Client[] = [
 const AnalyticsPage = () => {
   const [sessions, setSessions] = useState<Session[]>(mockSessions);
   const [clients, setClients] = useState<Client[]>(mockClients);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Calculate stats
   const totalSessions = sessions.filter((s) => s.status === 'completed').length;
@@ -237,93 +238,119 @@ const AnalyticsPage = () => {
     >
       <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-inter font-medium text-success">Completed Sessions</p>
-                  <p className="text-2xl font-poppins font-bold text-charcoal">{totalSessions}</p>
-                  <div className="flex items-center mt-1">
-                    {sessionsTrend > 0 ? (
-                      <TrendingUp className="h-4 w-4 text-emerald-600 mr-1" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
-                    )}
-                    <span
-                      className={`text-xs ${sessionsTrend > 0 ? 'text-emerald-600' : 'text-red-600'}`}
-                    >
-                      {Math.abs(sessionsTrend).toFixed(1)}% from last period
-                    </span>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Card
+                key={index}
+                className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl"
+              >
+                <CardContent className="p-6">
+                  <div className="animate-pulse">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                        <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-32"></div>
+                      </div>
+                      <div className="w-12 h-12 bg-gray-200 rounded-2xl"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-inter font-medium text-success">
+                      Completed Sessions
+                    </p>
+                    <p className="text-2xl font-poppins font-bold text-charcoal">{totalSessions}</p>
+                    <div className="flex items-center mt-1">
+                      {sessionsTrend > 0 ? (
+                        <TrendingUp className="h-4 w-4 text-emerald-600 mr-1" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                      )}
+                      <span
+                        className={`text-xs ${sessionsTrend > 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                      >
+                        {Math.abs(sessionsTrend).toFixed(1)}% from last period
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-emerald-50 group-hover:scale-110 transition-transform duration-300">
+                    <CheckCircle className="h-6 w-6 text-emerald-600" />
                   </div>
                 </div>
-                <div className="p-3 rounded-2xl bg-emerald-50 group-hover:scale-110 transition-transform duration-300">
-                  <CheckCircle className="h-6 w-6 text-emerald-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-inter font-medium text-info">Total Hours</p>
-                  <p className="text-2xl font-poppins font-bold text-charcoal">
-                    {totalHours.toFixed(1)}h
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1">
-                    {completionRate.toFixed(1)}% completion rate
-                  </p>
-                </div>
-                <div className="p-3 rounded-2xl bg-blue-50 group-hover:scale-110 transition-transform duration-300">
-                  <Clock className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-inter font-medium text-warning">Average Rating</p>
-                  <p className="text-2xl font-poppins font-bold text-charcoal">
-                    {averageRating.toFixed(1)}
-                  </p>
-                  <div className="flex items-center mt-1">
-                    <Star className="h-4 w-4 text-purple-600 mr-1" />
-                    <span className="text-xs text-purple-600">
-                      {sessions.filter((s) => s.rating).length} rated sessions
-                    </span>
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-inter font-medium text-info">Total Hours</p>
+                    <p className="text-2xl font-poppins font-bold text-charcoal">
+                      {totalHours.toFixed(1)}h
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      {completionRate.toFixed(1)}% completion rate
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-blue-50 group-hover:scale-110 transition-transform duration-300">
+                    <Clock className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
-                <div className="p-3 rounded-2xl bg-purple-50 group-hover:scale-110 transition-transform duration-300">
-                  <Star className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-inter font-medium text-primary">Active Clients</p>
-                  <p className="text-2xl font-poppins font-bold text-charcoal">
-                    {clients.filter((c) => c.status === 'active').length}
-                  </p>
-                  <p className="text-xs text-amber-600 mt-1">
-                    {newClients} new, {returningClients} returning
-                  </p>
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-inter font-medium text-warning">Average Rating</p>
+                    <p className="text-2xl font-poppins font-bold text-charcoal">
+                      {averageRating.toFixed(1)}
+                    </p>
+                    <div className="flex items-center mt-1">
+                      <Star className="h-4 w-4 text-purple-600 mr-1" />
+                      <span className="text-xs text-purple-600">
+                        {sessions.filter((s) => s.rating).length} rated sessions
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-purple-50 group-hover:scale-110 transition-transform duration-300">
+                    <Star className="h-6 w-6 text-purple-600" />
+                  </div>
                 </div>
-                <div className="p-3 rounded-2xl bg-amber-50 group-hover:scale-110 transition-transform duration-300">
-                  <Users className="h-6 w-6 text-amber-600" />
+              </CardContent>
+            </Card>
+
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-inter font-medium text-primary">Active Clients</p>
+                    <p className="text-2xl font-poppins font-bold text-charcoal">
+                      {clients.filter((c) => c.status === 'active').length}
+                    </p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      {newClients} new, {returningClients} returning
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-amber-50 group-hover:scale-110 transition-transform duration-300">
+                    <Users className="h-6 w-6 text-amber-600" />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Client Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -335,41 +362,66 @@ const AnalyticsPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {clients
-                  .filter((c) => c.status === 'active')
-                  .sort((a, b) => b.totalSessions - a.totalSessions)
-                  .slice(0, 5)
-                  .map((client) => (
-                    <div
-                      key={client.id}
-                      className="flex items-center justify-between p-3 border border-gray-100 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-emerald-600">
-                            {client.name.charAt(0)}
-                          </span>
+              {isLoading ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <div key={index} className="animate-pulse">
+                      <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                            <div className="h-3 bg-gray-200 rounded w-16"></div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-poppins font-medium text-charcoal">{client.name}</p>
-                          <p className="text-xs font-inter text-muted-foreground">
-                            {client.totalSessions} sessions
-                          </p>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 mb-1">
+                            <div className="w-3 h-3 bg-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-200 rounded w-8"></div>
+                          </div>
+                          <div className="h-3 bg-gray-200 rounded w-12"></div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 text-amber-500" />
-                          <span className="text-sm font-medium">
-                            {client.averageRating.toFixed(1)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500">{client.totalHours.toFixed(1)}h</p>
                       </div>
                     </div>
                   ))}
-              </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {clients
+                    .filter((c) => c.status === 'active')
+                    .sort((a, b) => b.totalSessions - a.totalSessions)
+                    .slice(0, 5)
+                    .map((client) => (
+                      <div
+                        key={client.id}
+                        className="flex items-center justify-between p-3 border border-gray-100 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-emerald-600">
+                              {client.name.charAt(0)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-poppins font-medium text-charcoal">{client.name}</p>
+                            <p className="text-xs font-inter text-muted-foreground">
+                              {client.totalSessions} sessions
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 text-amber-500" />
+                            <span className="text-sm font-medium">
+                              {client.averageRating.toFixed(1)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500">{client.totalHours.toFixed(1)}h</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -381,33 +433,52 @@ const AnalyticsPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {['clinic', 'home', 'online'].map((location) => {
-                  const locationSessions = sessions.filter((s) => s.location === location);
-                  const locationCount = locationSessions.length;
-                  const locationPercentage =
-                    sessions.length > 0 ? (locationCount / sessions.length) * 100 : 0;
-
-                  return (
-                    <div key={location} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {getLocationIcon(location)}
-                        <span className="text-sm font-inter font-medium capitalize">
-                          {location}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-poppins font-semibold">
-                          {locationCount} sessions
-                        </p>
-                        <p className="text-xs font-inter text-muted-foreground">
-                          {locationPercentage.toFixed(1)}%
-                        </p>
+              {isLoading ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="animate-pulse">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-gray-200 rounded"></div>
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </div>
+                        <div className="text-right">
+                          <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+                          <div className="h-3 bg-gray-200 rounded w-12"></div>
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {['clinic', 'home', 'online'].map((location) => {
+                    const locationSessions = sessions.filter((s) => s.location === location);
+                    const locationCount = locationSessions.length;
+                    const locationPercentage =
+                      sessions.length > 0 ? (locationCount / sessions.length) * 100 : 0;
+
+                    return (
+                      <div key={location} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {getLocationIcon(location)}
+                          <span className="text-sm font-inter font-medium capitalize">
+                            {location}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-poppins font-semibold">
+                            {locationCount} sessions
+                          </p>
+                          <p className="text-xs font-inter text-muted-foreground">
+                            {locationPercentage.toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
