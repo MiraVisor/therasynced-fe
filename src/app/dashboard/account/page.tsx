@@ -46,7 +46,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AccountSectionSkeleton } from '@/components/ui/skeletons/AccountSectionSkeleton';
+import {
+  AccountSectionSkeleton,
+  SubscriptionSectionSkeleton,
+} from '@/components/ui/skeletons/AccountSectionSkeleton';
 import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkeleton';
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
@@ -77,6 +80,7 @@ export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
@@ -1005,7 +1009,9 @@ export default function AccountPage() {
         {activeSection === 'profile' && renderProfileSection()}
         {activeSection === 'account' && renderAccountSection()}
         {activeSection === 'notifications' && renderNotificationsSection()}
-        {activeSection === 'subscription' && showBilling && <SubscriptionManagement />}
+        {activeSection === 'subscription' &&
+          showBilling &&
+          (isSubscriptionLoading ? <SubscriptionSectionSkeleton /> : <SubscriptionManagement />)}
         {activeSection === 'loyalty' && showLoyalty && <LoyaltyManagement />}
         {activeSection === 'help' && renderHelpSection()}
       </div>
