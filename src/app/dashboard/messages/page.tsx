@@ -10,6 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  ChatContactsSkeleton,
+  ChatMessagesSkeleton,
+} from '@/components/ui/skeletons/ChatSkeletons';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import useChat from '@/hooks/useChat';
 import { getDecodedToken } from '@/lib/utils';
@@ -218,20 +222,18 @@ const MessagesPage = () => {
     }
   };
 
-  if (error.contacts || error.messages || error.sending) {
-    return (
-      <DashboardPageWrapper
-        header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error.contacts || error.messages || error.sending}</p>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
-          </div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
+  // Show toast error for any errors but continue showing the interface
+  useEffect(() => {
+    if (error.contacts) {
+      toast.error('Failed to load conversations. Please try again.');
+    }
+    if (error.messages) {
+      toast.error('Failed to load messages. Please try again.');
+    }
+    if (error.sending) {
+      toast.error('Failed to send message. Please try again.');
+    }
+  }, [error.contacts, error.messages, error.sending]);
 
   return (
     <DashboardPageWrapper header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}>
@@ -257,9 +259,7 @@ const MessagesPage = () => {
             {/* Contacts List */}
             <div className="flex-1 overflow-y-auto">
               {loading.contacts ? (
-                <div className="flex items-center justify-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
+                <ChatContactsSkeleton />
               ) : filteredContacts.length === 0 ? (
                 <div className="flex items-center justify-center h-32 text-gray-500">
                   <div className="text-center">
@@ -342,9 +342,7 @@ const MessagesPage = () => {
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {loading.messages ? (
-                    <div className="flex items-center justify-center h-32">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
+                    <ChatMessagesSkeleton />
                   ) : (
                     getCurrentMessages().map((message) => (
                       <div

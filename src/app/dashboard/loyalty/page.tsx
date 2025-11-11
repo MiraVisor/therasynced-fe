@@ -46,7 +46,7 @@ export default function LoyaltyPage() {
           dispatch(getRedemptionHistory() as any),
         ]);
       } catch (error) {
-        // Error fetching loyalty data
+        toast.error('Failed to load loyalty information. Please try again.');
       }
     };
 
@@ -112,6 +112,7 @@ export default function LoyaltyPage() {
     );
   }
 
+  // Show skeleton as fallback when no profile data is available
   if (!profile) {
     return (
       <DashboardPageWrapper
@@ -122,9 +123,7 @@ export default function LoyaltyPage() {
           </div>
         }
       >
-        <div className="text-center py-12">
-          <p className="text-gray-500">Unable to load loyalty information</p>
-        </div>
+        <LoyaltySectionSkeleton />
       </DashboardPageWrapper>
     );
   }
