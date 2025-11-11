@@ -8,6 +8,7 @@ import certificateSlice from './slices/certificateSlice';
 import chatSlice from './slices/chatSlice';
 import complaintSlice from './slices/complaintSlice';
 import exploreSlice from './slices/exploreSlice';
+import freelancerDashboardSlice from './slices/freelancerDashboardSlice';
 import imageUploadSlice from './slices/imageUploadSlice';
 import loyaltySlice from './slices/loyaltySlice';
 import overviewSlice from './slices/overviewSlice';
@@ -24,6 +25,7 @@ export const store = configureStore({
     chat: chatSlice,
     complaint: complaintSlice,
     explore: exploreSlice,
+    freelancerDashboard: freelancerDashboardSlice,
     imageUpload: imageUploadSlice,
     loyalty: loyaltySlice,
     overview: overviewSlice,

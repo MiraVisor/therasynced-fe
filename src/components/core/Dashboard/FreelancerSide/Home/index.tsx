@@ -1,13 +1,11 @@
 'use client';
 
 import { Calendar, DollarSign, MessageSquare, TrendingUp } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { HeroSection } from '@/components/ui/hero-section';
-import { getFreelancerDashboardOverview } from '@/redux/api/dashboardApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { FreelancerDashboardOverview } from '@/types/types';
+import { useAuth, useFreelancerDashboard } from '@/redux/hooks/useAppHooks';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import TrialBanner from '../Subscription/TrialBanner';
@@ -17,35 +15,30 @@ import TodayAppointments from './TodayAppointments';
 
 const FreelancerHome = () => {
   const { role } = useAuth();
-  const [dashboardData, setDashboardData] = useState<FreelancerDashboardOverview | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const hasFetchedRef = useRef(false);
+  const { data: dashboardData, loading, error, fetchDashboard } = useFreelancerDashboard();
 
   useEffect(() => {
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
-
-    const fetchDashboardData = async () => {
+    const loadDashboard = async () => {
       try {
-        setIsLoading(true);
-        const response = await getFreelancerDashboardOverview();
-        if (response.success && response.data) {
-          setDashboardData(response.data);
-        } else {
-          toast.error('Failed to load dashboard data');
-          setDashboardData(null);
-        }
+        // If data exists, fetch silently in background
+        // If no data exists, show loading state
+        await fetchDashboard({ silent: !!dashboardData });
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
         toast.error(`Error loading dashboard data: ${errorMessage}`);
-        setDashboardData(null);
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    fetchDashboardData();
+    loadDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Show error toast only on error (not during silent refresh)
+  useEffect(() => {
+    if (error && !dashboardData) {
+      toast.error(error);
+    }
+  }, [error, dashboardData]);
 
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
@@ -59,6 +52,9 @@ const FreelancerHome = () => {
   const formatGrowth = (percentage: number): string => {
     return `${percentage >= 0 ? '+' : ''}${percentage.toFixed(1)}%`;
   };
+
+  // Only show loading skeleton if we don't have cached data
+  const isLoading = loading && !dashboardData;
 
   const quickStats = dashboardData
     ? [
