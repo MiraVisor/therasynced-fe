@@ -19,9 +19,9 @@ import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageW
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { LoyaltySectionSkeleton } from '@/components/ui/skeletons/LoyaltySectionSkeleton';
 import {
   getLoyaltyProfile,
   getLoyaltyRewards,
@@ -107,9 +107,7 @@ export default function LoyaltyPage() {
           </div>
         }
       >
-        <div className="flex items-center justify-center h-96">
-          <LoadingSpinner />
-        </div>
+        <LoyaltySectionSkeleton />
       </DashboardPageWrapper>
     );
   }
@@ -211,8 +209,18 @@ export default function LoyaltyPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <LoadingSpinner />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="h-5 bg-gray-200 rounded animate-pulse w-24" />
+                      <div className="h-6 bg-gray-200 rounded animate-pulse w-16" />
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-full mb-2" />
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mb-4" />
+                    <div className="h-10 bg-gray-200 rounded animate-pulse w-full" />
+                  </div>
+                ))}
               </div>
             ) : rewards.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

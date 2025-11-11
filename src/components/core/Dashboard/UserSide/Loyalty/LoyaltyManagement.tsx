@@ -1,14 +1,14 @@
 'use client';
 
 import { Award, Gift, Medal } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Progress } from '@/components/ui/progress';
+import { LoyaltySectionSkeleton } from '@/components/ui/skeletons/LoyaltySectionSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   getLoyaltyProfile,
@@ -77,11 +77,7 @@ export default function LoyaltyManagement() {
   };
 
   if (isLoading && !profile) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoyaltySectionSkeleton />;
   }
 
   if (!profile) {
@@ -162,8 +158,19 @@ export default function LoyaltyManagement() {
         {/* Rewards Tab */}
         <TabsContent value="rewards" className="space-y-4 mt-6">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <LoadingSpinner />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-xl p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 space-y-2">
+                      <div className="h-5 bg-gray-200 rounded animate-pulse w-32" />
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-48" />
+                    </div>
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-16 ml-2" />
+                  </div>
+                  <div className="h-10 bg-gray-200 rounded animate-pulse w-full mt-4" />
+                </div>
+              ))}
             </div>
           ) : rewards && rewards.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
