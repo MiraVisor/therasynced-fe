@@ -97,6 +97,8 @@ export default function MyComplaintsPage() {
       pending: myComplaints.filter((c) => c.status === 'PENDING').length,
       underReview: myComplaints.filter((c) => c.status === 'UNDER_REVIEW').length,
       resolved: myComplaints.filter((c) => c.status === 'RESOLVED').length,
+      warned: 0,
+      suspended: 0,
     },
     against: {
       total: complaintsAgainstMe.length,

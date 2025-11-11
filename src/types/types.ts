@@ -810,6 +810,7 @@ export interface Complaint {
   description: string;
   evidence: string[];
   status: ComplaintStatus;
+  actionTaken?: 'WARNED' | 'SUSPENDED' | null;
   adminResponse?: string;
   createdAt: string;
   updatedAt: string;

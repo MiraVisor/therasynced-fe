@@ -57,6 +57,7 @@ const SlotsPage = () => {
   const [slotStats, setSlotStats] = useState<SlotStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
 
   const fetchSlotsForWeek = async (weekStartDate: Date, resetSlots = false) => {
     const decodedToken = getDecodedToken();
@@ -103,6 +104,7 @@ const SlotsPage = () => {
       setSlotStats(response.data);
     } catch (error) {
       console.error('Failed to fetch slot stats:', error);
+      toast.error('Failed to load slot statistics');
     } finally {
       setIsLoadingStats(false);
     }
@@ -175,15 +177,20 @@ const SlotsPage = () => {
     }
   };
 
-  const navigateWeek = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      const newWeekStart = addDays(currentWeekStart, -7);
-      setCurrentWeekStart(newWeekStart);
-      fetchSlotsForWeek(newWeekStart, true);
-    } else {
-      const newWeekStart = addDays(currentWeekStart, 7);
-      setCurrentWeekStart(newWeekStart);
-      fetchSlotsForWeek(newWeekStart, true);
+  const navigateWeek = async (direction: 'prev' | 'next') => {
+    setIsNavigatingWeek(true);
+    try {
+      if (direction === 'prev') {
+        const newWeekStart = addDays(currentWeekStart, -7);
+        setCurrentWeekStart(newWeekStart);
+        fetchSlotsForWeek(newWeekStart, true);
+      } else {
+        const newWeekStart = addDays(currentWeekStart, 7);
+        setCurrentWeekStart(newWeekStart);
+        fetchSlotsForWeek(newWeekStart, true);
+      }
+    } finally {
+      setIsNavigatingWeek(false);
     }
   };
 
@@ -242,14 +249,6 @@ const SlotsPage = () => {
     return <div key={slot.id} />;
   };
 
-  if (isLoading && slots.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
   return (
     <DashboardPageWrapper
       header={
@@ -283,31 +282,35 @@ const SlotsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard
             title="Total Slots"
-            value={isLoadingStats ? '...' : displayStats.total.toString()}
+            value={displayStats.total.toString()}
             icon={Calendar}
             iconColor="text-info"
             iconBg="bg-info/10"
+            loading={isLoadingStats}
           />
           <EnhancedStatCard
             title="Booked"
-            value={isLoadingStats ? '...' : displayStats.booked.toString()}
+            value={displayStats.booked.toString()}
             icon={Clock}
             iconColor="text-success"
             iconBg="bg-success/10"
+            loading={isLoadingStats}
           />
           <EnhancedStatCard
             title="Available"
-            value={isLoadingStats ? '...' : displayStats.available.toString()}
+            value={displayStats.available.toString()}
             icon={TrendingUp}
             iconColor="text-primary"
             iconBg="bg-primary/10"
+            loading={isLoadingStats}
           />
           <EnhancedStatCard
             title="Revenue"
-            value={isLoadingStats ? '...' : `€${displayStats.revenue.toFixed(2)}`}
+            value={`€${displayStats.revenue.toFixed(2)}`}
             icon={DollarSign}
             iconColor="text-warning"
             iconBg="bg-warning/10"
+            loading={isLoadingStats}
           />
         </div>
 
@@ -319,6 +322,7 @@ const SlotsPage = () => {
               size="sm"
               onClick={() => navigateWeek('prev')}
               className="h-10 w-10 p-0"
+              disabled={isNavigatingWeek}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -327,6 +331,7 @@ const SlotsPage = () => {
               variant="ghost"
               onClick={() => setShowDatePicker(true)}
               className="text-base lg:text-lg font-semibold text-charcoal hover:bg-gray-100 px-4 py-2"
+              disabled={isNavigatingWeek}
             >
               {format(currentWeekStart, 'MMM d')} -{' '}
               {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
@@ -337,6 +342,7 @@ const SlotsPage = () => {
               size="sm"
               onClick={() => navigateWeek('next')}
               className="h-10 w-10 p-0"
+              disabled={isNavigatingWeek}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -344,16 +350,34 @@ const SlotsPage = () => {
         </div>
 
         {/* Day Sections */}
-        <div className="space-y-4">
-          {weekDays.map((date) => {
-            const daySlots = getSlotsForDate(date);
-            return (
-              <div key={date.toISOString()} id={`day-section-${date.toISOString()}`}>
-                <DaySlotSection date={date} slots={daySlots} onSlotClick={handleSlotClick} />
+        {isNavigatingWeek || isLoading ? (
+          <div className="space-y-6">
+            {Array.from({ length: 7 }).map((_, index) => (
+              <div key={index} className="bg-white rounded-lg border p-8 min-h-[300px]">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+                  <div className="space-y-3 mt-3">
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {weekDays.map((date) => {
+              const daySlots = getSlotsForDate(date);
+              return (
+                <div key={date.toISOString()} id={`day-section-${date.toISOString()}`}>
+                  <DaySlotSection date={date} slots={daySlots} onSlotClick={handleSlotClick} />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Date Picker Dialog */}
