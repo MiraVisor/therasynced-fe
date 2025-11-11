@@ -11,6 +11,7 @@ interface HeroSectionProps extends React.HTMLAttributes<HTMLDivElement> {
     value: string;
     icon?: React.ReactNode;
   }>;
+  isLoading?: boolean;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -18,6 +19,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   name,
   subtitle,
   quickStats,
+  isLoading = false,
   className,
   ...props
 }) => {
@@ -29,6 +31,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   };
 
   const displayGreeting = greeting || getTimeBasedGreeting();
+
+  if (isLoading) {
+    return (
+      <div className={cn('space-y-6', className)} {...props}>
+        {/* Welcome Section Skeleton */}
+        <div className="space-y-2">
+          <div className="h-9 bg-gray-200 dark:bg-gray-700/30 rounded animate-pulse w-1/3"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded animate-pulse w-1/2"></div>
+        </div>
+
+        {/* Quick Stats Skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="bg-gradient-to-br from-mint/50 to-white rounded-xl p-4 border border-sage/30 overflow-hidden relative"
+            >
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <div className="h-3 bg-gray-200 dark:bg-gray-700/20 rounded w-16 mb-2"></div>
+              <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mb-2"></div>
+              <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('space-y-6', className)} {...props}>

@@ -1,11 +1,10 @@
 'use client';
 
 import { Calendar, DollarSign, MessageSquare, TrendingUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { HeroSection } from '@/components/ui/hero-section';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { getFreelancerDashboardOverview } from '@/redux/api/dashboardApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { FreelancerDashboardOverview } from '@/types/types';
@@ -19,23 +18,29 @@ import TodayAppointments from './TodayAppointments';
 const FreelancerHome = () => {
   const { role } = useAuth();
   const [dashboardData, setDashboardData] = useState<FreelancerDashboardOverview | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     const fetchDashboardData = async () => {
       try {
-        setLoading(true);
+        setIsLoading(true);
         const response = await getFreelancerDashboardOverview();
         if (response.success && response.data) {
           setDashboardData(response.data);
         } else {
           toast.error('Failed to load dashboard data');
+          setDashboardData(null);
         }
-      } catch (error: any) {
-        console.error('Error fetching dashboard data:', error);
-        toast.error(error?.message || 'Failed to load dashboard data');
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
+        toast.error(`Error loading dashboard data: ${errorMessage}`);
+        setDashboardData(null);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -89,21 +94,6 @@ const FreelancerHome = () => {
         { label: 'Growth', value: '+0%', icon: <TrendingUp className="h-4 w-4 text-warning" /> },
       ];
 
-  if (loading) {
-    return (
-      <DashboardPageWrapper
-        userRole={role}
-        header={
-          <h2 className="text-2xl font-poppins font-bold text-charcoal">Platform Overview</h2>
-        }
-      >
-        <div className="flex items-center justify-center min-h-[400px]">
-          <LoadingSpinner />
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
-
   return (
     <DashboardPageWrapper
       userRole={role}
@@ -114,18 +104,18 @@ const FreelancerHome = () => {
         <TrialBanner />
 
         {/* Hero Section */}
-        <HeroSection quickStats={quickStats} />
+        <HeroSection quickStats={quickStats} isLoading={isLoading} />
 
         {/* Stats Cards */}
-        <Stats dashboardData={dashboardData} />
+        <Stats dashboardData={dashboardData} isLoading={isLoading} />
 
         {/* Charts and Appointments */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
           <div className="lg:col-span-2">
-            <Charts dashboardData={dashboardData} />
+            <Charts dashboardData={dashboardData} isLoading={isLoading} />
           </div>
           <div className="lg:col-span-1">
-            <TodayAppointments />
+            <TodayAppointments isLoading={isLoading} />
           </div>
         </div>
       </div>

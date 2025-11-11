@@ -5,9 +5,10 @@ import { FreelancerDashboardOverview } from '@/types/types';
 
 interface StatsProps {
   dashboardData: FreelancerDashboardOverview | null;
+  isLoading?: boolean;
 }
 
-const Stats = ({ dashboardData }: StatsProps) => {
+const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
     return `€${(revenueInCents / 100).toLocaleString('en-US', {
@@ -49,6 +50,29 @@ const Stats = ({ dashboardData }: StatsProps) => {
       sparklineData: [0, 0, 0, 0, 0, 0, 0],
     },
   };
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className="p-6 bg-card border rounded-lg space-y-4 overflow-hidden relative"
+          >
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700/30 rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 bg-gray-200 dark:bg-gray-700/20 rounded w-2/3" />
+                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/2" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const cardsData = dashboardData
     ? [
@@ -102,7 +126,7 @@ const Stats = ({ dashboardData }: StatsProps) => {
           icon: DollarSign,
           iconBg: 'bg-primary/10',
           iconColor: 'text-primary',
-          sparklineData: dashboardData.weeklyRevenue.sparklineData.map((val) => val / 100), // Convert cents to euros for sparkline
+          sparklineData: dashboardData.weeklyRevenue.sparklineData.map((val) => val / 100),
         },
       ]
     : [
@@ -161,7 +185,6 @@ const Stats = ({ dashboardData }: StatsProps) => {
             interactive
             onClick={() => {
               // Navigate to details or show modal
-              console.log('Clicked:', data.title);
             }}
           />
         );

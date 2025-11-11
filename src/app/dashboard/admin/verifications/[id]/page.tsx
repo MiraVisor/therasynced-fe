@@ -20,7 +20,10 @@ import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Compon
 import { DocumentPreview } from '@/components/core/Dashboard/AdminSide/Components/DocumentPreview';
 import { ProfileCard } from '@/components/core/Dashboard/AdminSide/Components/ProfileCard';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
-import { Timeline } from '@/components/core/Dashboard/AdminSide/Components/Timeline';
+import {
+  Timeline,
+  type TimelineEvent,
+} from '@/components/core/Dashboard/AdminSide/Components/Timeline';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -208,36 +211,37 @@ const VerificationDetailPage = () => {
     );
   }
 
-  const timelineEvents = [
+  const timelineEvents: TimelineEvent[] = [
     {
-      date: verification.verificationRequestedAt
-        ? format(new Date(verification.verificationRequestedAt), 'MMM dd, yyyy HH:mm')
-        : 'N/A',
+      id: 'verification-requested',
       title: 'Verification Requested',
       description: `Freelancer ${verification.name} submitted verification request`,
-      icon: Clock,
-      iconColor: 'text-info',
+      timestamp: verification.verificationRequestedAt || new Date().toISOString(),
+      status: 'completed' as const,
+      icon: <Clock className="h-5 w-5 text-info" />,
     },
     ...(verification.verificationApprovedAt
       ? [
           {
-            date: format(new Date(verification.verificationApprovedAt), 'MMM dd, yyyy HH:mm'),
+            id: 'verification-approved',
             title: 'Verification Approved',
             description: 'Verification has been approved',
-            icon: CheckCircle,
-            iconColor: 'text-success',
+            timestamp: verification.verificationApprovedAt,
+            status: 'completed' as const,
+            icon: <CheckCircle className="h-5 w-5 text-success" />,
           },
         ]
       : []),
     ...(verification.verificationRejectedAt
       ? [
           {
-            date: format(new Date(verification.verificationRejectedAt), 'MMM dd, yyyy HH:mm'),
+            id: 'verification-rejected',
             title: 'Verification Rejected',
             description:
               verification.verificationRejectionReason || 'Verification has been rejected',
-            icon: XCircle,
-            iconColor: 'text-error',
+            timestamp: verification.verificationRejectedAt,
+            status: 'rejected' as const,
+            icon: <XCircle className="h-5 w-5 text-error" />,
           },
         ]
       : []),

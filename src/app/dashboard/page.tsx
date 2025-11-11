@@ -3,7 +3,11 @@
 import dynamicImport from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
-import { AdminPageSkeleton, UserPageSkeleton } from '@/components/common/PageSkeleton';
+import {
+  AdminPageSkeleton,
+  FreelancerPageSkeleton,
+  UserPageSkeleton,
+} from '@/components/common/PageSkeleton';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { ROLES } from '@/types/types';
 
@@ -17,7 +21,7 @@ const FreelancerHome = dynamicImport(
   () => import('@/components/core/Dashboard/FreelancerSide/Home'),
   {
     ssr: false,
-    loading: () => <AdminPageSkeleton />,
+    loading: () => <FreelancerPageSkeleton />,
   },
 );
 
