@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, Heart, MapPin, Star, Users } from 'lucide-react';
+import { ArrowUpDown, Clock, MapPin, Star, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -42,15 +42,15 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     ),
   },
   {
-    accessorKey: 'cardInfo.mainService',
+    accessorKey: 'mainJobTitle.name',
     header: 'Specialization',
     cell: ({ row }) => (
       <div>
         <div className="font-inter font-medium text-charcoal">
-          {row.original.cardInfo?.mainService || 'General'}
+          {row.original.mainJobTitle?.name || 'N/A'}
         </div>
         <div className="font-inter text-xs text-muted-foreground">
-          {row.original.cardInfo?.yearsOfExperience || '-'}
+          {row.original.mainJobTitle?.description || ''}
         </div>
       </div>
     ),
@@ -96,7 +96,7 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-1 font-inter text-sm text-foreground">
         <MapPin className="h-4 w-4 text-muted-foreground" />
-        <span>{row.original.city || '-'}</span>
+        <span>{row.original.city || 'N/A'}</span>
       </div>
     ),
   },
@@ -104,14 +104,16 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     accessorKey: 'slotSummary.availableSlots',
     header: 'Available Slots',
     cell: ({ row }) => {
-      const availableSlots = row.original.slotSummary?.availableSlots || 0;
-      const totalSlots = row.original.slotSummary?.totalSlots || 0;
+      const availableSlots = row.original.slotSummary?.availableSlots ?? null;
+      const totalSlots = row.original.slotSummary?.totalSlots ?? null;
 
       return (
         <div className="flex items-center gap-1 font-inter text-sm text-foreground">
           <Clock className="h-4 w-4 text-muted-foreground" />
           <span>
-            {availableSlots} of {totalSlots}
+            {availableSlots !== null && totalSlots !== null
+              ? `${availableSlots} of ${totalSlots}`
+              : 'N/A'}
           </span>
         </div>
       );
@@ -122,7 +124,9 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     header: 'Patients',
     cell: ({ row }) => (
       <div className="font-inter text-sm text-foreground text-center">
-        {row.original.cardInfo?.patientStories || 0}
+        {row.original.cardInfo?.patientStories !== undefined
+          ? row.original.cardInfo.patientStories
+          : 'N/A'}
       </div>
     ),
   },
@@ -150,7 +154,8 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     accessorKey: 'verificationStatus',
     header: 'Verification',
     cell: ({ row }) => {
-      const verificationStatus = row.original.verificationStatus || 'unverified';
+      const status = row.original.verificationStatus;
+      const verificationStatus = status || 'UNVERIFIED';
 
       return <VerificationBadge status={verificationStatus} size="sm" />;
     },
@@ -166,13 +171,14 @@ const RealFreelancersPage = () => {
 
   // Debounce search query
   useEffect(() => {
+    // 500ms debounce delay
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
       // Reset to page 1 when search changes
       if (searchQuery !== debouncedSearch) {
         setPage(1);
       }
-    }, 500); // 500ms debounce delay
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
