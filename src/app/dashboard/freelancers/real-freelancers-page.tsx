@@ -277,12 +277,6 @@ const RealFreelancersPage = () => {
           setPage(1);
         }}
       />
-
-      {/* Summary */}
-      <div className="mt-4 text-sm text-gray-500">
-        Showing {freelancers.length} of {totalFreelancers} freelancers
-        {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
-      </div>
     </DashboardPageWrapper>
   );
 };

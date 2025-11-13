@@ -424,13 +424,6 @@ const VerificationsPage = () => {
             setPage(1);
           }}
         />
-
-        {/* Summary */}
-        <div className="mt-4 text-sm text-gray-500">
-          Showing {verifications.length} of {pagination?.total || 0} verifications
-          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
-          {statusFilter && ` with status "${statusFilter}"`}
-        </div>
       </div>
 
       {/* Action Dialog */}

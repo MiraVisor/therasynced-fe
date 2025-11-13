@@ -356,13 +356,6 @@ const ComplaintsPage = () => {
             setPage(1);
           }}
         />
-
-        {/* Summary */}
-        <div className="mt-4 text-sm text-gray-500">
-          Showing {complaints.length} of {pagination?.total || 0} complaints
-          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
-          {statusFilter && ` with status "${statusFilter}"`}
-        </div>
       </div>
     </DashboardPageWrapper>
   );

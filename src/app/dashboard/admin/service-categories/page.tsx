@@ -368,15 +368,6 @@ const ServiceCategoriesPage = () => {
           }}
         />
 
-        {/* Summary */}
-        <div className="mt-4 text-sm text-gray-500">
-          Showing {Math.min(pageSize, filteredCategories.length - (page - 1) * pageSize)} of{' '}
-          {filteredCategories.length} categories
-          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
-          {selectedJobTitleFilter &&
-            ` with job title "${jobTitles.find((jt) => jt.id === selectedJobTitleFilter)?.name}"`}
-        </div>
-
         {/* Create Dialog */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogContent>

@@ -222,12 +222,6 @@ const AdminBookingsPage = () => {
             setPage(1);
           }}
         />
-
-        {/* Summary */}
-        <div className="mt-4 text-sm text-gray-500">
-          Showing {bookings.length} of {pagination?.total || 0} bookings
-          {debouncedSearch && ` (filtered by "${debouncedSearch}")`}
-        </div>
       </div>
     </DashboardPageWrapper>
   );
