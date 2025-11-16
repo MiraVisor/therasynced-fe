@@ -24,7 +24,7 @@ interface FavoriteFreelancersCarouselProps {
 
 const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselProps) => {
   const router = useRouter();
-  const { favoriteFreelancers, loading, error } = useFavoriteFreelancers();
+  const { favoriteFreelancers, loading, initialLoading, error } = useFavoriteFreelancers();
 
   const handleBook = useCallback(
     (freelancer: Expert) => {
@@ -41,7 +41,8 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
     }
   }, [error]);
 
-  if (loading) {
+  const isLoading = initialLoading || (loading && favoriteFreelancers.length === 0);
+  if (isLoading) {
     return (
       <Card className={className}>
         <CardHeader>

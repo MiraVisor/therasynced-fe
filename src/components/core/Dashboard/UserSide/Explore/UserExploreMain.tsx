@@ -156,14 +156,11 @@ const UserExploreMain = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
-  const { favorites, loading, bookings, bookingsLoading } = useSelector(
-    (state: RootState) => state.explore as any,
-  );
+  const { favorites, loading, initialLoading, bookings, bookingsLoading, bookingsInitialLoading } =
+    useSelector((state: RootState) => state.explore as any);
   const { experts: allExperts, loading: expertsLoading } = useSelector(
     (state: RootState) => state.overview,
   );
-  const [allTimeBookings, setAllTimeBookings] = useState<any[]>([]);
-  const [allTimeBookingsLoading, setAllTimeBookingsLoading] = useState(false);
   const [selectedFreelancer, setSelectedFreelancer] = useState<Expert | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
@@ -171,35 +168,24 @@ const UserExploreMain = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const fetchAllTimeBookings = async () => {
-      setAllTimeBookingsLoading(true);
-      try {
-        // Fetch all bookings without date parameter for stats
-        const result = await dispatch(fetchExplorePatientBookings(undefined) as any);
-        if (fetchExplorePatientBookings.fulfilled.match(result)) {
-          setAllTimeBookings(result.payload || []);
-        }
-      } catch (error) {
-        // Error fetching all-time bookings
-      } finally {
-        setAllTimeBookingsLoading(false);
-      }
-    };
-
-    fetchAllTimeBookings();
-  }, [dispatch, isAuthenticated]);
+    const hasBookings = bookings && bookings.length > 0;
+    dispatch(fetchExplorePatientBookings({ silent: hasBookings }) as any);
+  }, [dispatch, isAuthenticated, bookings?.length]);
 
   // Fetch favorites and experts
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    dispatch(fetchAllFavoriteFreelancers() as any);
-    dispatch(fetchFreelancers({}) as any);
-  }, [dispatch, isAuthenticated]);
+    const hasFavorites = favorites && favorites.length > 0;
+    const hasExperts = allExperts && allExperts.length > 0;
+    dispatch(fetchAllFavoriteFreelancers({ silent: hasFavorites }) as any);
+    dispatch(fetchFreelancers({ silent: hasExperts }) as any);
+  }, [dispatch, isAuthenticated, favorites?.length, allExperts?.length]);
 
   // Process data - map favorites through the same function as experts
   const favoritesList = favorites?.map((favorite: any) => mapFreelancerToExpert(favorite)) || [];
 
+  const allTimeBookings = bookings || [];
   const nextAppointment = getNextUpcomingAppointment(allTimeBookings);
   const upcomingAppointments = getUpcomingAppointments(allTimeBookings);
   const recommendedFreelancers = getRecommendedFreelancers(allExperts, favoritesList);

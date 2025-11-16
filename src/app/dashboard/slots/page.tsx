@@ -36,7 +36,7 @@ import { getDecodedToken } from '@/lib/utils';
 import * as slotApi from '@/redux/api/slotApi';
 import { getSubscriptionPlans } from '@/redux/api/subscriptionApi';
 import { useAppDispatch, useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
-import { deleteSlot, fetchMySlots } from '@/redux/slices/slotSlice';
+import { deleteSlot, fetchMySlots, fetchMySlotsStats } from '@/redux/slices/slotSlice';
 import { RootState } from '@/redux/store';
 import { Slot, SlotStats } from '@/types/types';
 
@@ -44,7 +44,15 @@ const SlotsPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { role } = useAuth();
-  const { slots, isLoading, isCreating } = useSelector((state: RootState) => state.slot);
+  const {
+    slots,
+    isLoading,
+    isCreating,
+    slotStats,
+    isLoadingStats,
+    initialLoadingStats,
+    backgroundRefreshingStats,
+  } = useSelector((state: RootState) => state.slot);
   const { currentSubscription, plans } = useAppSelector((state) => state.subscription);
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -54,8 +62,6 @@ const SlotsPage = () => {
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [slotStats, setSlotStats] = useState<SlotStats | null>(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
 
@@ -97,25 +103,14 @@ const SlotsPage = () => {
     }
   };
 
-  const fetchSlotStats = useCallback(async () => {
-    setIsLoadingStats(true);
-    try {
-      const response = await slotApi.getMySlotsStats();
-      setSlotStats(response.data);
-    } catch (error) {
-      console.error('Failed to fetch slot stats:', error);
-      toast.error('Failed to load slot statistics');
-    } finally {
-      setIsLoadingStats(false);
-    }
-  }, []);
-
   // Fetch subscription and stats on mount
   useEffect(() => {
-    fetchSlotStats();
-    dispatch(getSubscriptionPlans());
+    const hasStats = slotStats !== null;
+    const hasPlans = plans.length > 0;
+    dispatch(fetchMySlotsStats({ silent: hasStats }) as any);
+    dispatch(getSubscriptionPlans({ silent: hasPlans }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     fetchSlotsForWeek(currentWeekStart, true);
@@ -124,7 +119,7 @@ const SlotsPage = () => {
   const handleSlotCreateSuccess = () => {
     setShowCreateSlotForm(false);
     fetchSlotsForWeek(currentWeekStart, true);
-    fetchSlotStats();
+    dispatch(fetchMySlotsStats({ silent: true }) as any);
   };
 
   const handleCreateSlotClick = () => {
@@ -169,7 +164,7 @@ const SlotsPage = () => {
     try {
       await dispatch(deleteSlot(selectedSlot.id) as any).unwrap();
       toast.success('Slot deleted successfully');
-      fetchSlotStats();
+      dispatch(fetchMySlotsStats({ silent: true }) as any);
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete slot');
       fetchSlotsForWeek(currentWeekStart, true);
@@ -286,7 +281,7 @@ const SlotsPage = () => {
             icon={Calendar}
             iconColor="text-info"
             iconBg="bg-info/10"
-            loading={isLoadingStats}
+            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
           />
           <EnhancedStatCard
             title="Booked"
@@ -294,7 +289,7 @@ const SlotsPage = () => {
             icon={Clock}
             iconColor="text-success"
             iconBg="bg-success/10"
-            loading={isLoadingStats}
+            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
           />
           <EnhancedStatCard
             title="Available"
@@ -302,7 +297,7 @@ const SlotsPage = () => {
             icon={TrendingUp}
             iconColor="text-primary"
             iconBg="bg-primary/10"
-            loading={isLoadingStats}
+            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
           />
           <EnhancedStatCard
             title="Revenue"
@@ -310,7 +305,7 @@ const SlotsPage = () => {
             icon={DollarSign}
             iconColor="text-warning"
             iconBg="bg-warning/10"
-            loading={isLoadingStats}
+            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
           />
         </div>
 
@@ -350,7 +345,7 @@ const SlotsPage = () => {
         </div>
 
         {/* Day Sections */}
-        {isNavigatingWeek || isLoading ? (
+        {isNavigatingWeek || (isLoading && slots.length === 0) ? (
           <div className="space-y-6">
             {Array.from({ length: 7 }).map((_, index) => (
               <div key={index} className="bg-white rounded-lg border p-8 min-h-[300px]">

@@ -145,11 +145,14 @@ const transformBackendFilesToArray = (
 // Get all freelancer files
 export const getFreelancerFiles = createAsyncThunk(
   'verification/getFreelancerFiles',
-  async (_, { rejectWithValue }) => {
+  async (options: { silent?: boolean } = {}, { rejectWithValue }) => {
     try {
       const response = await api.get(ENDPOINTS.freelancer.files);
       const backendData = response.data.data as FreelancerFilesResponse;
-      return transformBackendFilesToArray(backendData);
+      return {
+        data: transformBackendFilesToArray(backendData),
+        silent: options.silent,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to get freelancer files');
     }
@@ -159,10 +162,10 @@ export const getFreelancerFiles = createAsyncThunk(
 // Get verification status
 export const getVerificationStatus = createAsyncThunk(
   'verification/getStatus',
-  async (_, { rejectWithValue }) => {
+  async (options: { silent?: boolean } = {}, { rejectWithValue }) => {
     try {
       const response = await api.get(ENDPOINTS.verification.status);
-      return response.data.data;
+      return { data: response.data.data, silent: options.silent };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to get verification status');
     }

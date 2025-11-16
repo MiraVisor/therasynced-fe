@@ -3,33 +3,25 @@
 import {
   AlertCircle,
   Award,
-  Calendar,
   CheckCircle,
   Clock,
-  Download,
   FileText,
-  Plus,
   Shield,
-  Trash2,
   Upload,
-  User,
   XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { createFilesColumns } from '@/components/common/DataTable/files-columns';
-import { FileUpload } from '@/components/common/input/FileUpload';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import {
   deleteCertificate,
   getFirstAidCertificateStatus,
@@ -50,7 +42,7 @@ import {
   selectFilesLoading,
 } from '@/redux/slices/verificationSlice';
 import { RootState } from '@/redux/store';
-import { FreelancerFile, ROLES } from '@/types/types';
+import { ROLES } from '@/types/types';
 
 // Verification Timeline Component
 interface VerificationTimelineProps {
@@ -256,29 +248,33 @@ export default function VerificationPage() {
   const filesError = useSelector(selectFilesError);
 
   // Local state
-  const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-  // Fetch data on component mount
+  // Determine if we should show loading - only if no data exists
+  const hasVerificationData =
+    verificationState.verificationStatus !== 'NOT_SUBMITTED' ||
+    verificationState.documents.length > 0;
+  const hasFiles = allFiles.length > 0;
+  const isLoading =
+    (verificationState.initialLoading && !hasVerificationData) ||
+    (verificationState.isLoading && !hasVerificationData) ||
+    (verificationState.initialLoadingFiles && !hasFiles) ||
+    (verificationState.isLoadingFiles && !hasFiles);
+
+  // Fetch data on component mount - use silent refresh if data exists
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        await Promise.all([
-          dispatch(getVerificationStatus() as any),
-          dispatch(getFirstAidCertificateStatus() as any),
-          dispatch(getVerificationDocuments() as any),
-          dispatch(getFreelancerFiles() as any),
-        ]);
-      } catch (error) {
-        console.error('Error fetching verification data:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      await Promise.all([
+        dispatch(getVerificationStatus({ silent: hasVerificationData }) as any),
+        dispatch(getFirstAidCertificateStatus() as any),
+        dispatch(getVerificationDocuments() as any),
+        dispatch(getFreelancerFiles({ silent: hasFiles }) as any),
+      ]);
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   // Redirect if not freelancer
@@ -385,7 +381,7 @@ export default function VerificationPage() {
       await dispatch(uploadVerificationDocument(file) as any);
       toast.success('Document uploaded successfully');
       // Refetch files data after successful upload
-      await dispatch(getFreelancerFiles() as any);
+      await dispatch(getFreelancerFiles({ silent: true }) as any);
     } catch (error: any) {
       toast.error(error?.data?.message || 'Failed to upload document');
     } finally {
@@ -398,7 +394,7 @@ export default function VerificationPage() {
       await dispatch(uploadFirstAidCertificate(file) as any);
       toast.success('Certificate uploaded successfully');
       // Refetch files data after successful upload
-      await dispatch(getFreelancerFiles() as any);
+      await dispatch(getFreelancerFiles({ silent: true }) as any);
     } catch (error: any) {
       toast.error(error?.data?.message || 'Failed to upload certificate');
     }
@@ -409,7 +405,7 @@ export default function VerificationPage() {
       await dispatch(deleteVerificationDocument(documentId) as any);
       toast.success('Document deleted successfully');
       // Refetch files data after successful deletion
-      await dispatch(getFreelancerFiles() as any);
+      await dispatch(getFreelancerFiles({ silent: true }) as any);
     } catch (error: any) {
       toast.error(error?.data?.message || 'Failed to delete document');
     }
@@ -427,7 +423,7 @@ export default function VerificationPage() {
         toast.success('Verification document deleted successfully');
       }
       // Refetch files data after successful deletion
-      await dispatch(getFreelancerFiles() as any);
+      await dispatch(getFreelancerFiles({ silent: true }) as any);
     } catch (error: any) {
       toast.error(error?.data?.message || 'Failed to delete file');
     }

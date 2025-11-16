@@ -55,7 +55,7 @@ import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSection
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
 import { getMySubscription, getSubscriptionPlans } from '@/redux/api/subscriptionApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
 import { JobTitle, ROLES } from '@/types/types';
 
 interface UserProfile {
@@ -401,12 +401,15 @@ export default function AccountPage() {
   const showLoyalty = role === 'PATIENT';
 
   // Load subscription data when subscription tab is clicked
+  const { plans, currentSubscription } = useAppSelector((state) => state.subscription);
   useEffect(() => {
     if (activeSection === 'subscription' && showBilling) {
-      dispatch(getSubscriptionPlans() as any);
-      dispatch(getMySubscription() as any);
+      const hasPlans = plans.length > 0;
+      const hasSubscription = currentSubscription !== null;
+      dispatch(getSubscriptionPlans({ silent: hasPlans }) as any);
+      dispatch(getMySubscription({ silent: hasSubscription }) as any);
     }
-  }, [activeSection, showBilling, dispatch]);
+  }, [activeSection, showBilling, dispatch, plans.length, currentSubscription]);
 
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },

@@ -111,13 +111,19 @@ const AdminBookingsPage = () => {
     completedBookingsThisMonth: 0,
     pendingBookings: 0,
   });
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
 
   // Fetch stats separately
   useEffect(() => {
     const fetchStats = async () => {
+      const hasStats = stats.totalBookingsAllTime > 0 || stats.todaysAppointments > 0;
       try {
-        setStatsLoading(true);
+        if (!hasStats) {
+          setInitialStatsLoading(true);
+        } else {
+          setStatsLoading(true);
+        }
         const statsResponse = await adminBookingsService.getStats();
 
         // Map the stats to our interface - updated for simplified response
@@ -134,10 +140,12 @@ const AdminBookingsPage = () => {
         // Error handled by toast in useEffect below
       } finally {
         setStatsLoading(false);
+        setInitialStatsLoading(false);
       }
     };
 
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Show error as toast when it occurs
@@ -189,7 +197,10 @@ const AdminBookingsPage = () => {
               icon={config.icon}
               iconColor={config.iconColor}
               iconBg={config.iconBg}
-              loading={statsLoading}
+              loading={
+                initialStatsLoading ||
+                (statsLoading && stats.totalBookingsAllTime === 0 && stats.todaysAppointments === 0)
+              }
             />
           ))}
         </div>

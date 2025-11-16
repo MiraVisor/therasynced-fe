@@ -47,14 +47,20 @@ import adminFinanceService, {
 export default function FinancePage() {
   const [revenueData, setRevenueData] = useState<AdminRevenueDto | null>(null);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionStatsDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch finance data
   useEffect(() => {
     const fetchFinance = async () => {
+      const hasData = revenueData !== null || subscriptionData !== null;
       try {
-        setIsLoading(true);
+        if (!hasData) {
+          setInitialLoading(true);
+        } else {
+          setIsLoading(true);
+        }
         setError(null);
         const [revenue, subscriptions] = await Promise.all([
           adminFinanceService.getRevenue(),
@@ -63,21 +69,29 @@ export default function FinancePage() {
         setRevenueData(revenue);
         setSubscriptionData(subscriptions);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load finance data');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load finance data';
+        setError(errorMessage);
+        // Don't clear data on error if we have existing data
+        if (!hasData) {
+          setRevenueData(null);
+          setSubscriptionData(null);
+        }
       } finally {
         setIsLoading(false);
+        setInitialLoading(false);
       }
     };
 
     fetchFinance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Show error as toast when it occurs
+  // Show error as toast only on initial load
   useEffect(() => {
-    if (error) {
+    if (error && initialLoading) {
       toast.error(`Failed to load finance data: ${error}`);
     }
-  }, [error]);
+  }, [error, initialLoading]);
 
   // Format currency value
   const formatCurrency = (value: number): string => {
@@ -229,7 +243,7 @@ export default function FinancePage() {
                   iconColor={stat.iconColor}
                   iconBg={stat.iconBg}
                   interactive
-                  loading={isLoading}
+                  loading={initialLoading || (isLoading && !revenueData && !subscriptionData)}
                   onClick={() => {
                     // Navigate to details or show modal
                   }}
@@ -239,7 +253,7 @@ export default function FinancePage() {
           </div>
 
           {/* Right: Revenue Metrics */}
-          {isLoading ? (
+          {initialLoading || (isLoading && !revenueData && !subscriptionData) ? (
             <RevenueMetricsSkeleton />
           ) : (
             <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10 rounded-xl p-6 border border-primary/20 shadow-sm hover:shadow-md transition-shadow">

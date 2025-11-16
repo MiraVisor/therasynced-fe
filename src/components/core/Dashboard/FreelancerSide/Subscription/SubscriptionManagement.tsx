@@ -31,17 +31,30 @@ export default function SubscriptionManagement() {
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
   const [isRedirectingToCheckout, setIsRedirectingToCheckout] = useState(false);
 
-  const { plans, currentSubscription, isLoading, isSubscribing, isUpdating, isCanceling, error } =
-    useAppSelector((state) => state.subscription);
+  const {
+    plans,
+    currentSubscription,
+    isLoading,
+    initialLoading,
+    isSubscribing,
+    isUpdating,
+    isCanceling,
+    error,
+  } = useAppSelector((state) => state.subscription);
 
-  // Combine loading states
-  const isLoadingPlans = isLoading || isRedirectingToCheckout;
+  // Combine loading states - only show loader if no data exists
+  const isLoadingPlans =
+    initialLoading ||
+    (isLoading && plans.length === 0 && !currentSubscription) ||
+    isRedirectingToCheckout;
 
   useEffect(() => {
-    // Load plans and subscription on mount
-    dispatch(getSubscriptionPlans());
-    dispatch(getMySubscription());
-  }, [dispatch]);
+    // Load plans and subscription on mount - use silent refresh if data exists
+    const hasPlans = plans.length > 0;
+    const hasSubscription = currentSubscription !== null;
+    dispatch(getSubscriptionPlans({ silent: hasPlans }));
+    dispatch(getMySubscription({ silent: hasSubscription }));
+  }, [dispatch, plans.length, currentSubscription]);
 
   useEffect(() => {
     if (error) {
@@ -65,8 +78,8 @@ export default function SubscriptionManagement() {
         const result = await dispatch(updateSubscription({ planType }));
         if (updateSubscription.fulfilled.match(result)) {
           toast.success('Subscription updated successfully!');
-          // Refresh subscription data
-          dispatch(getMySubscription());
+          // Refresh subscription data silently
+          dispatch(getMySubscription({ silent: true }));
         } else if (updateSubscription.rejected.match(result)) {
           toast.error((result.payload as string) || 'Failed to update subscription');
         }
@@ -87,7 +100,7 @@ export default function SubscriptionManagement() {
             if (updateSubscription.fulfilled.match(updateResult)) {
               toast.success('Subscription updated successfully!');
               // Refresh subscription data
-              dispatch(getMySubscription());
+              dispatch(getMySubscription({ silent: true }));
             }
           } else {
             toast.error('Failed to create checkout session');
@@ -108,7 +121,7 @@ export default function SubscriptionManagement() {
     if (cancelSubscription.fulfilled.match(result)) {
       toast.success('Subscription will be cancelled at the end of the current period.');
       // Refresh subscription data
-      dispatch(getMySubscription());
+      dispatch(getMySubscription({ silent: true }));
     }
   };
 
@@ -117,7 +130,7 @@ export default function SubscriptionManagement() {
     if (resumeSubscription.fulfilled.match(result)) {
       toast.success('Subscription resumed successfully!');
       // Refresh subscription data
-      dispatch(getMySubscription());
+      dispatch(getMySubscription({ silent: true }));
     }
   };
 

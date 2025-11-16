@@ -14,6 +14,8 @@ import { getProfile } from '../api/profileApi';
 interface FreelancerState {
   experts: Expert[];
   loading: boolean;
+  backgroundRefreshing: boolean;
+  initialLoading: boolean;
   error: string | null;
   slots?: any[];
   slotsPagination?: any;
@@ -34,6 +36,8 @@ interface FreelancerState {
 const initialState: FreelancerState = {
   experts: [],
   loading: false,
+  backgroundRefreshing: false,
+  initialLoading: false,
   error: null,
   slots: [],
   slotsPagination: undefined,
@@ -46,15 +50,23 @@ const initialState: FreelancerState = {
 export const fetchFreelancers = createAsyncThunk(
   'freelancer/fetchAll',
   async (
-    params: { page?: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
+    params: {
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      silent?: boolean;
+    } = {},
     { rejectWithValue },
   ) => {
     try {
-      const res = await getAllFreelancers(params);
+      const { silent, ...apiParams } = params;
+      const res = await getAllFreelancers(apiParams);
       if (res.success && Array.isArray(res.data)) {
         return {
           data: res.data,
           pagination: res.pagination,
+          silent,
         };
       } else {
         return rejectWithValue('Failed to load freelancers');
@@ -305,17 +317,29 @@ const overviewSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFreelancers.pending, (state) => {
-        state.loading = true;
+      .addCase(fetchFreelancers.pending, (state, action) => {
+        const silent = action.meta.arg?.silent;
+        if (silent && state.experts.length > 0) {
+          state.backgroundRefreshing = true;
+        } else {
+          state.loading = true;
+          if (state.experts.length === 0) {
+            state.initialLoading = true;
+          }
+        }
         state.error = null;
       })
       .addCase(fetchFreelancers.fulfilled, (state, action) => {
         state.loading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.experts = action.payload.data;
         state.pagination = action.payload.pagination || null;
       })
       .addCase(fetchFreelancers.rejected, (state, action) => {
         state.loading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.error = action.payload as string;
       })
       .addCase(loadMoreFreelancers.pending, (state) => {
