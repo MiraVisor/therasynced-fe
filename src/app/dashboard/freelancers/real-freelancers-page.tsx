@@ -220,47 +220,48 @@ const RealFreelancersPage = () => {
     }
   }, [error]);
 
-  const stats = freelancerStats
-    ? [
-        {
-          title: 'Total Freelancers',
-          value: freelancerStats.totalFreelancers.value.toString(),
-          trend: {
-            value: Math.abs(freelancerStats.totalFreelancers.percentageChange),
-            isUp: freelancerStats.totalFreelancers.percentageChange >= 0,
-            label: freelancerStats.totalFreelancers.comparisonPeriod,
+  const stats =
+    freelancerStats && freelancerStats.totalFreelancers && freelancerStats.activeFreelancers
+      ? [
+          {
+            title: 'Total Freelancers',
+            value: freelancerStats.totalFreelancers.value?.toString() || '0',
+            trend: {
+              value: Math.abs(freelancerStats.totalFreelancers.percentageChange || 0),
+              isUp: (freelancerStats.totalFreelancers.percentageChange || 0) >= 0,
+              label: freelancerStats.totalFreelancers.comparisonPeriod || 'all time',
+            },
+            icon: Users,
+            iconColor: 'text-info',
+            iconBg: 'bg-info/10',
           },
-          icon: Users,
-          iconColor: 'text-info',
-          iconBg: 'bg-info/10',
-        },
-        {
-          title: 'Active Freelancers',
-          value: freelancerStats.activeFreelancers.value.toString(),
-          trend: { value: 0, isUp: true, label: 'currently' },
-          icon: Clock,
-          iconColor: 'text-success',
-          iconBg: 'bg-success/10',
-        },
-      ]
-    : [
-        {
-          title: 'Total Freelancers',
-          value: '0',
-          trend: undefined,
-          icon: Users,
-          iconColor: 'text-info',
-          iconBg: 'bg-info/10',
-        },
-        {
-          title: 'Active Freelancers',
-          value: '0',
-          trend: undefined,
-          icon: Clock,
-          iconColor: 'text-success',
-          iconBg: 'bg-success/10',
-        },
-      ];
+          {
+            title: 'Active Freelancers',
+            value: freelancerStats.activeFreelancers.value?.toString() || '0',
+            trend: { value: 0, isUp: true, label: 'currently' },
+            icon: Clock,
+            iconColor: 'text-success',
+            iconBg: 'bg-success/10',
+          },
+        ]
+      : [
+          {
+            title: 'Total Freelancers',
+            value: '0',
+            trend: undefined,
+            icon: Users,
+            iconColor: 'text-info',
+            iconBg: 'bg-info/10',
+          },
+          {
+            title: 'Active Freelancers',
+            value: '0',
+            trend: undefined,
+            icon: Clock,
+            iconColor: 'text-success',
+            iconBg: 'bg-success/10',
+          },
+        ];
 
   return (
     <DashboardPageWrapper

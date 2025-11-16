@@ -24,7 +24,7 @@ export const freelancerService = {
   // Get freelancer stats
   getStats: async (): Promise<FreelancerStatsDto> => {
     const response = await api.get(ENDPOINTS.freelancer.stats);
-    return response.data;
+    return response.data.data;
   },
 
   // Favorite/unfavorite a freelancer
