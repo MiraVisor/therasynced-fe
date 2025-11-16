@@ -1,7 +1,7 @@
-import { CheckCircle, Heart, Loader2, Star } from 'lucide-react';
+import { CheckCircle, CheckCircle2, Heart, Loader2, Stamp, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
@@ -10,7 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VerificationBadge } from '@/components/ui/verification-badge';
+import { getPatientStamps } from '@/redux/api/loyaltyApi';
 import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
+import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 interface ExpertCardProps extends Expert {
@@ -52,6 +54,17 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+
+  // Get stamp information for this therapist
+  const { stampSummaries } = useSelector((state: RootState) => state.stamps);
+  const therapistStamp = stampSummaries?.find((stamp) => stamp.therapist.id === id);
+
+  // Fetch stamps if not already loaded
+  useEffect(() => {
+    if (!stampSummaries || stampSummaries.length === 0) {
+      dispatch(getPatientStamps() as any);
+    }
+  }, [dispatch, stampSummaries]);
 
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
@@ -185,6 +198,30 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 </span>
               </div>
             )}
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-inter text-muted-foreground">Stamps:</span>
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: therapistStamp?.stampTarget || 5 }, (_, index) => {
+                  const isFilled = therapistStamp && index < therapistStamp.currentStampCount;
+                  return (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-center w-5 h-5 rounded-full border transition-all ${
+                        isFilled
+                          ? 'bg-primary border-primary text-white'
+                          : 'bg-gray-100 border-gray-300 text-gray-400'
+                      }`}
+                    >
+                      {isFilled ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <Stamp className="h-3 w-3" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
             {(availableSlots || 0) > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-muted-foreground">Availability:</span>

@@ -3,6 +3,7 @@ import {
   AlertCircle,
   Building,
   Calendar,
+  CheckCircle2,
   Clock,
   DollarSign,
   Edit2,
@@ -15,6 +16,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +32,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { bookingService } from '@/services/bookingService';
 import { LocationType, Slot } from '@/types/types';
 
 interface SlotDetailsDialogProps {
@@ -38,6 +41,7 @@ interface SlotDetailsDialogProps {
   onClose: () => void;
   onDelete?: (slotId: string) => void;
   onEdit?: (slot: Slot) => void;
+  onComplete?: () => void;
 }
 
 export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
@@ -46,10 +50,12 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   onClose,
   onDelete,
   onEdit,
+  onComplete,
 }) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(slot.notes || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -81,6 +87,32 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
       console.error('Failed to save notes:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleCompleteBooking = async () => {
+    if (!slot.booking?.id) {
+      toast.error('Booking ID not found');
+      return;
+    }
+
+    setIsCompleting(true);
+    try {
+      const response = await bookingService.completeBooking({
+        bookingId: slot.booking.id,
+      });
+
+      if (response.success) {
+        toast.success('Appointment marked as completed! The client will receive a stamp.');
+        onComplete?.();
+        onClose();
+      } else {
+        toast.error(response.message || 'Failed to complete booking');
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to complete booking');
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -148,7 +180,26 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
             </div>
             <div className="flex-1">
               <h4 className="font-poppins font-semibold text-charcoal mb-1">Price</h4>
-              <p className="font-poppins text-xl font-bold text-charcoal">€{slot.basePrice}</p>
+              {slot.booking && slot.booking.discountAmount && slot.booking.discountAmount > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <p className="font-poppins text-xl font-bold text-charcoal">
+                      €{slot.booking.totalAmount.toFixed(2)}
+                    </p>
+                    <span className="text-sm text-gray-500 line-through">
+                      €{slot.basePrice.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="text-sm text-green-600 font-medium">
+                    {slot.booking.discountPercentage}% stamp discount applied (-€
+                    {slot.booking.discountAmount.toFixed(2)})
+                  </div>
+                </div>
+              ) : (
+                <p className="font-poppins text-xl font-bold text-charcoal">
+                  €{slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -279,6 +330,16 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         </div>
 
         <DialogFooter className="flex sm:flex-row flex-col gap-2">
+          {slot.status === 'BOOKED' && slot.booking && slot.booking.status !== 'COMPLETED' && (
+            <Button
+              onClick={handleCompleteBooking}
+              disabled={isCompleting}
+              className="bg-success hover:bg-success/90 text-white"
+            >
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              {isCompleting ? 'Completing...' : 'Mark as Completed'}
+            </Button>
+          )}
           {slot.status === 'AVAILABLE' && onDelete && (
             <Button variant="destructive" onClick={() => onDelete(slot.id)}>
               <XCircle className="h-4 w-4 mr-2" />

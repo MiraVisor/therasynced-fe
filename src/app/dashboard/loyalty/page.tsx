@@ -12,16 +12,20 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useEffect } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { StampDetail } from '@/components/core/Dashboard/UserSide/Loyalty/StampDetail';
+import { StampSummary } from '@/components/core/Dashboard/UserSide/Loyalty/StampSummary';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { LoyaltySectionSkeleton } from '@/components/ui/skeletons/LoyaltySectionSkeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   getLoyaltyProfile,
   getLoyaltyRewards,
@@ -36,6 +40,9 @@ export default function LoyaltyPage() {
   const { profile, rewards, redemptions, isLoading, isRedeeming, error } = useSelector(
     (state: RootState) => state.loyalty,
   );
+  const { selectedTherapistId } = useSelector((state: RootState) => state.stamps);
+  const [activeTab, setActiveTab] = useState<'points' | 'stamps'>('points');
+  const [viewingStampDetail, setViewingStampDetail] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -131,6 +138,31 @@ export default function LoyaltyPage() {
   const progressPercentage =
     profile.pointsToNextTier > 0 ? (profile.availablePoints / profile.pointsToNextTier) * 100 : 100;
 
+  const handleViewStampDetail = (therapistId: string) => {
+    setViewingStampDetail(true);
+    setActiveTab('stamps');
+  };
+
+  const handleBackToStamps = () => {
+    setViewingStampDetail(false);
+  };
+
+  // If viewing stamp detail, show detail view
+  if (viewingStampDetail && selectedTherapistId) {
+    return (
+      <DashboardPageWrapper
+        header={
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Stamp Details</h1>
+            <p className="text-gray-600">View your stamp progress with this therapist</p>
+          </div>
+        }
+      >
+        <StampDetail therapistId={selectedTherapistId} onBack={handleBackToStamps} />
+      </DashboardPageWrapper>
+    );
+  }
+
   return (
     <DashboardPageWrapper
       header={
@@ -140,218 +172,235 @@ export default function LoyaltyPage() {
         </div>
       }
     >
-      <div className="space-y-8">
-        {/* Hero Section - Points and Tier */}
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-              <div className="flex-1 text-center md:text-left">
-                <h2 className="text-4xl font-bold text-gray-900 mb-2">
-                  {profile.availablePoints ? profile.availablePoints.toLocaleString() : 0}
-                </h2>
-                <p className="text-lg text-gray-600 mb-6">Available Points</p>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as 'points' | 'stamps')}
+        className="w-full"
+      >
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="points">Points & Rewards</TabsTrigger>
+          <TabsTrigger value="stamps">Therapist Stamps</TabsTrigger>
+        </TabsList>
 
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Progress to {profile.nextTier}</span>
-                    <span>
-                      {profile.pointsToNextTier - profile.availablePoints} points remaining
-                    </span>
-                  </div>
-                  <Progress value={progressPercentage} className="h-3" />
-                </div>
-              </div>
+        <TabsContent value="points" className="space-y-8 mt-6">
+          <div className="space-y-8">
+            {/* Hero Section - Points and Tier */}
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                  <div className="flex-1 text-center md:text-left">
+                    <h2 className="text-4xl font-bold text-gray-900 mb-2">
+                      {profile.availablePoints ? profile.availablePoints.toLocaleString() : 0}
+                    </h2>
+                    <p className="text-lg text-gray-600 mb-6">Available Points</p>
 
-              <div className="flex flex-col items-center gap-4">
-                <div className={`px-6 py-4 rounded-lg border-2 ${getTierColor(profile.tier)}`}>
-                  <div className="flex items-center gap-2">
-                    {getTierIcon(profile.tier)}
-                    <span className="text-lg font-bold">{profile.tier}</span>
-                  </div>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                  Current Tier
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tier Benefits */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Your Tier Benefits
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {profile.tierBenefits.map((benefit, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="text-sm text-gray-700">{benefit}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Available Rewards */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5" />
-              Available Rewards
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="h-5 bg-gray-200 rounded animate-pulse w-24" />
-                      <div className="h-6 bg-gray-200 rounded animate-pulse w-16" />
-                    </div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-full mb-2" />
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mb-4" />
-                    <div className="h-10 bg-gray-200 rounded animate-pulse w-full" />
-                  </div>
-                ))}
-              </div>
-            ) : rewards.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {rewards.map((reward) => {
-                  const canRedeem = profile.availablePoints >= reward.pointsCost;
-                  return (
-                    <div
-                      key={reward.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-gray-900">{reward.name}</h4>
-                        <Badge variant="secondary">{reward.pointsCost} pts</Badge>
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Progress to {profile.nextTier}</span>
+                        <span>
+                          {profile.pointsToNextTier - profile.availablePoints} points remaining
+                        </span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-4">{reward.description}</p>
-                      <Button
-                        onClick={() => handleRedeem(reward.id)}
-                        disabled={!canRedeem || isRedeeming}
-                        className="w-full"
-                        variant={canRedeem ? 'default' : 'outline'}
-                      >
-                        {canRedeem ? 'Redeem' : 'Insufficient Points'}
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">No rewards available</div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Points History */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <History className="h-5 w-5" />
-              Points History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {profile.pointTransactions && profile.pointTransactions.length > 0 ? (
-              <div className="space-y-3">
-                {profile.pointTransactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      {transaction.type === 'EARNED' ? (
-                        <div className="p-2 rounded-full bg-green-100">
-                          <TrendingUp className="h-4 w-4 text-green-600" />
-                        </div>
-                      ) : (
-                        <div className="p-2 rounded-full bg-red-100">
-                          <XCircle className="h-4 w-4 text-red-600" />
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {transaction.description}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(transaction.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      className={`text-sm font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}
-                    >
-                      {transaction.type === 'EARNED' ? '+' : '-'}
-                      {transaction.points}
+                      <Progress value={progressPercentage} className="h-3" />
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">No transaction history</div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Redemption History */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Redemption History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {redemptions.length > 0 ? (
-              <div className="space-y-3">
-                {redemptions.map((redemption) => (
-                  <div
-                    key={redemption.id}
-                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-blue-100">
-                        <Gift className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {redemption.reward.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(redemption.createdAt).toLocaleDateString()}
-                        </p>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className={`px-6 py-4 rounded-lg border-2 ${getTierColor(profile.tier)}`}>
+                      <div className="flex items-center gap-2">
+                        {getTierIcon(profile.tier)}
+                        <span className="text-lg font-bold">{profile.tier}</span>
                       </div>
                     </div>
-                    <Badge
-                      variant={
-                        redemption.status === 'FULFILLED'
-                          ? 'default'
-                          : redemption.status === 'PENDING'
-                            ? 'secondary'
-                            : 'destructive'
-                      }
-                    >
-                      {redemption.status}
+                    <Badge variant="outline" className="text-xs">
+                      Current Tier
                     </Badge>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">No redemptions yet</div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tier Benefits */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Your Tier Benefits
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {profile.tierBenefits.map((benefit, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <span className="text-sm text-gray-700">{benefit}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Available Rewards */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gift className="h-5 w-5" />
+                  Available Rewards
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="h-5 bg-gray-200 rounded animate-pulse w-24" />
+                          <div className="h-6 bg-gray-200 rounded animate-pulse w-16" />
+                        </div>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse w-full mb-2" />
+                        <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mb-4" />
+                        <div className="h-10 bg-gray-200 rounded animate-pulse w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : rewards.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {rewards.map((reward) => {
+                      const canRedeem = profile.availablePoints >= reward.pointsCost;
+                      return (
+                        <div
+                          key={reward.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-gray-900">{reward.name}</h4>
+                            <Badge variant="secondary">{reward.pointsCost} pts</Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-4">{reward.description}</p>
+                          <Button
+                            onClick={() => handleRedeem(reward.id)}
+                            disabled={!canRedeem || isRedeeming}
+                            className="w-full"
+                            variant={canRedeem ? 'default' : 'outline'}
+                          >
+                            {canRedeem ? 'Redeem' : 'Insufficient Points'}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">No rewards available</div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Points History */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Points History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {profile.pointTransactions && profile.pointTransactions.length > 0 ? (
+                  <div className="space-y-3">
+                    {profile.pointTransactions.map((transaction) => (
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          {transaction.type === 'EARNED' ? (
+                            <div className="p-2 rounded-full bg-green-100">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                            </div>
+                          ) : (
+                            <div className="p-2 rounded-full bg-red-100">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {transaction.description}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(transaction.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className={`text-sm font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}
+                        >
+                          {transaction.type === 'EARNED' ? '+' : '-'}
+                          {transaction.points}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">No transaction history</div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Redemption History */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Redemption History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {redemptions.length > 0 ? (
+                  <div className="space-y-3">
+                    {redemptions.map((redemption) => (
+                      <div
+                        key={redemption.id}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-full bg-blue-100">
+                            <Gift className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {redemption.reward.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(redemption.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge
+                          variant={
+                            redemption.status === 'FULFILLED'
+                              ? 'default'
+                              : redemption.status === 'PENDING'
+                                ? 'secondary'
+                                : 'destructive'
+                          }
+                        >
+                          {redemption.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">No redemptions yet</div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="stamps" className="mt-6">
+          <StampSummary onViewDetail={handleViewStampDetail} />
+        </TabsContent>
+      </Tabs>
     </DashboardPageWrapper>
   );
 }

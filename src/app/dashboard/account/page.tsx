@@ -24,7 +24,7 @@ import { DatePicker } from '@/components/common/input/DatePicker';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import SubscriptionManagement from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionManagement';
-import LoyaltyManagement from '@/components/core/Dashboard/UserSide/Loyalty/LoyaltyManagement';
+import StampsManagement from '@/components/core/Dashboard/UserSide/Loyalty/StampsManagement';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -396,15 +396,15 @@ export default function AccountPage() {
 
   // Show billing only for freelancers and admins
   const showBilling = role === ROLES.FREELANCER;
-  // Show loyalty for users and freelancers
-  const showLoyalty = role === 'PATIENT' || role === 'FREELANCER';
+  // Show stamps only for patients (users)
+  const showStamps = role === 'PATIENT';
 
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Shield },
     // { id: 'notifications', label: 'Notifications', icon: Bell },
     ...(showBilling ? [{ id: 'subscription', label: 'Subscription', icon: CreditCard }] : []),
-    ...(showLoyalty ? [{ id: 'loyalty', label: 'Loyalty', icon: Award }] : []),
+    ...(showStamps ? [{ id: 'stamps', label: 'Stamps', icon: Award }] : []),
     { id: 'help', label: 'Help & Support', icon: HelpCircle },
   ];
 
@@ -1012,7 +1012,7 @@ export default function AccountPage() {
         {activeSection === 'subscription' &&
           showBilling &&
           (isSubscriptionLoading ? <SubscriptionSectionSkeleton /> : <SubscriptionManagement />)}
-        {activeSection === 'loyalty' && showLoyalty && <LoyaltyManagement />}
+        {activeSection === 'stamps' && showStamps && <StampsManagement />}
         {activeSection === 'help' && renderHelpSection()}
       </div>
 

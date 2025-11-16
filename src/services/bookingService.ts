@@ -1,5 +1,6 @@
 import {
   CancelBookingDto,
+  CompleteBookingDto,
   CreateBookingDto,
   PaginationDto,
   RescheduleBookingDto,
@@ -25,6 +26,12 @@ export const bookingService = {
   // Reschedule a booking
   rescheduleBooking: async (data: RescheduleBookingDto) => {
     const response = await api.post(ENDPOINTS.bookings.reschedule, data);
+    return response.data;
+  },
+
+  // Complete a booking
+  completeBooking: async (data: CompleteBookingDto) => {
+    const response = await api.patch(ENDPOINTS.bookings.complete, data);
     return response.data;
   },
 

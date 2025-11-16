@@ -122,7 +122,16 @@ export const SlotListView = ({ slots, onSelectSlot, view, selectedDate }: SlotLi
                     </div>
                     <div className="flex items-center gap-2">
                       <Euro className="h-4 w-4" />
-                      <span>€{slot.basePrice}</span>
+                      <div className="flex items-center gap-1">
+                        <span>
+                          €{slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+                        </span>
+                        {slot.booking?.discountAmount && slot.booking.discountAmount > 0 && (
+                          <span className="text-xs text-green-600 line-through">
+                            €{slot.basePrice.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />

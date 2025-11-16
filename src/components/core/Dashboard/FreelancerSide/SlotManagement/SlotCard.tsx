@@ -71,8 +71,15 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
           <div className="text-right">
             <div className="flex items-center gap-1 mb-0.5">
               <DollarSign className="h-3 w-3 text-muted-foreground" />
-              <span className="text-lg font-poppins font-bold text-primary">€{slot.basePrice}</span>
+              <span className="text-lg font-poppins font-bold text-primary">
+                €{slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+              </span>
             </div>
+            {slot.booking?.discountAmount && slot.booking.discountAmount > 0 && (
+              <div className="text-xs text-green-600 font-medium">
+                -{slot.booking.discountPercentage}%
+              </div>
+            )}
           </div>
         </div>
 

@@ -51,6 +51,7 @@ export const ENDPOINTS = {
     create: '/booking/create',
     reschedule: '/booking/reschedule',
     cancel: '/booking/cancel',
+    complete: '/booking/complete',
     updateNotes: (id: string) => `/booking/${id}/notes`,
     history: {
       admin: '/booking/history/admin',
@@ -118,6 +119,13 @@ export const ENDPOINTS = {
     rewards: '/loyalty/rewards',
     redeem: '/loyalty/redeem',
     redemptions: '/loyalty/redemptions',
+    // Therapist stamp endpoints
+    stamps: '/loyalty/stamps',
+    stampDetail: (therapistId: string) => `/loyalty/stamps/${therapistId}`,
+    // Admin stamp config endpoints
+    stampConfig: '/loyalty/stamp-config',
+    stampConfigByTherapist: (therapistId: string) => `/loyalty/stamp-config/${therapistId}`,
+    stampConfigBulk: '/loyalty/stamp-config/bulk',
   },
   // Complaint system endpoints
   complaint: {
