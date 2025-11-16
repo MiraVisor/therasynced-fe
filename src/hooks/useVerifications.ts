@@ -30,21 +30,53 @@ export const useVerifications = (params?: UseVerificationsParams) => {
 
   // Track if this is the first load
   const isFirstLoad = useRef(true);
+  // Track if a request is currently in progress
+  const isRequestInProgress = useRef(false);
 
   const fetchVerifications = useCallback(async () => {
+    // Prevent concurrent requests
+    if (isRequestInProgress.current) {
+      return;
+    }
+
     try {
+      isRequestInProgress.current = true;
+
       // Only set loading to true for subsequent loads, not initial load
       if (!isFirstLoad.current) {
         setLoading(true);
       }
       setError(null);
 
-      const response: ApiResponse<PendingVerificationResponse[]> =
-        await adminVerificationService.getAll(params?.status, {
-          page: params?.page,
-          limit: params?.limit,
-          name: params?.name,
-        });
+      const paginationParams = {
+        page: params?.page,
+        limit: params?.limit,
+        name: params?.name,
+      };
+
+      let response: ApiResponse<PendingVerificationResponse[]>;
+
+      // Choose the appropriate endpoint based on status
+      if (!params?.status) {
+        // All verifications
+        response = await adminVerificationService.getAll(paginationParams);
+      } else {
+        // Status-specific endpoints
+        switch (params.status) {
+          case 'PENDING':
+            response = await adminVerificationService.getPending(paginationParams);
+            break;
+          case 'APPROVED':
+            response = await adminVerificationService.getApproved(paginationParams);
+            break;
+          case 'REJECTED':
+            response = await adminVerificationService.getRejected(paginationParams);
+            break;
+          default:
+            // Fallback to getAll with status filter
+            response = await adminVerificationService.getAll(paginationParams);
+        }
+      }
 
       if (response.success) {
         setVerifications(response.data);
@@ -58,6 +90,7 @@ export const useVerifications = (params?: UseVerificationsParams) => {
       setLoading(false);
       setInitialLoading(false);
       isFirstLoad.current = false;
+      isRequestInProgress.current = false;
     }
   }, [params?.page, params?.limit, params?.name, params?.status]);
 

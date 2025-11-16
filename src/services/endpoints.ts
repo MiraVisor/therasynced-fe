@@ -166,8 +166,11 @@ export const ENDPOINTS = {
     },
     // Verification management
     verification: {
-      getPending: '/freelancer/admin/verifications/pending',
-      getAll: '/freelancer/admin/verifications/all',
+      getPending: '/verification/admin/pending',
+      getAll: '/verification/admin/all',
+      getApproved: '/verification/admin/approved',
+      getRejected: '/verification/admin/rejected',
+      statistics: '/verification/admin/statistics',
       getDetails: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}`,
       approve: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/approve`,
       reject: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/reject`,

@@ -77,6 +77,20 @@ export interface PendingVerificationResponse {
 }
 
 const adminVerificationService = {
+  // Get all verifications
+  getAll: async (pagination?: PaginationDto) => {
+    const response = await api.get(ENDPOINTS.admin.verification.getAll, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
+  // Get verification statistics
+  getStatistics: async () => {
+    const response = await api.get(ENDPOINTS.admin.verification.statistics);
+    return response.data;
+  },
+
   // Get pending verifications
   getPending: async (pagination?: PaginationDto) => {
     const response = await api.get(ENDPOINTS.admin.verification.getPending, {
@@ -85,14 +99,18 @@ const adminVerificationService = {
     return response.data;
   },
 
-  // Get all verifications (with optional status filter)
-  getAll: async (status?: 'PENDING' | 'APPROVED' | 'REJECTED', pagination?: PaginationDto) => {
-    const params: any = { ...pagination };
-    if (status) {
-      params.status = status;
-    }
-    const response = await api.get(ENDPOINTS.admin.verification.getAll, {
-      params,
+  // Get approved verifications
+  getApproved: async (pagination?: PaginationDto) => {
+    const response = await api.get(ENDPOINTS.admin.verification.getApproved, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
+  // Get rejected verifications
+  getRejected: async (pagination?: PaginationDto) => {
+    const response = await api.get(ENDPOINTS.admin.verification.getRejected, {
+      params: pagination,
     });
     return response.data;
   },
@@ -117,7 +135,7 @@ const adminVerificationService = {
     return response.data;
   },
 
-  // Get verifications by status
+  // Get verifications by status (legacy method)
   getByStatus: async (status: 'PENDING' | 'APPROVED' | 'REJECTED', pagination?: PaginationDto) => {
     const params: any = { ...pagination, status };
     const response = await api.get(ENDPOINTS.admin.verification.getAll, {

@@ -10,7 +10,7 @@ import {
   Shield,
   XCircle,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -128,32 +128,37 @@ const VerificationsPage = () => {
 
   // Fetch stats separately
   useEffect(() => {
+    let isMounted = true;
+
     const fetchStats = async () => {
       try {
         setStatsLoading(true);
-        const [pendingResponse, approvedResponse, rejectedResponse] = await Promise.all([
-          adminVerificationService.getByStatus('PENDING'),
-          adminVerificationService.getByStatus('APPROVED'),
-          adminVerificationService.getByStatus('REJECTED'),
-        ]);
+        const response = await adminVerificationService.getStatistics();
 
-        const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
-        const approved = approvedResponse.success ? (approvedResponse.data || []).length : 0;
-        const rejected = rejectedResponse.success ? (rejectedResponse.data || []).length : 0;
-
-        setStats({
-          pending,
-          approved,
-          rejected,
-          total: pending + approved + rejected,
-        });
+        if (response.success && isMounted) {
+          const { total, pending, approved, rejected } = response.data;
+          setStats({
+            total,
+            pending,
+            approved,
+            rejected,
+          });
+        }
       } catch (error) {
+        // Silently handle stats fetch errors to avoid spam
+        console.warn('Failed to fetch stats:', error);
       } finally {
-        setStatsLoading(false);
+        if (isMounted) {
+          setStatsLoading(false);
+        }
       }
     };
 
     fetchStats();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Show error as toast when it occurs
@@ -163,33 +168,33 @@ const VerificationsPage = () => {
     }
   }, [error]);
 
-  // Function to refetch stats
-  const refetchStats = async () => {
+  // Function to refetch stats with debouncing
+  const refetchStats = useCallback(async () => {
+    // Prevent multiple concurrent stats requests
+    if (statsLoading) return;
+
     try {
       setStatsLoading(true);
-      const [pendingResponse, approvedResponse, rejectedResponse] = await Promise.all([
-        adminVerificationService.getByStatus('PENDING'),
-        adminVerificationService.getByStatus('APPROVED'),
-        adminVerificationService.getByStatus('REJECTED'),
-      ]);
+      const response = await adminVerificationService.getStatistics();
 
-      const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
-      const approved = approvedResponse.success ? (approvedResponse.data || []).length : 0;
-      const rejected = rejectedResponse.success ? (rejectedResponse.data || []).length : 0;
-
-      setStats({
-        pending,
-        approved,
-        rejected,
-        total: pending + approved + rejected,
-      });
+      if (response.success) {
+        const { total, pending, approved, rejected } = response.data;
+        setStats({
+          total,
+          pending,
+          approved,
+          rejected,
+        });
+      }
     } catch (error) {
+      // Silently handle stats refetch errors to avoid spam
+      console.warn('Failed to refetch stats:', error);
     } finally {
       setStatsLoading(false);
     }
-  };
+  }, [statsLoading]);
 
-  // Handle action submission
+  // Handle action submission with improved error handling
   const handleActionSubmit = async () => {
     if (!selectedFreelancer || !selectedActionType || !selectedAction) return;
 
@@ -232,9 +237,12 @@ const VerificationsPage = () => {
           selectedActionType === 'verification' ? 'verification' : 'first aid certificate';
         toast.success(`${typeText} ${actionText} successfully`);
         handleCloseActionDialog();
-        // Refresh data by triggering a re-fetch instead of full page reload
-        refetch();
-        refetchStats();
+
+        // Refresh data with a small delay to prevent overwhelming the server
+        setTimeout(() => {
+          refetch();
+          refetchStats();
+        }, 500);
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
