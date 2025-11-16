@@ -17,6 +17,7 @@ import {
 import { useMediaQuery } from '@/hooks/use-media-query';
 import useChat from '@/hooks/useChat';
 import { getDecodedToken } from '@/lib/utils';
+import { useAuth } from '@/redux/hooks/useAppHooks';
 
 // Types
 interface Contact {
@@ -42,6 +43,7 @@ const MessagesPage = () => {
   // Get current user ID for proper unread logic
   const currentUser = getDecodedToken();
   const currentUserId = currentUser?.sub;
+  const { role } = useAuth();
 
   const {
     contacts,
@@ -236,7 +238,10 @@ const MessagesPage = () => {
   }, [error.contacts, error.messages, error.sending]);
 
   return (
-    <DashboardPageWrapper header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}>
+    <DashboardPageWrapper
+      userRole={role}
+      header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}
+    >
       <div className="h-[calc(100vh-200px)] flex flex-col">
         <div className="flex flex-1 min-h-0">
           {/* Contacts Sidebar */}

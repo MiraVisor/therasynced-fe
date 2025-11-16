@@ -1,21 +1,19 @@
 'use client';
 
-import { AlertTriangle, Calendar, CreditCard, Crown, ExternalLink, Info } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { AlertTriangle, CreditCard, Crown, ExternalLink, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 // Note: Skeleton import is correct - it's defined in src/components/ui/skeleton.tsx
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getDecodedToken } from '@/lib/utils';
 import {
   cancelSubscription,
   createCheckoutSession,
-  createSubscription,
   getBillingPortal,
   getMySubscription,
   getSubscriptionPlans,
@@ -28,7 +26,6 @@ import { PlanType } from '@/types/types';
 import { PlanCard } from './PlanCard';
 
 export default function SubscriptionManagement() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
 
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
@@ -41,13 +38,9 @@ export default function SubscriptionManagement() {
   const isLoadingPlans = isLoading || isRedirectingToCheckout;
 
   useEffect(() => {
-    // Load plans and current subscription on mount
+    // Load plans and subscription on mount
     dispatch(getSubscriptionPlans());
-    const loadSubscription = async () => {
-      const result = await dispatch(getMySubscription());
-      console.log('Subscription loaded:', result);
-    };
-    loadSubscription();
+    dispatch(getMySubscription());
   }, [dispatch]);
 
   useEffect(() => {
@@ -56,23 +49,23 @@ export default function SubscriptionManagement() {
     }
   }, [error]);
 
+  const decodedToken = getDecodedToken();
+  const subscriptionStatus = decodedToken?.subscriptionStatus;
+
   const handleSelectPlan = async (planType: PlanType) => {
     try {
-      // Debug: log current subscription state
-      console.log('Current subscription:', currentSubscription);
-      console.log('Status:', currentSubscription?.status);
-      console.log('Has plan:', !!currentSubscription?.plan);
+      // Use token status if available, otherwise fall back to currentSubscription
+      const currentStatus = subscriptionStatus || currentSubscription?.status;
 
       // Check if user has an active subscription (not trial or inactive)
-      const hasActiveSubscription =
-        currentSubscription?.status === 'ACTIVE' && currentSubscription?.plan;
-      console.log('Has active subscription:', hasActiveSubscription);
+      const hasActiveSubscription = currentStatus === 'ACTIVE' && !!currentSubscription?.plan;
 
       if (hasActiveSubscription) {
         // User has an active subscription - use update endpoint for upgrades/downgrades
         const result = await dispatch(updateSubscription({ planType }));
         if (updateSubscription.fulfilled.match(result)) {
           toast.success('Subscription updated successfully!');
+          // Refresh subscription data
           dispatch(getMySubscription());
         } else if (updateSubscription.rejected.match(result)) {
           toast.error((result.payload as string) || 'Failed to update subscription');
@@ -93,6 +86,7 @@ export default function SubscriptionManagement() {
             const updateResult = await dispatch(updateSubscription({ planType }));
             if (updateSubscription.fulfilled.match(updateResult)) {
               toast.success('Subscription updated successfully!');
+              // Refresh subscription data
               dispatch(getMySubscription());
             }
           } else {
@@ -113,6 +107,7 @@ export default function SubscriptionManagement() {
     const result = await dispatch(cancelSubscription({}));
     if (cancelSubscription.fulfilled.match(result)) {
       toast.success('Subscription will be cancelled at the end of the current period.');
+      // Refresh subscription data
       dispatch(getMySubscription());
     }
   };
@@ -121,6 +116,7 @@ export default function SubscriptionManagement() {
     const result = await dispatch(resumeSubscription());
     if (resumeSubscription.fulfilled.match(result)) {
       toast.success('Subscription resumed successfully!');
+      // Refresh subscription data
       dispatch(getMySubscription());
     }
   };
@@ -139,15 +135,6 @@ export default function SubscriptionManagement() {
     }
   };
 
-  const getDaysUntilExpiry = () => {
-    const endDate = currentSubscription?.currentPeriodEnd || currentSubscription?.trialEndsAt;
-    if (!endDate) return null;
-    const end = new Date(endDate);
-    const now = new Date();
-    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return diff;
-  };
-
   const getDaysInTrial = () => {
     const endDate = currentSubscription?.trialEnd || currentSubscription?.trialEndsAt;
     if (!endDate) return null;
@@ -157,12 +144,13 @@ export default function SubscriptionManagement() {
     return diff;
   };
 
-  const isTrial = currentSubscription?.status === 'TRIALING';
-  const isInactive = currentSubscription?.status === 'INACTIVE';
+  // Use token status if available, otherwise fall back to currentSubscription
+  const status = subscriptionStatus || currentSubscription?.status;
+  const isTrial = status === 'TRIALING';
+  const isInactive = status === 'INACTIVE' || status === 'UNPAID';
   const isCancelled = currentSubscription?.cancelAtPeriodEnd;
   const hasPlan = currentSubscription?.plan !== undefined;
-  const userHasActiveSubscription =
-    currentSubscription?.status === 'ACTIVE' && !!currentSubscription?.plan;
+  const userHasActiveSubscription = status === 'ACTIVE' && !!currentSubscription?.plan;
 
   if (isLoadingPlans) {
     return (
@@ -198,16 +186,16 @@ export default function SubscriptionManagement() {
               </CardTitle>
               <Badge
                 variant={
-                  currentSubscription.status === 'ACTIVE'
+                  status === 'ACTIVE'
                     ? 'default'
-                    : currentSubscription.status === 'TRIALING'
+                    : status === 'TRIALING'
                       ? 'secondary'
-                      : currentSubscription.status === 'INACTIVE'
+                      : status === 'INACTIVE' || status === 'UNPAID'
                         ? 'destructive'
                         : 'destructive'
                 }
               >
-                {currentSubscription.status}
+                {status}
               </Badge>
             </div>
           </CardHeader>
@@ -316,7 +304,7 @@ export default function SubscriptionManagement() {
             : 'Choose a Plan'}
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
-          {plans.map((plan, index) => (
+          {plans.map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}

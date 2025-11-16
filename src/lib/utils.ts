@@ -11,14 +11,7 @@ interface DecodedToken {
   sub: string;
   email: string;
   role: string;
-  iat: number;
-  exp: number;
-}
-
-interface DecodedToken {
-  sub: string;
-  email: string;
-  role: string;
+  subscriptionStatus?: string;
   iat: number;
   exp: number;
 }

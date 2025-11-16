@@ -14,6 +14,7 @@ import { useState } from 'react';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/redux/hooks/useAppHooks';
 
 // Types
 interface Session {
@@ -225,8 +226,11 @@ const AnalyticsPage = () => {
         : 0;
   });
 
+  const { role } = useAuth();
+
   return (
     <DashboardPageWrapper
+      userRole={role}
       header={
         <div className="flex flex-col gap-2 w-full">
           <h2 className="text-2xl font-poppins font-bold text-charcoal">Analytics & Insights</h2>

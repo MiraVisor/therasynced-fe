@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, DollarSign, MessageSquare, TrendingUp } from 'lucide-react';
+import { Calendar, Coins, MessageSquare, TrendingUp } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
@@ -11,7 +11,6 @@ import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import TrialBanner from '../Subscription/TrialBanner';
 import Charts from './Charts';
 import Stats from './Stats';
-import TodayAppointments from './TodayAppointments';
 
 const FreelancerHome = () => {
   const { role } = useAuth();
@@ -66,7 +65,7 @@ const FreelancerHome = () => {
         {
           label: 'Revenue',
           value: formatRevenue(dashboardData.todayRevenue),
-          icon: <DollarSign className="h-4 w-4 text-success" />,
+          icon: <Coins className="h-4 w-4 text-success" />,
         },
         {
           label: 'Messages',
@@ -85,7 +84,7 @@ const FreelancerHome = () => {
           value: '0',
           icon: <Calendar className="h-4 w-4 text-primary" />,
         },
-        { label: 'Revenue', value: '€0', icon: <DollarSign className="h-4 w-4 text-success" /> },
+        { label: 'Revenue', value: '€0', icon: <Coins className="h-4 w-4 text-success" /> },
         { label: 'Messages', value: '0', icon: <MessageSquare className="h-4 w-4 text-info" /> },
         { label: 'Growth', value: '+0%', icon: <TrendingUp className="h-4 w-4 text-warning" /> },
       ];
@@ -105,15 +104,8 @@ const FreelancerHome = () => {
         {/* Stats Cards */}
         <Stats dashboardData={dashboardData} isLoading={isLoading} />
 
-        {/* Charts and Appointments */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-          <div className="lg:col-span-2">
-            <Charts dashboardData={dashboardData} isLoading={isLoading} />
-          </div>
-          <div className="lg:col-span-1">
-            <TodayAppointments isLoading={isLoading} />
-          </div>
-        </div>
+        {/* Weekly Appointments Chart - Full Width */}
+        <Charts dashboardData={dashboardData} isLoading={isLoading} />
       </div>
     </DashboardPageWrapper>
   );

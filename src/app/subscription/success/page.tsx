@@ -23,7 +23,7 @@ export default function SubscriptionSuccessPage() {
     const verifyPayment = async () => {
       try {
         if (sessionId) {
-          // Dispatch to refresh subscription status
+          // Refresh subscription data
           await dispatch(getMySubscription());
           setIsLoading(false);
           toast.success('Payment successful! Your subscription is now active.');

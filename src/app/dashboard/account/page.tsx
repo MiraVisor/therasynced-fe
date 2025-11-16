@@ -54,6 +54,7 @@ import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkelet
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
+import { getMySubscription, getSubscriptionPlans } from '@/redux/api/subscriptionApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { JobTitle, ROLES } from '@/types/types';
 
@@ -80,7 +81,7 @@ export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
-  const [isSubscriptionLoading] = useState(true);
+  const [isSubscriptionLoading] = useState(false);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
@@ -108,7 +109,7 @@ export default function AccountPage() {
   const [, setProfileUpdated] = useState(false);
 
   useEffect(() => {
-    const section = searchParams.get('section');
+    const section = searchParams.get('section') || searchParams.get('tab');
     if (section) {
       setActiveSection(section);
     }
@@ -396,8 +397,16 @@ export default function AccountPage() {
 
   // Show billing only for freelancers and admins
   const showBilling = role === ROLES.FREELANCER;
-  // Show loyalty for users and freelancers
-  const showLoyalty = role === 'PATIENT' || role === 'FREELANCER';
+  // Show loyalty for users only (not freelancers)
+  const showLoyalty = role === 'PATIENT';
+
+  // Load subscription data when subscription tab is clicked
+  useEffect(() => {
+    if (activeSection === 'subscription' && showBilling) {
+      dispatch(getSubscriptionPlans() as any);
+      dispatch(getMySubscription() as any);
+    }
+  }, [activeSection, showBilling, dispatch]);
 
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -976,6 +985,7 @@ export default function AccountPage() {
 
   return (
     <DashboardPageWrapper
+      userRole={role}
       header={
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>

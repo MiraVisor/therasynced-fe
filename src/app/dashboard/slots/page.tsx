@@ -34,9 +34,8 @@ import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { getDecodedToken } from '@/lib/utils';
 import * as slotApi from '@/redux/api/slotApi';
-import { getMySubscription, getSubscriptionPlans } from '@/redux/api/subscriptionApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { useAppSelector } from '@/redux/hooks/useAppHooks';
+import { getSubscriptionPlans } from '@/redux/api/subscriptionApi';
+import { useAppDispatch, useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
 import { deleteSlot, fetchMySlots } from '@/redux/slices/slotSlice';
 import { RootState } from '@/redux/store';
 import { Slot, SlotStats } from '@/types/types';
@@ -44,6 +43,7 @@ import { Slot, SlotStats } from '@/types/types';
 const SlotsPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { role } = useAuth();
   const { slots, isLoading, isCreating } = useSelector((state: RootState) => state.slot);
   const { currentSubscription, plans } = useAppSelector((state) => state.subscription);
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
@@ -113,7 +113,6 @@ const SlotsPage = () => {
   // Fetch subscription and stats on mount
   useEffect(() => {
     fetchSlotStats();
-    dispatch(getMySubscription());
     dispatch(getSubscriptionPlans());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -251,6 +250,7 @@ const SlotsPage = () => {
 
   return (
     <DashboardPageWrapper
+      userRole={role}
       header={
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

@@ -133,7 +133,7 @@ const BookingStatsComponent = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
       {statsData.map((stat, index) => {
         const Icon = stat.icon;
         return (
