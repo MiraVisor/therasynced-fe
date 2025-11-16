@@ -4,12 +4,6 @@ import api from './api';
 import { ENDPOINTS } from './endpoints';
 
 // DTOs matching the backend structure
-export interface StatMetricDto {
-  value: number;
-  percentageChange: number;
-  comparisonPeriod: string;
-}
-
 export interface AdminBookingDto {
   id: string;
   patientId: string;
@@ -22,9 +16,9 @@ export interface AdminBookingDto {
 }
 
 export interface AdminBookingsStatsDto {
-  todaysAppointments: StatMetricDto;
-  canceledAppointments: StatMetricDto;
-  therapistsOnline: StatMetricDto;
+  todaysAppointments: number;
+  canceledAppointments: number;
+  therapistsOnline: number;
   totalBookingsThisMonth: number;
   completedBookingsThisMonth: number;
   pendingBookings: number;

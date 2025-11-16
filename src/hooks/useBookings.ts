@@ -13,7 +13,7 @@ interface UseBookingsOptions {
 interface UseAdminBookingsParams {
   limit?: number;
   page?: number;
-  search?: string;
+  name?: string;
 }
 
 interface PaginationData {
@@ -44,7 +44,7 @@ export const useAdminBookings = (params?: UseAdminBookingsParams) => {
       const response = await adminBookingsService.getAll({
         page: params?.page,
         limit: params?.limit,
-        search: params?.search,
+        name: params?.name,
       });
 
       setBookings(response.bookings);
@@ -56,7 +56,7 @@ export const useAdminBookings = (params?: UseAdminBookingsParams) => {
       setInitialLoading(false);
       isFirstLoad.current = false;
     }
-  }, [params?.page, params?.limit, params?.search]);
+  }, [params?.page, params?.limit, params?.name]);
 
   useEffect(() => {
     fetchBookings();

@@ -319,7 +319,7 @@ const ComplaintsPage = () => {
           data={complaints}
           title={`${statusFilter || 'All'} Complaints`}
           searchKey="reason"
-          searchPlaceholder="Search complaints..."
+          searchPlaceholder="Search by name..."
           enableSorting={false}
           enableFiltering={true}
           enableColumnVisibility={true}

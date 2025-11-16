@@ -13,40 +13,64 @@ import { useAdminBookings } from '@/hooks/useBookings';
 import adminBookingsService, { AdminBookingDto } from '@/services/adminBookingsService';
 
 interface BookingStats {
-  total: number;
-  confirmed: number;
-  pending: number;
-  cancelled: number;
+  todaysAppointments: number;
+  canceledAppointments: number;
+  therapistsOnline: number;
+  totalBookingsThisMonth: number;
+  completedBookingsThisMonth: number;
+  pendingBookings: number;
+  totalBookingsAllTime: number;
 }
 
 const statsConfig = [
   {
-    key: 'total' as keyof BookingStats,
-    title: 'Total Bookings',
+    key: 'totalBookingsAllTime' as keyof BookingStats,
+    title: 'Total All Time',
     icon: Calendar,
     iconColor: 'text-primary',
     iconBg: 'bg-primary/10',
   },
   {
-    key: 'confirmed' as keyof BookingStats,
-    title: 'Confirmed',
+    key: 'todaysAppointments' as keyof BookingStats,
+    title: "Today's Appointments",
+    icon: Calendar,
+    iconColor: 'text-primary',
+    iconBg: 'bg-primary/10',
+  },
+  {
+    key: 'canceledAppointments' as keyof BookingStats,
+    title: 'Canceled Appointments',
+    icon: XCircle,
+    iconColor: 'text-error',
+    iconBg: 'bg-error/10',
+  },
+  {
+    key: 'therapistsOnline' as keyof BookingStats,
+    title: 'Therapists Online',
     icon: Users,
     iconColor: 'text-success',
     iconBg: 'bg-success/10',
   },
   {
-    key: 'pending' as keyof BookingStats,
-    title: 'Pending',
+    key: 'totalBookingsThisMonth' as keyof BookingStats,
+    title: 'Total This Month',
+    icon: Calendar,
+    iconColor: 'text-info',
+    iconBg: 'bg-info/10',
+  },
+  {
+    key: 'completedBookingsThisMonth' as keyof BookingStats,
+    title: 'Completed This Month',
+    icon: Users,
+    iconColor: 'text-success',
+    iconBg: 'bg-success/10',
+  },
+  {
+    key: 'pendingBookings' as keyof BookingStats,
+    title: 'Pending Bookings',
     icon: Calendar,
     iconColor: 'text-warning',
     iconBg: 'bg-warning/10',
-  },
-  {
-    key: 'cancelled' as keyof BookingStats,
-    title: 'Cancelled',
-    icon: XCircle,
-    iconColor: 'text-error',
-    iconBg: 'bg-error/10',
   },
 ];
 
@@ -74,15 +98,18 @@ const AdminBookingsPage = () => {
   const { bookings, loading, initialLoading, error, pagination } = useAdminBookings({
     page,
     limit: pageSize,
-    search: debouncedSearch || undefined,
+    name: debouncedSearch || undefined,
   });
 
   // Calculate stats - we'll need to fetch these separately or from the API
   const [stats, setStats] = useState<BookingStats>({
-    total: 0,
-    confirmed: 0,
-    pending: 0,
-    cancelled: 0,
+    totalBookingsAllTime: 0,
+    todaysAppointments: 0,
+    canceledAppointments: 0,
+    therapistsOnline: 0,
+    totalBookingsThisMonth: 0,
+    completedBookingsThisMonth: 0,
+    pendingBookings: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -93,12 +120,15 @@ const AdminBookingsPage = () => {
         setStatsLoading(true);
         const statsResponse = await adminBookingsService.getStats();
 
-        // Map the stats to our interface
+        // Map the stats to our interface - updated for simplified response
         setStats({
-          total: statsResponse.totalBookingsAllTime || 0,
-          confirmed: statsResponse.completedBookingsThisMonth || 0,
-          pending: statsResponse.pendingBookings || 0,
-          cancelled: statsResponse.canceledAppointments?.value || 0,
+          totalBookingsAllTime: statsResponse.totalBookingsAllTime || 0,
+          todaysAppointments: statsResponse.todaysAppointments || 0,
+          canceledAppointments: statsResponse.canceledAppointments || 0,
+          therapistsOnline: statsResponse.therapistsOnline || 0,
+          totalBookingsThisMonth: statsResponse.totalBookingsThisMonth || 0,
+          completedBookingsThisMonth: statsResponse.completedBookingsThisMonth || 0,
+          pendingBookings: statsResponse.pendingBookings || 0,
         });
       } catch (error) {
         // Error handled by toast in useEffect below
@@ -117,31 +147,7 @@ const AdminBookingsPage = () => {
     }
   }, [error]);
 
-  if (initialLoading && statsLoading && bookings.length === 0) {
-    return (
-      <DashboardPageWrapper
-        header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Admin Bookings</h1>}
-      >
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading bookings...</p>
-          </div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
-
   const columns: ColumnDef<AdminBookingDto>[] = [
-    {
-      accessorKey: 'patientName',
-      header: 'Patient',
-      cell: ({ row }) => (
-        <div>
-          <div className="font-inter font-medium text-charcoal">{row.original.patientName}</div>
-        </div>
-      ),
-    },
     {
       accessorKey: 'therapistName',
       header: 'Therapist',
@@ -151,15 +157,7 @@ const AdminBookingsPage = () => {
         </div>
       ),
     },
-    {
-      accessorKey: 'reason',
-      header: 'Reason',
-      cell: ({ row }) => (
-        <div className="font-inter text-sm text-charcoal max-w-xs truncate">
-          {row.original.reason || '-'}
-        </div>
-      ),
-    },
+
     {
       accessorKey: 'status',
       header: 'Status',
@@ -182,7 +180,7 @@ const AdminBookingsPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {statsConfig.map((config) => (
             <EnhancedStatCard
               key={config.key}
@@ -202,7 +200,7 @@ const AdminBookingsPage = () => {
           data={bookings}
           title="All Bookings"
           searchKey="patientName"
-          searchPlaceholder="Search bookings..."
+          searchPlaceholder="Search By FreeLancer..."
           enableSorting={false}
           enableFiltering={true}
           enableColumnVisibility={true}
