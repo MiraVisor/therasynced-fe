@@ -5,14 +5,13 @@ import { ENDPOINTS } from './endpoints';
 
 export interface UpdateComplaintStatusDto {
   status: ComplaintStatus;
-  adminResponse?: string;
+  adminNotes?: string;
 }
 
 export interface TakeActionDto {
   action: 'WARN' | 'SUSPEND';
   reason: string;
   duration?: number; // in days, for suspension
-  emailNotification?: boolean;
 }
 
 export interface ComplaintListResponse {

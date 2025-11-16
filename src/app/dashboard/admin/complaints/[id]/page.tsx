@@ -1,11 +1,10 @@
 'use client';
 
-import { AlertTriangle, Ban, CheckCircle, Mail, Shield, XCircle } from 'lucide-react';
+import { AlertTriangle, Ban, Mail, Shield } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
 import { DocumentPreview } from '@/components/core/Dashboard/AdminSide/Components/DocumentPreview';
 import { ProfileCard } from '@/components/core/Dashboard/AdminSide/Components/ProfileCard';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
@@ -26,7 +25,6 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { Label } from '@/components/ui/label';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
   Select,
   SelectContent,
@@ -35,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { ComplaintDetailSkeleton } from '@/components/ui/skeletons/ComplaintDetailSkeleton';
 import { Textarea } from '@/components/ui/textarea';
 import adminComplaintService, {
   type TakeActionDto,
@@ -88,7 +87,7 @@ const ComplaintDetailPage = () => {
       setIsSubmitting(true);
       const updateData: UpdateComplaintStatusDto = {
         status,
-        adminResponse: adminResponse || undefined,
+        adminNotes: adminResponse || undefined,
       };
       const response = await adminComplaintService.updateStatus(complaint.id, updateData);
       if (response.success) {
@@ -111,7 +110,6 @@ const ComplaintDetailPage = () => {
         action: actionType,
         reason: actionReason,
         duration: actionType === 'SUSPEND' ? suspensionDays : undefined,
-        emailNotification: true,
       };
       const response = await adminComplaintService.takeAction(complaint.id, actionData);
       if (response.success) {
@@ -136,9 +134,7 @@ const ComplaintDetailPage = () => {
           <h1 className="font-poppins font-bold text-2xl text-charcoal">Complaint Details</h1>
         }
       >
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner size="lg" />
-        </div>
+        <ComplaintDetailSkeleton />
       </DashboardPageWrapper>
     );
   }
