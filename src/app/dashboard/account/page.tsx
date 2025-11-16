@@ -54,8 +54,7 @@ import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkelet
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
-import { getMySubscription, getSubscriptionPlans } from '@/redux/api/subscriptionApi';
-import { useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuth } from '@/redux/hooks/useAppHooks';
 import { JobTitle, ROLES } from '@/types/types';
 
 interface UserProfile {
@@ -400,16 +399,8 @@ export default function AccountPage() {
   // Show loyalty for users only (not freelancers)
   const showLoyalty = role === 'PATIENT';
 
-  // Load subscription data when subscription tab is clicked
-  const { plans, currentSubscription } = useAppSelector((state) => state.subscription);
-  useEffect(() => {
-    if (activeSection === 'subscription' && showBilling) {
-      const hasPlans = plans.length > 0;
-      const hasSubscription = currentSubscription !== null;
-      dispatch(getSubscriptionPlans({ silent: hasPlans }) as any);
-      dispatch(getMySubscription({ silent: hasSubscription }) as any);
-    }
-  }, [activeSection, showBilling, dispatch, plans.length, currentSubscription]);
+  // Subscription data is fetched by SubscriptionManagement component when it mounts
+  // No need to fetch here to avoid duplicate calls
 
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },

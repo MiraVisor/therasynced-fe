@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { getMySubscription } from '@/redux/api/subscriptionApi';
+import { verifyCheckoutSession } from '@/redux/api/subscriptionApi';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 
 export default function SubscriptionSuccessPage() {
@@ -16,29 +16,42 @@ export default function SubscriptionSuccessPage() {
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // Verify payment and refresh subscription
+    // Verify payment using the verify-checkout endpoint
     const verifyPayment = async () => {
       try {
         if (sessionId) {
-          // Refresh subscription data
-          await dispatch(getMySubscription());
-          setIsLoading(false);
-          toast.success('Payment successful! Your subscription is now active.');
+          // Verify checkout session with backend
+          const result = await dispatch(verifyCheckoutSession(sessionId) as any);
 
-          // Redirect to subscription management after a short delay
-          setTimeout(() => {
-            router.push('/dashboard/account?tab=subscription');
-          }, 3000);
+          if (verifyCheckoutSession.fulfilled.match(result)) {
+            setIsLoading(false);
+            toast.success('Payment successful! Your subscription is now active.');
+
+            // Redirect to subscription management after a short delay
+            setTimeout(() => {
+              router.push('/dashboard/account?tab=subscription');
+            }, 3000);
+          } else {
+            // Payment verification failed
+            const errorMessage = (result.payload as string) || 'Payment verification failed';
+            setIsLoading(false);
+            setError(errorMessage);
+            toast.error(`Payment verification failed: ${errorMessage}`);
+          }
         } else {
           setIsLoading(false);
+          setError('No session ID found');
           toast.error('No session ID found. Please contact support if payment was successful.');
         }
       } catch (error) {
         setIsLoading(false);
-        toast.error('Failed to verify payment. Please contact support.');
+        const errorMessage = error instanceof Error ? error.message : 'Failed to verify payment';
+        setError(errorMessage);
+        toast.error(`Failed to verify payment: ${errorMessage}`);
       }
     };
 
@@ -62,12 +75,18 @@ export default function SubscriptionSuccessPage() {
           </div>
           <CardTitle className="text-2xl">Payment Successful!</CardTitle>
           <CardDescription className="mt-2">
-            Your subscription has been activated successfully. You will be redirected to your
-            subscription page shortly.
+            {error
+              ? 'There was an issue verifying your payment. Please contact support if payment was successful.'
+              : 'Your subscription has been activated successfully. You will be redirected to your subscription page shortly.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {sessionId && (
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 dark:bg-red-900/20">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
+          {sessionId && !error && (
             <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Session ID: <span className="font-mono text-xs">{sessionId}</span>

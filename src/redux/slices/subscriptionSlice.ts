@@ -11,6 +11,7 @@ import {
   getSubscriptionPlans,
   resumeSubscription,
   updateSubscription,
+  verifyCheckoutSession,
 } from '../api/subscriptionApi';
 
 interface SubscriptionState {
@@ -186,6 +187,22 @@ const subscriptionSlice = createSlice({
       })
       .addCase(createCheckoutSession.rejected, (state, action) => {
         state.isCreatingCheckout = false;
+        state.error = action.payload as string;
+      });
+
+    // Verify checkout session
+    builder
+      .addCase(verifyCheckoutSession.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyCheckoutSession.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.currentSubscription = action.payload;
+        state.error = null;
+      })
+      .addCase(verifyCheckoutSession.rejected, (state, action) => {
+        state.isLoading = false;
         state.error = action.payload as string;
       });
   },

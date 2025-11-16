@@ -71,6 +71,7 @@ export const ENDPOINTS = {
     recentFavorite: '/freelancer/favorite/recent',
     files: '/freelancer/files', // Get all uploaded files
     stats: '/freelancer/admin/stats',
+    analytics: '/freelancer/analytics',
   },
   // Dashboard endpoints
   dashboard: {
@@ -143,6 +144,7 @@ export const ENDPOINTS = {
     resume: '/subscription/resume',
     billingPortal: '/subscription/billing-portal',
     checkout: '/subscription/checkout',
+    verifyCheckout: '/subscription/verify-checkout',
   },
   // Admin endpoints
   admin: {
