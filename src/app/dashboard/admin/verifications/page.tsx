@@ -408,7 +408,7 @@ const VerificationsPage = () => {
           data={verifications}
           title={`${statusFilter || 'All'} Verifications`}
           searchKey="name"
-          searchPlaceholder="Search verifications..."
+          searchPlaceholder="Search by Freelancer..."
           enableSorting={false}
           enableFiltering={true}
           enableColumnVisibility={true}
