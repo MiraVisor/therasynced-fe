@@ -3,16 +3,12 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle, FileText, XCircle } from 'lucide-react';
 import { Edit, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
-import {
-  StatusFilter,
-  StatusFilterOption,
-} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useServiceCategories } from '@/hooks/useServiceCategories';
 import adminJobTitleService, { type JobTitleResponse } from '@/services/adminJobTitleService';
 import adminServiceCategoryService, {
   type CreateServiceCategoryDto,
@@ -42,13 +39,7 @@ import adminServiceCategoryService, {
 } from '@/services/adminServiceCategoryService';
 
 const ServiceCategoriesPage = () => {
-  const [serviceCategories, setServiceCategories] = useState<ServiceCategoryResponse[]>([]);
   const [jobTitles, setJobTitles] = useState<JobTitleResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [selectedJobTitleFilter, setSelectedJobTitleFilter] = useState<string | undefined>(
-    undefined,
-  );
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -71,62 +62,75 @@ const ServiceCategoriesPage = () => {
     inactive: 0,
   });
 
-  const fetchServiceCategories = async () => {
-    try {
-      setLoading(true);
-      const [categoriesResponse, jobTitlesResponse] = await Promise.all([
-        adminServiceCategoryService.getAll(),
-        adminJobTitleService.getActive(),
-      ]);
+  // Memoize the params to prevent infinite re-renders
+  const serviceCategoriesParams = useMemo(
+    () => ({
+      page,
+      limit: pageSize,
+      name: debouncedSearch || undefined,
+    }),
+    [page, pageSize, debouncedSearch],
+  );
 
-      if (categoriesResponse.success) {
-        const data = categoriesResponse.data || [];
-        setServiceCategories(data);
-        // Calculate stats
-        const total = data.length;
-        const active = data.filter((cat: ServiceCategoryResponse) => cat.isActive).length;
-        const inactive = data.filter((cat: ServiceCategoryResponse) => !cat.isActive).length;
-        setStats({ total, active, inactive });
-      }
+  // Use the service categories hook for pagination
+  const {
+    serviceCategories,
+    loading: categoriesLoading,
+    initialLoading: categoriesInitialLoading,
+    error,
+    pagination,
+    refetch,
+  } = useServiceCategories(serviceCategoriesParams);
 
-      if (jobTitlesResponse.success) {
-        setJobTitles(jobTitlesResponse.data || []);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch service categories');
-    } finally {
-      setLoading(false);
-      setInitialLoading(false);
-    }
-  };
-
+  // Fetch job titles and stats
   useEffect(() => {
-    fetchServiceCategories();
+    const fetchData = async () => {
+      try {
+        const [jobTitlesResponse, statsResponse] = await Promise.all([
+          adminJobTitleService.getActive(),
+          adminServiceCategoryService.getStats(),
+        ]);
+
+        if (jobTitlesResponse.success) {
+          setJobTitles(jobTitlesResponse.data || []);
+        }
+
+        if (statsResponse.success) {
+          const statsData = statsResponse.data;
+          setStats({
+            total: statsData.totalServiceCategories,
+            active: statsData.activeServiceCategories,
+            inactive: statsData.inactiveServiceCategories,
+          });
+        }
+      } catch (error) {
+        // Handle error silently or show toast
+      }
+    };
+
+    fetchData();
   }, []);
+
+  // Show error as toast when it occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to load service categories: ${error}`);
+    }
+  }, [error]);
 
   // Debounce search query
   useEffect(() => {
+    // 500ms debounce delay
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
       // Reset to page 1 when search changes
       if (searchQuery !== debouncedSearch) {
         setPage(1);
       }
-    }, 500); // 500ms debounce delay
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
-
-  const filteredCategories = serviceCategories.filter((category: ServiceCategoryResponse) => {
-    const matchesSearch =
-      category.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      category.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
-    const matchesJobTitle =
-      !selectedJobTitleFilter || category.jobTitle.id === selectedJobTitleFilter;
-    return matchesSearch && matchesJobTitle;
-  });
-
-  const totalPages = Math.ceil(filteredCategories.length / pageSize);
 
   const handleCreate = async () => {
     if (!formData.jobTitleId) {
@@ -140,10 +144,11 @@ const ServiceCategoriesPage = () => {
         toast.success('Service category created successfully');
         setIsCreateDialogOpen(false);
         setFormData({ name: '', description: '', jobTitleId: '' });
-        fetchServiceCategories();
+        refetch();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create service category');
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error(err.message || 'Failed to create service category');
     } finally {
       setIsSubmitting(false);
     }
@@ -164,10 +169,11 @@ const ServiceCategoriesPage = () => {
         setIsEditDialogOpen(false);
         setSelectedCategory(null);
         setFormData({ name: '', description: '', jobTitleId: '' });
-        fetchServiceCategories();
+        refetch();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update service category');
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error(err.message || 'Failed to update service category');
     } finally {
       setIsSubmitting(false);
     }
@@ -182,10 +188,11 @@ const ServiceCategoriesPage = () => {
         toast.success('Service category deleted successfully');
         setIsDeleteDialogOpen(false);
         setSelectedCategory(null);
-        fetchServiceCategories();
+        refetch();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete service category');
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error(err.message || 'Failed to delete service category');
     } finally {
       setIsSubmitting(false);
     }
@@ -257,19 +264,6 @@ const ServiceCategoriesPage = () => {
     },
   ];
 
-  const statusFilterOptions: StatusFilterOption<string | undefined>[] = [
-    {
-      label: 'All Job Titles',
-      value: undefined,
-      color: 'primary',
-    },
-    ...jobTitles.map((jt) => ({
-      label: jt.name,
-      value: jt.id,
-      color: 'default' as const,
-    })),
-  ];
-
   // Define stat cards configuration
   const statCards = [
     {
@@ -324,26 +318,16 @@ const ServiceCategoriesPage = () => {
               icon={card.icon}
               iconColor={card.iconColor}
               iconBg={card.iconBg}
-              loading={initialLoading}
+              loading={categoriesInitialLoading}
             />
           ))}
         </div>
 
-        {/* Status Filter */}
-        <StatusFilter<string | undefined>
-          options={statusFilterOptions}
-          selectedValue={selectedJobTitleFilter}
-          onChange={(value) => {
-            setSelectedJobTitleFilter(value);
-            setPage(1);
-          }}
-        />
-
         {/* Service Categories Table */}
         <DataTable
           columns={columns}
-          data={filteredCategories}
-          title={`${selectedJobTitleFilter ? jobTitles.find((jt) => jt.id === selectedJobTitleFilter)?.name || 'Unknown' : 'All'} Service Categories`}
+          data={serviceCategories}
+          title="Service Categories"
           searchKey="name"
           searchPlaceholder="Search categories..."
           enableSorting
@@ -351,13 +335,13 @@ const ServiceCategoriesPage = () => {
           enablePagination={true}
           showSearch={true}
           showSorting={false}
-          initialLoading={initialLoading}
-          loading={loading}
+          initialLoading={categoriesInitialLoading}
+          loading={categoriesLoading}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}
           externalPageSize={pageSize}
-          totalPages={totalPages}
+          totalPages={pagination?.totalPages}
           onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
           onExternalPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);

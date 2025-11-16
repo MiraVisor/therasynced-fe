@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle, FileText, Folder, Users, XCircle } from 'lucide-react';
+import { CheckCircle, FileText, XCircle } from 'lucide-react';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -48,11 +48,10 @@ const JobTitlesPage = () => {
 
   // Stats state
   const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    inactive: 0,
-    totalFreelancers: 0,
-    totalServiceCategories: 0,
+    totalJobTitles: 0,
+    activeJobTitles: 0,
+    inactiveJobTitles: 0,
+    mostPopularJobTitle: null as { id: string; name: string; freelancerCount: number } | null,
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -81,21 +80,18 @@ const JobTitlesPage = () => {
     const fetchStats = async () => {
       try {
         setStatsLoading(true);
-        const response = await adminJobTitleService.getAll();
+        const response = await adminJobTitleService.getStatistics();
+
         if (response.success) {
-          const allJobTitles = response.data || [];
-          const total = allJobTitles.length;
-          const active = allJobTitles.filter((jt: JobTitleResponse) => jt.isActive).length;
-          const inactive = allJobTitles.filter((jt: JobTitleResponse) => !jt.isActive).length;
-          const totalFreelancers = allJobTitles.reduce(
-            (sum: number, jt: JobTitleResponse) => sum + (jt._count?.users || 0),
-            0,
-          );
-          const totalServiceCategories = allJobTitles.reduce(
-            (sum: number, jt: JobTitleResponse) => sum + (jt._count?.serviceCategories || 0),
-            0,
-          );
-          setStats({ total, active, inactive, totalFreelancers, totalServiceCategories });
+          const { totalJobTitles, activeJobTitles, inactiveJobTitles, mostPopularJobTitle } =
+            response.data;
+
+          setStats({
+            totalJobTitles,
+            activeJobTitles,
+            inactiveJobTitles,
+            mostPopularJobTitle,
+          });
         }
       } catch (error) {
         console.error('Failed to fetch stats:', error);
@@ -260,38 +256,32 @@ const JobTitlesPage = () => {
   const statCards = [
     {
       title: 'Total Job Titles',
-      value: stats.total.toString(),
+      value: stats.totalJobTitles.toString(),
       icon: FileText,
       iconColor: 'text-primary',
       iconBg: 'bg-primary/10',
     },
     {
       title: 'Active',
-      value: stats.active.toString(),
+      value: stats.activeJobTitles.toString(),
       icon: CheckCircle,
       iconColor: 'text-success',
       iconBg: 'bg-success/10',
     },
     {
       title: 'Inactive',
-      value: stats.inactive.toString(),
+      value: stats.inactiveJobTitles.toString(),
       icon: XCircle,
       iconColor: 'text-error',
       iconBg: 'bg-error/10',
     },
+
     {
-      title: 'Total Freelancers',
-      value: stats.totalFreelancers.toString(),
-      icon: Users,
-      iconColor: 'text-info',
-      iconBg: 'bg-info/10',
-    },
-    {
-      title: 'Total Service Categories',
-      value: stats.totalServiceCategories.toString(),
-      icon: Folder,
-      iconColor: 'text-warning',
-      iconBg: 'bg-warning/10',
+      title: 'Most Popular',
+      value: stats.mostPopularJobTitle?.name ?? 'N/A',
+      icon: FileText,
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
     },
   ];
 
@@ -341,7 +331,7 @@ const JobTitlesPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           {statCards.map((card) => (
             <EnhancedStatCard
               key={card.title}

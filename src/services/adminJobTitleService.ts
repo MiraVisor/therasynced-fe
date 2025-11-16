@@ -30,10 +30,37 @@ export interface JobTitleResponse {
 export interface JobTitlesListResponse {
   success: boolean;
   data: JobTitleResponse[];
-  total?: number;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface JobTitlesStatsResponse {
+  success: boolean;
+  data: {
+    totalJobTitles: number;
+    activeJobTitles: number;
+    inactiveJobTitles: number;
+    mostPopularJobTitle: {
+      id: string;
+      name: string;
+      freelancerCount: number;
+    } | null;
+  };
 }
 
 const adminJobTitleService = {
+  // Get job titles statistics
+  getStatistics: async () => {
+    const response = await api.get(ENDPOINTS.admin.jobTitles.statistics);
+    return response.data;
+  },
+
   // Create job title
   create: async (data: CreateJobTitleDto) => {
     const response = await api.post(ENDPOINTS.admin.jobTitles.create, data);

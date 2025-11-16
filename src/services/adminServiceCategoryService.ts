@@ -35,6 +35,17 @@ export interface GroupedServiceCategoriesResponse {
   categories: ServiceCategoryResponse[];
 }
 
+export interface ServiceCategoryStatsResponse {
+  totalServiceCategories: number;
+  activeServiceCategories: number;
+  inactiveServiceCategories: number;
+  jobTitleWithMostCategories: {
+    jobTitleId: string;
+    jobTitleName: string;
+    categoryCount: number;
+  } | null;
+}
+
 const adminServiceCategoryService = {
   // Create service category
   create: async (data: CreateServiceCategoryDto) => {
@@ -47,6 +58,12 @@ const adminServiceCategoryService = {
     const response = await api.get(ENDPOINTS.admin.serviceCategories.getAll, {
       params: pagination,
     });
+    return response.data;
+  },
+
+  // Get service categories stats
+  getStats: async () => {
+    const response = await api.get(ENDPOINTS.admin.serviceCategories.stats);
     return response.data;
   },
 

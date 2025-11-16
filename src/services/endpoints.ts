@@ -153,11 +153,13 @@ export const ENDPOINTS = {
       getById: (id: string) => `/admin/job-titles/${id}`,
       update: (id: string) => `/admin/job-titles/${id}`,
       delete: (id: string) => `/admin/job-titles/${id}`,
+      statistics: '/admin/job-titles/stats',
     },
     // Service categories management
     serviceCategories: {
       create: '/admin/service-categories',
       getAll: '/admin/service-categories',
+      stats: '/admin/service-categories/stats',
       getGrouped: '/admin/service-categories/grouped',
       getByJobTitle: (jobTitleId: string) => `/admin/service-categories/job-title/${jobTitleId}`,
       getById: (id: string) => `/admin/service-categories/${id}`,
