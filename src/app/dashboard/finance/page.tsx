@@ -543,7 +543,7 @@ export default function FinancePage() {
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">Active subscriptions by tier</p>
               </div>
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 className="gap-2 text-primary hover:text-primary/80"
@@ -553,7 +553,7 @@ export default function FinancePage() {
               >
                 View Details
                 <ChevronRight className="h-4 w-4" />
-              </Button>
+              </Button> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer">
@@ -570,7 +570,7 @@ export default function FinancePage() {
                   </div>
                   <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
                     {subscriptionData
-                      ? formatNumber(subscriptionData.subscriptionsByPlan.BASIC)
+                      ? formatNumber(subscriptionData.subscriptionsByPlan.BASIC ?? 0)
                       : '0'}
                   </div>
                   <div className="space-y-2">
@@ -578,7 +578,7 @@ export default function FinancePage() {
                       <span className="text-gray-600">of active plans</span>
                       <span className="font-semibold text-primary">
                         {subscriptionData && subscriptionData.totalActive > 0
-                          ? `${Math.round((subscriptionData.subscriptionsByPlan.BASIC / subscriptionData.totalActive) * 100)}%`
+                          ? `${Math.round(((subscriptionData.subscriptionsByPlan.BASIC ?? 0) / subscriptionData.totalActive) * 100)}%`
                           : '0%'}
                       </span>
                     </div>
@@ -587,7 +587,7 @@ export default function FinancePage() {
                         <div
                           className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full transition-all duration-700 ease-out"
                           style={{
-                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.BASIC / subscriptionData.totalActive) * 100) : 0}%`,
+                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round(((subscriptionData.subscriptionsByPlan.BASIC ?? 0) / subscriptionData.totalActive) * 100) : 0}%`,
                           }}
                         ></div>
                       </div>
@@ -610,7 +610,7 @@ export default function FinancePage() {
                   </div>
                   <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
                     {subscriptionData
-                      ? formatNumber(subscriptionData.subscriptionsByPlan.STANDARD)
+                      ? formatNumber(subscriptionData.subscriptionsByPlan.STANDARD ?? 0)
                       : '0'}
                   </div>
                   <div className="space-y-2">
@@ -618,7 +618,7 @@ export default function FinancePage() {
                       <span className="text-gray-600">of active plans</span>
                       <span className="font-semibold text-info">
                         {subscriptionData && subscriptionData.totalActive > 0
-                          ? `${Math.round((subscriptionData.subscriptionsByPlan.STANDARD / subscriptionData.totalActive) * 100)}%`
+                          ? `${Math.round(((subscriptionData.subscriptionsByPlan.STANDARD ?? 0) / subscriptionData.totalActive) * 100)}%`
                           : '0%'}
                       </span>
                     </div>
@@ -627,7 +627,7 @@ export default function FinancePage() {
                         <div
                           className="bg-gradient-to-r from-info to-info/70 h-full rounded-full transition-all duration-700 ease-out"
                           style={{
-                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.STANDARD / subscriptionData.totalActive) * 100) : 0}%`,
+                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round(((subscriptionData.subscriptionsByPlan.STANDARD ?? 0) / subscriptionData.totalActive) * 100) : 0}%`,
                           }}
                         ></div>
                       </div>
@@ -650,7 +650,7 @@ export default function FinancePage() {
                   </div>
                   <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
                     {subscriptionData
-                      ? formatNumber(subscriptionData.subscriptionsByPlan.PREMIUM)
+                      ? formatNumber(subscriptionData.subscriptionsByPlan.PREMIUM ?? 0)
                       : '0'}
                   </div>
                   <div className="space-y-2">
@@ -658,7 +658,7 @@ export default function FinancePage() {
                       <span className="text-gray-600">of active plans</span>
                       <span className="font-semibold text-success">
                         {subscriptionData && subscriptionData.totalActive > 0
-                          ? `${Math.round((subscriptionData.subscriptionsByPlan.PREMIUM / subscriptionData.totalActive) * 100)}%`
+                          ? `${Math.round(((subscriptionData.subscriptionsByPlan.PREMIUM ?? 0) / subscriptionData.totalActive) * 100)}%`
                           : '0%'}
                       </span>
                     </div>
@@ -667,7 +667,7 @@ export default function FinancePage() {
                         <div
                           className="bg-gradient-to-r from-success to-success/70 h-full rounded-full transition-all duration-700 ease-out"
                           style={{
-                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.PREMIUM / subscriptionData.totalActive) * 100) : 0}%`,
+                            width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round(((subscriptionData.subscriptionsByPlan.PREMIUM ?? 0) / subscriptionData.totalActive) * 100) : 0}%`,
                           }}
                         ></div>
                       </div>
@@ -678,327 +678,6 @@ export default function FinancePage() {
             </div>
           </div>
         )}
-
-        {/* Charts Section */}
-        <Tabs defaultValue="revenue" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid mb-6">
-            <TabsTrigger value="revenue">Revenue Analysis</TabsTrigger>
-            <TabsTrigger value="status">Status Distribution</TabsTrigger>
-            <TabsTrigger value="plans">Plans Breakdown</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="revenue" className="space-y-6">
-            {isLoading ? (
-              <ChartsSkeleton />
-            ) : (
-              <>
-                <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                  <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                    Revenue Comparison
-                  </h3>
-                  <div className="h-[350px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={
-                          revenueData
-                            ? [
-                                { name: 'Total Revenue', value: revenueData.totalRevenue.value },
-                                { name: 'Avg Monthly', value: revenueData.averageMonthlyRevenue },
-                                { name: 'This Week', value: revenueData.revenueThisWeek },
-                                { name: 'This Year', value: revenueData.revenueThisYear },
-                              ]
-                            : [
-                                { name: 'Total Revenue', value: 0 },
-                                { name: 'Avg Monthly', value: 0 },
-                                { name: 'This Week', value: 0 },
-                                { name: 'This Year', value: 0 },
-                              ]
-                        }
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                        <XAxis
-                          dataKey="name"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 12, fill: '#888' }}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 12, fill: '#888' }}
-                          tickFormatter={(value) => `$${value / 1000}k`}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#fff',
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            padding: '12px',
-                          }}
-                          formatter={(value: number) => formatCurrency(value)}
-                        />
-                        <Bar dataKey="value" fill="#5E54F3" radius={[8, 8, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                  <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                    Subscription Revenue Metrics
-                  </h3>
-                  <div className="h-[350px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={
-                          subscriptionData
-                            ? [
-                                { name: 'MRR', value: subscriptionData.monthlyRecurringRevenue },
-                                { name: 'Monthly', value: subscriptionData.monthlyRevenue },
-                                { name: 'Last Month', value: subscriptionData.lastMonthRevenue },
-                                { name: 'ARR', value: subscriptionData.annualRecurringRevenue },
-                              ]
-                            : [
-                                { name: 'MRR', value: 0 },
-                                { name: 'Monthly', value: 0 },
-                                { name: 'Last Month', value: 0 },
-                                { name: 'ARR', value: 0 },
-                              ]
-                        }
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                        <XAxis
-                          dataKey="name"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 12, fill: '#888' }}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 12, fill: '#888' }}
-                          tickFormatter={(value) => `$${value / 1000}k`}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#fff',
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '8px',
-                            padding: '12px',
-                          }}
-                          formatter={(value: number) => formatCurrency(value)}
-                        />
-                        <Bar dataKey="value" fill="#5E54F3" radius={[8, 8, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="status">
-            {isLoading ? (
-              <ChartsSkeleton />
-            ) : (
-              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                  Subscription Status Distribution
-                </h3>
-                <div className="h-[400px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={
-                          subscriptionData
-                            ? [
-                                {
-                                  name: 'Active',
-                                  value: subscriptionData.totalActive,
-                                  color: '#10B981',
-                                },
-                                {
-                                  name: 'Trialing',
-                                  value: subscriptionData.totalTrialing,
-                                  color: '#F59E0B',
-                                },
-                                {
-                                  name: 'Canceled',
-                                  value: subscriptionData.totalCanceled,
-                                  color: '#EF4444',
-                                },
-                                {
-                                  name: 'Past Due',
-                                  value: subscriptionData.totalPastDue,
-                                  color: '#F97316',
-                                },
-                                {
-                                  name: 'Unpaid',
-                                  value: subscriptionData.totalUnpaid,
-                                  color: '#DC2626',
-                                },
-                              ]
-                            : [
-                                { name: 'Active', value: 0, color: '#10B981' },
-                                { name: 'Trialing', value: 0, color: '#F59E0B' },
-                                { name: 'Canceled', value: 0, color: '#EF4444' },
-                                { name: 'Past Due', value: 0, color: '#F97316' },
-                                { name: 'Unpaid', value: 0, color: '#DC2626' },
-                              ]
-                        }
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) =>
-                          percent > 0 ? `${name}: ${(percent * 100).toFixed(0)}%` : ''
-                        }
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {(subscriptionData
-                          ? [
-                              {
-                                name: 'Active',
-                                value: subscriptionData.totalActive,
-                                color: '#10B981',
-                              },
-                              {
-                                name: 'Trialing',
-                                value: subscriptionData.totalTrialing,
-                                color: '#F59E0B',
-                              },
-                              {
-                                name: 'Canceled',
-                                value: subscriptionData.totalCanceled,
-                                color: '#EF4444',
-                              },
-                              {
-                                name: 'Past Due',
-                                value: subscriptionData.totalPastDue,
-                                color: '#F97316',
-                              },
-                              {
-                                name: 'Unpaid',
-                                value: subscriptionData.totalUnpaid,
-                                color: '#DC2626',
-                              },
-                            ]
-                          : [
-                              { name: 'Active', value: 0, color: '#10B981' },
-                              { name: 'Trialing', value: 0, color: '#F59E0B' },
-                              { name: 'Canceled', value: 0, color: '#EF4444' },
-                              { name: 'Past Due', value: 0, color: '#F97316' },
-                              { name: 'Unpaid', value: 0, color: '#DC2626' },
-                            ]
-                        ).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="plans">
-            {isLoading ? (
-              <ChartsSkeleton />
-            ) : (
-              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-                  Subscriptions by Plan
-                </h3>
-                <div className="h-[400px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={
-                        subscriptionData
-                          ? [
-                              {
-                                name: 'Basic',
-                                value: subscriptionData.subscriptionsByPlan.BASIC,
-                                color: '#5E54F3',
-                              },
-                              {
-                                name: 'Standard',
-                                value: subscriptionData.subscriptionsByPlan.STANDARD,
-                                color: '#06B6D4',
-                              },
-                              {
-                                name: 'Premium',
-                                value: subscriptionData.subscriptionsByPlan.PREMIUM,
-                                color: '#10B981',
-                              },
-                            ]
-                          : [
-                              { name: 'Basic', value: 0, color: '#5E54F3' },
-                              { name: 'Standard', value: 0, color: '#06B6D4' },
-                              { name: 'Premium', value: 0, color: '#10B981' },
-                            ]
-                      }
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                      <XAxis
-                        dataKey="name"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: '#888' }}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: '#888' }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#fff',
-                          border: '1px solid #e0e0e0',
-                          borderRadius: '8px',
-                          padding: '12px',
-                        }}
-                      />
-                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                        {(subscriptionData
-                          ? [
-                              {
-                                name: 'Basic',
-                                value: subscriptionData.subscriptionsByPlan.BASIC,
-                                color: '#5E54F3',
-                              },
-                              {
-                                name: 'Standard',
-                                value: subscriptionData.subscriptionsByPlan.STANDARD,
-                                color: '#06B6D4',
-                              },
-                              {
-                                name: 'Premium',
-                                value: subscriptionData.subscriptionsByPlan.PREMIUM,
-                                color: '#10B981',
-                              },
-                            ]
-                          : [
-                              { name: 'Basic', value: 0, color: '#5E54F3' },
-                              { name: 'Standard', value: 0, color: '#06B6D4' },
-                              { name: 'Premium', value: 0, color: '#10B981' },
-                            ]
-                        ).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
       </div>
     </DashboardPageWrapper>
   );

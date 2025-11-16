@@ -3,6 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Clock, MapPin, Star, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useFreelancers } from '@/hooks/useFreelancers';
+import freelancerService, { FreelancerStatsDto } from '@/services/freelancerService';
 import { Freelancer } from '@/types/types';
 
 // Column definitions for freelancers table
@@ -168,6 +170,8 @@ const RealFreelancersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [freelancerStats, setFreelancerStats] = useState<FreelancerStatsDto | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Debounce search query
   useEffect(() => {
@@ -183,6 +187,25 @@ const RealFreelancersPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
 
+  // Fetch freelancer stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const stats = await freelancerService.getStats();
+        setFreelancerStats(stats);
+      } catch (err) {
+        toast.error(
+          `Failed to load freelancer stats: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   // Fetch freelancers with pagination and search
   const { freelancers, loading, initialLoading, error, pagination } = useFreelancers({
     page,
@@ -190,40 +213,54 @@ const RealFreelancersPage = () => {
     name: debouncedSearch || undefined,
   });
 
-  // Calculate stats
-  const totalFreelancers = pagination?.total || 0;
-  const activeFreelancers = freelancers.filter((f) => f.isActive).length;
+  // Show error as toast when it occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(`Failed to load freelancers: ${error}`);
+    }
+  }, [error]);
 
-  const stats = [
-    {
-      title: 'Total Freelancers',
-      value: totalFreelancers.toString(),
-      trend: { value: 0, isUp: true, label: 'all time' },
-      icon: Users,
-      iconColor: 'text-info',
-      iconBg: 'bg-info/10',
-    },
-    {
-      title: 'Active Freelancers',
-      value: activeFreelancers.toString(),
-      trend: { value: 0, isUp: true, label: 'currently' },
-      icon: Clock,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/10',
-    },
-  ];
-
-  if (error) {
-    return (
-      <DashboardPageWrapper
-        header={<h2 className="font-poppins font-bold text-2xl text-charcoal">Freelancers</h2>}
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="font-open-sans text-lg text-error">Error: {error}</div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
+  const stats = freelancerStats
+    ? [
+        {
+          title: 'Total Freelancers',
+          value: freelancerStats.totalFreelancers.value.toString(),
+          trend: {
+            value: Math.abs(freelancerStats.totalFreelancers.percentageChange),
+            isUp: freelancerStats.totalFreelancers.percentageChange >= 0,
+            label: freelancerStats.totalFreelancers.comparisonPeriod,
+          },
+          icon: Users,
+          iconColor: 'text-info',
+          iconBg: 'bg-info/10',
+        },
+        {
+          title: 'Active Freelancers',
+          value: freelancerStats.activeFreelancers.value.toString(),
+          trend: { value: 0, isUp: true, label: 'currently' },
+          icon: Clock,
+          iconColor: 'text-success',
+          iconBg: 'bg-success/10',
+        },
+      ]
+    : [
+        {
+          title: 'Total Freelancers',
+          value: '0',
+          trend: undefined,
+          icon: Users,
+          iconColor: 'text-info',
+          iconBg: 'bg-info/10',
+        },
+        {
+          title: 'Active Freelancers',
+          value: '0',
+          trend: undefined,
+          icon: Clock,
+          iconColor: 'text-success',
+          iconBg: 'bg-success/10',
+        },
+      ];
 
   return (
     <DashboardPageWrapper
@@ -243,6 +280,7 @@ const RealFreelancersPage = () => {
               iconColor={stat.iconColor}
               iconBg={stat.iconBg}
               interactive
+              loading={statsLoading}
               onClick={() => {
                 // Navigate to details or show modal
               }}

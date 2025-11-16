@@ -70,6 +70,7 @@ export const ENDPOINTS = {
     favoriteAll: '/freelancer/favorite/all',
     recentFavorite: '/freelancer/favorite/recent',
     files: '/freelancer/files', // Get all uploaded files
+    stats: '/freelancers/admin/stats',
   },
   // Dashboard endpoints
   dashboard: {
