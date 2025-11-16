@@ -58,15 +58,13 @@ const ComplaintsPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ComplaintStatus | undefined>(undefined);
 
-  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      // Reset to page 1 when search changes
       if (searchQuery !== debouncedSearch) {
         setPage(1);
       }
-    }, 500); // 500ms debounce delay
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
@@ -94,28 +92,18 @@ const ComplaintsPage = () => {
     const fetchStats = async () => {
       try {
         setStatsLoading(true);
-        const [pendingResponse, underReviewResponse, resolvedResponse, dismissedResponse] =
-          await Promise.all([
-            adminComplaintService.getAll(undefined, { status: 'PENDING' }),
-            adminComplaintService.getAll(undefined, { status: 'UNDER_REVIEW' }),
-            adminComplaintService.getAll(undefined, { status: 'RESOLVED' }),
-            adminComplaintService.getAll(undefined, { status: 'DISMISSED' }),
-          ]);
+        const response = await adminComplaintService.getStatistics();
 
-        const pending = pendingResponse.success ? (pendingResponse.data || []).length : 0;
-        const underReview = underReviewResponse.success
-          ? (underReviewResponse.data || []).length
-          : 0;
-        const resolved = resolvedResponse.success ? (resolvedResponse.data || []).length : 0;
-        const dismissed = dismissedResponse.success ? (dismissedResponse.data || []).length : 0;
-
-        setStats({
-          pending,
-          underReview,
-          resolved,
-          dismissed,
-          total: pending + underReview + resolved + dismissed,
-        });
+        if (response.success) {
+          const { total, pending, underReview, resolved, dismissed } = response.data;
+          setStats({
+            total,
+            pending,
+            underReview,
+            resolved,
+            dismissed,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch stats:', error);
       } finally {
@@ -254,31 +242,26 @@ const ComplaintsPage = () => {
     {
       label: 'All',
       value: undefined,
-      count: stats.total,
       color: 'primary',
     },
     {
       label: 'Pending',
       value: 'PENDING' as ComplaintStatus,
-      count: stats.pending,
       color: 'warning',
     },
     {
       label: 'Under Review',
       value: 'UNDER_REVIEW' as ComplaintStatus,
-      count: stats.underReview,
       color: 'info',
     },
     {
       label: 'Resolved',
       value: 'RESOLVED' as ComplaintStatus,
-      count: stats.resolved,
       color: 'success',
     },
     {
       label: 'Dismissed',
       value: 'DISMISSED' as ComplaintStatus,
-      count: stats.dismissed,
       color: 'error',
     },
   ];

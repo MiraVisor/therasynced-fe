@@ -37,17 +37,47 @@ export const useComplaints = (params?: UseComplaintsParams) => {
       }
       setError(null);
 
-      const response: ApiResponse<ComplaintListResponse['data']> =
-        await adminComplaintService.getAll(
-          {
-            page: params?.page,
-            limit: params?.limit,
-            name: params?.name,
-          },
-          {
-            status: params?.status,
-          },
-        );
+      const paginationParams = {
+        page: params?.page,
+        limit: params?.limit,
+        name: params?.name,
+      };
+
+      let response: ApiResponse<ComplaintListResponse['data']>;
+
+      // Choose the appropriate endpoint based on status
+      if (!params?.status) {
+        // All complaints
+        response = await adminComplaintService.getAll(paginationParams, {});
+      } else {
+        // Status-specific endpoints
+        switch (params.status) {
+          case 'PENDING':
+            response = await adminComplaintService.getPending(paginationParams);
+            break;
+          case 'UNDER_REVIEW':
+            response = await adminComplaintService.getUnderReview(paginationParams);
+            break;
+          case 'RESOLVED':
+            response = await adminComplaintService.getResolved(paginationParams);
+            break;
+          case 'DISMISSED':
+            response = await adminComplaintService.getDismissed(paginationParams);
+            break;
+          default:
+            // Fallback to getAll with status filter
+            response = await adminComplaintService.getAll(
+              {
+                page: params?.page,
+                limit: params?.limit,
+                name: params?.name,
+              },
+              {
+                status: params.status,
+              },
+            );
+        }
+      }
 
       if (response.success) {
         setComplaints(response.data);

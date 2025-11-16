@@ -261,14 +261,11 @@ const ServiceCategoriesPage = () => {
     {
       label: 'All Job Titles',
       value: undefined,
-      count: serviceCategories.length,
       color: 'primary',
     },
     ...jobTitles.map((jt) => ({
       label: jt.name,
       value: jt.id,
-      count: serviceCategories.filter((cat: ServiceCategoryResponse) => cat.jobTitle.id === jt.id)
-        .length,
       color: 'default' as const,
     })),
   ];

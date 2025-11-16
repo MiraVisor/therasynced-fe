@@ -5,7 +5,6 @@ import React from 'react';
 export interface StatusFilterOption<T = string> {
   label: string;
   value: T;
-  count: number;
   color: string; // e.g., 'primary', 'warning', 'info', 'success', 'error'
 }
 
@@ -55,7 +54,7 @@ export const StatusFilter = <T = string,>({
               isSelected,
             )} min-w-0 flex-shrink-0`}
           >
-            {option.label} ({option.count})
+            {option.label}
           </button>
         );
       })}

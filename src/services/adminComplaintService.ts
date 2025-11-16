@@ -49,6 +49,44 @@ const adminComplaintService = {
     return response.data;
   },
 
+  // Get complaint statistics
+  getStatistics: async () => {
+    const response = await api.get(ENDPOINTS.admin.complaint.statistics);
+    return response.data;
+  },
+
+  // Get pending complaints
+  getPending: async (pagination?: PaginationDto) => {
+    const response = await api.get(ENDPOINTS.admin.complaint.getPending, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
+  // Get under review complaints
+  getUnderReview: async (pagination?: PaginationDto) => {
+    const response = await api.get(ENDPOINTS.admin.complaint.getUnderReview, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
+  // Get resolved complaints
+  getResolved: async (pagination?: PaginationDto) => {
+    const response = await api.get(ENDPOINTS.admin.complaint.getResolved, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
+  // Get dismissed complaints
+  getDismissed: async (pagination?: PaginationDto) => {
+    const response = await api.get(ENDPOINTS.admin.complaint.getDismissed, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
   // Get complaint details
   getDetails: async (complaintId: string) => {
     const response = await api.get(ENDPOINTS.admin.complaint.getDetails(complaintId));

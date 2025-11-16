@@ -345,25 +345,21 @@ const VerificationsPage = () => {
       {
         label: 'All',
         value: undefined,
-        count: stats.total,
         color: 'primary',
       },
       {
         label: 'Pending',
         value: 'PENDING' as const,
-        count: stats.pending,
         color: 'warning',
       },
       {
         label: 'Approved',
         value: 'APPROVED' as const,
-        count: stats.approved,
         color: 'success',
       },
       {
         label: 'Rejected',
         value: 'REJECTED' as const,
-        count: stats.rejected,
         color: 'error',
       },
     ];

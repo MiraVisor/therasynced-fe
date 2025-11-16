@@ -180,6 +180,11 @@ export const ENDPOINTS = {
     // Complaint management
     complaint: {
       getAll: '/complaint/admin/all',
+      getPending: '/complaint/admin/pending',
+      getUnderReview: '/complaint/admin/under-review',
+      getResolved: '/complaint/admin/resolved',
+      getDismissed: '/complaint/admin/dismissed',
+      statistics: '/complaint/admin/statistics',
       getDetails: (complaintId: string) => `/complaint/admin/${complaintId}`,
       updateStatus: (complaintId: string) => `/complaint/admin/${complaintId}/status`,
       takeAction: (complaintId: string) => `/complaint/admin/${complaintId}/action`,
