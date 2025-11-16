@@ -39,4 +39,5 @@ export type {
   OverrideAccessDto,
   SubscriptionResponse,
   SubscriptionStatsResponse,
+  UpdateSubscriptionPlanDto,
 } from './adminSubscriptionService';

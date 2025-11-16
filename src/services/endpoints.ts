@@ -199,8 +199,10 @@ export const ENDPOINTS = {
     subscription: {
       getAll: '/admin/subscriptions',
       getStats: '/admin/subscriptions/stats',
-      getUserSubscription: (userId: string) => `/admin/subscriptions/user/${userId}`,
-      overrideAccess: (userId: string) => `/admin/subscriptions/user/${userId}/override`,
+      getPlans: '/admin/subscriptions/plans',
+      updatePlan: (planType: string) => `/admin/subscriptions/plans/${planType}`,
+      getUserSubscription: (userId: string) => `/admin/subscriptions/${userId}`,
+      overrideAccess: (userId: string) => `/admin/subscriptions/${userId}/override`,
     },
     // Overview management
     overview: {

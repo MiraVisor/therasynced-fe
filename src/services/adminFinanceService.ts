@@ -33,9 +33,9 @@ export interface SubscriptionStatsDto {
   canceledSubscriptionsThisMonth: number;
   averageRevenuePerSubscription: number;
   subscriptionsByPlan: {
-    BASIC: number;
-    STANDARD: number;
-    PREMIUM: number;
+    BRONZE: number;
+    SILVER: number;
+    GOLD: number;
   };
 }
 

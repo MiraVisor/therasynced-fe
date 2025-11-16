@@ -5,6 +5,7 @@ import {
   BarChart,
   Briefcase,
   Calendar,
+  CreditCard,
   Heart,
   Home,
   LogOut,
@@ -157,6 +158,11 @@ const navigationLinks = {
       name: 'Finance',
       url: '/dashboard/finance',
       icon: Wallet,
+    },
+    {
+      name: 'Subscriptions',
+      url: '/dashboard/admin/subscriptions',
+      icon: CreditCard,
     },
     {
       name: 'Account',

@@ -321,7 +321,7 @@ export default function SubscriptionManagement() {
               key={plan.id}
               plan={plan}
               currentPlanName={currentSubscription?.plan?.name}
-              isRecommended={plan.name === 'STANDARD'}
+              isRecommended={plan.name === 'SILVER'}
               onSelectPlan={handleSelectPlan}
               isLoading={isSubscribing || isUpdating || isRedirectingToCheckout}
               hasActiveSubscription={userHasActiveSubscription}

@@ -80,7 +80,7 @@ export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
-  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
+  const [isSubscriptionLoading] = useState(true);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
@@ -395,7 +395,7 @@ export default function AccountPage() {
   };
 
   // Show billing only for freelancers and admins
-  const showBilling = role === 'FREELANCER' || role === 'ADMIN';
+  const showBilling = role === ROLES.FREELANCER;
   // Show loyalty for users and freelancers
   const showLoyalty = role === 'PATIENT' || role === 'FREELANCER';
 
