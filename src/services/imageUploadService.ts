@@ -10,6 +10,7 @@ const uploadApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
   headers: {
     'Content-Type': 'multipart/form-data',
+    'ngrok-skip-browser-warning': 'true',
   },
 });
 

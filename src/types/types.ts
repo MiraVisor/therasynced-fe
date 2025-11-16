@@ -843,7 +843,7 @@ export interface UploadedFile {
 }
 
 // Subscription System Types
-export type PlanType = 'BASIC' | 'STANDARD' | 'PREMIUM';
+export type PlanType = 'BRONZE' | 'SILVER' | 'GOLD';
 
 export type SubscriptionStatus =
   | 'TRIALING'
