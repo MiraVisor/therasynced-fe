@@ -170,7 +170,7 @@ export const bookAppointment = createAsyncThunk(
     try {
       const res = await createBooking(data);
       if (res.success) {
-        return res.data;
+        return { ...res.data, message: res.message };
       } else {
         return rejectWithValue(res.message || 'Failed to book appointment');
       }

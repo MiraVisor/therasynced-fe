@@ -411,6 +411,11 @@ const SlotsPage = () => {
             setSelectedSlot(null);
           }}
           onDelete={handleDeleteFromDialog}
+          onComplete={() => {
+            // Refresh slots after completion
+            fetchSlotsForWeek(currentWeekStart, true);
+            fetchSlotStats();
+          }}
         />
       )}
 

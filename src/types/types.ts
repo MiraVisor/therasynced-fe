@@ -398,6 +398,8 @@ export interface Slot {
       email: string;
       profilePicture?: string | null;
     };
+    discountAmount?: number;
+    discountPercentage?: number;
     services: any[];
     createdAt: string;
     updatedAt: string;
@@ -535,6 +537,11 @@ export interface RescheduleBookingDto {
 export interface CancelBookingDto {
   bookingId: string;
   reason?: string;
+}
+
+export interface CompleteBookingDto {
+  bookingId: string;
+  completionNotes?: string;
 }
 
 // Location types to match backend
@@ -789,6 +796,96 @@ export interface Redemption {
   status: 'PENDING' | 'FULFILLED' | 'CANCELLED';
   fulfilledAt?: string;
   createdAt: string;
+}
+
+// Therapist Stamp System Types
+export interface TherapistStampSummary {
+  therapist: {
+    id: string;
+    name: string;
+    profilePicture: string | null;
+  };
+  currentStampCount: number;
+  stampTarget: number;
+  stampsRemaining: number;
+  rewardReady: boolean;
+  rewardReserved: boolean;
+  rewardCyclesCompleted: number;
+  lastStampIssuedAt: string | null;
+  rewardReadySince: string | null;
+  discountPercentage: number;
+  customConfigApplied: boolean;
+}
+
+export interface TherapistStampDetail {
+  therapist: {
+    id: string;
+    name: string;
+    profilePicture: string | null;
+  };
+  currentStampCount: number;
+  stampTarget: number;
+  stampsRemaining: number;
+  rewardReady: boolean;
+  rewardReserved: boolean;
+  rewardReadySince: string | null;
+  totalStampsEarned: number;
+  rewardCyclesCompleted: number;
+  lastStampIssuedAt: string | null;
+  lastResetAt: string | null;
+  histories: StampHistory[];
+  discountPercentage: number;
+  customConfigApplied: boolean;
+}
+
+export interface StampHistory {
+  id: string;
+  eventType:
+    | 'STAMP_AWARDED'
+    | 'REWARD_READY'
+    | 'REWARD_RESERVED'
+    | 'REWARD_CONSUMED'
+    | 'REWARD_RELEASED'
+    | 'STAMP_RESET';
+  notes: string | null;
+  bookingId: string | null;
+  stampNumber: number | null;
+  createdAt: string;
+}
+
+export interface TherapistStampConfig {
+  therapistId: string;
+  stampTarget: number | null;
+  discountPercentage: number | null;
+  isActive: boolean;
+  customConfigApplied: boolean;
+  createdAt: string;
+  updatedAt: string;
+  therapist?: {
+    id: string;
+    name: string;
+    email: string;
+    isActive: boolean;
+  };
+}
+
+export interface CreateTherapistStampConfigDto {
+  therapistId: string;
+  stampTarget?: number;
+  discountPercentage?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateTherapistStampConfigDto {
+  stampTarget?: number;
+  discountPercentage?: number;
+  isActive?: boolean;
+}
+
+export interface BulkTherapistStampConfigDto {
+  stampTarget: number;
+  discountPercentage: number;
+  isActive?: boolean;
 }
 
 // Complaint System Types

@@ -1,13 +1,21 @@
 import { format } from 'date-fns';
-import { CheckCircle2, Edit2, Mail, MapPin, Package, Save, X, XCircle } from 'lucide-react';
+import { CheckCircle2, Edit2, Mail, Package, Save, X, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { bookingService } from '@/services/bookingService';
 import { LocationType, Slot } from '@/types/types';
 
 interface SlotDetailsDialogProps {
@@ -16,12 +24,21 @@ interface SlotDetailsDialogProps {
   onClose: () => void;
   onDelete?: (slotId: string) => void;
   onEdit?: (slot: Slot) => void;
+  onComplete?: () => void;
 }
 
-export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({ slot, isOpen, onClose }) => {
+export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
+  slot,
+  isOpen,
+  onClose,
+  onComplete,
+  onDelete,
+  onEdit,
+}) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(slot.notes || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   // Update notes when slot changes
   useEffect(() => {
@@ -79,6 +96,32 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({ slot, isOp
       console.error('Failed to save notes:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleCompleteBooking = async () => {
+    if (!slot.booking?.id) {
+      toast.error('Booking ID not found');
+      return;
+    }
+
+    setIsCompleting(true);
+    try {
+      const response = await bookingService.completeBooking({
+        bookingId: slot.booking.id,
+      });
+
+      if (response.success) {
+        toast.success('Appointment marked as completed! The client will receive a stamp.');
+        onComplete?.();
+        onClose();
+      } else {
+        toast.error(response.message || 'Failed to complete booking');
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to complete booking');
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -187,12 +230,48 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({ slot, isOp
                 <Label className="font-inter text-xs text-muted-foreground mb-1">Location</Label>
                 <p className="font-poppins font-semibold text-charcoal text-lg">{locationText}</p>
                 {slot.location && (
-                  <p className="font-inter text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {slot.location.name}
-                  </p>
+                  <div>
+                    <Label className="font-inter text-xs text-muted-foreground mb-1">Address</Label>
+                    <p className="font-inter text-charcoal">{slot.location.address}</p>
+                    {slot.location.additionalFee > 0 && (
+                      <p className="font-inter text-sm text-muted-foreground mt-1">
+                        Additional Fee: €{slot.location.additionalFee}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {slot.reservedUntil && (
+                  <div>
+                    <Label className="font-inter text-xs text-muted-foreground mb-1">
+                      Reserved Until
+                    </Label>
+                    <p className="font-poppins font-semibold text-charcoal">
+                      {safeFormatDate(slot.reservedUntil, 'MMM d, yyyy h:mm a')}
+                    </p>
+                  </div>
                 )}
               </div>
+              {slot.booking && slot.booking.discountAmount && slot.booking.discountAmount > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <p className="font-poppins text-xl font-bold text-charcoal">
+                      €{slot.booking.totalAmount.toFixed(2)}
+                    </p>
+                    <span className="text-sm text-gray-500 line-through">
+                      €{slot.basePrice.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="text-sm text-green-600 font-medium">
+                    {slot.booking.discountPercentage}% stamp discount applied (-€
+                    {slot.booking.discountAmount.toFixed(2)})
+                  </div>
+                </div>
+              ) : (
+                <p className="font-poppins text-xl font-bold text-charcoal">
+                  €{slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+                </p>
+              )}
 
               {slot.location && (
                 <div>
@@ -355,20 +434,34 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({ slot, isOp
               </div>
             )}
           </div>
-
-          {/* Cancellation Info */}
-          {slot.status === 'CANCELLED' && slot.booking && (
-            <div className="mt-6 pt-6 border-t">
-              <Label className="font-inter text-xs text-muted-foreground mb-2 block">
-                Cancellation Information
-              </Label>
-              <p className="font-inter text-sm text-muted-foreground">
-                Cancelled on {safeFormatDate(slot.booking.updatedAt, 'MMMM d, yyyy')} at{' '}
-                {safeFormatDate(slot.booking.updatedAt, 'h:mm a')}
-              </p>
-            </div>
-          )}
         </div>
+
+        <DialogFooter className="flex sm:flex-row flex-col gap-2">
+          {slot.status === 'BOOKED' && slot.booking && slot.booking.status !== 'COMPLETED' && (
+            <Button
+              onClick={handleCompleteBooking}
+              disabled={isCompleting}
+              className="bg-success hover:bg-success/90 text-white"
+            >
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              {isCompleting ? 'Completing...' : 'Mark as Completed'}
+            </Button>
+          )}
+          {slot.status === 'AVAILABLE' && onDelete && (
+            <Button variant="destructive" onClick={() => onDelete(slot.id)}>
+              <XCircle className="h-4 w-4 mr-2" />
+              Cancel Slot
+            </Button>
+          )}
+          {slot.status === 'AVAILABLE' && onEdit && (
+            <Button variant="outline" onClick={() => onEdit(slot)}>
+              Edit Slot
+            </Button>
+          )}
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -11,7 +11,9 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Gift,
   Home,
+  Sparkles,
   Star,
   Video,
 } from 'lucide-react';
@@ -31,9 +33,12 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { rescheduleBooking } from '@/redux/api/exploreApi';
+import { getStampDetail } from '@/redux/api/loyaltyApi';
 import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
+
+import { StampDiscountBadge } from './StampDiscountBadge';
 
 // Form validation schemas
 const serviceSchema = z.object({
@@ -66,6 +71,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     ? params?.freelancerId[0]
     : params?.freelancerId;
   const { slots } = useSelector((state: RootState) => state.overview);
+  const { stampDetail } = useSelector((state: RootState) => state.stamps);
 
   // Use WebSocket hook for real-time slot updates
   const { isConnected, reservedSlots, reserveSlot, releaseSlot, isSlotReserved } =
@@ -211,6 +217,34 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
   // Extract freelancer info from props or API data
   const firstSlot = slots && slots.length > 0 ? slots[0] : null;
+
+  // Calculate slot statistics from fetched slots
+  const slotStats = useMemo(() => {
+    if (!slots || slots.length === 0) {
+      return {
+        availableSlots: 0,
+        totalSlots: 0,
+        nextAvailableSlot: null,
+      };
+    }
+
+    const availableSlots = slots.filter(
+      (slot: any) => slot.status === 'AVAILABLE' && new Date(slot.startTime) > new Date(),
+    );
+    const nextAvailable =
+      availableSlots.length > 0
+        ? availableSlots.sort(
+            (a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+          )[0]
+        : null;
+
+    return {
+      availableSlots: availableSlots.length,
+      totalSlots: slots.length,
+      nextAvailableSlot: nextAvailable,
+    };
+  }, [slots]);
+
   const therapist = useMemo(() => {
     // Use freelancerData prop if available (from route params)
     if (freelancerData) {
@@ -228,12 +262,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         sessionTypes: freelancerData.sessionTypes || [],
         pricing: freelancerData.pricing,
         description: freelancerData.description || '',
-        languages: freelancerData.languages || [],
-        education: freelancerData.education || [],
-        certifications: freelancerData.certifications || [],
-        availableSlots: freelancerData.availableSlots,
-        totalSlots: freelancerData.totalSlots,
-        nextAvailableSlot: freelancerData.nextAvailableSlot,
+        availableSlots: slotStats.availableSlots,
+        totalSlots: slotStats.totalSlots,
+        nextAvailableSlot: slotStats.nextAvailableSlot,
         cardInfo: freelancerData.cardInfo,
         isFavorite: freelancerData.isFavorite,
       };
@@ -260,16 +291,20 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       sessionTypes: firstSlot.freelancer?.sessionTypes || [],
       pricing: firstSlot.freelancer?.pricing,
       description: firstSlot.freelancer?.description,
-      languages: firstSlot.freelancer?.languages || [],
-      education: firstSlot.freelancer?.education || [],
-      certifications: firstSlot.freelancer?.certifications || [],
-      availableSlots: firstSlot.freelancer?.slotSummary?.availableSlots,
-      totalSlots: firstSlot.freelancer?.slotSummary?.totalSlots,
-      nextAvailableSlot: firstSlot.freelancer?.slotSummary?.nextAvailable,
+      availableSlots: slotStats.availableSlots,
+      totalSlots: slotStats.totalSlots,
+      nextAvailableSlot: slotStats.nextAvailableSlot,
       cardInfo: firstSlot.freelancer?.cardInfo,
       isFavorite: firstSlot.freelancer?.isFavorite,
     };
-  }, [freelancerData, firstSlot, freelancerServices]);
+  }, [freelancerData, firstSlot, freelancerServices, slotStats]);
+
+  // Fetch stamp detail when therapist is available
+  useEffect(() => {
+    if (therapist?.id) {
+      dispatch(getStampDetail(therapist.id) as any);
+    }
+  }, [dispatch, therapist?.id]);
 
   // Helper function to format date safely without timezone issues
   const formatDateForAPI = (date: Date): string => {
@@ -378,7 +413,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         const result = await dispatch(bookAppointment(bookingData) as any);
 
         if (bookAppointment.fulfilled.match(result)) {
-          toast.success('Appointment booked successfully!');
+          // Get the message from the response if available
+          const responseMessage = result.payload?.message || 'Appointment booked successfully!';
+          toast.success(responseMessage, {
+            autoClose: 5000, // Show for 5 seconds to read the stamp message
+          });
           router.push('/dashboard/my-bookings');
         } else {
           throw new Error(result.payload || 'Failed to book appointment');
@@ -405,6 +444,42 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                 Choose when you&apos;d like to meet with {therapist?.name}
               </p>
             </div>
+
+            {/* Stamps Information Card */}
+            <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-full">
+                    <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2 flex items-center gap-2">
+                      <Gift className="h-4 w-4" />
+                      Earn Stamps with Every Booking
+                    </h3>
+                    <p className="text-sm text-purple-800 dark:text-purple-200 mb-3">
+                      Book appointments to earn stamps and unlock discounts on future sessions with
+                      this therapist!
+                    </p>
+                    <ul className="text-xs text-purple-700 dark:text-purple-300 space-y-1 list-disc list-inside">
+                      <li>
+                        Earn 1 stamp for each completed appointment (stamps are awarded after your
+                        therapist marks the appointment as completed)
+                      </li>
+                      <li>Reach 5 stamps to unlock a 15% discount reward</li>
+                      <li>
+                        Discounts are automatically applied to your next booking with the same
+                        therapist
+                      </li>
+                      <li>Stamps are grouped separately for each therapist</li>
+                    </ul>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-3 font-medium">
+                      View your stamp progress in Account Settings → Stamps
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Date and Time Selection */}
             <div className="space-y-8">
@@ -894,21 +969,95 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     </div>
                   )}
 
-                  {/* Price */}
-                  {selectedTime && (
-                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Total Price:
-                        </span>
-                        <span className="text-2xl font-bold text-primary">
-                          €
-                          {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)
-                            ?.basePrice || 0}
-                        </span>
-                      </div>
+                  {/* Stamp Discount Badge */}
+                  {therapist?.id && (
+                    <div className="mt-6">
+                      <StampDiscountBadge therapistId={therapist.id} />
                     </div>
                   )}
+
+                  {/* Price Breakdown */}
+                  {selectedTime &&
+                    (() => {
+                      const selectedSlot = slotsByDate[selectedDate]?.find(
+                        (s) => s.id === selectedTime,
+                      );
+                      const basePrice = selectedSlot?.basePrice || 0;
+                      const hasDiscount =
+                        stampDetail?.rewardReady &&
+                        !stampDetail?.rewardReserved &&
+                        stampDetail?.therapist?.id === therapist?.id;
+                      const discountPercentage = hasDiscount
+                        ? stampDetail?.discountPercentage || 0
+                        : 0;
+                      const discountAmount = hasDiscount
+                        ? (basePrice * discountPercentage) / 100
+                        : 0;
+                      const finalPrice = basePrice - discountAmount;
+
+                      return (
+                        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Base Price:</span>
+                              <span className="text-gray-900 dark:text-white">
+                                €{basePrice.toFixed(2)}
+                              </span>
+                            </div>
+                            {hasDiscount && (
+                              <>
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-green-600 dark:text-green-400 font-medium">
+                                    Stamp Discount ({discountPercentage}%):
+                                  </span>
+                                  <span className="text-green-600 dark:text-green-400 font-medium">
+                                    -€{discountAmount.toFixed(2)}
+                                  </span>
+                                </div>
+                                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                      Total Price:
+                                    </span>
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                        €{finalPrice.toFixed(2)}
+                                      </span>
+                                      <span className="text-xs text-gray-500 line-through">
+                                        €{basePrice.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                            {!hasDiscount && (
+                              <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  Total Price:
+                                </span>
+                                <span className="text-2xl font-bold text-primary">
+                                  €{basePrice.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {hasDiscount && (
+                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                              <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                                ✓ Your {discountPercentage}% stamp discount has been applied
+                                automatically!
+                              </p>
+                            </div>
+                          )}
+                          {!hasDiscount && (
+                            <p className="text-xs text-gray-500 mt-2">
+                              *Any available stamp discounts will be applied automatically
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
                 </CardContent>
               </Card>
 
@@ -1132,21 +1281,82 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                       </div>
                     )}
 
-                    {/* Price */}
-                    {selectedTime && (
-                      <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Total
-                          </span>
-                          <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                            €
-                            {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)
-                              ?.basePrice || 0}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                    {/* Price Breakdown */}
+                    {selectedTime &&
+                      (() => {
+                        const selectedSlot = slotsByDate[selectedDate]?.find(
+                          (s) => s.id === selectedTime,
+                        );
+                        const basePrice = selectedSlot?.basePrice || 0;
+                        const hasDiscount =
+                          stampDetail?.rewardReady &&
+                          !stampDetail?.rewardReserved &&
+                          stampDetail?.therapist?.id === therapist?.id;
+                        const discountPercentage = hasDiscount
+                          ? stampDetail?.discountPercentage || 0
+                          : 0;
+                        const discountAmount = hasDiscount
+                          ? (basePrice * discountPercentage) / 100
+                          : 0;
+                        const finalPrice = basePrice - discountAmount;
+
+                        return (
+                          <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="space-y-2">
+                              {hasDiscount && (
+                                <>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Base Price:
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      €{basePrice.toFixed(2)}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-green-600 dark:text-green-400 font-medium">
+                                      Stamp Discount ({discountPercentage}%):
+                                    </span>
+                                    <span className="text-green-600 dark:text-green-400 font-medium">
+                                      -€{discountAmount.toFixed(2)}
+                                    </span>
+                                  </div>
+                                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Total
+                                      </span>
+                                      <div className="flex flex-col items-end">
+                                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                          €{finalPrice.toFixed(2)}
+                                        </span>
+                                        <span className="text-xs text-gray-500 line-through">
+                                          €{basePrice.toFixed(2)}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                    <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                                      ✓ {discountPercentage}% stamp discount applied
+                                    </p>
+                                  </div>
+                                </>
+                              )}
+                              {!hasDiscount && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Total
+                                  </span>
+                                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    €{basePrice.toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
                   </div>
                 </>
               )}

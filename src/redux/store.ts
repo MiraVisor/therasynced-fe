@@ -15,6 +15,7 @@ import loyaltySlice from './slices/loyaltySlice';
 import overviewSlice from './slices/overviewSlice';
 import serviceSlice from './slices/serviceSlice';
 import slotReducer from './slices/slotSlice';
+import stampSlice from './slices/stampSlice';
 import subscriptionSlice from './slices/subscriptionSlice';
 import verificationSlice from './slices/verificationSlice';
 
@@ -37,6 +38,7 @@ export const store = configureStore({
     certificate: certificateSlice,
     verification: verificationSlice,
     subscription: subscriptionSlice,
+    stamps: stampSlice,
   },
 });
 
