@@ -71,7 +71,7 @@ const ServiceCategoriesPage = () => {
     jobTitleId: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [updatingCategories, setUpdatingCategories] = useState<Set<string>>(new Set());
 
   // Fetch job titles and stats
   useEffect(() => {
@@ -165,7 +165,7 @@ const ServiceCategoriesPage = () => {
 
   const handleToggleActive = async (category: ServiceCategoryResponse) => {
     try {
-      setIsStatusUpdating(true);
+      setUpdatingCategories((prev) => new Set(prev).add(category.id));
       const updateData: UpdateServiceCategoryDto = {
         isActive: !category.isActive,
       };
@@ -177,7 +177,11 @@ const ServiceCategoriesPage = () => {
       const err = error as string;
       toast.error(err || 'Failed to update service category status');
     } finally {
-      setIsStatusUpdating(false);
+      setUpdatingCategories((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(category.id);
+        return newSet;
+      });
     }
   };
 
@@ -215,7 +219,7 @@ const ServiceCategoriesPage = () => {
           <StatusSwitch
             checked={category.isActive}
             onCheckedChange={() => handleToggleActive(category)}
-            disabled={isSubmitting}
+            disabled={updatingCategories.has(category.id)}
           />
         );
       },
@@ -311,7 +315,7 @@ const ServiceCategoriesPage = () => {
           showSearch={true}
           showSorting={false}
           initialLoading={categoriesInitialLoading}
-          loading={categoriesLoading || isStatusUpdating}
+          loading={categoriesLoading || updatingCategories.size > 0}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}

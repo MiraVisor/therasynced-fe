@@ -58,7 +58,15 @@ export const EnhancedStatCard: React.FC<EnhancedStatCardProps> = ({
           <div className="space-y-1 flex-1">
             <p className="text-sm font-inter font-medium text-muted-foreground">{title}</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-poppins font-bold text-foreground">{value}</span>
+              <span
+                className={cn(
+                  'font-poppins font-bold text-foreground',
+                  value.length > 12 ? 'text-lg' : value.length > 6 ? 'text-xl' : 'text-3xl',
+                )}
+              >
+                {value}
+              </span>
+
               {trend && (
                 <div
                   className={cn(

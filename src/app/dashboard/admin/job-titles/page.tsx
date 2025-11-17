@@ -54,7 +54,7 @@ const JobTitlesPage = () => {
   const [selectedJobTitle, setSelectedJobTitle] = useState<JobTitleResponse | null>(null);
   const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [updatingJobTitles, setUpdatingJobTitles] = useState<Set<string>>(new Set());
 
   // Debounce search query
   useEffect(() => {
@@ -121,7 +121,7 @@ const JobTitlesPage = () => {
 
   const handleToggleActive = async (jobTitle: JobTitleResponse) => {
     try {
-      setIsStatusUpdating(true);
+      setUpdatingJobTitles((prev) => new Set(prev).add(jobTitle.id));
       await dispatch(
         updateJobTitle({
           id: jobTitle.id,
@@ -132,7 +132,11 @@ const JobTitlesPage = () => {
     } catch (error: any) {
       toast.error(error.message || 'Failed to update job title status');
     } finally {
-      setIsStatusUpdating(false);
+      setUpdatingJobTitles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(jobTitle.id);
+        return newSet;
+      });
     }
   };
 
@@ -195,7 +199,7 @@ const JobTitlesPage = () => {
           <StatusSwitch
             checked={jobTitle.isActive}
             onCheckedChange={() => handleToggleActive(jobTitle)}
-            disabled={isStatusUpdating}
+            disabled={updatingJobTitles.has(jobTitle.id)}
           />
         );
       },
@@ -326,7 +330,7 @@ const JobTitlesPage = () => {
           showSearch={true}
           showSorting={false}
           initialLoading={initialLoading}
-          loading={loading || isStatusUpdating}
+          loading={loading || updatingJobTitles.size > 0}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}

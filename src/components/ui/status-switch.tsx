@@ -10,10 +10,12 @@ import { cn } from '@/lib/utils';
 const StatusSwitch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
->(({ className, ...props }, ref) => {
-  const tooltipClass = props.checked
-    ? 'text-md bg-transparent border border-red-500 text-red-700'
-    : 'text-md bg-transparent border border-green-500 text-green-700';
+>(({ className, disabled, ...props }, ref) => {
+  const tooltipClass = disabled
+    ? 'text-md bg-transparent border border-gray-400 text-gray-500'
+    : props.checked
+      ? 'text-md bg-transparent border border-red-500 text-red-700'
+      : 'text-md bg-transparent border border-green-500 text-green-700';
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -22,10 +24,13 @@ const StatusSwitch = React.forwardRef<
           <span className="inline-block">
             <SwitchPrimitives.Root
               ref={ref}
+              disabled={disabled}
               className={cn(
-                'peer relative inline-flex h-8 w-20 cursor-pointer items-center rounded-full transition-all',
+                'peer relative inline-flex h-8 w-20 items-center rounded-full transition-all',
                 'data-[state=checked]:bg-[#4CAF50] data-[state=unchecked]:bg-[#E57373]',
                 'shadow-lg border border-white/40',
+                disabled && 'opacity-50 cursor-not-allowed',
+                !disabled && 'cursor-pointer',
                 className,
               )}
               {...props}
@@ -59,7 +64,7 @@ const StatusSwitch = React.forwardRef<
           </span>
         </TooltipTrigger>
         {/* <TooltipContent className={tooltipClass} side="right">
-          <p>{props.checked ? 'Deactivate' : 'Activate'}</p>
+          <p>{disabled ? 'Updating...' : props.checked ? 'Deactivate' : 'Activate'}</p>
         </TooltipContent> */}
       </Tooltip>
     </TooltipProvider>
