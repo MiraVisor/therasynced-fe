@@ -28,10 +28,17 @@ export function useNotifications() {
       setError(null);
 
       const notificationsResponse = await notificationService.fetchNotifications();
-      setNotifications(notificationsResponse.data || []);
+      const loadedNotifications = notificationsResponse.data || [];
+      setNotifications(loadedNotifications);
 
-      // Also update unread count
-      await loadUnreadCount();
+      // Calculate unread count from loaded notifications
+      const calculatedUnreadCount = loadedNotifications.filter((n) => !n.isRead).length;
+      setUnreadCount(calculatedUnreadCount);
+
+      // Also update unread count from API in the background (for badge accuracy)
+      loadUnreadCount().catch(() => {
+        // If API call fails, keep the calculated count
+      });
 
       setIsLoading(false);
       setError(null);

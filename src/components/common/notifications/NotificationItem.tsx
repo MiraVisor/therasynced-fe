@@ -8,8 +8,6 @@ import { Notification, NotificationType } from '@/types/types';
 
 interface NotificationItemProps {
   notification: Notification;
-  onMarkAsRead: (id: string) => void;
-  onNotificationClick?: (notification: Notification) => void;
   className?: string;
 }
 
@@ -67,12 +65,7 @@ const getTypeColor = (type: NotificationType) => {
   }
 };
 
-export function NotificationItem({
-  notification,
-  onMarkAsRead,
-  onNotificationClick,
-  className,
-}: NotificationItemProps) {
+export function NotificationItem({ notification, className }: NotificationItemProps) {
   const Icon = getNotificationIcon(notification.type);
 
   // Safely format the date, handling invalid dates
@@ -93,47 +86,46 @@ export function NotificationItem({
 
   const timeAgo = getTimeAgo();
 
-  const handleClick = () => {
-    if (!notification.isRead) {
-      onMarkAsRead(notification.id);
-    }
-
-    if (onNotificationClick) {
-      onNotificationClick(notification);
-    } else if (notification.actionUrl) {
-      window.location.href = notification.actionUrl;
-    }
-  };
-
   return (
     <div
       className={cn(
-        'flex items-start gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors',
-        !notification.isRead && 'bg-blue-50 border-l-4 border-l-blue-500',
+        'flex items-start gap-3 p-4 transition-colors border-b border-gray-100 last:border-b-0',
+        !notification.isRead && 'bg-blue-50/50 border-l-4 border-l-blue-500',
+        notification.isRead && 'bg-white hover:bg-gray-50/50',
         className,
       )}
-      onClick={handleClick}
     >
-      <div className={cn('flex-shrink-0 mt-1', getTypeColor(notification.type))}>
-        <Icon className="h-5 w-5" />
+      <div
+        className={cn(
+          'flex-shrink-0 mt-0.5 p-2 rounded-lg',
+          !notification.isRead ? 'bg-blue-100' : 'bg-gray-100',
+          getTypeColor(notification.type),
+        )}
+      >
+        <Icon className="h-4 w-4" />
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4
-          className={cn(
-            'text-sm font-medium text-gray-900',
-            !notification.isRead && 'font-semibold',
+        <div className="flex items-start justify-between gap-2">
+          <h4
+            className={cn(
+              'text-sm font-poppins leading-snug',
+              !notification.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-800',
+            )}
+          >
+            {notification.title}
+          </h4>
+          {!notification.isRead && (
+            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
           )}
-        >
-          {notification.title}
-        </h4>
-        <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-        <span className="text-xs text-gray-500 mt-2 block">{timeAgo}</span>
+        </div>
+        <p className="text-sm font-inter text-gray-600 mt-1.5 leading-relaxed">
+          {notification.message}
+        </p>
+        <div className="flex items-center gap-2 mt-2.5">
+          <span className="text-xs font-inter text-gray-500">{timeAgo}</span>
+        </div>
       </div>
-
-      {!notification.isRead && (
-        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
-      )}
     </div>
   );
 }

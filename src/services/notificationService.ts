@@ -29,10 +29,27 @@ export const notificationService = {
 
     // Transform the response to match expected format
     const apiResponse = response.data;
+
+    // Transform snake_case to camelCase for notifications
+    const transformedData = (apiResponse.data || []).map((notification: any) => ({
+      id: notification.id,
+      userId: notification.user_id || notification.userId,
+      type: notification.type,
+      priority: notification.priority,
+      title: notification.title,
+      message: notification.message,
+      isRead: notification.is_read !== undefined ? notification.is_read : notification.isRead,
+      createdAt: notification.created_at || notification.createdAt,
+      updatedAt: notification.updated_at || notification.updatedAt,
+      actionUrl: notification.action_url || notification.actionUrl,
+      actionText: notification.action_text || notification.actionText,
+      metadata: notification.metadata,
+    }));
+
     return {
       success: apiResponse.success,
       message: apiResponse.message,
-      data: apiResponse.data || [],
+      data: transformedData,
       meta: apiResponse.meta || {
         timestamp: new Date().toISOString(),
         path: '/notifications',

@@ -27,7 +27,6 @@ export function NotificationPopover({
   unreadCount,
   isLoading,
   onLoadNotifications,
-  onMarkAsRead,
   onMarkAllAsRead,
   className,
 }: NotificationPopoverProps) {
@@ -74,80 +73,89 @@ export function NotificationPopover({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-[calc(100vw-2rem)] sm:w-80 p-0 max-w-sm"
+        className="w-[calc(100vw-2rem)] sm:w-96 p-0 max-w-sm shadow-lg border-gray-200"
         align="end"
         sideOffset={8}
         side="bottom"
         avoidCollisions={true}
         collisionPadding={16}
       >
-        <div className="p-4 border-b">
+        {/* Header */}
+        <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Notifications</h3>
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                className="text-xs h-6 px-2"
-              >
-                <Check className="h-3 w-3 mr-1" />
-                Mark all read
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-gray-700" />
+              <h3 className="font-poppins font-semibold text-lg text-gray-900">Notifications</h3>
+              {unreadCount > 0 && (
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMarkAllAsRead}
+              disabled={unreadCount === 0 || isLoading}
+              className="text-xs h-7 px-2.5 hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Check className="h-3.5 w-3.5 mr-1.5" />
+              Mark all read
+            </Button>
           </div>
         </div>
 
-        <ScrollArea className="max-h-96">
-          {isLoading && notifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Bell className="h-8 w-8 mx-auto mb-2 opacity-50 animate-pulse" />
-              <p className="text-sm">Loading notifications...</p>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No new notifications</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {/* Unread notifications */}
-              {unreadNotifications.length > 0 && (
-                <div>
-                  <div className="px-4 py-2 bg-blue-50">
-                    <p className="text-xs font-medium text-blue-700">
-                      {unreadNotifications.length} unread
-                    </p>
-                  </div>
-                  {unreadNotifications.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={onMarkAsRead}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Read notifications */}
-              {readNotifications.length > 0 && (
-                <div>
-                  {unreadNotifications.length > 0 && (
-                    <div className="px-4 py-2 bg-gray-50">
-                      <p className="text-xs font-medium text-gray-600">Earlier</p>
+        {/* Scrollable Content */}
+        <ScrollArea className="h-[400px] sm:h-[500px]">
+          <div className="min-h-full">
+            {isLoading && notifications.length === 0 ? (
+              <div className="p-12 text-center">
+                <Bell className="h-10 w-10 mx-auto mb-3 text-gray-400 animate-pulse" />
+                <p className="text-sm font-inter text-gray-500">Loading notifications...</p>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="p-12 text-center">
+                <Bell className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm font-poppins font-medium text-gray-600 mb-1">
+                  No notifications
+                </p>
+                <p className="text-xs font-inter text-gray-500">You&apos;re all caught up!</p>
+              </div>
+            ) : (
+              <div>
+                {/* Unread notifications */}
+                {unreadNotifications.length > 0 && (
+                  <div>
+                    <div className="px-4 py-2.5 bg-blue-50/80 border-b border-blue-100/50 sticky top-0 z-10">
+                      <p className="text-xs font-poppins font-semibold text-blue-700 uppercase tracking-wide">
+                        {unreadNotifications.length}{' '}
+                        {unreadNotifications.length === 1 ? 'Unread' : 'Unread'}
+                      </p>
                     </div>
-                  )}
-                  {readNotifications.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={onMarkAsRead}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    {unreadNotifications.map((notification) => (
+                      <NotificationItem key={notification.id} notification={notification} />
+                    ))}
+                  </div>
+                )}
+
+                {/* Read notifications */}
+                {readNotifications.length > 0 && (
+                  <div>
+                    {unreadNotifications.length > 0 && (
+                      <div className="px-4 py-2.5 bg-gray-50/80 border-b border-gray-100 sticky top-0 z-10">
+                        <p className="text-xs font-poppins font-semibold text-gray-600 uppercase tracking-wide">
+                          Earlier
+                        </p>
+                      </div>
+                    )}
+                    {readNotifications.map((notification) => (
+                      <NotificationItem key={notification.id} notification={notification} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </ScrollArea>
       </PopoverContent>
     </Popover>
