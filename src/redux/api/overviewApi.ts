@@ -14,11 +14,9 @@ export const getAllFreelancers = async (params?: {
   limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  name?: string;
 }): Promise<ApiResponse<Expert[]>> => {
-  console.log('API call params:', params);
   const response = await api.get('/freelancer/all', { params });
-  console.log('Raw API response:', response.data);
-  console.log('Meta object:', response.data.meta);
 
   // The backend returns data in a different format
   // We need to extract pagination from meta or construct it

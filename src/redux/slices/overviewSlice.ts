@@ -56,6 +56,7 @@ export const fetchFreelancers = createAsyncThunk(
       sortBy?: string;
       sortOrder?: 'asc' | 'desc';
       silent?: boolean;
+      name?: string;
     } = {},
     { rejectWithValue },
   ) => {
@@ -80,7 +81,13 @@ export const fetchFreelancers = createAsyncThunk(
 export const loadMoreFreelancers = createAsyncThunk(
   'freelancer/loadMore',
   async (
-    params: { page: number; limit?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' },
+    params: {
+      page: number;
+      limit?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      name?: string;
+    },
     { rejectWithValue },
   ) => {
     try {

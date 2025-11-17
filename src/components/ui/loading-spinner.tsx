@@ -1,42 +1,39 @@
 import React from 'react';
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'small' | 'medium' | 'large' | 'sm' | 'md' | 'lg';
   className?: string;
   color?: string;
   backgroundColor?: string;
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  size = 'md',
+  size = 'medium',
   className = '',
-  color = 'black',
-  backgroundColor = 'transparent',
+  color = '#007745',
+  backgroundColor = '#E5E7EB',
 }) => {
-  const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-16 h-16',
-    lg: 'w-20 h-20',
-  };
+  // Normalize sizes
+  const normalizedSize =
+    size === 'sm' ? 'small' : size === 'md' ? 'medium' : size === 'lg' ? 'large' : size;
 
-  const borderWidthClasses = {
-    sm: 'border-2',
-    md: 'border-4',
-    lg: 'border-4',
+  const sizeClasses: Record<string, string> = {
+    small: 'h-4 w-4',
+    medium: 'h-6 w-6',
+    large: 'h-8 w-8',
   };
 
   return (
-    <div className={`flex items-center justify-center ${className}`}>
+    <div role="status" className={`flex items-center justify-center ${className}`}>
       <div
-        className={`${sizeClasses[size]} ${borderWidthClasses[size]} rounded-full border-t-primary border-l-primary border-r-transparent border-b-transparent animate-spin`}
+        className={`${sizeClasses[normalizedSize]} animate-spin rounded-full border-[3px]`}
         style={{
+          borderColor: backgroundColor,
           borderTopColor: color,
-          borderLeftColor: color,
-          borderRightColor: backgroundColor,
-          borderBottomColor: backgroundColor,
-          animation: 'loader 0.7s infinite linear',
+          animation: 'loader 0.7s linear infinite',
         }}
       />
+      <span className="sr-only">Loading...</span>
 
       <style jsx>{`
         @keyframes loader {

@@ -1,7 +1,7 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
@@ -95,7 +95,13 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
 };
 
 // Enhanced Search and Filter Component
-const EnhancedSearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
+const EnhancedSearchBar = ({
+  onSearch,
+  isSearching,
+}: {
+  onSearch: (query: string) => void;
+  isSearching: boolean;
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchChange = (value: string) => {
@@ -114,6 +120,11 @@ const EnhancedSearchBar = ({ onSearch }: { onSearch: (query: string) => void }) 
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-10 pr-4 py-3 text-base border-gray-200 focus:border-primary focus:ring-primary"
         />
+        {isSearching && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <LoadingSpinner size="md" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -168,7 +179,35 @@ const UserOverview = () => {
   );
   const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const stampsFetchedRef = useRef(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    (query: string) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+
+      setIsSearching(true);
+
+      debounceTimeoutRef.current = setTimeout(() => {
+        setSearchQuery(query);
+        // Trigger new fetch with search query
+        dispatch(fetchFreelancers({ page: 1, limit: 6, name: query || undefined }) as any);
+        setIsSearching(false);
+      }, 500);
+    },
+    [dispatch],
+  );
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      debouncedSearch(query);
+    },
+    [debouncedSearch],
+  );
 
   // Infinite scroll setup
   const hasNextPage = pagination?.hasNext || false;
@@ -178,7 +217,13 @@ const UserOverview = () => {
 
   const handleLoadMore = () => {
     if (pagination && hasNextPage && !loadingMore) {
-      dispatch(loadMoreFreelancers({ page: pagination.page + 1, limit: 6 }) as any);
+      dispatch(
+        loadMoreFreelancers({
+          page: pagination.page + 1,
+          limit: 6,
+          name: searchQuery || undefined,
+        }) as any,
+      );
     }
   };
 
@@ -189,10 +234,14 @@ const UserOverview = () => {
     threshold: 200,
   });
 
+  // Only fetch initial data if we don't have a search query active
   useEffect(() => {
+    // Don't fetch if there's an active search query
+    if (searchQuery) return;
+
     const hasExperts = experts.length > 0;
     dispatch(fetchFreelancers({ page: 1, limit: 6, silent: hasExperts }) as any);
-  }, [dispatch, experts.length]);
+  }, [dispatch, experts.length, searchQuery]);
 
   // Fetch stamps once when page loads (only if not already loaded or loading)
   useEffect(() => {
@@ -220,30 +269,18 @@ const UserOverview = () => {
       return;
     }
 
+    // Map experts directly without client-side filtering since we do server-side search now
     try {
       const mappedExperts = experts.map(mapFreelancerToExpert);
-      let filtered = mappedExperts;
-
-      // Apply search filter
-      if (searchQuery) {
-        filtered = filtered.filter(
-          (expert) =>
-            expert.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            expert.specialty?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            expert.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-        );
-      }
-
-      setFilteredExperts(filtered);
+      setFilteredExperts(mappedExperts);
+      // Clear searching state when data is loaded
+      setIsSearching(false);
     } catch (error) {
       // Handle mapping errors gracefully
       setFilteredExperts([]);
+      setIsSearching(false);
     }
-  }, [experts, searchQuery]);
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
+  }, [experts]);
 
   return (
     <DashboardPageWrapper
@@ -259,7 +296,7 @@ const UserOverview = () => {
             </p>
           </div>
 
-          <EnhancedSearchBar onSearch={handleSearch} />
+          <EnhancedSearchBar onSearch={handleSearch} isSearching={isSearching || loading} />
         </div>
       }
     >
@@ -317,7 +354,15 @@ const UserOverview = () => {
                 : 'Try adjusting your search criteria or filters'}
             </p>
             <Button
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setIsSearching(false);
+                // Clear any pending debounce
+                if (debounceTimeoutRef.current) {
+                  clearTimeout(debounceTimeoutRef.current);
+                }
+                dispatch(fetchFreelancers({ page: 1, limit: 6 }) as any);
+              }}
               variant="outline"
               className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
             >
