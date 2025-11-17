@@ -28,8 +28,26 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
 
   const handleBook = useCallback(
     (freelancer: Expert) => {
-      // Navigate to explore page with this freelancer selected
-      router.push(`/dashboard/explore?freelancerId=${freelancer.id}`);
+      // Pass freelancer data through route state to avoid loading issues
+      const freelancerData = {
+        id: freelancer.id,
+        name: freelancer.name,
+        specialty: freelancer.specialty,
+        yearsOfExperience: freelancer.yearsOfExperience,
+        rating: freelancer.rating,
+        description: freelancer.description,
+        isFavorite: freelancer.isFavorite,
+        services: freelancer.services,
+        location: freelancer.location,
+        sessionTypes: freelancer.sessionTypes,
+        pricing: freelancer.pricing,
+        availableSlots: freelancer.availableSlots,
+        cardInfo: freelancer.cardInfo,
+      };
+
+      router.push(
+        `/dashboard/freelancer/${freelancer.id}?data=${encodeURIComponent(JSON.stringify(freelancerData))}`,
+      );
     },
     [router],
   );
