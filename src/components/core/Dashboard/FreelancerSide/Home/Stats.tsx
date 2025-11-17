@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Star, Users } from 'lucide-react';
+import { Calendar, Coins, Star, Users } from 'lucide-react';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { FreelancerDashboardOverview } from '@/types/types';
@@ -58,7 +58,7 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="p-6 bg-card border rounded-lg space-y-4 overflow-hidden relative"
+            className="p-6 bg-card border border-gray-200/80 rounded-xl shadow-soft space-y-4 overflow-hidden relative"
           >
             <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             <div className="flex items-center gap-3">
@@ -123,7 +123,7 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.weeklyRevenue.trendDirection === 'up',
             label: 'from last week',
           },
-          icon: DollarSign,
+          icon: Coins,
           iconBg: 'bg-primary/10',
           iconColor: 'text-primary',
           sparklineData: dashboardData.weeklyRevenue.sparklineData.map((val) => val / 100),
@@ -161,7 +161,7 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
           title: 'Weekly Revenue',
           value: defaultData.weeklyRevenue.value,
           trend: defaultData.weeklyRevenue.trend,
-          icon: DollarSign,
+          icon: Coins,
           iconBg: 'bg-primary/10',
           iconColor: 'text-primary',
           sparklineData: defaultData.weeklyRevenue.sparklineData,

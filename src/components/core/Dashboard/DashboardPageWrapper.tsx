@@ -3,7 +3,6 @@
 import { useTheme } from 'next-themes';
 
 import { NotificationPopover } from '@/components/common/notifications';
-import { ModeToggle } from '@/components/mode-toggler';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -58,9 +57,10 @@ export function DashboardPageWrapper({
               <NotificationPopover
                 notifications={notifications.notifications}
                 unreadCount={notifications.unreadCount}
+                isLoading={notifications.isLoading}
+                onLoadNotifications={notifications.loadNotifications}
                 onMarkAsRead={notifications.markAsRead}
                 onMarkAllAsRead={notifications.markAllAsRead}
-                userRole={userRole}
               />
             )}
           </div>

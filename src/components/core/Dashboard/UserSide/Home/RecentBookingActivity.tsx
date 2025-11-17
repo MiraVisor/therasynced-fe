@@ -37,13 +37,19 @@ interface Booking {
 const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
   const router = useRouter();
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRecentBookings = async () => {
+      const hasData = recentBookings.length > 0;
       try {
-        setLoading(true);
+        if (!hasData) {
+          setInitialLoading(true);
+        } else {
+          setLoading(true);
+        }
         const response = await getPatientBookingHistory({
           page: 1,
           limit: 5,
@@ -57,20 +63,26 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load recent bookings';
         setError(errorMessage);
+        // Don't clear data on error if we have existing data
+        if (!hasData) {
+          setRecentBookings([]);
+        }
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     };
 
     fetchRecentBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Show toast error when error occurs
+  // Show toast error only on initial load
   useEffect(() => {
-    if (error) {
+    if (error && initialLoading) {
       toast.error(`Failed to load recent bookings: ${error}`);
     }
-  }, [error]);
+  }, [error, initialLoading]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -120,7 +132,8 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
     }
   };
 
-  if (loading) {
+  const isLoading = initialLoading || (loading && recentBookings.length === 0);
+  if (isLoading) {
     return (
       <Card className={className}>
         <CardHeader>

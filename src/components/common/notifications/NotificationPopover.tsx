@@ -1,13 +1,13 @@
 'use client';
 
 import { Bell, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Notification, RoleType } from '@/types/types';
+import { Notification } from '@/types/types';
 
 import { NotificationBadge } from './NotificationBadge';
 import { NotificationItem } from './NotificationItem';
@@ -15,69 +15,45 @@ import { NotificationItem } from './NotificationItem';
 interface NotificationPopoverProps {
   notifications: Notification[];
   unreadCount: number;
+  isLoading: boolean;
+  onLoadNotifications: () => void;
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
-  onNotificationClick?: (notification: Notification) => void;
-  userRole: RoleType;
   className?: string;
 }
-
-const getRoleBasedNotifications = (notifications: Notification[], role: RoleType) => {
-  // Filter notifications based on user role
-  switch (role) {
-    case 'PATIENT':
-      return notifications.filter((n) =>
-        [
-          'BOOKING',
-          'BOOKING_CREATED',
-          'BOOKING_CANCELLED',
-          'BOOKING_RESCHEDULED',
-          'APPOINTMENT',
-          'PAYMENT',
-          'MESSAGE',
-          'REVIEW',
-          'LOYALTY_POINTS_AWARDED',
-          'LOYALTY_REWARD_REDEEMED',
-        ].includes(n.type),
-      );
-    case 'FREELANCER':
-      return notifications.filter((n) =>
-        [
-          'APPOINTMENT',
-          'BOOKING',
-          'BOOKING_CREATED',
-          'BOOKING_CANCELLED',
-          'BOOKING_RESCHEDULED',
-          'MESSAGE',
-          'REVIEW',
-          'SYSTEM',
-        ].includes(n.type),
-      );
-    case 'ADMIN':
-      return notifications;
-    default:
-      return notifications;
-  }
-};
 
 export function NotificationPopover({
   notifications,
   unreadCount,
+  isLoading,
+  onLoadNotifications,
   onMarkAsRead,
   onMarkAllAsRead,
-  onNotificationClick,
-  userRole,
   className,
 }: NotificationPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-  const roleBasedNotifications = getRoleBasedNotifications(notifications, userRole);
-  const unreadNotifications = roleBasedNotifications.filter((n) => !n.isRead);
-  const readNotifications = roleBasedNotifications.filter((n) => n.isRead);
+  // Load notifications when popover opens
+  useEffect(() => {
+    if (isOpen && !hasLoaded && !isLoading) {
+      setHasLoaded(true);
+      onLoadNotifications();
+    }
+  }, [isOpen, hasLoaded, isLoading, onLoadNotifications]);
+
+  // Reset hasLoaded when popover closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasLoaded(false);
+    }
+  }, [isOpen]);
+
+  const unreadNotifications = notifications.filter((n) => !n.isRead);
+  const readNotifications = notifications.filter((n) => n.isRead);
 
   const handleMarkAllAsRead = () => {
     onMarkAllAsRead();
-    setIsOpen(false);
   };
 
   return (
@@ -123,10 +99,15 @@ export function NotificationPopover({
         </div>
 
         <ScrollArea className="max-h-96">
-          {roleBasedNotifications.length === 0 ? (
+          {isLoading && notifications.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              <Bell className="h-8 w-8 mx-auto mb-2 opacity-50 animate-pulse" />
+              <p className="text-sm">Loading notifications...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No notifications</p>
+              <p className="text-sm">No new notifications</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -143,7 +124,6 @@ export function NotificationPopover({
                       key={notification.id}
                       notification={notification}
                       onMarkAsRead={onMarkAsRead}
-                      onNotificationClick={onNotificationClick}
                     />
                   ))}
                 </div>
@@ -162,7 +142,6 @@ export function NotificationPopover({
                       key={notification.id}
                       notification={notification}
                       onMarkAsRead={onMarkAsRead}
-                      onNotificationClick={onNotificationClick}
                     />
                   ))}
                 </div>

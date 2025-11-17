@@ -109,7 +109,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
   const locationDetails = getLocationDetails();
 
-  // Calculate total services price
+  // Calculate total services price (legacy support)
   const servicesTotal =
     booking.services?.reduce((sum, service) => sum + (service.additionalPrice || 0), 0) || 0;
   const basePrice = slot?.basePrice || 0;
@@ -210,44 +210,63 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
             </div>
           </div>
 
-          {/* Services */}
-          {booking.services && booking.services.length > 0 && (
+          {/* Service Categories */}
+          {(booking.serviceCategories && booking.serviceCategories.length > 0) ||
+          (booking.services && booking.services.length > 0) ? (
             <div className="space-y-3">
               <h3 className="text-sm font-poppins font-semibold text-charcoal flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
-                Services
+                Service Categories
               </h3>
               <div className="space-y-2">
-                {booking.services.map((service, index) => (
-                  <div
-                    key={service.id || index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-poppins font-medium text-charcoal">
-                        {service.name}
-                      </p>
-                      {service.description && (
-                        <p className="text-xs font-inter text-muted-foreground mt-1">
-                          {service.description}
-                        </p>
-                      )}
-                      {service.duration && (
-                        <p className="text-xs font-inter text-muted-foreground mt-1">
-                          Duration: {service.duration} minutes
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-poppins font-semibold text-primary">
-                        €{service.additionalPrice || 0}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                {booking.serviceCategories && booking.serviceCategories.length > 0
+                  ? booking.serviceCategories.map((category, index) => (
+                      <div
+                        key={category.id || index}
+                        className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-poppins font-medium text-charcoal">
+                            {category.name}
+                          </p>
+                          {category.description && (
+                            <p className="text-xs font-inter text-muted-foreground mt-1">
+                              {category.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  : booking.services?.map((service, index) => (
+                      <div
+                        key={service.id || index}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-poppins font-medium text-charcoal">
+                            {service.name}
+                          </p>
+                          {service.description && (
+                            <p className="text-xs font-inter text-muted-foreground mt-1">
+                              {service.description}
+                            </p>
+                          )}
+                          {service.duration && (
+                            <p className="text-xs font-inter text-muted-foreground mt-1">
+                              Duration: {service.duration} minutes
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-poppins font-semibold text-primary">
+                            €{service.additionalPrice || 0}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Notes */}
           {(booking as any).notes && (

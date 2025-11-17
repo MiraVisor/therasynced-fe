@@ -17,8 +17,8 @@ type IconName = 'users' | 'clients' | 'calendar' | 'money';
 const AdminHome = () => {
   const { role } = useAuth();
   const [overviewData, setOverviewData] = useState<AdminOverviewDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const hasFetchedRef = useRef(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Map icons to Lucide icons for EnhancedStatCard
   const iconMap = {
@@ -38,25 +38,35 @@ const AdminHome = () => {
 
   // Fetch overview data
   useEffect(() => {
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
-
     const fetchOverview = async () => {
+      const hasData = overviewData !== null;
       try {
-        setIsLoading(true);
+        if (!hasData) {
+          setInitialLoading(true);
+        } else {
+          setIsLoading(true);
+        }
         const data = await adminOverviewService.getOverview();
         setOverviewData(data);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load overview data';
-        toast.error(`Error loading overview data: ${errorMessage}`);
+        // Only show error toast on initial load
+        if (!hasData) {
+          toast.error(`Error loading overview data: ${errorMessage}`);
+        }
         console.error('Error fetching admin overview:', err);
-        setOverviewData(null); // Ensure data is null to show empty state
+        // Don't clear data on error if we have existing data
+        if (!hasData) {
+          setOverviewData(null);
+        }
       } finally {
         setIsLoading(false);
+        setInitialLoading(false);
       }
     };
 
     fetchOverview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Format currency value

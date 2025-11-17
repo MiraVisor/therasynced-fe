@@ -133,7 +133,7 @@ const BookingStatsComponent = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
       {statsData.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -210,7 +210,9 @@ const BookingFilters = ({
 export default function MyBookingsPage() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { bookings, loading, error } = useSelector((state: RootState) => state.booking);
+  const { bookings, loading, initialLoading, error } = useSelector(
+    (state: RootState) => state.booking,
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
@@ -250,6 +252,7 @@ export default function MyBookingsPage() {
       const weekStart = startOfWeek(currentWeekStart, { weekStartsOn: 1 });
       const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
+      const hasBookings = bookings.length > 0;
       // Fetch with pagination and sorting
       dispatch(
         fetchUserBookings({
@@ -257,6 +260,7 @@ export default function MyBookingsPage() {
           limit: 1000,
           sortBy: 'slot.startTime',
           sortOrder: 'asc',
+          silent: hasBookings,
           date: weekStart.toISOString().split('T')[0], // Format: YYYY-MM-DD
         }) as any,
       );
@@ -358,7 +362,13 @@ export default function MyBookingsPage() {
     .filter((booking: Booking) => {
       const matchesSearch =
         booking.slot.freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (booking.services.length > 0 &&
+        (booking.serviceCategories &&
+          booking.serviceCategories.length > 0 &&
+          booking.serviceCategories.some((cat) =>
+            cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
+          )) ||
+        (booking.services &&
+          booking.services.length > 0 &&
           booking.services[0].name.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus = (() => {
@@ -498,7 +508,7 @@ export default function MyBookingsPage() {
           </div>
 
           {/* Day Sections */}
-          {loading ? (
+          {initialLoading || (loading && bookings.length === 0) ? (
             <div className="space-y-4">
               {weekDays.map((date) => (
                 <div key={date.toISOString()}>

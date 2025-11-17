@@ -65,7 +65,7 @@ export const reserveSlot = async (slotId: string) => {
 
 export const createBooking = async (data: {
   slotId: string;
-  serviceIds?: string[];
+  serviceCategoryIds?: string[];
   clientId?: string;
   clientAddress?: string;
   notes?: string;

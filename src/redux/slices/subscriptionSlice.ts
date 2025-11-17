@@ -11,6 +11,7 @@ import {
   getSubscriptionPlans,
   resumeSubscription,
   updateSubscription,
+  verifyCheckoutSession,
 } from '../api/subscriptionApi';
 
 interface SubscriptionState {
@@ -18,6 +19,8 @@ interface SubscriptionState {
   currentSubscription: Subscription | null;
   billingPortalUrl: string | null;
   isLoading: boolean;
+  backgroundRefreshing: boolean;
+  initialLoading: boolean;
   isSubscribing: boolean;
   isUpdating: boolean;
   isCanceling: boolean;
@@ -30,6 +33,8 @@ const initialState: SubscriptionState = {
   currentSubscription: null,
   billingPortalUrl: null,
   isLoading: false,
+  backgroundRefreshing: false,
+  initialLoading: false,
   isSubscribing: false,
   isUpdating: false,
   isCanceling: false,
@@ -56,31 +61,55 @@ const subscriptionSlice = createSlice({
   extraReducers: (builder) => {
     // Get subscription plans
     builder
-      .addCase(getSubscriptionPlans.pending, (state) => {
-        state.isLoading = true;
+      .addCase(getSubscriptionPlans.pending, (state, action) => {
+        const silent = action.meta.arg?.silent;
+        if (silent && state.plans.length > 0) {
+          state.backgroundRefreshing = true;
+        } else {
+          state.isLoading = true;
+          if (state.plans.length === 0) {
+            state.initialLoading = true;
+          }
+        }
         state.error = null;
       })
       .addCase(getSubscriptionPlans.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.plans = action.payload;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
+        state.plans = action.payload.data || action.payload;
       })
       .addCase(getSubscriptionPlans.rejected, (state, action) => {
         state.isLoading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.error = action.payload as string;
       });
 
     // Get current subscription
     builder
-      .addCase(getMySubscription.pending, (state) => {
-        state.isLoading = true;
+      .addCase(getMySubscription.pending, (state, action) => {
+        const silent = action.meta.arg?.silent;
+        if (silent && state.currentSubscription) {
+          state.backgroundRefreshing = true;
+        } else {
+          state.isLoading = true;
+          if (!state.currentSubscription) {
+            state.initialLoading = true;
+          }
+        }
         state.error = null;
       })
       .addCase(getMySubscription.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentSubscription = action.payload;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
+        state.currentSubscription = action.payload.data || action.payload;
       })
       .addCase(getMySubscription.rejected, (state, action) => {
         state.isLoading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.error = action.payload as string;
       });
 
@@ -158,6 +187,22 @@ const subscriptionSlice = createSlice({
       })
       .addCase(createCheckoutSession.rejected, (state, action) => {
         state.isCreatingCheckout = false;
+        state.error = action.payload as string;
+      });
+
+    // Verify checkout session
+    builder
+      .addCase(verifyCheckoutSession.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyCheckoutSession.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.currentSubscription = action.payload;
+        state.error = null;
+      })
+      .addCase(verifyCheckoutSession.rejected, (state, action) => {
+        state.isLoading = false;
         state.error = action.payload as string;
       });
   },

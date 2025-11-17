@@ -143,28 +143,50 @@ export const SlotListView = ({ slots, onSelectSlot, view, selectedDate }: SlotLi
                     </div>
                   </div>
 
-                  {/* Available Services */}
-                  {slot.availableServices && slot.availableServices.length > 0 && (
+                  {/* Available Service Categories */}
+                  {(slot.availableServiceCategories &&
+                    slot.availableServiceCategories.length > 0) ||
+                  (slot.availableServices && slot.availableServices.length > 0) ? (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                         <Package className="h-4 w-4" />
-                        <span>Available Services ({slot.availableServices.length})</span>
+                        <span>
+                          Available{' '}
+                          {slot.availableServiceCategories &&
+                          slot.availableServiceCategories.length > 0
+                            ? `Service Categories (${slot.availableServiceCategories.length})`
+                            : `Services (${slot.availableServices?.length || 0})`}
+                        </span>
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        {slot.availableServices.slice(0, 3).map((service) => (
-                          <Badge key={service.id} variant="outline" className="text-xs">
-                            {service.name}
-                            {service.duration && ` (${service.duration}min)`}
-                          </Badge>
-                        ))}
-                        {slot.availableServices.length > 3 && (
+                        {slot.availableServiceCategories &&
+                        slot.availableServiceCategories.length > 0
+                          ? slot.availableServiceCategories.slice(0, 3).map((category) => (
+                              <Badge key={category.id} variant="outline" className="text-xs">
+                                {category.name}
+                              </Badge>
+                            ))
+                          : slot.availableServices?.slice(0, 3).map((service) => (
+                              <Badge key={service.id} variant="outline" className="text-xs">
+                                {service.name}
+                                {service.duration && ` (${service.duration}min)`}
+                              </Badge>
+                            ))}
+                        {((slot.availableServiceCategories &&
+                          slot.availableServiceCategories.length > 3) ||
+                          (slot.availableServices && slot.availableServices.length > 3)) && (
                           <Badge variant="outline" className="text-xs">
-                            +{slot.availableServices.length - 3} more
+                            +
+                            {slot.availableServiceCategories &&
+                            slot.availableServiceCategories.length > 0
+                              ? slot.availableServiceCategories.length - 3
+                              : (slot.availableServices?.length || 0) - 3}{' '}
+                            more
                           </Badge>
                         )}
                       </div>
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Notes Preview */}
                   {slot.notes && (

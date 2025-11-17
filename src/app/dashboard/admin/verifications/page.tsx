@@ -124,15 +124,21 @@ const VerificationsPage = () => {
     rejected: 0,
     total: 0,
   });
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
 
   // Fetch stats separately
   useEffect(() => {
     let isMounted = true;
 
     const fetchStats = async () => {
+      const hasStats = stats.total > 0 || stats.pending > 0 || stats.approved > 0;
       try {
-        setStatsLoading(true);
+        if (!hasStats) {
+          setInitialStatsLoading(true);
+        } else {
+          setStatsLoading(true);
+        }
         const response = await adminVerificationService.getStatistics();
 
         if (response.success && isMounted) {
@@ -150,6 +156,7 @@ const VerificationsPage = () => {
       } finally {
         if (isMounted) {
           setStatsLoading(false);
+          setInitialStatsLoading(false);
         }
       }
     };
@@ -159,6 +166,7 @@ const VerificationsPage = () => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Show error as toast when it occurs
@@ -387,7 +395,9 @@ const VerificationsPage = () => {
               icon={config.icon}
               iconColor={config.iconColor}
               iconBg={config.iconBg}
-              loading={statsLoading}
+              loading={
+                initialStatsLoading || (statsLoading && stats.total === 0 && stats.pending === 0)
+              }
             />
           ))}
         </div>

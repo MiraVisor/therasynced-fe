@@ -13,10 +13,10 @@ import {
 // Get all available subscription plans
 export const getSubscriptionPlans = createAsyncThunk(
   'subscription/getPlans',
-  async (_, { rejectWithValue }) => {
+  async (options: { silent?: boolean } = {}, { rejectWithValue }) => {
     try {
       const response = await api.get(ENDPOINTS.subscription.plans);
-      return response.data.data as SubscriptionPlan[];
+      return { data: response.data.data as SubscriptionPlan[], silent: options.silent };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to get subscription plans');
     }
@@ -26,10 +26,10 @@ export const getSubscriptionPlans = createAsyncThunk(
 // Get current subscription
 export const getMySubscription = createAsyncThunk(
   'subscription/getMySubscription',
-  async (_, { rejectWithValue }) => {
+  async (options: { silent?: boolean } = {}, { rejectWithValue }) => {
     try {
       const response = await api.get(ENDPOINTS.subscription.mySubscription);
-      return response.data.data as Subscription;
+      return { data: response.data.data as Subscription, silent: options.silent };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to get subscription');
     }
@@ -107,9 +107,30 @@ export const createCheckoutSession = createAsyncThunk(
   async (planType: PlanType, { rejectWithValue }) => {
     try {
       const response = await api.post(ENDPOINTS.subscription.checkout, { planType });
-      return response.data.data.sessionUrl as string;
+      // Backend returns { sessionUrl, sessionId, clientSecret }
+      // clientSecret is needed for embedded checkout
+      return response.data.data as {
+        sessionUrl: string;
+        sessionId: string;
+        clientSecret?: string;
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create checkout session');
+    }
+  },
+);
+
+// Verify checkout session after Stripe payment
+export const verifyCheckoutSession = createAsyncThunk(
+  'subscription/verifyCheckout',
+  async (sessionId: string, { rejectWithValue }) => {
+    try {
+      const response = await api.get(ENDPOINTS.subscription.verifyCheckout, {
+        params: { session_id: sessionId },
+      });
+      return response.data.data as Subscription;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to verify checkout session');
     }
   },
 );

@@ -330,7 +330,7 @@ const CollapsibleCategories = ({
             {isOpen && (
               <div className="space-y-1 p-2 bg-white">
                 {catList.map((category: any) => {
-                  const isSelected = formData.serviceIds?.includes(category.id) || false;
+                  const isSelected = formData.serviceCategoryIds?.includes(category.id) || false;
                   return (
                     <div
                       key={category.id}
@@ -370,7 +370,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
     basePrice: 50,
     duration: 60,
     slots: [],
-    serviceIds: [],
+    serviceCategoryIds: [],
     notes: '',
   });
 
@@ -447,22 +447,22 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
     }
   };
 
-  // Simple service toggle - no complex state management needed
-  const handleServiceToggle = (serviceId: string) => {
-    console.log('Toggling service:', serviceId);
+  // Simple service category toggle - no complex state management needed
+  const handleServiceToggle = (categoryId: string) => {
+    console.log('Toggling service category:', categoryId);
     setFormData((prev) => {
-      const currentServices = prev.serviceIds || [];
-      console.log('Current services:', currentServices);
-      if (currentServices.includes(serviceId)) {
-        // Remove service
-        const newServices = currentServices.filter((id) => id !== serviceId);
-        console.log('Removing service, new services:', newServices);
-        return { ...prev, serviceIds: newServices };
+      const currentCategories = prev.serviceCategoryIds || [];
+      console.log('Current categories:', currentCategories);
+      if (currentCategories.includes(categoryId)) {
+        // Remove category
+        const newCategories = currentCategories.filter((id) => id !== categoryId);
+        console.log('Removing category, new categories:', newCategories);
+        return { ...prev, serviceCategoryIds: newCategories };
       } else {
-        // Add service
-        const newServices = [...currentServices, serviceId];
-        console.log('Adding service, new services:', newServices);
-        return { ...prev, serviceIds: newServices };
+        // Add category
+        const newCategories = [...currentCategories, categoryId];
+        console.log('Adding category, new categories:', newCategories);
+        return { ...prev, serviceCategoryIds: newCategories };
       }
     });
   };
@@ -622,17 +622,17 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
               )}
 
               {/* Selected Services Summary */}
-              {formData.serviceIds && formData.serviceIds.length > 0 && (
+              {formData.serviceCategoryIds && formData.serviceCategoryIds.length > 0 && (
                 <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                   <div className="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
-                    Selected Services ({formData.serviceIds.length}):
+                    Selected Service Categories ({formData.serviceCategoryIds.length}):
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.serviceIds.map((serviceId) => {
-                      const service = serviceCategories.find((s) => s.id === serviceId);
-                      return service ? (
-                        <Badge key={serviceId} variant="default" className="text-xs">
-                          {service.name}
+                    {formData.serviceCategoryIds.map((categoryId) => {
+                      const category = serviceCategories.find((s) => s.id === categoryId);
+                      return category ? (
+                        <Badge key={categoryId} variant="default" className="text-xs">
+                          {category.name}
                         </Badge>
                       ) : null;
                     })}

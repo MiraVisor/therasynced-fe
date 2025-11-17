@@ -270,31 +270,48 @@ export default function BookingDetailsPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Services */}
-                  {booking.services && booking.services.length > 0 && (
+                  {/* Service Categories */}
+                  {((booking.serviceCategories && booking.serviceCategories.length > 0) ||
+                    (booking.services && booking.services.length > 0)) && (
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <CreditCard className="h-5 w-5" />
-                          Services
+                          Service Categories
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
-                          {booking.services.map((service: any, index: number) => (
-                            <div
-                              key={service.id || index}
-                              className="flex justify-between items-center py-2"
-                            >
-                              <div>
-                                <p className="font-medium">{service.name}</p>
-                                {service.duration && (
-                                  <p className="text-sm text-gray-500">{service.duration}</p>
-                                )}
-                              </div>
-                              <p className="font-medium">€{service.price}</p>
-                            </div>
-                          ))}
+                          {booking.serviceCategories && booking.serviceCategories.length > 0
+                            ? booking.serviceCategories.map((category: any, index: number) => (
+                                <div
+                                  key={category.id || index}
+                                  className="flex justify-between items-start py-2"
+                                >
+                                  <div className="flex-1">
+                                    <p className="font-medium">{category.name}</p>
+                                    {category.description && (
+                                      <p className="text-sm text-gray-500 mt-1">
+                                        {category.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            : booking.services?.map((service: any, index: number) => (
+                                <div
+                                  key={service.id || index}
+                                  className="flex justify-between items-center py-2"
+                                >
+                                  <div>
+                                    <p className="font-medium">{service.name}</p>
+                                    {service.duration && (
+                                      <p className="text-sm text-gray-500">{service.duration}</p>
+                                    )}
+                                  </div>
+                                  <p className="font-medium">€{service.price || 0}</p>
+                                </div>
+                              ))}
                         </div>
                       </CardContent>
                     </Card>
@@ -346,20 +363,27 @@ export default function BookingDetailsPage() {
                       <Separator />
 
                       <div className="space-y-2">
-                        {booking.services && booking.services.length > 0 && (
-                          <>
-                            {booking.services.map((service: any, index: number) => (
+                        {booking.serviceCategories && booking.serviceCategories.length > 0
+                          ? booking.serviceCategories.map((category: any, index: number) => (
+                              <div
+                                key={category.id || index}
+                                className="flex justify-between items-center"
+                              >
+                                <span className="text-gray-600">{category.name}</span>
+                              </div>
+                            ))
+                          : booking.services &&
+                            booking.services.length > 0 &&
+                            booking.services.map((service: any, index: number) => (
                               <div
                                 key={service.id || index}
                                 className="flex justify-between items-center"
                               >
                                 <span className="text-gray-600">{service.name}</span>
-                                <span>€{service.price}</span>
+                                <span>€{service.price || 0}</span>
                               </div>
                             ))}
-                            <Separator />
-                          </>
-                        )}
+                        <Separator />
                         <div className="flex justify-between items-center text-lg font-bold">
                           <span>Total</span>
                           <span className="text-blue-600">€{booking.totalAmount}</span>

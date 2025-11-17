@@ -159,7 +159,7 @@ const ExpertCardSkeleton = () => (
 
 const UserOverview = () => {
   const dispatch = useDispatch();
-  const { experts, loading, error, pagination, loadingMore } = useSelector(
+  const { experts, loading, initialLoading, error, pagination, loadingMore } = useSelector(
     (state: RootState) => state.overview,
   );
   const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
@@ -185,8 +185,9 @@ const UserOverview = () => {
   });
 
   useEffect(() => {
-    dispatch(fetchFreelancers({ page: 1, limit: 6 }) as any);
-  }, [dispatch]);
+    const hasExperts = experts.length > 0;
+    dispatch(fetchFreelancers({ page: 1, limit: 6, silent: hasExperts }) as any);
+  }, [dispatch, experts.length]);
 
   useEffect(() => {
     if (!experts || !Array.isArray(experts)) {
@@ -242,7 +243,9 @@ const UserOverview = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-poppins font-semibold text-charcoal">
-              {loading ? 'Loading freelancers...' : `${filteredExperts.length} freelancers found`}
+              {initialLoading || (loading && experts.length === 0)
+                ? 'Loading freelancers...'
+                : `${filteredExperts.length} freelancers found`}
             </h2>
             {searchQuery && (
               <p className="text-sm font-inter text-muted-foreground mt-1">
@@ -253,7 +256,7 @@ const UserOverview = () => {
         </div>
 
         {/* Content */}
-        {loading ? (
+        {initialLoading || (loading && experts.length === 0) ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {Array.from({ length: 9 }).map((_, i) => (
               <ExpertCardSkeleton key={i} />

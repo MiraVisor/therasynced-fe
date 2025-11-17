@@ -11,6 +11,8 @@ interface BookingState {
   currentBooking: any | null;
   selectedBooking: any | null;
   loading: boolean;
+  backgroundRefreshing: boolean;
+  initialLoading: boolean;
   error: string | null;
   pagination?: any;
 }
@@ -20,6 +22,8 @@ const initialState: BookingState = {
   currentBooking: null,
   selectedBooking: null,
   loading: false,
+  backgroundRefreshing: false,
+  initialLoading: false,
   error: null,
   pagination: null,
 };
@@ -33,15 +37,18 @@ export const fetchUserBookings = createAsyncThunk(
       sortBy?: string;
       sortOrder?: 'asc' | 'desc';
       date?: string;
+      silent?: boolean;
     },
     { rejectWithValue },
   ) => {
     try {
-      const res = await getPatientBookings(params);
+      const { silent, ...apiParams } = params || {};
+      const res = await getPatientBookings(apiParams);
       if (res.success && Array.isArray(res.data)) {
         return {
           bookings: res.data,
           pagination: res.pagination,
+          silent,
         };
       } else {
         return rejectWithValue('Failed to load bookings');
@@ -105,17 +112,29 @@ const bookingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserBookings.pending, (state) => {
-        state.loading = true;
+      .addCase(fetchUserBookings.pending, (state, action) => {
+        const silent = action.meta.arg?.silent;
+        if (silent && state.bookings.length > 0) {
+          state.backgroundRefreshing = true;
+        } else {
+          state.loading = true;
+          if (state.bookings.length === 0) {
+            state.initialLoading = true;
+          }
+        }
         state.error = null;
       })
       .addCase(fetchUserBookings.fulfilled, (state, action) => {
         state.loading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.bookings = action.payload.bookings;
         state.pagination = action.payload.pagination;
       })
       .addCase(fetchUserBookings.rejected, (state, action) => {
         state.loading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.error = action.payload as string;
       })
       .addCase(fetchBookingById.pending, (state) => {

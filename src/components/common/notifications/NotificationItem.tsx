@@ -74,7 +74,24 @@ export function NotificationItem({
   className,
 }: NotificationItemProps) {
   const Icon = getNotificationIcon(notification.type);
-  const timeAgo = formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true });
+
+  // Safely format the date, handling invalid dates
+  const getTimeAgo = () => {
+    if (!notification.createdAt) {
+      return 'Recently';
+    }
+    try {
+      const date = new Date(notification.createdAt);
+      if (isNaN(date.getTime())) {
+        return 'Recently';
+      }
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return 'Recently';
+    }
+  };
+
+  const timeAgo = getTimeAgo();
 
   const handleClick = () => {
     if (!notification.isRead) {

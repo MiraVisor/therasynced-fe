@@ -14,7 +14,7 @@ interface DaySlotSectionProps {
 }
 
 export const DaySlotSection = ({ date, slots, onSlotClick }: DaySlotSectionProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(slots.length > 0);
   const isCurrentDay = isToday(date);
   const sortedSlots = [...slots].sort(
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),

@@ -2,40 +2,32 @@
 
 import { Crown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { getMySubscription } from '@/redux/api/subscriptionApi';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks/useAppHooks';
+import { getDecodedToken } from '@/lib/utils';
+import { useAppSelector } from '@/redux/hooks/useAppHooks';
 
 export default function SubscriptionBadge() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { currentSubscription, isLoading } = useAppSelector((state) => state.subscription);
+  const { plans } = useAppSelector((state) => state.subscription);
+  const decodedToken = getDecodedToken();
+  const subscriptionStatus = decodedToken?.subscriptionStatus;
 
-  useEffect(() => {
-    // Load subscription on mount
-    if (!currentSubscription) {
-      dispatch(getMySubscription());
-    }
-  }, [dispatch, currentSubscription]);
-
-  if (isLoading || !currentSubscription) {
+  // Only show badge for ACTIVE subscriptions (not TRIALING, PAST_DUE, CANCELED, UNPAID)
+  if (!subscriptionStatus || subscriptionStatus !== 'ACTIVE') {
     return null;
   }
 
-  // Don't show badge if no plan (user is in trial or inactive)
-  if (!currentSubscription.plan) {
-    return null;
-  }
+  // Try to find the current plan from plans (if available)
+  const currentPlan = plans.find((plan) => plan.name === 'SILVER') || plans[0];
 
   const handleClick = () => {
     router.push('/dashboard/account?tab=subscription');
   };
 
   const getStatusColor = () => {
-    switch (currentSubscription.status) {
+    switch (subscriptionStatus) {
       case 'ACTIVE':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'TRIALING':
@@ -55,10 +47,12 @@ export default function SubscriptionBadge() {
       <div className="flex items-center gap-3 p-3">
         <Crown className="h-5 w-5 text-primary" />
         <div className="flex-1">
-          <div className="text-sm font-semibold text-gray-900 dark:text-white">
-            {currentSubscription.plan.displayName}
-          </div>
-          <Badge className={`mt-1 text-xs ${getStatusColor()}`}>{currentSubscription.status}</Badge>
+          {currentPlan && (
+            <div className="text-sm font-semibold text-gray-900 dark:text-white">
+              {currentPlan.displayName}
+            </div>
+          )}
+          <Badge className={`mt-1 text-xs ${getStatusColor()}`}>{subscriptionStatus}</Badge>
         </div>
       </div>
     </Card>

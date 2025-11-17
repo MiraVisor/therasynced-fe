@@ -2,6 +2,8 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 import { FreelancerFile } from '@/types/types';
 
+import { getFreelancerFiles, getVerificationStatus } from '../api/verificationApi';
+
 interface VerificationDocument {
   id: string;
   url: string;
@@ -22,7 +24,11 @@ interface VerificationState {
   isUploading: boolean;
   uploadProgress: { [key: string]: number };
   isLoading: boolean;
+  backgroundRefreshing: boolean;
+  initialLoading: boolean;
   isLoadingFiles: boolean;
+  backgroundRefreshingFiles: boolean;
+  initialLoadingFiles: boolean;
   error: string | null;
   filesError: string | null;
 }
@@ -38,7 +44,11 @@ const initialState: VerificationState = {
   isUploading: false,
   uploadProgress: {},
   isLoading: false,
+  backgroundRefreshing: false,
+  initialLoading: false,
   isLoadingFiles: false,
+  backgroundRefreshingFiles: false,
+  initialLoadingFiles: false,
   error: null,
   filesError: null,
 };
@@ -213,38 +223,65 @@ const verificationSlice = createSlice({
   extraReducers: (builder) => {
     // Handle getVerificationStatus
     builder
-      .addCase('verification/getStatus/pending', (state) => {
-        state.isLoading = true;
+      .addCase(getVerificationStatus.pending, (state, action) => {
+        const silent = action.meta.arg?.silent;
+        const hasData = state.verificationStatus !== 'NOT_SUBMITTED' || state.documents.length > 0;
+        if (silent && hasData) {
+          state.backgroundRefreshing = true;
+        } else {
+          state.isLoading = true;
+          if (!hasData) {
+            state.initialLoading = true;
+          }
+        }
         state.error = null;
       })
-      .addCase('verification/getStatus/fulfilled', (state, action: any) => {
-        state.verificationStatus = action.payload.verificationStatus;
-        state.documents = action.payload.verificationDocuments || [];
-        state.verificationRequestedAt = action.payload.verificationRequestedAt;
-        state.verificationApprovedAt = action.payload.verificationApprovedAt;
-        state.verificationRejectedAt = action.payload.verificationRejectedAt;
-        state.verificationRejectionReason = action.payload.verificationRejectionReason;
+      .addCase(getVerificationStatus.fulfilled, (state, action: any) => {
+        const payload = action.payload.data || action.payload;
+        state.verificationStatus = payload.verificationStatus;
+        state.documents = payload.verificationDocuments || [];
+        state.verificationRequestedAt = payload.verificationRequestedAt;
+        state.verificationApprovedAt = payload.verificationApprovedAt;
+        state.verificationRejectedAt = payload.verificationRejectedAt;
+        state.verificationRejectionReason = payload.verificationRejectionReason;
         state.isLoading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.error = null;
       })
-      .addCase('verification/getStatus/rejected', (state, action: any) => {
+      .addCase(getVerificationStatus.rejected, (state, action: any) => {
         state.isLoading = false;
+        state.backgroundRefreshing = false;
+        state.initialLoading = false;
         state.error = action.payload as string;
       });
 
     // Handle getFreelancerFiles
     builder
-      .addCase('verification/getFreelancerFiles/pending', (state) => {
-        state.isLoadingFiles = true;
+      .addCase(getFreelancerFiles.pending, (state, action) => {
+        const silent = action.meta.arg?.silent;
+        if (silent && state.allFiles.length > 0) {
+          state.backgroundRefreshingFiles = true;
+        } else {
+          state.isLoadingFiles = true;
+          if (state.allFiles.length === 0) {
+            state.initialLoadingFiles = true;
+          }
+        }
         state.filesError = null;
       })
-      .addCase('verification/getFreelancerFiles/fulfilled', (state, action: any) => {
-        state.allFiles = action.payload;
+      .addCase(getFreelancerFiles.fulfilled, (state, action: any) => {
+        const payload = action.payload.data || action.payload;
+        state.allFiles = payload;
         state.isLoadingFiles = false;
+        state.backgroundRefreshingFiles = false;
+        state.initialLoadingFiles = false;
         state.filesError = null;
       })
-      .addCase('verification/getFreelancerFiles/rejected', (state, action: any) => {
+      .addCase(getFreelancerFiles.rejected, (state, action: any) => {
         state.isLoadingFiles = false;
+        state.backgroundRefreshingFiles = false;
+        state.initialLoadingFiles = false;
         state.filesError = action.payload as string;
       });
   },

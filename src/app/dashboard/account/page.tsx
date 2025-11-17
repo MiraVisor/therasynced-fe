@@ -80,7 +80,7 @@ export default function AccountPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
-  const [isSubscriptionLoading] = useState(true);
+  const [isSubscriptionLoading] = useState(false);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
@@ -108,7 +108,7 @@ export default function AccountPage() {
   const [, setProfileUpdated] = useState(false);
 
   useEffect(() => {
-    const section = searchParams.get('section');
+    const section = searchParams.get('section') || searchParams.get('tab');
     if (section) {
       setActiveSection(section);
     }
@@ -976,6 +976,7 @@ export default function AccountPage() {
 
   return (
     <DashboardPageWrapper
+      userRole={role}
       header={
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>

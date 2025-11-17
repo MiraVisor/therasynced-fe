@@ -71,6 +71,10 @@ export interface ServiceCategory {
   name: string;
   description?: string;
   icon?: string;
+  jobTitle?: {
+    id: string;
+    name: string;
+  };
 }
 
 // First Aid Certificate Info
@@ -380,7 +384,8 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
-  availableServices?: Service[]; // NEW: Services available for this slot
+  availableServices?: Service[]; // Legacy: Services available for this slot
+  availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
   booking?: {
     id: string;
     status: string;
@@ -393,6 +398,8 @@ export interface Slot {
       email: string;
       profilePicture?: string | null;
     };
+    discountAmount?: number;
+    discountPercentage?: number;
     services: any[];
     createdAt: string;
     updatedAt: string;
@@ -424,7 +431,7 @@ export interface CreateSlotDto {
     startTime: string;
     endTime: string;
   }>;
-  serviceIds?: string[]; // NEW: Optional array of service IDs
+  serviceCategoryIds?: string[]; // Array of service category IDs
   notes?: string;
 }
 
@@ -439,7 +446,7 @@ export interface CreateServiceDto {
 
 export interface CreateBookingDto {
   slotId: string;
-  serviceIds?: string[];
+  serviceCategoryIds?: string[];
   clientAddress?: string;
   notes?: string;
 }
@@ -454,7 +461,7 @@ export interface CreateSlotsDto {
     startTime: string;
     endTime: string;
   }>;
-  serviceIds?: string[]; // NEW: Optional array of service IDs
+  serviceCategoryIds?: string[]; // Array of service category IDs
   notes?: string;
 }
 
@@ -516,7 +523,7 @@ export interface BackendApiResponse<T = any> {
 // Booking DTOs to match backend
 export interface CreateBookingDto {
   slotId: string;
-  serviceIds?: string[];
+  serviceCategoryIds?: string[];
   clientAddress?: string;
   notes?: string;
 }
@@ -580,13 +587,22 @@ export interface Booking {
       type: string;
     };
   };
-  services: Array<{
+  services?: Array<{
     id: string;
     name: string;
     description: string;
     additionalPrice: number;
     duration: number;
-  }>;
+  }>; // Legacy: Services for backward compatibility
+  serviceCategories?: Array<{
+    id: string;
+    jobTitleId: string;
+    name: string;
+    description?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>; // Service categories booked for this appointment
   client: {
     id: string;
     name: string;

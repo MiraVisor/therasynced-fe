@@ -34,8 +34,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { rescheduleBooking } from '@/redux/api/exploreApi';
 import { getStampDetail } from '@/redux/api/loyaltyApi';
-import { getFreelancerServices } from '@/redux/api/overviewApi';
-import { getSlot } from '@/redux/api/slotApi';
 import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -44,7 +42,7 @@ import { StampDiscountBadge } from './StampDiscountBadge';
 
 // Form validation schemas
 const serviceSchema = z.object({
-  serviceIds: z.array(z.string()).optional(),
+  serviceCategoryIds: z.array(z.string()).optional(),
   // sessionDuration: z.enum(['30', '45', '60', '90']),
 });
 
@@ -91,7 +89,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   // Form states
   const serviceForm = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
-    defaultValues: { serviceIds: [] },
+    defaultValues: { serviceCategoryIds: [] },
   });
 
   const detailsForm = useForm<DetailsFormData>({
@@ -109,40 +107,49 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           freelancerId: freelancerId,
         }) as any,
       );
-
-      // Fetch freelancer services
-      const fetchServices = async () => {
-        try {
-          const servicesResponse = await getFreelancerServices(freelancerId);
-          if (servicesResponse.success && servicesResponse.data) {
-            setFreelancerServices(servicesResponse.data);
-          }
-        } catch (error) {
-          setFreelancerServices([]);
-        }
-      };
-
-      fetchServices();
     }
   }, [dispatch, freelancerId]);
 
-  // Fetch slot details with available services when a slot is selected
+  // Extract service categories from slots when they're loaded
+  useEffect(() => {
+    if (slots && slots.length > 0) {
+      // Collect all unique service categories from all slots
+      const allCategories = new Map<string, any>();
+      slots.forEach((slot: any) => {
+        if (slot.availableServiceCategories && Array.isArray(slot.availableServiceCategories)) {
+          slot.availableServiceCategories.forEach((category: any) => {
+            if (!allCategories.has(category.id)) {
+              allCategories.set(category.id, category);
+            }
+          });
+        }
+      });
+      setFreelancerServices(Array.from(allCategories.values()));
+    }
+  }, [slots]);
+
+  // Get slot details from already-fetched slots when a slot is selected
   const fetchSlotDetails = useCallback(
-    async (slotId: string) => {
-      try {
-        const response = await getSlot(slotId);
-        if (response.success && response.data.availableServices) {
-          setAvailableServices(response.data.availableServices);
+    (slotId: string) => {
+      // Find the slot in the already-fetched slots
+      const slot = slots?.find((s: any) => s.id === slotId);
+      if (slot) {
+        // Use service categories from the slot
+        if (slot.availableServiceCategories && slot.availableServiceCategories.length > 0) {
+          setAvailableServices(slot.availableServiceCategories);
+        } else if (slot.availableServices && slot.availableServices.length > 0) {
+          // Fallback to legacy availableServices
+          setAvailableServices(slot.availableServices);
         } else {
-          // Fallback to freelancer services if slot doesn't have specific services
+          // Fallback to all freelancer service categories
           setAvailableServices(freelancerServices);
         }
-      } catch (error) {
-        // Fallback to freelancer services
+      } else {
+        // If slot not found, use all freelancer service categories
         setAvailableServices(freelancerServices);
       }
     },
-    [freelancerServices],
+    [slots, freelancerServices],
   );
 
   // Update available services when slot is selected
@@ -152,7 +159,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     } else {
       // Reset service selection when no slot is selected
       setAvailableServices([]);
-      serviceForm.setValue('serviceIds', []);
+      serviceForm.setValue('serviceCategoryIds', []);
     }
   }, [selectedTime, fetchSlotDetails, serviceForm]);
 
@@ -210,6 +217,34 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
   // Extract freelancer info from props or API data
   const firstSlot = slots && slots.length > 0 ? slots[0] : null;
+
+  // Calculate slot statistics from fetched slots
+  const slotStats = useMemo(() => {
+    if (!slots || slots.length === 0) {
+      return {
+        availableSlots: 0,
+        totalSlots: 0,
+        nextAvailableSlot: null,
+      };
+    }
+
+    const availableSlots = slots.filter(
+      (slot: any) => slot.status === 'AVAILABLE' && new Date(slot.startTime) > new Date(),
+    );
+    const nextAvailable =
+      availableSlots.length > 0
+        ? availableSlots.sort(
+            (a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+          )[0]
+        : null;
+
+    return {
+      availableSlots: availableSlots.length,
+      totalSlots: slots.length,
+      nextAvailableSlot: nextAvailable,
+    };
+  }, [slots]);
+
   const therapist = useMemo(() => {
     // Use freelancerData prop if available (from route params)
     if (freelancerData) {
@@ -227,12 +262,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         sessionTypes: freelancerData.sessionTypes || [],
         pricing: freelancerData.pricing,
         description: freelancerData.description || '',
-        languages: freelancerData.languages || [],
-        education: freelancerData.education || [],
-        certifications: freelancerData.certifications || [],
-        availableSlots: freelancerData.availableSlots,
-        totalSlots: freelancerData.totalSlots,
-        nextAvailableSlot: freelancerData.nextAvailableSlot,
+        availableSlots: slotStats.availableSlots,
+        totalSlots: slotStats.totalSlots,
+        nextAvailableSlot: slotStats.nextAvailableSlot,
         cardInfo: freelancerData.cardInfo,
         isFavorite: freelancerData.isFavorite,
       };
@@ -259,16 +291,13 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       sessionTypes: firstSlot.freelancer?.sessionTypes || [],
       pricing: firstSlot.freelancer?.pricing,
       description: firstSlot.freelancer?.description,
-      languages: firstSlot.freelancer?.languages || [],
-      education: firstSlot.freelancer?.education || [],
-      certifications: firstSlot.freelancer?.certifications || [],
-      availableSlots: firstSlot.freelancer?.slotSummary?.availableSlots,
-      totalSlots: firstSlot.freelancer?.slotSummary?.totalSlots,
-      nextAvailableSlot: firstSlot.freelancer?.slotSummary?.nextAvailable,
+      availableSlots: slotStats.availableSlots,
+      totalSlots: slotStats.totalSlots,
+      nextAvailableSlot: slotStats.nextAvailableSlot,
       cardInfo: firstSlot.freelancer?.cardInfo,
       isFavorite: firstSlot.freelancer?.isFavorite,
     };
-  }, [freelancerData, firstSlot, freelancerServices]);
+  }, [freelancerData, firstSlot, freelancerServices, slotStats]);
 
   // Fetch stamp detail when therapist is available
   useEffect(() => {
@@ -371,7 +400,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
       const bookingData = {
         slotId: selectedTime,
-        serviceIds: serviceData.serviceIds || [],
+        serviceCategoryIds: serviceData.serviceCategoryIds || [],
         notes: detailsData.notes || '',
         clientAddress: detailsData.clientAddress || '',
       };
@@ -684,17 +713,20 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                           <input
                             type="checkbox"
                             className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                            checked={serviceForm.watch('serviceIds')?.includes(service.id) || false}
+                            checked={
+                              serviceForm.watch('serviceCategoryIds')?.includes(service.id) || false
+                            }
                             onChange={(e) => {
-                              const currentServiceIds = serviceForm.watch('serviceIds') || [];
+                              const currentServiceIds =
+                                serviceForm.watch('serviceCategoryIds') || [];
                               if (e.target.checked) {
-                                serviceForm.setValue('serviceIds', [
+                                serviceForm.setValue('serviceCategoryIds', [
                                   ...currentServiceIds,
                                   service.id,
                                 ]);
                               } else {
                                 serviceForm.setValue(
-                                  'serviceIds',
+                                  'serviceCategoryIds',
                                   currentServiceIds.filter((id) => id !== service.id),
                                 );
                               }
@@ -768,7 +800,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
               </div>
 
               {/* Address for Home Sessions */}
-              {serviceForm.watch('serviceIds')?.some((id) => {
+              {serviceForm.watch('serviceCategoryIds')?.some((id) => {
                 const service = availableServices?.find((s: any) => s.id === id);
                 return service?.locationTypes?.includes('HOME');
               }) && (
@@ -886,9 +918,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                         <h4 className="font-semibold text-gray-900 dark:text-white">Services</h4>
                       </div>
                       <div className="pl-7">
-                        {(serviceForm?.watch('serviceIds')?.length ?? 0) > 0 ? (
+                        {(serviceForm?.watch('serviceCategoryIds')?.length ?? 0) > 0 ? (
                           <div className="space-y-1">
-                            {serviceForm.watch('serviceIds')?.map((id: string) => {
+                            {serviceForm.watch('serviceCategoryIds')?.map((id: string) => {
                               const service = therapist?.services?.find((s: any) => s.id === id);
                               return (
                                 <p key={id} className="text-gray-900 dark:text-white font-medium">
@@ -1216,7 +1248,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     )}
 
                     {/* Services */}
-                    {(serviceForm?.watch('serviceIds')?.length ?? 0) > 0 && (
+                    {(serviceForm?.watch('serviceCategoryIds')?.length ?? 0) > 0 && (
                       <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
                         <div className="flex items-center gap-3">
                           <FileText className="w-5 h-5 text-gray-400" />
@@ -1226,7 +1258,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                             </div>
                             <div className="text-sm text-gray-500">
                               {serviceForm
-                                .watch('serviceIds')
+                                .watch('serviceCategoryIds')
                                 ?.map((id: string) => {
                                   const service = therapist?.services?.find(
                                     (s: any) => s.id === id,

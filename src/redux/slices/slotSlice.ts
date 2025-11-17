@@ -6,6 +6,7 @@ import * as slotApi from '../api/slotApi';
 
 interface SlotState {
   slots: Slot[];
+  slotStats: any | null;
   pagination: {
     page: number;
     limit: number;
@@ -19,17 +20,24 @@ interface SlotState {
   isUpdating: boolean;
   isDeleting: boolean;
   isReserving: boolean;
+  isLoadingStats: boolean;
+  backgroundRefreshingStats: boolean;
+  initialLoadingStats: boolean;
   error: string | null;
 }
 
 const initialState: SlotState = {
   slots: [],
+  slotStats: null,
   pagination: null,
   isLoading: false,
   isCreating: false,
   isUpdating: false,
   isDeleting: false,
   isReserving: false,
+  isLoadingStats: false,
+  backgroundRefreshingStats: false,
+  initialLoadingStats: false,
   error: null,
 };
 
@@ -118,6 +126,18 @@ export const fetchMySlots = createAsyncThunk(
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch my slots');
+    }
+  },
+);
+
+export const fetchMySlotsStats = createAsyncThunk(
+  'slot/fetchMySlotsStats',
+  async (options: { silent?: boolean } = {}, { rejectWithValue }) => {
+    try {
+      const response = await slotApi.getMySlotsStats();
+      return { data: response.data, silent: options.silent };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch slot stats');
     }
   },
 );
@@ -217,7 +237,8 @@ const slotSlice = createSlice({
           basePrice: slot.basePrice,
           status: slot.status,
           notes: slot.notes,
-          availableServices: slot.availableServices || [], // NEW: Include available services
+          availableServices: slot.availableServices || [], // Legacy
+          availableServiceCategories: slot.availableServiceCategories || [], // Include available service categories
           booking: slot.booking || null,
           createdAt: slot.createdAt,
           updatedAt: slot.updatedAt,
@@ -322,7 +343,8 @@ const slotSlice = createSlice({
           basePrice: slot.basePrice,
           status: slot.status,
           notes: slot.notes,
-          availableServices: slot.availableServices || [],
+          availableServices: slot.availableServices || [], // Legacy
+          availableServiceCategories: slot.availableServiceCategories || [],
           booking: slot.booking || null,
           createdAt: slot.createdAt,
           updatedAt: slot.updatedAt,
@@ -335,6 +357,32 @@ const slotSlice = createSlice({
       })
       .addCase(fetchMySlots.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch my slots stats
+      .addCase(fetchMySlotsStats.pending, (state, action) => {
+        const silent = action.meta.arg?.silent;
+        if (silent && state.slotStats) {
+          state.backgroundRefreshingStats = true;
+        } else {
+          state.isLoadingStats = true;
+          if (!state.slotStats) {
+            state.initialLoadingStats = true;
+          }
+        }
+        state.error = null;
+      })
+      .addCase(fetchMySlotsStats.fulfilled, (state, action) => {
+        state.isLoadingStats = false;
+        state.backgroundRefreshingStats = false;
+        state.initialLoadingStats = false;
+        state.slotStats = action.payload.data;
+        state.error = null;
+      })
+      .addCase(fetchMySlotsStats.rejected, (state, action) => {
+        state.isLoadingStats = false;
+        state.backgroundRefreshingStats = false;
+        state.initialLoadingStats = false;
         state.error = action.payload as string;
       });
   },

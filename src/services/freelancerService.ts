@@ -13,6 +13,49 @@ export interface FreelancerStatsDto {
   };
 }
 
+export interface FreelancerAnalyticsResponse {
+  completedSessions: number;
+  sessionsChange: number;
+  totalHours: number;
+  completionRate: number;
+  averageRating: number | null;
+  ratedSessions: number;
+  activeClients: number;
+  newClients: number;
+  returningClients: number;
+  topClients: Array<{
+    id: string;
+    name: string;
+    sessions: number;
+    totalHours: number;
+    averageRating?: number;
+  }>;
+  serviceAnalytics: Array<{
+    id: string;
+    name: string;
+    bookings: number;
+    revenue: number;
+    averagePrice: number;
+    percentage: number;
+  }>;
+  serviceCategoryAnalytics: Array<{
+    categoryName: string;
+    bookings: number;
+    revenue: number;
+    percentage: number;
+  }>;
+  revenueAnalytics: {
+    totalRevenue: number;
+    revenueChange: number;
+    averageSessionPrice: number;
+    timeSeries?: Array<{
+      date: string;
+      revenue: number;
+      sessions: number;
+    }>;
+  };
+}
+
 // API Functions
 export const freelancerService = {
   // Get all freelancers (future slots only)
@@ -43,6 +86,12 @@ export const freelancerService = {
   getRecentFavoriteFreelancer: async () => {
     const response = await api.get(ENDPOINTS.freelancer.recentFavorite);
     return response.data;
+  },
+
+  // Get freelancer analytics
+  getAnalytics: async (): Promise<FreelancerAnalyticsResponse> => {
+    const response = await api.get(ENDPOINTS.freelancer.analytics);
+    return response.data.data;
   },
 };
 

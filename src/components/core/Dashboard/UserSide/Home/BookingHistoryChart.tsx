@@ -29,13 +29,19 @@ interface SummaryStats {
 const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [stats, setStats] = useState<SummaryStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookingHistory = async () => {
+      const hasData = data.length > 0 || stats !== null;
       try {
-        setLoading(true);
+        if (!hasData) {
+          setInitialLoading(true);
+        } else {
+          setLoading(true);
+        }
         const response = await getPatientBookingHistory({
           page: 1,
           limit: 100,
@@ -126,17 +132,29 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
           });
         }
       } catch (err: any) {
-        toast.error(`Failed to load booking history: ${err.message || 'Unknown error'}`);
-        setError(err.message || 'Failed to load booking history');
+        const errorMessage = err.message || 'Failed to load booking history';
+        setError(errorMessage);
+        // Only show error toast on initial load
+        if (!hasData) {
+          toast.error(`Failed to load booking history: ${errorMessage}`);
+        }
+        // Don't clear data on error if we have existing data
+        if (!hasData) {
+          setData([]);
+          setStats(null);
+        }
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     };
 
     fetchBookingHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading) {
+  const isLoading = initialLoading || (loading && data.length === 0 && !stats);
+  if (isLoading) {
     return (
       <Card
         className={`${className} border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl`}

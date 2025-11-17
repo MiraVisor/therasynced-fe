@@ -23,7 +23,8 @@ import { PlanType, SubscriptionPlan } from '@/types/types';
 
 const SubscriptionsPage = () => {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editPrice, setEditPrice] = useState<number>(0);
@@ -32,18 +33,33 @@ const SubscriptionsPage = () => {
   // Fetch plans
   useEffect(() => {
     const fetchPlans = async () => {
+      const hasData = plans.length > 0;
       try {
-        setLoading(true);
+        if (!hasData) {
+          setInitialLoading(true);
+        } else {
+          setLoading(true);
+        }
         const plansData = await adminSubscriptionService.getPlans();
         setPlans(plansData);
       } catch (error: any) {
-        toast.error(error.response?.data?.message || 'Failed to fetch subscription plans');
+        const errorMessage = error.response?.data?.message || 'Failed to fetch subscription plans';
+        // Only show error toast on initial load
+        if (!hasData) {
+          toast.error(errorMessage);
+        }
+        // Don't clear data on error if we have existing data
+        if (!hasData) {
+          setPlans([]);
+        }
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     };
 
     fetchPlans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle price update
@@ -100,7 +116,7 @@ const SubscriptionsPage = () => {
       }
     >
       <div className="space-y-8">
-        {loading ? (
+        {initialLoading || (loading && plans.length === 0) ? (
           <div className="grid gap-6 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <div

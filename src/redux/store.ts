@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 
+import analyticsSlice from './slices/analyticsSlice';
 import appointmentSlice from './slices/appointmentSlice';
 import authSlice from './slices/authSlice';
 import bookingSlice from './slices/bookingSlice';
@@ -21,6 +22,7 @@ import verificationSlice from './slices/verificationSlice';
 export const store = configureStore({
   reducer: {
     auth: authSlice,
+    analytics: analyticsSlice,
     appointment: appointmentSlice,
     calendar: calendarSlice,
     chat: chatSlice,

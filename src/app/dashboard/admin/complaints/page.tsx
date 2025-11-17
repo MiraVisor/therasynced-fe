@@ -85,13 +85,19 @@ const ComplaintsPage = () => {
     resolved: 0,
     dismissed: 0,
   });
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
 
   // Fetch stats separately
   useEffect(() => {
     const fetchStats = async () => {
+      const hasStats = stats.total > 0 || stats.pending > 0 || stats.resolved > 0;
       try {
-        setStatsLoading(true);
+        if (!hasStats) {
+          setInitialStatsLoading(true);
+        } else {
+          setStatsLoading(true);
+        }
         const response = await adminComplaintService.getStatistics();
 
         if (response.success) {
@@ -108,10 +114,12 @@ const ComplaintsPage = () => {
         console.error('Failed to fetch stats:', error);
       } finally {
         setStatsLoading(false);
+        setInitialStatsLoading(false);
       }
     };
 
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Show error as toast when it occurs
@@ -288,7 +296,9 @@ const ComplaintsPage = () => {
             icon={card.icon}
             iconColor={card.iconColor}
             iconBg={card.iconBg}
-            loading={statsLoading}
+            loading={
+              initialStatsLoading || (statsLoading && stats.total === 0 && stats.pending === 0)
+            }
           />
         </div>
       ))}

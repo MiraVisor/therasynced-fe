@@ -92,12 +92,16 @@ export const useFreelancers = (params?: UseFreelancersParams) => {
 
 export const useFavoriteFreelancers = () => {
   const [favoriteFreelancers, setFavoriteFreelancers] = useState<Freelancer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isFirstLoad = useRef(true);
 
   const fetchFavoriteFreelancers = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!isFirstLoad.current) {
+        setLoading(true);
+      }
       setError(null);
 
       const response = await freelancerService.getFavoriteFreelancers();
@@ -110,6 +114,8 @@ export const useFavoriteFreelancers = () => {
       setError(err.message || 'An error occurred while fetching favorite freelancers');
     } finally {
       setLoading(false);
+      setInitialLoading(false);
+      isFirstLoad.current = false;
     }
   }, []);
 
@@ -120,6 +126,7 @@ export const useFavoriteFreelancers = () => {
   return {
     favoriteFreelancers,
     loading,
+    initialLoading,
     error,
     refetch: fetchFavoriteFreelancers,
   };
@@ -127,12 +134,16 @@ export const useFavoriteFreelancers = () => {
 
 export const useRecentFavoriteFreelancer = () => {
   const [recentFavorite, setRecentFavorite] = useState<Freelancer | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isFirstLoad = useRef(true);
 
   const fetchRecentFavorite = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!isFirstLoad.current) {
+        setLoading(true);
+      }
       setError(null);
 
       const response = await freelancerService.getRecentFavoriteFreelancer();
@@ -146,6 +157,8 @@ export const useRecentFavoriteFreelancer = () => {
       setError(err.message || 'An error occurred while fetching recent favorite');
     } finally {
       setLoading(false);
+      setInitialLoading(false);
+      isFirstLoad.current = false;
     }
   }, []);
 
@@ -156,6 +169,7 @@ export const useRecentFavoriteFreelancer = () => {
   return {
     recentFavorite,
     loading,
+    initialLoading,
     error,
     refetch: fetchRecentFavorite,
   };
