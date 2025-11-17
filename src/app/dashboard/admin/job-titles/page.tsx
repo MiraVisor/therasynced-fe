@@ -23,7 +23,7 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { StatusSwitch } from '@/components/ui/status-switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
   createJobTitle,
@@ -186,18 +186,15 @@ const JobTitlesPage = () => {
     {
       accessorKey: 'isActive',
       header: 'Status',
-      cell: ({ row }) => (
-        <Badge
-          variant="outline"
-          className={`font-inter text-xs px-3 py-1 ${
-            row.original.isActive
-              ? 'bg-success/10 text-success border-success/20'
-              : 'bg-error/10 text-error border-error/20'
-          }`}
-        >
-          {row.original.isActive ? 'Active' : 'Inactive'}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const jobTitle = row.original;
+        return (
+          <StatusSwitch
+            checked={jobTitle.isActive}
+            onCheckedChange={() => handleToggleActive(jobTitle)}
+          />
+        );
+      },
     },
     {
       id: 'actions',
@@ -205,20 +202,14 @@ const JobTitlesPage = () => {
       cell: ({ row }) => {
         const jobTitle = row.original;
         return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={jobTitle.isActive}
-              onCheckedChange={() => handleToggleActive(jobTitle)}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEdit(jobTitle)}
-              className="h-8 w-8 p-0 hover:bg-info/10"
-            >
-              <Edit className="h-4 w-4 text-info" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(jobTitle)}
+            className="h-8 w-8 p-0 hover:bg-info/10"
+          >
+            <Edit className="h-4 w-4 text-info" />
+          </Button>
         );
       },
     },

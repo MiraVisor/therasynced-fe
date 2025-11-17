@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -29,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { StatusSwitch } from '@/components/ui/status-switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
   createServiceCategory,
@@ -209,18 +208,16 @@ const ServiceCategoriesPage = () => {
     {
       accessorKey: 'isActive',
       header: 'Status',
-      cell: ({ row }) => (
-        <Badge
-          variant="outline"
-          className={`font-inter text-xs px-3 py-1 ${
-            row.original.isActive
-              ? 'bg-success/10 text-success border-success/20'
-              : 'bg-error/10 text-error border-error/20'
-          }`}
-        >
-          {row.original.isActive ? 'Active' : 'Inactive'}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const category = row.original;
+        return (
+          <StatusSwitch
+            checked={category.isActive}
+            onCheckedChange={() => handleToggleActive(category)}
+            disabled={isSubmitting}
+          />
+        );
+      },
     },
     {
       id: 'actions',
@@ -228,21 +225,14 @@ const ServiceCategoriesPage = () => {
       cell: ({ row }) => {
         const category = row.original;
         return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEdit(category)}
-              className="h-8 w-8 p-0 hover:bg-info/10"
-            >
-              <Edit className="h-4 w-4 text-info" />
-            </Button>
-            <Switch
-              checked={category.isActive}
-              onCheckedChange={() => handleToggleActive(category)}
-              disabled={isSubmitting}
-            />
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(category)}
+            className="h-8 w-8 p-0 hover:bg-info/10"
+          >
+            <Edit className="h-4 w-4 text-info" />
+          </Button>
         );
       },
     },
