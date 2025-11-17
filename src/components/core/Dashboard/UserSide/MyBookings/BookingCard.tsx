@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Clock, MapPin, MessageCircle, RotateCcw, X } from 'lucide-react';
+import { Calendar, MapPin, MessageCircle, Package, RotateCcw, X } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -59,21 +59,32 @@ export const BookingCard: React.FC<BookingCardProps> = ({
       variant="default"
       interactive
       onClick={onClick}
-      className="transition-all duration-300"
+      className="transition-all duration-300 hover:shadow-md"
     >
       <div className="p-5">
-        {/* Header with status badge */}
+        {/* Header with status badge and price */}
         <div className="flex items-center justify-between mb-4">
-          <Badge className={cn('text-xs font-poppins font-medium', getStatusColor(booking.status))}>
+          <Badge
+            className={cn(
+              'text-xs font-poppins font-medium px-2.5 py-1',
+              getStatusColor(booking.status),
+            )}
+          >
             {getStatusText(booking.status)}
           </Badge>
           <div className="text-right">
-            <div className="flex items-center gap-1 mb-0.5">
-              <span className="text-lg font-poppins font-bold text-primary">
-                €{booking.totalAmount}
+            <div className="flex items-center gap-1">
+              <span className="text-xl font-poppins font-bold text-primary">
+                €{booking.totalAmount.toFixed(2)}
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Date and Time */}
+        <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span className="font-inter">{format(bookingDate, 'EEEE, MMMM d, yyyy')}</span>
         </div>
 
         {/* Main content */}
@@ -91,8 +102,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-3">
-              <Avatar className="h-11 w-11 border-2 border-primary/20 flex-shrink-0 shadow-sm">
-                <AvatarFallback className="text-sm font-poppins font-semibold bg-primary/10 text-primary">
+              <Avatar className="h-12 w-12 border-2 border-primary/20 flex-shrink-0 shadow-sm">
+                <AvatarFallback className="text-base font-poppins font-semibold bg-primary/10 text-primary">
                   {freelancer.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -100,10 +111,41 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 <div className="font-poppins font-semibold text-base text-charcoal mb-1">
                   {freelancer.name}
                 </div>
-                <div className="flex items-center gap-2 text-xs font-inter text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs font-inter text-muted-foreground mb-2">
                   <MapPin className="h-3.5 w-3.5" />
                   <span className="truncate">{getLocationText()}</span>
                 </div>
+                {/* Service Categories */}
+                {((booking.serviceCategories && booking.serviceCategories.length > 0) ||
+                  (booking.services && booking.services.length > 0)) && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {(booking.serviceCategories && booking.serviceCategories.length > 0
+                      ? booking.serviceCategories
+                      : booking.services || []
+                    )
+                      .slice(0, 2)
+                      .map((item: any, index: number) => (
+                        <Badge
+                          key={item.id || index}
+                          variant="outline"
+                          className="text-xs px-2 py-0.5 flex items-center gap-1"
+                        >
+                          <Package className="h-3 w-3" />
+                          {item.name}
+                        </Badge>
+                      ))}
+                    {((booking.serviceCategories && booking.serviceCategories.length > 2) ||
+                      (booking.services && booking.services.length > 2)) && (
+                      <Badge variant="outline" className="text-xs px-2 py-0.5">
+                        +
+                        {((booking.serviceCategories && booking.serviceCategories.length) ||
+                          booking.services?.length ||
+                          0) - 2}{' '}
+                        more
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

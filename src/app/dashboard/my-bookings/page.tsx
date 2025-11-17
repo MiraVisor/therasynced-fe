@@ -11,7 +11,7 @@ import {
   User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -31,7 +31,6 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -65,70 +64,30 @@ const BookingStatsComponent = ({
     {
       title: 'Total Bookings',
       value: displayStats.totalBookings.toString(),
-      trend: {
-        value: displayStats.totalBookings > 0 ? 15.2 : 0,
-        isUp: true,
-        label: 'all time',
-      },
       icon: CalendarIcon,
       iconBg: 'bg-info/10',
       iconColor: 'text-info',
-      sparklineData: [8, 10, 12, 11, 13, 15, displayStats.totalBookings],
     },
     {
       title: 'Upcoming',
       value: displayStats.upcomingBookings.toString(),
-      trend: {
-        value: displayStats.upcomingBookings > 0 ? 25.0 : 0,
-        isUp: true,
-        label: 'this month',
-      },
       icon: Clock,
       iconBg: 'bg-success/10',
       iconColor: 'text-success',
-      sparklineData: [2, 3, 4, 3, 5, displayStats.upcomingBookings, displayStats.upcomingBookings],
     },
     {
       title: 'Completed',
       value: displayStats.completedBookings.toString(),
-      trend: {
-        value: displayStats.completedBookings > 0 ? 30.5 : 0,
-        isUp: true,
-        label: 'this month',
-      },
       icon: User,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
-      sparklineData: [
-        5,
-        6,
-        8,
-        7,
-        9,
-        displayStats.completedBookings,
-        displayStats.completedBookings,
-      ],
     },
     {
       title: 'Cancelled',
       value: displayStats.cancelledBookings.toString(),
-      trend: {
-        value: displayStats.cancelledBookings > 0 ? -10.2 : 0,
-        isUp: false,
-        label: 'this month',
-      },
       icon: CalendarIcon,
       iconBg: 'bg-error/10',
       iconColor: 'text-error',
-      sparklineData: [
-        3,
-        2,
-        2,
-        1,
-        1,
-        displayStats.cancelledBookings,
-        displayStats.cancelledBookings,
-      ],
     },
   ];
 
@@ -141,11 +100,9 @@ const BookingStatsComponent = ({
             key={index}
             title={stat.title}
             value={stat.value}
-            trend={stat.trend}
             icon={Icon}
             iconColor={stat.iconColor}
             iconBg={stat.iconBg}
-            sparklineData={stat.sparklineData}
             interactive
             loading={isLoading}
             bookingSkeleton={true}
@@ -160,52 +117,6 @@ const BookingStatsComponent = ({
 };
 
 // Filters Component
-const BookingFilters = ({
-  searchTerm,
-  setSearchTerm,
-  statusFilter,
-  setStatusFilter,
-}: {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  statusFilter: string;
-  setStatusFilter: (status: string) => void;
-}) => {
-  return (
-    <Card className="border border-gray-200 dark:border-gray-700 mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <Filter className="w-5 h-5" />
-          Filters
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search by expert name or service..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="upcoming">Upcoming</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 export default function MyBookingsPage() {
   const router = useRouter();
@@ -250,7 +161,6 @@ export default function MyBookingsPage() {
   useEffect(() => {
     const fetchBookingsForWeek = async () => {
       const weekStart = startOfWeek(currentWeekStart, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
       const hasBookings = bookings.length > 0;
       // Fetch with pagination and sorting
@@ -293,7 +203,7 @@ export default function MyBookingsPage() {
     setShowDetailsModal(true);
   };
 
-  const handleReview = (booking: Booking) => {
+  const handleReview = () => {
     // Navigate to review page or open review modal
     // For now, we'll show a toast - you can implement a review modal/route later
     toast.info('Review functionality coming soon');

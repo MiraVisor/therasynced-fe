@@ -112,7 +112,7 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
       <CardContent>
         <Carousel
           opts={{
-            align: 'start',
+            align: 'center',
             loop: false,
           }}
           className="w-full"
@@ -138,11 +138,12 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
               };
 
               return (
-                <CarouselItem
-                  key={freelancer.id}
-                  className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-                >
-                  <FavoriteFreelancerCard freelancer={expert} onBook={handleBook} />
+                <CarouselItem key={freelancer.id} className="basis-full pl-2 md:pl-4">
+                  <div className="flex justify-center">
+                    <div className="w-full max-w-sm">
+                      <FavoriteFreelancerCard freelancer={expert} onBook={handleBook} />
+                    </div>
+                  </div>
                 </CarouselItem>
               );
             })}
