@@ -362,7 +362,13 @@ export default function MyBookingsPage() {
     .filter((booking: Booking) => {
       const matchesSearch =
         booking.slot.freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (booking.services.length > 0 &&
+        (booking.serviceCategories &&
+          booking.serviceCategories.length > 0 &&
+          booking.serviceCategories.some((cat) =>
+            cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
+          )) ||
+        (booking.services &&
+          booking.services.length > 0 &&
           booking.services[0].name.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus = (() => {

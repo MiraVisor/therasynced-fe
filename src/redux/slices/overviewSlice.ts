@@ -160,7 +160,7 @@ export const bookAppointment = createAsyncThunk(
   async (
     data: {
       slotId: string;
-      serviceIds?: string[];
+      serviceCategoryIds?: string[];
       clientId?: string;
       clientAddress?: string;
       notes?: string;

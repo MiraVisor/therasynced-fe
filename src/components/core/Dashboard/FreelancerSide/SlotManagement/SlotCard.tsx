@@ -1,9 +1,9 @@
 import { format } from 'date-fns';
-import { AlertCircle, Building, CheckCircle2, Clock, DollarSign, Home } from 'lucide-react';
+import { Building, CheckCircle2, Clock, Home } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { LocationType, Slot } from '@/types/types';
 
@@ -17,20 +17,36 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
   const slotDate = new Date(slot.startTime);
   const client = slot.booking?.client;
 
-  const getStatusVariant = () => {
+  const getStatusConfig = () => {
     switch (slot.status) {
       case 'BOOKED':
-        return 'success';
+        return {
+          bgColor: 'bg-success/10',
+          textColor: 'text-success',
+          borderColor: 'border-success/30',
+        };
       case 'AVAILABLE':
-        return 'primary';
+        return {
+          bgColor: 'bg-info/10',
+          textColor: 'text-info',
+          borderColor: 'border-info/30',
+        };
       case 'RESERVED':
-        return 'warning';
-      case 'CANCELLED':
-        return 'default';
+        return {
+          bgColor: 'bg-warning/10',
+          textColor: 'text-warning',
+          borderColor: 'border-warning/30',
+        };
       default:
-        return 'default';
+        return {
+          bgColor: 'bg-gray-100',
+          textColor: 'text-muted-foreground',
+          borderColor: 'border-gray-200',
+        };
     }
   };
+
+  const statusConfig = getStatusConfig();
 
   const locationIcon =
     slot.locationType === LocationType.HOME ? (
@@ -40,45 +56,37 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
     );
 
   return (
-    <EnhancedCard
-      variant={getStatusVariant()}
-      interactive
+    <Card
       onClick={onClick}
       className={cn(
-        'transition-all duration-300 hover:shadow-lg',
+        'cursor-pointer border-2',
+        statusConfig.borderColor,
         isSelected && 'ring-2 ring-primary ring-offset-2',
       )}
     >
-      <div className="p-5">
-        {/* Header with status badge */}
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4">
+        {/* Header with Status and Price */}
+        <div className="flex items-center justify-between mb-3">
           <Badge
             variant={slot.status === 'BOOKED' ? 'default' : 'outline'}
             className={cn(
-              'text-xs font-poppins font-medium',
+              'text-xs font-poppins font-medium px-2.5 py-1',
               slot.status === 'BOOKED' && 'bg-success/10 text-success border-success/20',
               slot.status === 'AVAILABLE' && 'bg-info/10 text-info border-info/20',
               slot.status === 'RESERVED' && 'bg-warning/10 text-warning border-warning/20',
             )}
           >
-            <span className="mr-1.5">
-              {slot.status === 'BOOKED' && '✓'}
-              {slot.status === 'AVAILABLE' && '○'}
-              {slot.status === 'RESERVED' && '◐'}
-            </span>
+            {slot.status === 'BOOKED' && <CheckCircle2 className="h-3 w-3 mr-1" />}
             {slot.status}
           </Badge>
-          <div className="text-right">
-            <div className="flex items-center gap-1 mb-0.5">
-              <DollarSign className="h-3 w-3 text-muted-foreground" />
-              <span className="text-lg font-poppins font-bold text-primary">€{slot.basePrice}</span>
-            </div>
+          <div className="flex items-center gap-1">
+            <span className="text-lg font-poppins font-bold text-primary">€{slot.basePrice}</span>
           </div>
         </div>
 
-        {/* Main content */}
+        {/* Main Content */}
         <div className="flex items-start gap-3">
-          {/* Time badge */}
+          {/* Time */}
           <div className="flex flex-col items-center justify-center bg-primary/5 rounded-lg p-3 min-w-[60px] border border-primary/10">
             <div className="text-xl font-poppins font-bold text-primary">
               {format(slotDate, 'h:mm')}
@@ -92,7 +100,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
           <div className="flex-1 min-w-0">
             {slot.status === 'BOOKED' && client ? (
               <div className="flex items-start gap-3">
-                <Avatar className="h-11 w-11 border-2 border-primary/20 flex-shrink-0 shadow-sm">
+                <Avatar className="h-10 w-10 border border-primary/20 flex-shrink-0">
                   <AvatarFallback className="text-sm font-poppins font-semibold bg-primary/10 text-primary">
                     {client.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -101,7 +109,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
                   <div className="font-poppins font-semibold text-base text-charcoal mb-1">
                     {client.name}
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-inter text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs font-inter text-muted-foreground">
                     {locationIcon}
                     <span className="truncate">
                       {slot.locationType === LocationType.HOME ? 'Home Visit' : 'Clinic'}
@@ -112,7 +120,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
             ) : (
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="p-1.5 rounded-md bg-info/10">
+                  <div className="p-1.5 rounded bg-info/10">
                     <Clock className="h-3.5 w-3.5 text-info" />
                   </div>
                   <span className="font-poppins font-semibold text-sm text-charcoal">
@@ -128,13 +136,13 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
           </div>
         </div>
 
-        {/* Slot notes preview */}
+        {/* Notes Preview */}
         {slot.notes && (
           <div className="mt-3 pt-3 border-t border-gray-200">
             <p className="text-xs font-inter text-muted-foreground line-clamp-2">{slot.notes}</p>
           </div>
         )}
       </div>
-    </EnhancedCard>
+    </Card>
   );
 };

@@ -237,7 +237,8 @@ const slotSlice = createSlice({
           basePrice: slot.basePrice,
           status: slot.status,
           notes: slot.notes,
-          availableServices: slot.availableServices || [], // NEW: Include available services
+          availableServices: slot.availableServices || [], // Legacy
+          availableServiceCategories: slot.availableServiceCategories || [], // Include available service categories
           booking: slot.booking || null,
           createdAt: slot.createdAt,
           updatedAt: slot.updatedAt,
@@ -342,7 +343,8 @@ const slotSlice = createSlice({
           basePrice: slot.basePrice,
           status: slot.status,
           notes: slot.notes,
-          availableServices: slot.availableServices || [],
+          availableServices: slot.availableServices || [], // Legacy
+          availableServiceCategories: slot.availableServiceCategories || [],
           booking: slot.booking || null,
           createdAt: slot.createdAt,
           updatedAt: slot.updatedAt,

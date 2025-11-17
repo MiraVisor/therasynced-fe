@@ -90,7 +90,8 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
     try {
       const rescheduleData = {
         slotId: selectedTimeSlot,
-        serviceIds: currentBooking.services?.map((s: any) => s.id) || [],
+        serviceCategoryIds:
+          currentBooking.services?.map((s: any) => s.id || s.serviceCategoryId) || [],
         notes: currentBooking.notes || '',
       };
 
