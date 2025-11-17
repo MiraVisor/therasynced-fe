@@ -7,9 +7,9 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import page from '@/app/page';
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { StatusSwitch } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,7 +23,6 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StatusSwitch } from '@/components/ui/status-switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
   createJobTitle,
@@ -55,6 +54,7 @@ const JobTitlesPage = () => {
   const [selectedJobTitle, setSelectedJobTitle] = useState<JobTitleResponse | null>(null);
   const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
 
   // Debounce search query
   useEffect(() => {
@@ -121,6 +121,7 @@ const JobTitlesPage = () => {
 
   const handleToggleActive = async (jobTitle: JobTitleResponse) => {
     try {
+      setIsStatusUpdating(true);
       await dispatch(
         updateJobTitle({
           id: jobTitle.id,
@@ -130,6 +131,8 @@ const JobTitlesPage = () => {
       toast.success(`Job title ${!jobTitle.isActive ? 'activated' : 'deactivated'} successfully`);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update job title status');
+    } finally {
+      setIsStatusUpdating(false);
     }
   };
 
@@ -192,6 +195,7 @@ const JobTitlesPage = () => {
           <StatusSwitch
             checked={jobTitle.isActive}
             onCheckedChange={() => handleToggleActive(jobTitle)}
+            disabled={isStatusUpdating}
           />
         );
       },
@@ -322,7 +326,7 @@ const JobTitlesPage = () => {
           showSearch={true}
           showSorting={false}
           initialLoading={initialLoading}
-          loading={loading}
+          loading={loading || isStatusUpdating}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}

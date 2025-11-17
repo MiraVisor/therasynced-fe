@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { StatusSwitch } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { StatusSwitch } from '@/components/ui/status-switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
   createServiceCategory,
@@ -71,6 +71,7 @@ const ServiceCategoriesPage = () => {
     jobTitleId: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
 
   // Fetch job titles and stats
   useEffect(() => {
@@ -164,7 +165,7 @@ const ServiceCategoriesPage = () => {
 
   const handleToggleActive = async (category: ServiceCategoryResponse) => {
     try {
-      setIsSubmitting(true);
+      setIsStatusUpdating(true);
       const updateData: UpdateServiceCategoryDto = {
         isActive: !category.isActive,
       };
@@ -176,7 +177,7 @@ const ServiceCategoriesPage = () => {
       const err = error as string;
       toast.error(err || 'Failed to update service category status');
     } finally {
-      setIsSubmitting(false);
+      setIsStatusUpdating(false);
     }
   };
 
@@ -310,7 +311,7 @@ const ServiceCategoriesPage = () => {
           showSearch={true}
           showSorting={false}
           initialLoading={categoriesInitialLoading}
-          loading={categoriesLoading}
+          loading={categoriesLoading || isStatusUpdating}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}
