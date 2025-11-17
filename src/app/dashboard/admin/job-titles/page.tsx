@@ -2,13 +2,12 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle, FileText, XCircle } from 'lucide-react';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { Label } from 'recharts';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
-import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
-import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useJobTitles } from '@/hooks/useJobTitles';
 import adminJobTitleService, {
@@ -41,11 +40,10 @@ const JobTitlesPage = () => {
   // State for dialogs and forms
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedJobTitle, setSelectedJobTitle] = useState<JobTitleResponse | null>(null);
   const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Stats state
   const [stats, setStats] = useState({
     totalJobTitles: 0,
@@ -143,21 +141,23 @@ const JobTitlesPage = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedJobTitle) return;
+  const handleToggleActive = async (jobTitle: JobTitleResponse) => {
+    setTogglingIds((prev) => new Set(prev).add(jobTitle.id));
     try {
-      setIsSubmitting(true);
-      const response = await adminJobTitleService.delete(selectedJobTitle.id);
+      const response = await adminJobTitleService.update(jobTitle.id, {
+        isActive: !jobTitle.isActive,
+      });
       if (response.success) {
-        toast.success('Job title deleted successfully');
-        setIsDeleteDialogOpen(false);
-        setSelectedJobTitle(null);
-        // Data will be refetched automatically by the hook
+        toast.success(`Job title ${!jobTitle.isActive ? 'activated' : 'deactivated'} successfully`);
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to delete job title');
+      toast.error(error.message || 'Failed to update job title status');
     } finally {
-      setIsSubmitting(false);
+      setTogglingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(jobTitle.id);
+        return newSet;
+      });
     }
   };
 
@@ -168,11 +168,6 @@ const JobTitlesPage = () => {
       description: jobTitle.description || '',
     });
     setIsEditDialogOpen(true);
-  };
-
-  const handleDeleteClick = (jobTitle: JobTitleResponse) => {
-    setSelectedJobTitle(jobTitle);
-    setIsDeleteDialogOpen(true);
   };
 
   const columns: ColumnDef<JobTitleResponse>[] = [
@@ -220,7 +215,16 @@ const JobTitlesPage = () => {
       accessorKey: 'isActive',
       header: 'Status',
       cell: ({ row }) => (
-        <StatusBadge status={row.original.isActive ? 'ACTIVE' : 'INACTIVE'} size="sm" />
+        <Badge
+          variant="outline"
+          className={`font-inter text-xs px-3 py-1 ${
+            row.original.isActive
+              ? 'bg-success/10 text-success border-success/20'
+              : 'bg-error/10 text-error border-error/20'
+          }`}
+        >
+          {row.original.isActive ? 'Active' : 'Inactive'}
+        </Badge>
       ),
     },
     {
@@ -230,6 +234,11 @@ const JobTitlesPage = () => {
         const jobTitle = row.original;
         return (
           <div className="flex items-center gap-2">
+            <Switch
+              checked={jobTitle.isActive}
+              onCheckedChange={() => handleToggleActive(jobTitle)}
+              disabled={togglingIds.has(jobTitle.id)}
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -237,14 +246,6 @@ const JobTitlesPage = () => {
               className="h-8 w-8 p-0 hover:bg-info/10"
             >
               <Edit className="h-4 w-4 text-info" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeleteClick(jobTitle)}
-              className="h-8 w-8 p-0 text-error hover:bg-error/10"
-            >
-              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         );
@@ -475,19 +476,6 @@ const JobTitlesPage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Delete Confirmation */}
-        <ConfirmationDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-          onConfirm={handleDelete}
-          title="Delete Job Title"
-          description={`Are you sure you want to delete "${selectedJobTitle?.name}"? This action cannot be undone.`}
-          confirmLabel="Delete"
-          cancelLabel="Cancel"
-          variant="destructive"
-          isLoading={isSubmitting}
-        />
       </div>
     </DashboardPageWrapper>
   );
