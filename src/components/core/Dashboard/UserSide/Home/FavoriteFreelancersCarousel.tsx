@@ -132,8 +132,9 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           opts={{
             align: 'center',
             loop: false,
+            startIndex: favoriteFreelancers.length > 2 ? 1 : 0,
           }}
-          className="w-full"
+          className="w-full min-w-0"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
             {favoriteFreelancers.map((freelancer: Freelancer) => {
@@ -156,9 +157,12 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
               };
 
               return (
-                <CarouselItem key={freelancer.id} className="basis-full pl-2 md:pl-4">
+                <CarouselItem
+                  key={freelancer.id}
+                  className="basis-4/5 md:basis-3/5 lg:basis-2/5 min-w-[330px] pl-2 md:pl-4 transition-all duration-300 data-[active=true]:opacity-100 data-[active=true]:blur-0 data-[active=true]:scale-100 data-[active=false]:opacity-60 data-[active=false]:blur-[1px] data-[active=false]:scale-95"
+                >
                   <div className="flex justify-center">
-                    <div className="w-full max-w-sm">
+                    <div className="w-full max-w-sm transform transition-all duration-300 hover:scale-105 relative">
                       <FavoriteFreelancerCard freelancer={expert} onBook={handleBook} />
                     </div>
                   </div>
@@ -166,8 +170,8 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
               );
             })}
           </CarouselContent>
-          <CarouselPrevious className="-left-4 hidden md:flex" />
-          <CarouselNext className="-right-4 hidden md:flex" />
+          <CarouselPrevious className="-left-4 hidden md:flex opacity-70 hover:opacity-100 transition-opacity z-20" />
+          <CarouselNext className="-right-4 hidden md:flex opacity-70 hover:opacity-100 transition-opacity z-20" />
         </Carousel>
       </CardContent>
     </Card>
