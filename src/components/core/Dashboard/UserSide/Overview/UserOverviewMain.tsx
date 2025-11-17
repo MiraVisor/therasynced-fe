@@ -1,13 +1,14 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { getPatientStamps } from '@/redux/api/loyaltyApi';
 import { fetchFreelancers, loadMoreFreelancers } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -162,8 +163,12 @@ const UserOverview = () => {
   const { experts, loading, initialLoading, error, pagination, loadingMore } = useSelector(
     (state: RootState) => state.overview,
   );
+  const { stampSummaries, isLoading: stampsLoading } = useSelector(
+    (state: RootState) => state.stamps,
+  );
   const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const stampsFetchedRef = useRef(false);
 
   // Infinite scroll setup
   const hasNextPage = pagination?.hasNext || false;
@@ -188,6 +193,26 @@ const UserOverview = () => {
     const hasExperts = experts.length > 0;
     dispatch(fetchFreelancers({ page: 1, limit: 6, silent: hasExperts }) as any);
   }, [dispatch, experts.length]);
+
+  // Fetch stamps once when page loads (only if not already loaded or loading)
+  useEffect(() => {
+    // Only fetch if:
+    // 1. Not currently loading
+    // 2. Not already fetched (using ref to prevent re-fetches on re-renders)
+    // 3. No stamps data exists
+    if (
+      !stampsLoading &&
+      !stampsFetchedRef.current &&
+      (!stampSummaries || stampSummaries.length === 0)
+    ) {
+      stampsFetchedRef.current = true;
+      dispatch(getPatientStamps() as any);
+    }
+    // Reset ref if stamps are loaded (for future refreshes if needed)
+    if (stampSummaries && stampSummaries.length > 0) {
+      stampsFetchedRef.current = true;
+    }
+  }, [dispatch, stampsLoading, stampSummaries?.length]);
 
   useEffect(() => {
     if (!experts || !Array.isArray(experts)) {

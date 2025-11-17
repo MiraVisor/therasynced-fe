@@ -390,6 +390,7 @@ export interface Slot {
     id: string;
     status: string;
     totalAmount: number;
+    subtotalAmount?: number;
     clientAddress?: string | null;
     notes?: string | null;
     client: {
@@ -400,7 +401,16 @@ export interface Slot {
     };
     discountAmount?: number;
     discountPercentage?: number;
-    services: any[];
+    services?: any[]; // Legacy: Services for backward compatibility
+    serviceCategories?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      jobTitle?: {
+        id: string;
+        name: string;
+      };
+    }>; // Service categories booked for this appointment
     createdAt: string;
     updatedAt: string;
   } | null;

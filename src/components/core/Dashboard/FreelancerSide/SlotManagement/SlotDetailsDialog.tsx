@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { CheckCircle2, Edit2, Mail, Package, Save, X, XCircle } from 'lucide-react';
+import { Award, CheckCircle2, Edit2, Gift, Mail, Package, Save, X, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -55,12 +55,19 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   }, [isOpen, slot]);
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+    switch (status.toUpperCase()) {
       case 'BOOKED':
         return (
           <Badge className="bg-green-100 text-green-700 border-green-200 px-3 py-1">
             <CheckCircle2 className="h-3 w-3 mr-1.5" />
             Booked
+          </Badge>
+        );
+      case 'COMPLETED':
+        return (
+          <Badge className="bg-purple-100 text-purple-700 border-purple-200 px-3 py-1">
+            <CheckCircle2 className="h-3 w-3 mr-1.5" />
+            Completed
           </Badge>
         );
       case 'AVAILABLE':
@@ -106,20 +113,52 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
     }
 
     setIsCompleting(true);
+    let successShown = false;
+
     try {
       const response = await bookingService.completeBooking({
         bookingId: slot.booking.id,
       });
 
-      if (response.success) {
-        toast.success('Appointment marked as completed! The client will receive a stamp.');
-        onComplete?.();
-        onClose();
+      // Check if response is successful
+      if (response && response.success) {
+        successShown = true;
+        toast.success(
+          'Appointment marked as completed! ✅ The client will receive a stamp for this booking.',
+        );
+
+        // Call callbacks safely - don't let errors in callbacks trigger error toast
+        try {
+          onComplete?.();
+        } catch (callbackError) {
+          console.error('Error in onComplete callback:', callbackError);
+          // Don't show error toast for callback errors
+        }
+
+        // Close dialog after a small delay to ensure success toast is visible
+        setTimeout(() => {
+          try {
+            onClose();
+          } catch (closeError) {
+            console.error('Error closing dialog:', closeError);
+          }
+        }, 100);
       } else {
-        toast.error(response.message || 'Failed to complete booking');
+        // Response exists but success is false
+        const errorMessage = response?.message || 'Failed to complete booking';
+        toast.error(errorMessage);
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to complete booking');
+      // Only show error toast if we haven't already shown success
+      if (!successShown) {
+        const errorMessage =
+          error?.response?.data?.message || error?.message || 'Failed to complete booking';
+        console.error('Error completing booking:', error);
+        toast.error(errorMessage);
+      } else {
+        // Log the error but don't show toast since we already showed success
+        console.error('Error after successful completion:', error);
+      }
     } finally {
       setIsCompleting(false);
     }
@@ -149,7 +188,11 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
               <DialogTitle className="font-poppins text-2xl font-bold text-charcoal">
                 Slot Details
               </DialogTitle>
-              {getStatusBadge(slot.status)}
+              {getStatusBadge(
+                slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED'
+                  ? 'COMPLETED'
+                  : slot.status,
+              )}
             </div>
             <Button
               variant="ghost"
@@ -334,31 +377,73 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
             </div>
           )}
 
-          {/* Booking Services (if booked) */}
-          {slot.booking && slot.booking.services && slot.booking.services.length > 0 && (
-            <div className="mt-6 pt-6 border-t">
-              <Label className="font-inter text-xs text-muted-foreground mb-2 block">
-                Booked Services
-              </Label>
-              <div className="space-y-2">
-                {slot.booking.services.map((service: any, index: number) => (
-                  <div
-                    key={service.id || index}
-                    className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200"
-                  >
-                    <span className="font-poppins font-semibold text-charcoal">
-                      {service.name || 'Service'}
-                    </span>
-                    {service.price && (
-                      <span className="font-inter text-sm text-muted-foreground">
-                        €{service.price}
-                      </span>
-                    )}
-                  </div>
-                ))}
+          {/* Booking Service Categories (if booked) */}
+          {slot.booking &&
+            (slot.booking as any).serviceCategories &&
+            (slot.booking as any).serviceCategories.length > 0 && (
+              <div className="mt-6 pt-6 border-t">
+                <Label className="font-inter text-xs text-muted-foreground mb-2 block">
+                  Booked Service Categories
+                </Label>
+                <div className="space-y-2">
+                  {(slot.booking as any).serviceCategories.map((category: any, index: number) => (
+                    <div
+                      key={category.id || index}
+                      className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200"
+                    >
+                      <div className="p-2 rounded-lg bg-green-100 mt-0.5">
+                        <Package className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-poppins font-semibold text-charcoal mb-1">
+                          {category.name || 'Service Category'}
+                        </p>
+                        {category.description && (
+                          <p className="font-inter text-sm text-muted-foreground mb-1">
+                            {category.description}
+                          </p>
+                        )}
+                        {category.jobTitle && (
+                          <Badge variant="outline" className="text-xs mt-1">
+                            {category.jobTitle.name}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+          {/* Stamp Discount Information */}
+          {slot.booking &&
+            slot.booking.discountAmount !== undefined &&
+            slot.booking.discountAmount > 0 && (
+              <div className="mt-6 pt-6 border-t">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-green-100 mt-0.5">
+                      <Gift className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Award className="h-4 w-4 text-green-600" />
+                        <Label className="font-inter text-sm font-semibold text-green-900">
+                          Stamp Reward Applied
+                        </Label>
+                      </div>
+                      <p className="font-inter text-sm text-green-800 mb-1">
+                        Client received a {slot.booking.discountPercentage}% discount for earning
+                        enough stamps
+                      </p>
+                      <p className="font-poppins text-lg font-bold text-green-900">
+                        Discount: -€{slot.booking.discountAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
           {/* Client Notes (if booked) */}
           {slot.booking?.notes && (
@@ -436,17 +521,20 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
           </div>
         </div>
 
-        <DialogFooter className="flex sm:flex-row flex-col gap-2">
-          {slot.status === 'BOOKED' && slot.booking && slot.booking.status !== 'COMPLETED' && (
-            <Button
-              onClick={handleCompleteBooking}
-              disabled={isCompleting}
-              className="bg-success hover:bg-success/90 text-white"
-            >
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              {isCompleting ? 'Completing...' : 'Mark as Completed'}
-            </Button>
-          )}
+        <DialogFooter className="flex sm:flex-row flex-col gap-2 px-6 pb-6">
+          {slot.status === 'BOOKED' &&
+            slot.booking &&
+            slot.booking.status !== 'COMPLETED' &&
+            slot.booking.status !== 'completed' && (
+              <Button
+                onClick={handleCompleteBooking}
+                disabled={isCompleting}
+                className="bg-success hover:bg-success/90 text-white flex-1 sm:flex-initial"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                {isCompleting ? 'Completing...' : 'Mark as Completed'}
+              </Button>
+            )}
           {slot.status === 'AVAILABLE' && onDelete && (
             <Button variant="destructive" onClick={() => onDelete(slot.id)}>
               <XCircle className="h-4 w-4 mr-2" />

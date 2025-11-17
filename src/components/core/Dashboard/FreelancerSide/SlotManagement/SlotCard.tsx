@@ -17,13 +17,25 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
   const slotDate = new Date(slot.startTime);
   const client = slot.booking?.client;
 
+  // Determine the effective status (use booking status if completed, otherwise slot status)
+  const effectiveStatus =
+    slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED'
+      ? 'COMPLETED'
+      : slot.status;
+
   const getStatusConfig = () => {
-    switch (slot.status) {
+    switch (effectiveStatus) {
       case 'BOOKED':
         return {
           bgColor: 'bg-success/10',
           textColor: 'text-success',
           borderColor: 'border-success/30',
+        };
+      case 'COMPLETED':
+        return {
+          bgColor: 'bg-purple-100',
+          textColor: 'text-purple-700',
+          borderColor: 'border-purple-300',
         };
       case 'AVAILABLE':
         return {
@@ -68,16 +80,23 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
         {/* Header with Status and Price */}
         <div className="flex items-center justify-between mb-3">
           <Badge
-            variant={slot.status === 'BOOKED' ? 'default' : 'outline'}
+            variant={
+              effectiveStatus === 'BOOKED' || effectiveStatus === 'COMPLETED'
+                ? 'default'
+                : 'outline'
+            }
             className={cn(
               'text-xs font-poppins font-medium px-2.5 py-1',
-              slot.status === 'BOOKED' && 'bg-success/10 text-success border-success/20',
-              slot.status === 'AVAILABLE' && 'bg-info/10 text-info border-info/20',
-              slot.status === 'RESERVED' && 'bg-warning/10 text-warning border-warning/20',
+              effectiveStatus === 'BOOKED' && 'bg-success/10 text-success border-success/20',
+              effectiveStatus === 'COMPLETED' && 'bg-purple-100 text-purple-700 border-purple-200',
+              effectiveStatus === 'AVAILABLE' && 'bg-info/10 text-info border-info/20',
+              effectiveStatus === 'RESERVED' && 'bg-warning/10 text-warning border-warning/20',
             )}
           >
-            {slot.status === 'BOOKED' && <CheckCircle2 className="h-3 w-3 mr-1" />}
-            {slot.status}
+            {(effectiveStatus === 'BOOKED' || effectiveStatus === 'COMPLETED') && (
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+            )}
+            {effectiveStatus}
           </Badge>
           <div className="text-right">
             <div className="flex items-center gap-1 mb-0.5">
@@ -108,7 +127,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            {slot.status === 'BOOKED' && client ? (
+            {(effectiveStatus === 'BOOKED' || effectiveStatus === 'COMPLETED') && client ? (
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border border-primary/20 flex-shrink-0">
                   <AvatarFallback className="text-sm font-poppins font-semibold bg-primary/10 text-primary">

@@ -15,13 +15,25 @@ interface StampDiscountBadgeProps {
 
 export function StampDiscountBadge({ therapistId }: StampDiscountBadgeProps) {
   const dispatch = useDispatch();
-  const { stampDetail, isLoadingDetail } = useSelector((state: RootState) => state.stamps);
+  const { stampDetail, isLoadingDetail, selectedTherapistId } = useSelector(
+    (state: RootState) => state.stamps,
+  );
 
   useEffect(() => {
-    if (therapistId) {
+    // Only fetch if:
+    // 1. therapistId is provided
+    // 2. Not currently loading
+    // 3. Don't have detail for this therapist already loaded
+    if (
+      therapistId &&
+      !isLoadingDetail &&
+      (!stampDetail ||
+        stampDetail.therapist.id !== therapistId ||
+        selectedTherapistId !== therapistId)
+    ) {
       dispatch(getStampDetail(therapistId) as any);
     }
-  }, [dispatch, therapistId]);
+  }, [dispatch, therapistId, isLoadingDetail, stampDetail?.therapist.id, selectedTherapistId]);
 
   // Show discount if reward is ready and not already reserved
   if (

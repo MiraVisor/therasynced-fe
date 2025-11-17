@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -18,18 +18,36 @@ interface StampSummaryProps {
 export function StampSummary({ onViewDetail }: StampSummaryProps) {
   const dispatch = useDispatch();
   const { stampSummaries, isLoading, error } = useSelector((state: RootState) => state.stamps);
+  const stampsFetchedRef = useRef(false);
 
   useEffect(() => {
-    const fetchStamps = async () => {
-      try {
-        await dispatch(getPatientStamps() as any);
-      } catch (error) {
-        toast.error('Failed to load stamps. Please try again.');
-      }
-    };
+    // Only fetch if:
+    // 1. Not currently loading
+    // 2. Not already fetched (using ref to prevent re-fetches on re-renders)
+    // 3. No stamps data exists
+    if (
+      !isLoading &&
+      !stampsFetchedRef.current &&
+      (!stampSummaries || stampSummaries.length === 0)
+    ) {
+      stampsFetchedRef.current = true;
+      const fetchStamps = async () => {
+        try {
+          await dispatch(getPatientStamps() as any);
+        } catch (error) {
+          toast.error('Failed to load stamps. Please try again.');
+          // Reset ref on error so it can retry
+          stampsFetchedRef.current = false;
+        }
+      };
 
-    fetchStamps();
-  }, [dispatch]);
+      fetchStamps();
+    }
+    // Mark as fetched if stamps are loaded
+    if (stampSummaries && stampSummaries.length > 0) {
+      stampsFetchedRef.current = true;
+    }
+  }, [dispatch, isLoading, stampSummaries?.length]);
 
   if (isLoading) {
     return (

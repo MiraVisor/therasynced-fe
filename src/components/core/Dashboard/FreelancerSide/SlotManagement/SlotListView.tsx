@@ -17,11 +17,13 @@ interface SlotListViewProps {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status) {
+  switch (status.toUpperCase()) {
     case 'AVAILABLE':
       return 'bg-green-100 text-green-700 border-green-200';
     case 'BOOKED':
       return 'bg-red-100 text-red-700 border-red-200';
+    case 'COMPLETED':
+      return 'bg-purple-100 text-purple-700 border-purple-200';
     case 'RESERVED':
       return 'bg-yellow-100 text-yellow-700 border-yellow-200';
     case 'CANCELLED':
@@ -105,7 +107,18 @@ export const SlotListView = ({ slots, onSelectSlot, view, selectedDate }: SlotLi
                         </h3>
                       </div>
                       <div className="mt-1">
-                        <Badge className={getStatusColor(slot.status)}>{slot.status}</Badge>
+                        <Badge
+                          className={getStatusColor(
+                            slot.booking?.status &&
+                              slot.booking.status.toUpperCase() === 'COMPLETED'
+                              ? 'COMPLETED'
+                              : slot.status,
+                          )}
+                        >
+                          {slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED'
+                            ? 'COMPLETED'
+                            : slot.status}
+                        </Badge>
                       </div>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />

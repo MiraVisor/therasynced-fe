@@ -71,7 +71,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     ? params?.freelancerId[0]
     : params?.freelancerId;
   const { slots } = useSelector((state: RootState) => state.overview);
-  const { stampDetail } = useSelector((state: RootState) => state.stamps);
+  const { stampDetail, isLoadingDetail, selectedTherapistId } = useSelector(
+    (state: RootState) => state.stamps,
+  );
 
   // Use WebSocket hook for real-time slot updates
   const { isConnected, reservedSlots, reserveSlot, releaseSlot, isSlotReserved } =
@@ -301,10 +303,20 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
   // Fetch stamp detail when therapist is available
   useEffect(() => {
-    if (therapist?.id) {
+    // Only fetch if:
+    // 1. therapist ID is available
+    // 2. Not currently loading
+    // 3. Don't have detail for this therapist already loaded
+    if (
+      therapist?.id &&
+      !isLoadingDetail &&
+      (!stampDetail ||
+        stampDetail.therapist.id !== therapist.id ||
+        selectedTherapistId !== therapist.id)
+    ) {
       dispatch(getStampDetail(therapist.id) as any);
     }
-  }, [dispatch, therapist?.id]);
+  }, [dispatch, therapist?.id, isLoadingDetail, stampDetail?.therapist.id, selectedTherapistId]);
 
   // Helper function to format date safely without timezone issues
   const formatDateForAPI = (date: Date): string => {

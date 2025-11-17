@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import { getPatientStamps } from '@/redux/api/loyaltyApi';
 import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -58,13 +57,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   // Get stamp information for this therapist
   const { stampSummaries } = useSelector((state: RootState) => state.stamps);
   const therapistStamp = stampSummaries?.find((stamp) => stamp.therapist.id === id);
-
-  // Fetch stamps if not already loaded
-  useEffect(() => {
-    if (!stampSummaries || stampSummaries.length === 0) {
-      dispatch(getPatientStamps() as any);
-    }
-  }, [dispatch, stampSummaries]);
 
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
