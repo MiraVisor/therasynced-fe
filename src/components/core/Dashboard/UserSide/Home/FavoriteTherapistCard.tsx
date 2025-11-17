@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
@@ -54,10 +55,13 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
     onBook(freelancer);
   };
 
+  // Check if slots are available
+  const hasAvailableSlots = freelancer.slots && freelancer.slots.length > 0;
+
   const freelancerName = freelancer.name;
 
   return (
-    <>
+    <TooltipProvider>
       <Card className="group transition-all duration-300 border-gray-200/80 dark:border-gray-700 overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm hover:border-primary/30 shadow-soft hover:shadow-soft-lg min-h-[320px] flex flex-col">
         <CardHeader className="pb-3 px-4">
           <div className="flex items-start justify-between">
@@ -178,12 +182,36 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
               >
                 View Profile
               </Button>
-              <Button
-                className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
-                onClick={handleBookNow}
-              >
-                Book Now
-              </Button>
+              {hasAvailableSlots ? (
+                <Button
+                  className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
+                  onClick={handleBookNow}
+                >
+                  Book Now
+                </Button>
+              ) : (
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="flex-1">
+                        <Button
+                          className="w-full !bg-primary/50 !text-white shadow-sm h-9 text-sm opacity-60 cursor-not-allowed hover:!bg-primary/50"
+                          disabled
+                          style={{ cursor: 'disabled' }}
+                        >
+                          Book Now
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-400">⚠️</span>
+                        <span>No slots available</span>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
         </CardContent>
@@ -238,20 +266,45 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
 
             {/* Action Buttons */}
             <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                className="w-full bg-primary hover:bg-primary/90 h-12 text-base font-semibold shadow-md"
-                onClick={() => {
-                  setShowProfileDialog(false);
-                  handleBookNow();
-                }}
-              >
-                Book a Session
-              </Button>
+              {hasAvailableSlots ? (
+                <Button
+                  className="w-full bg-primary hover:bg-primary/90 h-12 text-base font-semibold shadow-md"
+                  onClick={() => {
+                    setShowProfileDialog(false);
+                    handleBookNow();
+                  }}
+                >
+                  Book a Session
+                </Button>
+              ) : (
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-block w-full">
+                        <Button
+                          className="w-full !bg-primary/50 !text-white h-12 text-base font-semibold shadow-md opacity-60 cursor-not-allowed hover:!bg-primary/50"
+                          disabled
+                          tabIndex={1}
+                          autoFocus
+                        >
+                          Book a Session
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-400">⚠️</span>
+                        <span>No slots available</span>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 };
 

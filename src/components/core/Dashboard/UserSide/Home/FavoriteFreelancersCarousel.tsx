@@ -25,7 +25,6 @@ interface FavoriteFreelancersCarouselProps {
 const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselProps) => {
   const router = useRouter();
   const { favoriteFreelancers, loading, initialLoading, error } = useFavoriteFreelancers();
-
   const handleBook = useCallback(
     (freelancer: Expert) => {
       // Pass freelancer data through route state to avoid loading issues
@@ -154,6 +153,7 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
                 verificationStatus: freelancer.verificationStatus || 'unverified',
                 availableSlots: freelancer.slotSummary?.totalSlots || 0,
                 slotSummary: freelancer.slotSummary,
+                slots: freelancer.slots || [],
               };
 
               return (
