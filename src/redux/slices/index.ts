@@ -5,7 +5,7 @@ export { default as calendarSlice } from './calendarSlice';
 export { default as exploreSlice } from './exploreSlice';
 export { default as jobTitlesSlice } from './jobTitlesSlice';
 export { default as overviewSlice } from './overviewSlice';
-export { default as serviceSlice } from './serviceSlice';
+export { default as serviceCategoriesSlice } from './serviceCategoriesSlice';
 export { default as slotReducer } from './slotSlice';
 
 // Named exports for async thunks and actions
@@ -32,7 +32,13 @@ export {
   updateServiceAsync,
 } from './serviceSlice';
 
-export { createSlot, deleteSlot, fetchSlots, updateSlot } from './slotSlice';
+export {
+  createServiceCategory,
+  deleteServiceCategory,
+  fetchServiceCategories,
+  fetchServiceCategoriesStats,
+  updateServiceCategory,
+} from './serviceCategoriesSlice';
 
 export {
   bookAppointment,

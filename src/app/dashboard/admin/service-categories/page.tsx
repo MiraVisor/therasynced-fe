@@ -2,14 +2,14 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle, FileText, XCircle } from 'lucide-react';
-import { Edit, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Edit, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
-import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
-import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -29,16 +29,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useServiceCategories } from '@/hooks/useServiceCategories';
+import {
+  createServiceCategory,
+  fetchServiceCategories,
+  fetchServiceCategoriesStats,
+  updateServiceCategory,
+} from '@/redux/slices';
+import { clearError } from '@/redux/slices/serviceCategoriesSlice';
+import type { AppDispatch, RootState } from '@/redux/store';
 import adminJobTitleService, { type JobTitleResponse } from '@/services/adminJobTitleService';
-import adminServiceCategoryService, {
-  type CreateServiceCategoryDto,
-  type ServiceCategoryResponse,
-  type UpdateServiceCategoryDto,
+import {
+  CreateServiceCategoryDto,
+  ServiceCategoryResponse,
+  UpdateServiceCategoryDto,
 } from '@/services/adminServiceCategoryService';
 
 const ServiceCategoriesPage = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const {
+    serviceCategories,
+    loading: categoriesLoading,
+    initialLoading: categoriesInitialLoading,
+    error,
+    pagination,
+    stats,
+  } = useSelector((state: RootState) => state.serviceCategories);
+
   const [jobTitles, setJobTitles] = useState<JobTitleResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -46,7 +65,6 @@ const ServiceCategoriesPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategoryResponse | null>(null);
   const [formData, setFormData] = useState<CreateServiceCategoryDto>({
     name: '',
@@ -55,68 +73,40 @@ const ServiceCategoriesPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Stats state
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    inactive: 0,
-  });
-
-  // Memoize the params to prevent infinite re-renders
-  const serviceCategoriesParams = useMemo(
-    () => ({
-      page,
-      limit: pageSize,
-      name: debouncedSearch || undefined,
-    }),
-    [page, pageSize, debouncedSearch],
-  );
-
-  // Use the service categories hook for pagination
-  const {
-    serviceCategories,
-    loading: categoriesLoading,
-    initialLoading: categoriesInitialLoading,
-    error,
-    pagination,
-    refetch,
-  } = useServiceCategories(serviceCategoriesParams);
-
   // Fetch job titles and stats
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [jobTitlesResponse, statsResponse] = await Promise.all([
-          adminJobTitleService.getActive(),
-          adminServiceCategoryService.getStats(),
-        ]);
-
+        const jobTitlesResponse = await adminJobTitleService.getActive();
         if (jobTitlesResponse.success) {
           setJobTitles(jobTitlesResponse.data || []);
         }
-
-        if (statsResponse.success) {
-          const statsData = statsResponse.data;
-          setStats({
-            total: statsData.totalServiceCategories,
-            active: statsData.activeServiceCategories,
-            inactive: statsData.inactiveServiceCategories,
-          });
-        }
+        dispatch(fetchServiceCategoriesStats());
       } catch (error) {
         // Handle error silently or show toast
       }
     };
 
     fetchData();
-  }, []);
+  }, [dispatch]);
+
+  // Fetch service categories when params change
+  useEffect(() => {
+    const params = {
+      page,
+      limit: pageSize,
+      name: debouncedSearch || undefined,
+    };
+    dispatch(fetchServiceCategories(params));
+  }, [dispatch, page, pageSize, debouncedSearch]);
 
   // Show error as toast when it occurs
   useEffect(() => {
     if (error) {
       toast.error(`Failed to load service categories: ${error}`);
+      dispatch(clearError());
     }
-  }, [error]);
+  }, [error, dispatch]);
 
   // Debounce search query
   useEffect(() => {
@@ -139,16 +129,13 @@ const ServiceCategoriesPage = () => {
     }
     try {
       setIsSubmitting(true);
-      const response = await adminServiceCategoryService.create(formData);
-      if (response.success) {
-        toast.success('Service category created successfully');
-        setIsCreateDialogOpen(false);
-        setFormData({ name: '', description: '', jobTitleId: '' });
-        refetch();
-      }
+      await dispatch(createServiceCategory(formData)).unwrap();
+      toast.success('Service category created successfully');
+      setIsCreateDialogOpen(false);
+      setFormData({ name: '', description: '', jobTitleId: '' });
     } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err.message || 'Failed to create service category');
+      const err = error as string;
+      toast.error(err || 'Failed to create service category');
     } finally {
       setIsSubmitting(false);
     }
@@ -163,36 +150,32 @@ const ServiceCategoriesPage = () => {
         description: formData.description,
         jobTitleId: formData.jobTitleId,
       };
-      const response = await adminServiceCategoryService.update(selectedCategory.id, updateData);
-      if (response.success) {
-        toast.success('Service category updated successfully');
-        setIsEditDialogOpen(false);
-        setSelectedCategory(null);
-        setFormData({ name: '', description: '', jobTitleId: '' });
-        refetch();
-      }
+      await dispatch(updateServiceCategory({ id: selectedCategory.id, data: updateData })).unwrap();
+      toast.success('Service category updated successfully');
+      setIsEditDialogOpen(false);
+      setSelectedCategory(null);
+      setFormData({ name: '', description: '', jobTitleId: '' });
     } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err.message || 'Failed to update service category');
+      const err = error as string;
+      toast.error(err || 'Failed to update service category');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedCategory) return;
+  const handleToggleActive = async (category: ServiceCategoryResponse) => {
     try {
       setIsSubmitting(true);
-      const response = await adminServiceCategoryService.delete(selectedCategory.id);
-      if (response.success) {
-        toast.success('Service category deleted successfully');
-        setIsDeleteDialogOpen(false);
-        setSelectedCategory(null);
-        refetch();
-      }
+      const updateData: UpdateServiceCategoryDto = {
+        isActive: !category.isActive,
+      };
+      await dispatch(updateServiceCategory({ id: category.id, data: updateData })).unwrap();
+      toast.success(
+        `Service category ${category.isActive ? 'deactivated' : 'activated'} successfully`,
+      );
     } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err.message || 'Failed to delete service category');
+      const err = error as string;
+      toast.error(err || 'Failed to update service category status');
     } finally {
       setIsSubmitting(false);
     }
@@ -206,11 +189,6 @@ const ServiceCategoriesPage = () => {
       jobTitleId: category.jobTitle.id,
     });
     setIsEditDialogOpen(true);
-  };
-
-  const handleDeleteClick = (category: ServiceCategoryResponse) => {
-    setSelectedCategory(category);
-    setIsDeleteDialogOpen(true);
   };
 
   const columns: ColumnDef<ServiceCategoryResponse>[] = [
@@ -232,7 +210,16 @@ const ServiceCategoriesPage = () => {
       accessorKey: 'isActive',
       header: 'Status',
       cell: ({ row }) => (
-        <StatusBadge status={row.original.isActive ? 'ACTIVE' : 'INACTIVE'} size="sm" />
+        <Badge
+          variant="outline"
+          className={`font-inter text-xs px-3 py-1 ${
+            row.original.isActive
+              ? 'bg-success/10 text-success border-success/20'
+              : 'bg-error/10 text-error border-error/20'
+          }`}
+        >
+          {row.original.isActive ? 'Active' : 'Inactive'}
+        </Badge>
       ),
     },
     {
@@ -250,14 +237,11 @@ const ServiceCategoriesPage = () => {
             >
               <Edit className="h-4 w-4 text-info" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeleteClick(category)}
-              className="h-8 w-8 p-0 text-error hover:bg-error/10"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <Switch
+              checked={category.isActive}
+              onCheckedChange={() => handleToggleActive(category)}
+              disabled={isSubmitting}
+            />
           </div>
         );
       },
@@ -268,21 +252,21 @@ const ServiceCategoriesPage = () => {
   const statCards = [
     {
       title: 'Total Categories',
-      value: stats.total.toString(),
+      value: stats?.totalServiceCategories?.toString() || '0',
       icon: FileText,
       iconColor: 'text-primary',
       iconBg: 'bg-primary/10',
     },
     {
       title: 'Active',
-      value: stats.active.toString(),
+      value: stats?.activeServiceCategories?.toString() || '0',
       icon: CheckCircle,
       iconColor: 'text-success',
       iconBg: 'bg-success/10',
     },
     {
       title: 'Inactive',
-      value: stats.inactive.toString(),
+      value: stats?.inactiveServiceCategories?.toString() || '0',
       icon: XCircle,
       iconColor: 'text-error',
       iconBg: 'bg-error/10',
@@ -502,19 +486,6 @@ const ServiceCategoriesPage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Delete Confirmation */}
-        <ConfirmationDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-          onConfirm={handleDelete}
-          title="Delete Service Category"
-          description={`Are you sure you want to delete "${selectedCategory?.name}"? This action cannot be undone.`}
-          confirmLabel="Delete"
-          cancelLabel="Cancel"
-          variant="destructive"
-          isLoading={isSubmitting}
-        />
       </div>
     </DashboardPageWrapper>
   );

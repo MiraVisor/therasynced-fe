@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { fetchAllFavoriteFreelancers } from '@/redux/slices/exploreSlice';
-import { RootState } from '@/redux/store';
+import type { AppDispatch, RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../../components/core/Dashboard/DashboardPageWrapper';
@@ -119,13 +119,13 @@ const FavoritesSearchBar = ({ onSearch }: { onSearch: (query: string) => void })
 };
 
 const FavoritesPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { favorites, loading, error } = useSelector((state: RootState) => state.explore as any);
   const [filteredFavorites, setFilteredFavorites] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    dispatch(fetchAllFavoriteFreelancers() as any);
+    dispatch(fetchAllFavoriteFreelancers({}));
   }, [dispatch]);
 
   useEffect(() => {
@@ -208,7 +208,7 @@ const FavoritesPage = () => {
             </h3>
             <p className="font-inter text-muted-foreground mb-4">{error}</p>
             <Button
-              onClick={() => dispatch(fetchAllFavoriteFreelancers() as any)}
+              onClick={() => dispatch(fetchAllFavoriteFreelancers({}))}
               className="bg-primary hover:bg-primary/90 text-white"
             >
               Try Again
