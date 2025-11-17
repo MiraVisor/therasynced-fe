@@ -4,9 +4,10 @@ import { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle, FileText, XCircle } from 'lucide-react';
 import { Edit, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { Label } from 'recharts';
 
+import page from '@/app/page';
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
@@ -21,16 +22,27 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useJobTitles } from '@/hooks/useJobTitles';
-import adminJobTitleService, {
-  type CreateJobTitleDto,
-  type JobTitleResponse,
-  type UpdateJobTitleDto,
+import {
+  createJobTitle,
+  fetchJobTitles,
+  fetchJobTitlesStats,
+  updateJobTitle,
+} from '@/redux/slices';
+import type { AppDispatch, RootState } from '@/redux/store';
+import {
+  CreateJobTitleDto,
+  JobTitleResponse,
+  UpdateJobTitleDto,
 } from '@/services/adminJobTitleService';
 
 const JobTitlesPage = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { jobTitles, loading, initialLoading, error, pagination, stats, statsLoading } =
+    useSelector((state: RootState) => state.jobTitles);
+
   // State for pagination and search
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -42,16 +54,7 @@ const JobTitlesPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedJobTitle, setSelectedJobTitle] = useState<JobTitleResponse | null>(null);
   const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
-  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Stats state
-  const [stats, setStats] = useState({
-    totalJobTitles: 0,
-    activeJobTitles: 0,
-    inactiveJobTitles: 0,
-    mostPopularJobTitle: null as { id: string; name: string; freelancerCount: number } | null,
-  });
-  const [statsLoading, setStatsLoading] = useState(true);
 
   // Debounce search query
   useEffect(() => {
@@ -67,50 +70,28 @@ const JobTitlesPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch job titles with pagination and search
-  const { jobTitles, loading, initialLoading, error, pagination } = useJobTitles({
-    page,
-    limit: pageSize,
-    name: debouncedSearch || undefined,
-  });
+  useEffect(() => {
+    dispatch(
+      fetchJobTitles({
+        page,
+        limit: pageSize,
+        name: debouncedSearch || undefined,
+      }),
+    );
+  }, [dispatch, page, pageSize, debouncedSearch]);
 
   // Fetch stats separately
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setStatsLoading(true);
-        const response = await adminJobTitleService.getStatistics();
-
-        if (response.success) {
-          const { totalJobTitles, activeJobTitles, inactiveJobTitles, mostPopularJobTitle } =
-            response.data;
-
-          setStats({
-            totalJobTitles,
-            activeJobTitles,
-            inactiveJobTitles,
-            mostPopularJobTitle,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
+    dispatch(fetchJobTitlesStats());
+  }, [dispatch]);
 
   const handleCreate = async () => {
     try {
       setIsSubmitting(true);
-      const response = await adminJobTitleService.create(formData);
-      if (response.success) {
-        toast.success('Job title created successfully');
-        setIsCreateDialogOpen(false);
-        setFormData({ name: '', description: '' });
-        // Data will be refetched automatically by the hook
-      }
+      await dispatch(createJobTitle(formData)).unwrap();
+      toast.success('Job title created successfully');
+      setIsCreateDialogOpen(false);
+      setFormData({ name: '', description: '' });
     } catch (error: any) {
       toast.error(error.message || 'Failed to create job title');
     } finally {
@@ -126,14 +107,11 @@ const JobTitlesPage = () => {
         name: formData.name,
         description: formData.description,
       };
-      const response = await adminJobTitleService.update(selectedJobTitle.id, updateData);
-      if (response.success) {
-        toast.success('Job title updated successfully');
-        setIsEditDialogOpen(false);
-        setSelectedJobTitle(null);
-        setFormData({ name: '', description: '' });
-        // Data will be refetched automatically by the hook
-      }
+      await dispatch(updateJobTitle({ id: selectedJobTitle.id, data: updateData })).unwrap();
+      toast.success('Job title updated successfully');
+      setIsEditDialogOpen(false);
+      setSelectedJobTitle(null);
+      setFormData({ name: '', description: '' });
     } catch (error: any) {
       toast.error(error.message || 'Failed to update job title');
     } finally {
@@ -142,22 +120,16 @@ const JobTitlesPage = () => {
   };
 
   const handleToggleActive = async (jobTitle: JobTitleResponse) => {
-    setTogglingIds((prev) => new Set(prev).add(jobTitle.id));
     try {
-      const response = await adminJobTitleService.update(jobTitle.id, {
-        isActive: !jobTitle.isActive,
-      });
-      if (response.success) {
-        toast.success(`Job title ${!jobTitle.isActive ? 'activated' : 'deactivated'} successfully`);
-      }
+      await dispatch(
+        updateJobTitle({
+          id: jobTitle.id,
+          data: { isActive: !jobTitle.isActive },
+        }),
+      ).unwrap();
+      toast.success(`Job title ${!jobTitle.isActive ? 'activated' : 'deactivated'} successfully`);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update job title status');
-    } finally {
-      setTogglingIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(jobTitle.id);
-        return newSet;
-      });
     }
   };
 
@@ -237,7 +209,6 @@ const JobTitlesPage = () => {
             <Switch
               checked={jobTitle.isActive}
               onCheckedChange={() => handleToggleActive(jobTitle)}
-              disabled={togglingIds.has(jobTitle.id)}
             />
             <Button
               variant="ghost"
@@ -257,21 +228,21 @@ const JobTitlesPage = () => {
   const statCards = [
     {
       title: 'Total Job Titles',
-      value: stats.totalJobTitles.toString(),
+      value: stats?.totalJobTitles.toString() ?? '0',
       icon: FileText,
       iconColor: 'text-primary',
       iconBg: 'bg-primary/10',
     },
     {
       title: 'Active',
-      value: stats.activeJobTitles.toString(),
+      value: stats?.activeJobTitles.toString() ?? '0',
       icon: CheckCircle,
       iconColor: 'text-success',
       iconBg: 'bg-success/10',
     },
     {
       title: 'Inactive',
-      value: stats.inactiveJobTitles.toString(),
+      value: stats?.inactiveJobTitles.toString() ?? '0',
       icon: XCircle,
       iconColor: 'text-error',
       iconBg: 'bg-error/10',
@@ -279,7 +250,7 @@ const JobTitlesPage = () => {
 
     {
       title: 'Most Popular',
-      value: stats.mostPopularJobTitle?.name ?? 'N/A',
+      value: stats?.mostPopularJobTitle?.name ?? 'N/A',
       icon: FileText,
       iconColor: 'text-primary',
       iconBg: 'bg-primary/10',

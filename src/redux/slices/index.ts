@@ -3,6 +3,7 @@ export { default as authSlice } from './authSlice';
 export { default as bookingSlice } from './bookingSlice';
 export { default as calendarSlice } from './calendarSlice';
 export { default as exploreSlice } from './exploreSlice';
+export { default as jobTitlesSlice } from './jobTitlesSlice';
 export { default as overviewSlice } from './overviewSlice';
 export { default as serviceSlice } from './serviceSlice';
 export { default as slotReducer } from './slotSlice';
@@ -41,3 +42,11 @@ export {
 } from './overviewSlice';
 
 export { logout, setRole } from './authSlice';
+
+export {
+  createJobTitle,
+  deleteJobTitle,
+  fetchJobTitles,
+  fetchJobTitlesStats,
+  updateJobTitle,
+} from './jobTitlesSlice';

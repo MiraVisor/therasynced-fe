@@ -11,6 +11,7 @@ import complaintSlice from './slices/complaintSlice';
 import exploreSlice from './slices/exploreSlice';
 import freelancerDashboardSlice from './slices/freelancerDashboardSlice';
 import imageUploadSlice from './slices/imageUploadSlice';
+import jobTitlesSlice from './slices/jobTitlesSlice';
 import loyaltySlice from './slices/loyaltySlice';
 import overviewSlice from './slices/overviewSlice';
 import serviceSlice from './slices/serviceSlice';
@@ -30,6 +31,7 @@ export const store = configureStore({
     explore: exploreSlice,
     freelancerDashboard: freelancerDashboardSlice,
     imageUpload: imageUploadSlice,
+    jobTitles: jobTitlesSlice,
     loyalty: loyaltySlice,
     overview: overviewSlice,
     booking: bookingSlice,
