@@ -5,8 +5,8 @@ export const getRecentFavoriteFreelancer = async () => {
   return response.data;
 };
 
-export const getAllFavoriteFreelancers = async () => {
-  const response = await api.get('/freelancer/favorite/all');
+export const getAllFavoriteFreelancers = async (params?: { name?: string }) => {
+  const response = await api.get('/freelancer/favorite/all', { params });
   return response.data;
 };
 

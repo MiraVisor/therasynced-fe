@@ -1,11 +1,12 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { fetchAllFavoriteFreelancers } from '@/redux/slices/exploreSlice';
 import type { AppDispatch, RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -94,7 +95,13 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
 };
 
 // Enhanced Search Component
-const FavoritesSearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
+const FavoritesSearchBar = ({
+  onSearch,
+  isSearching,
+}: {
+  onSearch: (query: string) => void;
+  isSearching: boolean;
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchChange = (value: string) => {
@@ -113,6 +120,11 @@ const FavoritesSearchBar = ({ onSearch }: { onSearch: (query: string) => void })
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-10 pr-4 py-3 text-base border-gray-200 focus:border-primary focus:ring-primary"
         />
+        {isSearching && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <LoadingSpinner size="md" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -123,6 +135,34 @@ const FavoritesPage = () => {
   const { favorites, loading, error } = useSelector((state: RootState) => state.explore as any);
   const [filteredFavorites, setFilteredFavorites] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    (query: string) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+
+      setIsSearching(true);
+
+      debounceTimeoutRef.current = setTimeout(() => {
+        setSearchQuery(query);
+        // Trigger new fetch with search query
+        dispatch(fetchAllFavoriteFreelancers({ name: query || undefined }) as any);
+        setIsSearching(false);
+      }, 500);
+    },
+    [dispatch],
+  );
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      debouncedSearch(query);
+    },
+    [debouncedSearch],
+  );
 
   useEffect(() => {
     dispatch(fetchAllFavoriteFreelancers({}));
@@ -136,28 +176,15 @@ const FavoritesPage = () => {
 
     try {
       const mappedFavorites = favorites.map(mapFreelancerToExpert);
-      let filtered = mappedFavorites;
-
-      // Apply search filter
-      if (searchQuery) {
-        filtered = filtered.filter(
-          (favorite) =>
-            favorite.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            favorite.specialty?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            favorite.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-        );
-      }
-
-      setFilteredFavorites(filtered);
+      setFilteredFavorites(mappedFavorites);
+      // Clear searching state when data is loaded
+      setIsSearching(false);
     } catch (error) {
       // Handle mapping errors gracefully
       setFilteredFavorites([]);
+      setIsSearching(false);
     }
-  }, [favorites, searchQuery]);
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
+  }, [favorites]);
 
   return (
     <DashboardPageWrapper
@@ -170,7 +197,7 @@ const FavoritesPage = () => {
             </p>
           </div>
 
-          <FavoritesSearchBar onSearch={handleSearch} />
+          <FavoritesSearchBar onSearch={handleSearch} isSearching={isSearching} />
         </div>
       }
     >
@@ -230,7 +257,15 @@ const FavoritesPage = () => {
             <div className="flex gap-2 justify-center">
               {searchQuery && (
                 <Button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setIsSearching(false);
+                    // Clear any pending debounce
+                    if (debounceTimeoutRef.current) {
+                      clearTimeout(debounceTimeoutRef.current);
+                    }
+                    dispatch(fetchAllFavoriteFreelancers({}) as any);
+                  }}
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
                 >
