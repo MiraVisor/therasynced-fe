@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
-import { JobTitle, ServiceCategory } from '@/types/types';
+import { JobTitleEnum, ServiceCategory } from '@/types/types';
 
 // Get all service categories
 export const getAllServiceCategories = createAsyncThunk(
@@ -20,7 +20,7 @@ export const getAllServiceCategories = createAsyncThunk(
 // Get service categories by job title
 export const getServiceCategoriesByJobTitle = createAsyncThunk(
   'serviceCategories/getByJobTitle',
-  async (jobTitle: JobTitle, { rejectWithValue }) => {
+  async (jobTitle: JobTitleEnum, { rejectWithValue }) => {
     try {
       const response = await api.get(ENDPOINTS.serviceCategories.getByJobTitle(jobTitle));
       return response.data.data as ServiceCategory[];

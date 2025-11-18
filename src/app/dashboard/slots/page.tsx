@@ -414,7 +414,7 @@ const SlotsPage = () => {
           onComplete={() => {
             // Refresh slots after completion
             fetchSlotsForWeek(currentWeekStart, true);
-            fetchSlotStats();
+            fetchMySlotsStats({ silent: true });
           }}
         />
       )}

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Award, CheckCircle2, Edit2, Gift, Mail, Package, Save, X, XCircle } from 'lucide-react';
+import { Award, CheckCircle2, Edit2, Gift, Mail, Package, Save, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -183,25 +183,15 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <DialogTitle className="font-poppins text-2xl font-bold text-charcoal">
-                Slot Details
-              </DialogTitle>
-              {getStatusBadge(
-                slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED'
-                  ? 'COMPLETED'
-                  : slot.status,
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8 rounded-full hover:bg-gray-100"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-3">
+            <DialogTitle className="font-poppins text-2xl font-bold text-charcoal">
+              Slot Details
+            </DialogTitle>
+            {getStatusBadge(
+              slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED'
+                ? 'COMPLETED'
+                : slot.status,
+            )}
           </div>
         </DialogHeader>
 

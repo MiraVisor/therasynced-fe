@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNotifications } from '@/hooks/useNotifications';
-import { NotificationPriority, NotificationType, RoleType } from '@/types/types';
+import { Notification, NotificationPriority, NotificationType, RoleType } from '@/types/types';
 
 import { NotificationPopover } from './NotificationPopover';
 
@@ -18,6 +18,7 @@ interface NotificationDemoProps {
 export function NotificationDemo({ userRole, className }: NotificationDemoProps) {
   const notifications = useNotifications();
   const [isAddingNotification, setIsAddingNotification] = useState(false);
+  const [demoNotifications, setDemoNotifications] = useState<Notification[]>([]);
 
   const addSampleNotification = async () => {
     if (isAddingNotification) return;
@@ -28,6 +29,7 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
     const sampleNotifications = {
       PATIENT: [
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'BOOKING_CREATED' as NotificationType,
           priority: 'HIGH' as NotificationPriority,
           title: 'Booking Confirmed! 🎉',
@@ -36,8 +38,10 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/my-bookings',
           actionText: 'View Booking',
+          createdAt: new Date().toISOString(),
         },
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'LOYALTY_POINTS_AWARDED' as NotificationType,
           priority: 'MEDIUM' as NotificationPriority,
           title: 'Loyalty Points Earned! ⭐',
@@ -45,8 +49,10 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/account',
           actionText: 'View Points',
+          createdAt: new Date().toISOString(),
         },
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'BOOKING_CANCELLED' as NotificationType,
           priority: 'HIGH' as NotificationPriority,
           title: 'Booking Cancelled',
@@ -54,10 +60,12 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/my-bookings',
           actionText: 'Reschedule',
+          createdAt: new Date().toISOString(),
         },
       ],
       FREELANCER: [
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'BOOKING_CREATED' as NotificationType,
           priority: 'HIGH' as NotificationPriority,
           title: 'New Booking Request',
@@ -65,8 +73,10 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/appointments',
           actionText: 'Review Request',
+          createdAt: new Date().toISOString(),
         },
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'BOOKING_RESCHEDULED' as NotificationType,
           priority: 'MEDIUM' as NotificationPriority,
           title: 'Booking Rescheduled',
@@ -74,8 +84,10 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/appointments',
           actionText: 'View Details',
+          createdAt: new Date().toISOString(),
         },
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'MESSAGE' as NotificationType,
           priority: 'LOW' as NotificationPriority,
           title: 'New Message',
@@ -83,10 +95,12 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/messages',
           actionText: 'Reply',
+          createdAt: new Date().toISOString(),
         },
       ],
       ADMIN: [
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'SYSTEM' as NotificationType,
           priority: 'URGENT' as NotificationPriority,
           title: 'System Alert 🚨',
@@ -94,8 +108,10 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/analytics',
           actionText: 'View Details',
+          createdAt: new Date().toISOString(),
         },
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'BOOKING_CREATED' as NotificationType,
           priority: 'MEDIUM' as NotificationPriority,
           title: 'New User Registration',
@@ -103,8 +119,10 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/users',
           actionText: 'View Users',
+          createdAt: new Date().toISOString(),
         },
         {
+          id: `demo-${Date.now()}-${Math.random()}`,
           type: 'LOYALTY_REWARD_REDEEMED' as NotificationType,
           priority: 'LOW' as NotificationPriority,
           title: 'Reward Redeemed',
@@ -112,6 +130,7 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           isRead: false,
           actionUrl: '/dashboard/analytics',
           actionText: 'View Analytics',
+          createdAt: new Date().toISOString(),
         },
       ],
     };
@@ -120,13 +139,23 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
     const randomNotification =
       roleNotifications[Math.floor(Math.random() * roleNotifications.length)];
 
-    notifications.addNotification(randomNotification);
+    // Add to demo notifications
+    setDemoNotifications((prev) => [randomNotification, ...prev]);
 
     // Simulate API delay
     setTimeout(() => {
       setIsAddingNotification(false);
     }, 1000);
   };
+
+  const clearAllDemoNotifications = () => {
+    setDemoNotifications([]);
+  };
+
+  // Combine real notifications with demo notifications
+  const allNotifications = [...demoNotifications, ...notifications.notifications];
+  const totalUnreadCount =
+    demoNotifications.filter((n) => !n.isRead).length + notifications.unreadCount;
 
   return (
     <Card className={className}>
@@ -143,15 +172,16 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
               Role: <span className="font-medium">{userRole}</span>
             </p>
             <p className="text-sm text-gray-600">
-              Unread: <span className="font-medium text-red-600">{notifications.unreadCount}</span>
+              Unread: <span className="font-medium text-red-600">{totalUnreadCount}</span>
             </p>
           </div>
           <NotificationPopover
-            notifications={notifications.notifications}
-            unreadCount={notifications.unreadCount}
+            notifications={allNotifications}
+            unreadCount={totalUnreadCount}
+            isLoading={notifications.isLoading}
+            onLoadNotifications={notifications.loadNotifications}
             onMarkAsRead={notifications.markAsRead}
             onMarkAllAsRead={notifications.markAllAsRead}
-            userRole={userRole}
           />
         </div>
 
@@ -176,12 +206,12 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           </Button>
 
           <Button
-            onClick={notifications.clearAllNotifications}
+            onClick={clearAllDemoNotifications}
             variant="outline"
             size="sm"
-            disabled={notifications.notifications.length === 0}
+            disabled={demoNotifications.length === 0}
           >
-            Clear All
+            Clear Demo
           </Button>
         </div>
 

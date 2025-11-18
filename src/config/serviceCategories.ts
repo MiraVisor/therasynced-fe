@@ -1,8 +1,8 @@
-import { JobTitle } from '@/types/types';
+import { JobTitleEnum } from '@/types/types';
 
 // Service categories for each job title
 export const SERVICE_CATEGORIES = {
-  [JobTitle.PHYSIOTHERAPY]: [
+  [JobTitleEnum.PHYSIOTHERAPY]: [
     'Sports massage',
     'Injury assessment & diagnosis',
     'Sports injury rehabilitation',
@@ -15,7 +15,7 @@ export const SERVICE_CATEGORIES = {
     'Home visit physiotherapy',
     'Dry needling / acupuncture (if qualified)',
   ],
-  [JobTitle.ATHLETIC_THERAPY]: [
+  [JobTitleEnum.ATHLETIC_THERAPY]: [
     'Sports injury assessment',
     'Athletic performance enhancement',
     'Concussion management',
@@ -27,7 +27,7 @@ export const SERVICE_CATEGORIES = {
     'Equipment fitting & modification',
     'Emergency care on field',
   ],
-  [JobTitle.MASSAGE_THERAPY]: [
+  [JobTitleEnum.MASSAGE_THERAPY]: [
     'Swedish massage',
     'Deep tissue massage',
     'Sports massage',
@@ -40,7 +40,7 @@ export const SERVICE_CATEGORIES = {
     'Lymphatic drainage',
     'Therapeutic massage',
   ],
-  [JobTitle.STRENGTH_AND_CONDITIONING_COACHING]: [
+  [JobTitleEnum.STRENGTH_AND_CONDITIONING_COACHING]: [
     'Personal training',
     'Group fitness classes',
     'Strength training programs',
@@ -56,7 +56,7 @@ export const SERVICE_CATEGORIES = {
 } as const;
 
 // Helper function to get categories for a specific job title
-export const getCategoriesForJobTitle = (jobTitle: JobTitle): string[] => {
+export const getCategoriesForJobTitle = (jobTitle: JobTitleEnum): string[] => {
   return [...(SERVICE_CATEGORIES[jobTitle] || [])];
 };
 
@@ -68,10 +68,10 @@ export const getAllCategories = (): string[] => {
 };
 
 // Get job title from category (reverse lookup)
-export const getJobTitleFromCategory = (category: string): JobTitle | null => {
+export const getJobTitleFromCategory = (category: string): JobTitleEnum | null => {
   for (const [jobTitle, categories] of Object.entries(SERVICE_CATEGORIES)) {
     if ((categories as readonly string[]).includes(category)) {
-      return jobTitle as JobTitle;
+      return jobTitle as JobTitleEnum;
     }
   }
   return null;
@@ -79,25 +79,25 @@ export const getJobTitleFromCategory = (category: string): JobTitle | null => {
 
 // Job title display information
 export const JOB_TITLE_INFO = {
-  [JobTitle.PHYSIOTHERAPY]: {
+  [JobTitleEnum.PHYSIOTHERAPY]: {
     displayName: 'Physiotherapy',
     description: 'Physical therapy and rehabilitation services',
     icon: '🏥',
     color: 'blue',
   },
-  [JobTitle.ATHLETIC_THERAPY]: {
+  [JobTitleEnum.ATHLETIC_THERAPY]: {
     displayName: 'Athletic Therapy',
     description: 'Sports injury treatment and athletic performance',
     icon: '🏃‍♂️',
     color: 'green',
   },
-  [JobTitle.MASSAGE_THERAPY]: {
+  [JobTitleEnum.MASSAGE_THERAPY]: {
     displayName: 'Massage Therapy',
     description: 'Therapeutic massage and bodywork services',
     icon: '💆‍♀️',
     color: 'purple',
   },
-  [JobTitle.STRENGTH_AND_CONDITIONING_COACHING]: {
+  [JobTitleEnum.STRENGTH_AND_CONDITIONING_COACHING]: {
     displayName: 'Strength & Conditioning',
     description: 'Personal training and fitness coaching',
     icon: '💪',
@@ -106,4 +106,4 @@ export const JOB_TITLE_INFO = {
 } as const;
 
 // Export all job titles as an array for easy iteration
-export const ALL_JOB_TITLES = Object.values(JobTitle);
+export const ALL_JOB_TITLES = Object.values(JobTitleEnum);

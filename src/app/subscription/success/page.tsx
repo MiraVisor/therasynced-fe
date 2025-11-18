@@ -2,7 +2,7 @@
 
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { verifyCheckoutSession } from '@/redux/api/subscriptionApi';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 
-export default function SubscriptionSuccessPage() {
+function SubscriptionSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
@@ -106,5 +106,19 @@ export default function SubscriptionSuccessPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function SubscriptionSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <LoadingSpinner size="lg" />
+        </div>
+      }
+    >
+      <SubscriptionSuccessContent />
+    </Suspense>
   );
 }

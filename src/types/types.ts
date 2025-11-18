@@ -5,6 +5,14 @@ export interface JobTitle {
   description: string;
 }
 
+// Job Title enum for service categories
+export enum JobTitleEnum {
+  PHYSIOTHERAPY = 'PHYSIOTHERAPY',
+  ATHLETIC_THERAPY = 'ATHLETIC_THERAPY',
+  MASSAGE_THERAPY = 'MASSAGE_THERAPY',
+  STRENGTH_AND_CONDITIONING_COACHING = 'STRENGTH_AND_CONDITIONING_COACHING',
+}
+
 export interface JobTitlesResponse {
   success: boolean;
   data: JobTitle[];

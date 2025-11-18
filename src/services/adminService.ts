@@ -35,9 +35,6 @@ export type {
   ComplaintListResponse,
 } from './adminComplaintService';
 
-export type {
-  OverrideAccessDto,
-  SubscriptionResponse,
-  SubscriptionStatsResponse,
-  UpdateSubscriptionPlanDto,
-} from './adminSubscriptionService';
+export type { UpdateSubscriptionPlanDto } from './adminSubscriptionService';
+
+export type { SubscriptionResponse } from '@/types/types';

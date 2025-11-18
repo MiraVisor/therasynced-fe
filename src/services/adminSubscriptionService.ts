@@ -45,4 +45,3 @@ const adminSubscriptionService = {
 };
 
 export default adminSubscriptionService;
-export type { UpdateSubscriptionPlanDto };

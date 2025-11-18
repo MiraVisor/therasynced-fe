@@ -1,5 +1,6 @@
 'use client';
 
+import { StripeEmbeddedCheckout } from '@stripe/stripe-js';
 import { useEffect, useRef, useState } from 'react';
 
 import {
@@ -28,7 +29,7 @@ export function EmbeddedCheckout({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const checkoutRef = useRef<HTMLDivElement>(null);
-  const embeddedCheckoutRef = useRef<any>(null);
+  const embeddedCheckoutRef = useRef<StripeEmbeddedCheckout | null>(null);
 
   useEffect(() => {
     if (!isOpen || !clientSecret || !checkoutRef.current) {
@@ -66,15 +67,10 @@ export function EmbeddedCheckout({
         embeddedCheckoutRef.current = checkout;
 
         // Mount the checkout to the container
-        checkout.mount(checkoutRef.current);
+        if (checkoutRef.current) {
+          checkout.mount(checkoutRef.current);
+        }
         setIsLoading(false);
-
-        // Listen for checkout completion
-        checkout.on('complete', () => {
-          if (mounted) {
-            onSuccess();
-          }
-        });
       } catch (err) {
         if (mounted) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to initialize checkout';

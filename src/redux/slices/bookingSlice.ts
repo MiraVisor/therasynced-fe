@@ -31,14 +31,16 @@ const initialState: BookingState = {
 export const fetchUserBookings = createAsyncThunk(
   'booking/fetchUserBookings',
   async (
-    params?: {
-      page?: number;
-      limit?: number;
-      sortBy?: string;
-      sortOrder?: 'asc' | 'desc';
-      date?: string;
-      silent?: boolean;
-    },
+    params:
+      | {
+          page?: number;
+          limit?: number;
+          sortBy?: string;
+          sortOrder?: 'asc' | 'desc';
+          date?: string;
+          silent?: boolean;
+        }
+      | undefined,
     { rejectWithValue },
   ) => {
     try {

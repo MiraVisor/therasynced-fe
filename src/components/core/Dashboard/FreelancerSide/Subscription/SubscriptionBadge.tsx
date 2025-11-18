@@ -27,16 +27,9 @@ export default function SubscriptionBadge() {
   };
 
   const getStatusColor = () => {
-    switch (subscriptionStatus) {
-      case 'ACTIVE':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'TRIALING':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      case 'PAST_DUE':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
+    // Since we only show this component for ACTIVE subscriptions,
+    // this function will always return the ACTIVE color
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
   };
 
   return (

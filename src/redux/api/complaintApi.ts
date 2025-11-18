@@ -20,9 +20,9 @@ export const createComplaint = createAsyncThunk(
 // Get my complaints
 export const getMyComplaints = createAsyncThunk(
   'complaint/getMyComplaints',
-  async (filters?: { status?: string }, { rejectWithValue }) => {
+  async (filters: { status?: string } = {}, { rejectWithValue }) => {
     try {
-      const queryParams = filters ? `?status=${filters.status}` : '';
+      const queryParams = filters.status ? `?status=${filters.status}` : '';
       const response = await api.get(`${ENDPOINTS.complaint.myComplaints}${queryParams}`);
       return response.data.data as Complaint[];
     } catch (error: any) {
@@ -34,9 +34,9 @@ export const getMyComplaints = createAsyncThunk(
 // Get complaints against me
 export const getComplaintsAgainstMe = createAsyncThunk(
   'complaint/getAgainstMe',
-  async (filters?: { status?: string }, { rejectWithValue }) => {
+  async (filters: { status?: string } = {}, { rejectWithValue }) => {
     try {
-      const queryParams = filters ? `?status=${filters.status}` : '';
+      const queryParams = filters.status ? `?status=${filters.status}` : '';
       const response = await api.get(`${ENDPOINTS.complaint.againstMe}${queryParams}`);
       return response.data.data as Complaint[];
     } catch (error: any) {

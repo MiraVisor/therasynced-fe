@@ -89,7 +89,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
               {contact.name?.charAt(0).toUpperCase()}
             </div>
             <div className="absolute -bottom-1 -right-1">
-              <VerificationBadge status={contact.verificationStatus} size="sm" />
+              <VerificationBadge status={contact.verificationStatus || 'unverified'} size="sm" />
             </div>
             {contact.isOnline && (
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>

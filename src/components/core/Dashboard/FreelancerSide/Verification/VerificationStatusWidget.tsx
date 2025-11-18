@@ -43,7 +43,7 @@ export default function VerificationStatusWidget({ className }: VerificationStat
       try {
         setIsLoading(true);
         await Promise.all([
-          dispatch(getVerificationStatus() as any),
+          dispatch(getVerificationStatus({}) as any),
           dispatch(getFirstAidCertificateStatus() as any),
           dispatch(getVerificationDocuments() as any),
         ]);

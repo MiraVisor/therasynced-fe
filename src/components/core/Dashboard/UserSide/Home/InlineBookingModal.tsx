@@ -4,7 +4,7 @@ import { Calendar, Clock, MapPin, Star, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { Expert } from '@/types/types';
@@ -80,7 +80,10 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-semibold">{freelancer.name}</h2>
-                <VerificationBadge status={freelancer.verificationStatus} size="sm" />
+                <VerificationBadge
+                  status={freelancer.verificationStatus || 'unverified'}
+                  size="sm"
+                />
               </div>
               {freelancer.specialty && (
                 <p className="text-sm text-gray-600 dark:text-gray-400">{freelancer.specialty}</p>

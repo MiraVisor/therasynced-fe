@@ -32,8 +32,8 @@ export default function MyComplaintsPage() {
     const fetchData = async () => {
       try {
         await Promise.all([
-          dispatch(getMyComplaints() as any),
-          dispatch(getComplaintsAgainstMe() as any),
+          dispatch(getMyComplaints({}) as any),
+          dispatch(getComplaintsAgainstMe({}) as any),
         ]);
       } catch (error) {
         console.error('Error fetching complaints:', error);

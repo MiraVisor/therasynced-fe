@@ -1,13 +1,13 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { setCookie } from '@/lib/utils';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const [isProcessing, setIsProcessing] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -105,4 +105,21 @@ export default function AuthCallbackPage() {
   }
 
   return null;
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Processing authentication...</p>
+          </div>
+        </div>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
+  );
 }

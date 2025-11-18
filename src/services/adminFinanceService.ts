@@ -67,4 +67,3 @@ const adminFinanceService = {
 };
 
 export default adminFinanceService;
-export type { SubscriptionStatsDto };

@@ -117,7 +117,10 @@ const ChatContactList: React.FC<ChatContactListProps> = ({
                     {getInitials(contact.name)}
                   </div>
                   <div className="absolute -bottom-1 -right-1">
-                    <VerificationBadge status={contact.verificationStatus} size="sm" />
+                    <VerificationBadge
+                      status={contact.verificationStatus || 'unverified'}
+                      size="sm"
+                    />
                   </div>
                 </div>
 

@@ -3,14 +3,35 @@ export * from './bookingApi';
 export * from './certificateApi';
 export * from './chatApi';
 export * from './complaintApi';
-export * from './exploreApi';
+// Explicitly export exploreApi functions to avoid conflicts
+export {
+  getRecentFavoriteFreelancer,
+  getAllFavoriteFreelancers,
+  getPatientBookings as getExplorePatientBookings,
+  rescheduleBooking as rescheduleBookingExplore,
+} from './exploreApi';
 export * from './freelancerApi';
-export * from './imageUploadApi';
+// Explicitly export imageUploadApi functions to avoid conflicts
+export {
+  uploadSingleImage,
+  uploadVerificationDocument as uploadVerificationDocumentImage,
+  uploadFirstAidCertificate as uploadFirstAidCertificateImage,
+  deleteImage,
+} from './imageUploadApi';
 export * from './jobTitleApi';
 export * from './loyaltyApi';
-export * from './overviewApi';
+// Explicitly export overviewApi functions to avoid conflicts
+export {
+  getFreelancerServices as getFreelancerServicesOverview,
+  getAllFreelancers as getAllFreelancersOverview,
+  favoriteFreelancer as favoriteFreelancerOverview,
+  createBooking as createBookingOverview,
+  reserveSlot as reserveSlotOverview,
+} from './overviewApi';
 export * from './profileApi';
-export * from './serviceApi';
+// Explicitly export serviceApi functions to avoid conflicts
+export { getFreelancerServices as getFreelancerServicesService } from './serviceApi';
 export * from './serviceCategoriesApi';
 export * from './slotApi';
-export * from './verificationApi';
+// Explicitly export verificationApi functions to avoid conflicts
+export { uploadVerificationDocument as uploadVerificationDocumentVerification } from './verificationApi';
