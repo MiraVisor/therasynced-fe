@@ -157,24 +157,27 @@ export function DataTable<TData, TValue>({
 
           {/* Search Input */}
           {showSearch && enableFiltering && searchKey && (
-            <div className="relative w-full sm:max-w-sm">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={searchPlaceholder}
-                value={
-                  onExternalSearchChange
-                    ? (externalSearchValue ?? '')
-                    : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
-                }
-                onChange={(event) => {
-                  if (onExternalSearchChange) {
-                    onExternalSearchChange(event.target.value);
-                  } else {
-                    table.getColumn(searchKey)?.setFilterValue(event.target.value);
+            <div className="w-full sm:max-w-sm px-3 py-2">
+              {/* ← outer padding here */}
+              <div className="relative w-full">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={searchPlaceholder}
+                  value={
+                    onExternalSearchChange
+                      ? (externalSearchValue ?? '')
+                      : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
                   }
-                }}
-                className="pl-8 border-gray-200 w-full"
-              />
+                  onChange={(event) => {
+                    if (onExternalSearchChange) {
+                      onExternalSearchChange(event.target.value);
+                    } else {
+                      table.getColumn(searchKey)?.setFilterValue(event.target.value);
+                    }
+                  }}
+                  className="pl-8 border-gray-200 w-full"
+                />
+              </div>
             </div>
           )}
 

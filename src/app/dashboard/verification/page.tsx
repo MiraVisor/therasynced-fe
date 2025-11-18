@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Progress } from '@/components/ui/progress';
 import {
   deleteCertificate,
@@ -36,11 +37,7 @@ import {
   uploadVerificationDocument,
 } from '@/redux/api/verificationApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
-import {
-  selectAllFiles,
-  selectFilesError,
-  selectFilesLoading,
-} from '@/redux/slices/verificationSlice';
+import { selectAllFiles, selectFilesError } from '@/redux/slices/verificationSlice';
 import { RootState } from '@/redux/store';
 import { ROLES } from '@/types/types';
 
@@ -244,11 +241,11 @@ export default function VerificationPage() {
   const verificationState = useSelector((state: RootState) => state.verification);
   const certificateState = useSelector((state: RootState) => state.certificate);
   const allFiles = useSelector(selectAllFiles);
-  const filesLoading = useSelector(selectFilesLoading);
   const filesError = useSelector(selectFilesError);
 
   // Local state
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingCertificate, setIsUploadingCertificate] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   // Determine if we should show loading - only if no data exists
@@ -390,6 +387,7 @@ export default function VerificationPage() {
   };
 
   const handleCertificateUpload = async (file: File) => {
+    setIsUploadingCertificate(true);
     try {
       await dispatch(uploadFirstAidCertificate(file) as any);
       toast.success('Certificate uploaded successfully');
@@ -397,6 +395,8 @@ export default function VerificationPage() {
       await dispatch(getFreelancerFiles({ silent: true }) as any);
     } catch (error: any) {
       toast.error(error?.data?.message || 'Failed to upload certificate');
+    } finally {
+      setIsUploadingCertificate(false);
     }
   };
 
@@ -564,14 +564,18 @@ export default function VerificationPage() {
                       handleCertificateUpload(e.target.files[0]);
                     }
                   }}
-                  disabled={isUploading}
+                  disabled={isUploadingCertificate}
                   className="hidden"
                   id="certificate-upload"
                 />
                 <label htmlFor="certificate-upload" className="cursor-pointer block">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  {isUploadingCertificate ? (
+                    <LoadingSpinner size="lg" />
+                  ) : (
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  )}
                   <p className="mt-2 text-sm font-medium text-gray-900">
-                    Upload First Aid Certificate
+                    {isUploadingCertificate ? 'Uploading...' : 'Upload First Aid Certificate'}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">.jpg, .jpeg, .png, .pdf up to 5MB</p>
                 </label>
@@ -639,9 +643,13 @@ export default function VerificationPage() {
                   id="documents-upload"
                 />
                 <label htmlFor="documents-upload" className="cursor-pointer block">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  {isUploading ? (
+                    <LoadingSpinner size="lg" />
+                  ) : (
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  )}
                   <p className="mt-2 text-sm font-medium text-gray-900">
-                    Upload Verification Documents
+                    {isUploading ? 'Uploading...' : 'Upload Verification Documents'}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     .jpg, .jpeg, .png, .pdf up to 5MB each (multiple allowed)
@@ -670,28 +678,16 @@ export default function VerificationPage() {
               </Alert>
             )}
 
-            {filesLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-sm text-gray-600">Loading files...</span>
-              </div>
-            ) : allFiles && allFiles.length > 0 ? (
-              <DataTable
-                columns={createFilesColumns(handleDeleteFile)}
-                data={allFiles}
-                searchKey="fileName"
-                searchPlaceholder="Search files..."
-                enablePagination={true}
-                pageSize={10}
-                enableSorting={false}
-              />
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>No files uploaded yet</p>
-                <p className="text-sm">Upload documents and certificates to see them here</p>
-              </div>
-            )}
+            <DataTable
+              columns={createFilesColumns(handleDeleteFile)}
+              data={allFiles}
+              searchKey="fileName"
+              searchPlaceholder="Search files..."
+              enablePagination={true}
+              pageSize={10}
+              initialLoading={isLoading}
+              enableSorting={false}
+            />
           </CardContent>
         </Card>
       </div>
