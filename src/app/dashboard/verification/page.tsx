@@ -660,36 +660,17 @@ export default function VerificationPage() {
           </CardContent>
         </Card>
 
-        {/* All Uploaded Files Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              All Uploaded Files
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filesError && (
-              <Alert className="border-red-200 bg-red-50 mb-4">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  Error loading files: {filesError}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <DataTable
-              columns={createFilesColumns(handleDeleteFile)}
-              data={allFiles}
-              searchKey="fileName"
-              searchPlaceholder="Search files..."
-              enablePagination={true}
-              pageSize={10}
-              initialLoading={isLoading}
-              enableSorting={false}
-            />
-          </CardContent>
-        </Card>
+        <DataTable
+          title="All Uploaded Files"
+          columns={createFilesColumns(handleDeleteFile)}
+          data={allFiles}
+          searchKey="fileName"
+          searchPlaceholder="Search files..."
+          enablePagination={true}
+          pageSize={10}
+          initialLoading={isLoading}
+          enableSorting={false}
+        />
       </div>
     </DashboardPageWrapper>
   );
