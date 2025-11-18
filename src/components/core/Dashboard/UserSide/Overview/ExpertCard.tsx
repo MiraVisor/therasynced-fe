@@ -275,179 +275,297 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
       {/* Profile Dialog */}
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-        <DialogContent className="max-w-[95vw] lg:max-w-3xl max-h-[90vh] lg:max-h-[85vh] overflow-y-auto mx-4 lg:mx-auto">
-          <DialogHeader className="pb-4">
-            <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white text-center">
-              Freelancer Profile
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-[95vw] lg:max-w-4xl max-h-[90vh] lg:max-h-[85vh] overflow-y-auto mx-4 lg:mx-auto p-0">
+          <div className="relative">
+            {/* Header with gradient background */}
+            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 pb-8">
+              <DialogHeader className="pb-0">
+                <div className="flex items-start gap-4">
+                  {/* Profile Avatar */}
+                  <div className="w-16 h-16 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-xl flex-shrink-0 border-2 border-primary/20">
+                    {freelancerName?.charAt(0).toUpperCase()}
+                  </div>
 
-          <div className="space-y-6">
-            {/* Simple Profile Header */}
-            <div className="text-center pb-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{name}</h3>
-                <VerificationBadge status={verificationStatus} size="md" />
-              </div>
-              {jobTitle?.name && (
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">{jobTitle.name}</p>
-              )}
-              {firstAidCertificateStatus === 'APPROVED' && (
-                <p className="text-sm text-green-600 dark:text-green-400">
-                  First Aid Certificate: Approved
-                </p>
-              )}
+                  {/* Profile Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <DialogTitle className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white truncate">
+                        {freelancerName}
+                      </DialogTitle>
+                      <VerificationBadge status={verificationStatus} size="md" />
+                    </div>
+
+                    {jobTitle?.name && (
+                      <p className="text-lg text-primary font-medium mb-1">{jobTitle.name}</p>
+                    )}
+
+                    {specialty && (
+                      <p className="text-base text-gray-600 dark:text-gray-400 mb-2">{specialty}</p>
+                    )}
+
+                    {/* Rating and Experience */}
+                    <div className="flex items-center gap-4 text-sm">
+                      {rating && rating > 0 ? (
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-4 h-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                            />
+                          ))}
+                          <span className="text-gray-600 dark:text-gray-400 ml-1 font-medium">
+                            {rating.toFixed(1)} ({cardInfo?.patientStories || 0} reviews)
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 dark:text-gray-400">No ratings yet</span>
+                      )}
+
+                      {yearsOfExperience && (
+                        <>
+                          <span className="text-gray-300 dark:text-gray-600">•</span>
+                          <span className="text-gray-600 dark:text-gray-400">
+                            {yearsOfExperience} years experience
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
             </div>
 
-            {/* Services Section with Clear Label */}
-            {services.length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                  Services Offered
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {services.map((service: any, index: number) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition-colors dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
-                    >
-                      {service.name}
-                    </Badge>
-                  ))}
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Description */}
+              {description && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    About
+                  </h4>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{description}</p>
                 </div>
-              </div>
-            )}
-
-            {/* Session Types with Clear Label */}
-            {sessionTypes && sessionTypes.length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  Session Types Available
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {sessionTypes.map((type: string, index: number) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="px-3 py-1.5 text-xs font-medium capitalize"
-                    >
-                      {type} Session
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Pricing Information with Clear Label */}
-            {pricing && (
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  Pricing Information
-                </h4>
-                <div className="space-y-2">
-                  {pricing.online && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Online Sessions:</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        ${pricing.online.min} - ${pricing.online.max}
-                      </span>
-                    </div>
-                  )}
-                  {pricing.office && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Office Sessions:</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        ${pricing.office.min} - ${pricing.office.max}
-                      </span>
-                    </div>
-                  )}
-                  {pricing.home && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Home Visits:</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        ${pricing.home.min} - ${pricing.home.max}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons with Clear Labels */}
-            <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              {/* Primary Action - Book a Session */}
-              {hasAvailableSlots ? (
-                <Button
-                  className="w-full bg-primary hover:bg-primary/90 h-12 text-base font-semibold shadow-md"
-                  onClick={() => {
-                    setShowProfileDialog(false);
-                    handleBookNow();
-                  }}
-                  tabIndex={1}
-                  autoFocus
-                >
-                  Book a Session
-                </Button>
-              ) : (
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-block w-full">
-                        <Button
-                          className="w-full !bg-primary/50 !text-white h-12 text-base font-semibold shadow-md opacity-60 cursor-not-allowed hover:!bg-primary/50"
-                          disabled
-                          tabIndex={1}
-                          autoFocus
-                        >
-                          Book a Session
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
-                      <div className="flex items-center gap-2">
-                        <span className="text-orange-400">⚠️</span>
-                        <span>No slots available</span>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               )}
 
-              {/* Secondary Actions Row */}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-10 text-sm border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 flex items-center justify-center gap-2"
-                  onClick={handleFavorite}
-                  tabIndex={2}
-                >
-                  <Heart
-                    className={`w-4 h-4 ${isFavorite ? 'fill-current text-red-500' : 'text-gray-500'}`}
-                  />
-                  {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 h-10 text-sm border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
-                  onClick={() => setShowReportDialog(true)}
-                  tabIndex={3}
-                >
-                  Report/Block
-                </Button>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+                  <div className="text-2xl font-bold text-primary mb-1">{availableSlots || 0}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Available Slots</div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+                  <div className="text-2xl font-bold text-primary mb-1">
+                    {cardInfo?.patientStories || 0}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+                  <div className="text-2xl font-bold text-primary mb-1">{services.length}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Services</div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+                  <div className="text-2xl font-bold text-primary mb-1">{sessionTypes.length}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Session Types</div>
+                </div>
               </div>
 
-              {/* Close Button */}
-              <Button
-                variant="ghost"
-                className="w-full h-10 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                onClick={() => setShowProfileDialog(false)}
-                tabIndex={4}
-              >
-                Close Profile
-              </Button>
+              {/* Services Section */}
+              {services.length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    Services Offered
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {services.map((service, index: number) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="px-3 py-2 text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+                      >
+                        {service.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Session Types */}
+              {sessionTypes && sessionTypes.length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    Session Types Available
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {sessionTypes.map((type: string, index: number) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="px-3 py-2 text-sm font-medium capitalize border-primary/30 text-primary hover:bg-primary/5"
+                      >
+                        {type} Session
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pricing Information */}
+              {pricing && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    Pricing Information
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {pricing.online && (
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                          Online Sessions
+                        </div>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">
+                          ${pricing.online.min} - ${pricing.online.max}
+                        </div>
+                      </div>
+                    )}
+                    {pricing.office && (
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                          Office Sessions
+                        </div>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">
+                          ${pricing.office.min} - ${pricing.office.max}
+                        </div>
+                      </div>
+                    )}
+                    {pricing.home && (
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                          Home Visits
+                        </div>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">
+                          ${pricing.home.min} - ${pricing.home.max}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Certifications */}
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                  <span className="w-2 h-2 bg-primary rounded-full"></span>
+                  Certifications & Verification
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant="outline"
+                    className={`px-3 py-2 text-sm font-medium ${
+                      verificationStatus === 'APPROVED' || verificationStatus === 'verified'
+                        ? 'border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400'
+                        : 'border-gray-300 text-gray-600 bg-gray-50'
+                    }`}
+                  >
+                    {verificationStatus === 'APPROVED' || verificationStatus === 'verified'
+                      ? '✓ Verified Professional'
+                      : 'Verification Pending'}
+                  </Badge>
+
+                  {firstAidCertificateStatus === 'APPROVED' && (
+                    <Badge
+                      variant="outline"
+                      className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400"
+                    >
+                      ✓ First Aid Certified
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                {/* Primary Action */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {hasAvailableSlots ? (
+                    <Button
+                      className="h-12 text-base font-semibold shadow-md bg-primary hover:bg-primary/90 text-white"
+                      onClick={() => {
+                        setShowProfileDialog(false);
+                        handleBookNow();
+                      }}
+                      tabIndex={1}
+                      autoFocus
+                    >
+                      📅 Book a Session
+                    </Button>
+                  ) : (
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-block w-full">
+                            <Button
+                              className="w-full h-12 text-base font-semibold shadow-md bg-primary/50 text-white opacity-60 cursor-not-allowed hover:bg-primary/50"
+                              disabled
+                              tabIndex={1}
+                              autoFocus
+                            >
+                              📅 Book a Session
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
+                          <div className="flex items-center gap-2">
+                            <span className="text-orange-400">⚠️</span>
+                            <span>No slots available</span>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    className="h-12 text-base font-semibold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
+                    onClick={() => {
+                      setShowProfileDialog(false);
+                      router.push(`/dashboard/explore`);
+                    }}
+                    tabIndex={2}
+                  >
+                    🔍 View All Therapists
+                  </Button>
+                </div>
+
+                {/* Secondary Actions */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-10 text-sm border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 flex items-center justify-center gap-2"
+                    onClick={handleFavorite}
+                    tabIndex={3}
+                  >
+                    <Heart
+                      className={`w-4 h-4 ${isFavorite ? 'fill-current text-red-500' : 'text-gray-500'}`}
+                    />
+                    {isFavorite ? 'Remove Favorite' : 'Add Favorite'}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="h-10 text-sm border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 flex items-center justify-center gap-2"
+                    onClick={() => setShowReportDialog(true)}
+                    tabIndex={4}
+                  >
+                    🚨 Report
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>

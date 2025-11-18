@@ -296,7 +296,7 @@ const UserOverview = () => {
             </p>
           </div>
 
-          <EnhancedSearchBar onSearch={handleSearch} isSearching={isSearching || loading} />
+          <EnhancedSearchBar onSearch={handleSearch} isSearching={isSearching} />
         </div>
       }
     >
