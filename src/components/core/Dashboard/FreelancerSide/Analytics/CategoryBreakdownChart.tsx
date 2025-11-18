@@ -36,7 +36,7 @@ const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownCh
           <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2 animate-pulse"></div>
           <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2 animate-pulse"></div>
         </CardHeader>
-        <CardContent className="flex items-center justify-center w-full h-[250px] p-6">
+        <CardContent className="flex items-center justify-center w-full min-h-[300px] p-6">
           <div className="w-full h-full bg-gray-100 dark:bg-gray-800/20 rounded animate-pulse"></div>
         </CardContent>
       </Card>
@@ -54,7 +54,7 @@ const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownCh
             Bookings by category
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-center w-full h-[250px] p-6">
+        <CardContent className="flex items-center justify-center w-full min-h-[300px] p-6">
           <div className="text-center">
             <p className="text-sm text-muted-foreground">No category data available</p>
           </div>
@@ -64,7 +64,7 @@ const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownCh
   }
 
   return (
-    <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
+    <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl min-h-[398px]">
       <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
         <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
           Category Breakdown

@@ -28,7 +28,7 @@ const RevenueTrendChart = ({ data, isLoading = false }: RevenueTrendChartProps) 
             <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2 animate-pulse"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2 animate-pulse"></div>
           </CardHeader>
-          <CardContent className="flex items-center justify-center w-full h-[300px] p-6">
+          <CardContent className="flex items-center justify-center w-full min-h-[300px] p-6">
             <div className="w-full h-full bg-gray-100 dark:bg-gray-800/20 rounded animate-pulse"></div>
           </CardContent>
         </Card>
@@ -46,7 +46,7 @@ const RevenueTrendChart = ({ data, isLoading = false }: RevenueTrendChartProps) 
             Daily revenue for the last 30 days
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-center w-full h-[300px] p-6">
+        <CardContent className="flex items-center justify-center w-full min-h-[300px] p-6">
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-2">No revenue data available</p>
             <p className="text-xs text-muted-foreground">Revenue trends will appear here</p>
@@ -66,7 +66,7 @@ const RevenueTrendChart = ({ data, isLoading = false }: RevenueTrendChartProps) 
           Daily revenue for the last 30 days
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex items-center justify-center w-full h-[300px] p-6">
+      <CardContent className="flex items-center justify-center w-full min-h-[300px] p-6">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}

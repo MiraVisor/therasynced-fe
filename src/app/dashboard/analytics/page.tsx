@@ -207,23 +207,31 @@ const AnalyticsPage = () => {
         {/* Middle Section - 2 Columns */}
         {isLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
-              <div className="animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                <div className="h-[300px] bg-gray-100 rounded"></div>
+            <div className="space-y-6">
+              <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
+                </div>
+              </div>
+              <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
+                </div>
               </div>
             </div>
             <div className="space-y-6">
               <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
                 <div className="animate-pulse">
                   <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                  <div className="h-[250px] bg-gray-100 rounded"></div>
+                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
                 </div>
               </div>
               <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
                 <div className="animate-pulse">
                   <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                  <div className="h-[250px] bg-gray-100 rounded"></div>
+                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
                 </div>
               </div>
             </div>
@@ -241,7 +249,7 @@ const AnalyticsPage = () => {
                     Revenue overview and trends
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-6 min-h-[300px]">
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-inter text-muted-foreground">
