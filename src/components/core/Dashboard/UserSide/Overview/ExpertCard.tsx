@@ -354,14 +354,8 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                     </div>
 
                     {jobTitle?.name && (
-                      <p className="text-lg font-inter text-primary font-medium mb-1">
+                      <p className="text-lg font-inter text-primary font-medium mb-2">
                         {jobTitle.name}
-                      </p>
-                    )}
-
-                    {specialty && (
-                      <p className="text-base font-inter text-gray-600 dark:text-gray-400 mb-2">
-                        {specialty}
                       </p>
                     )}
 
@@ -533,12 +527,24 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                       : 'Verification Pending'}
                   </Badge>
 
-                  {firstAidCertificateStatus === 'APPROVED' && (
+                  {(firstAidCertificateStatus === 'APPROVED' ||
+                    firstAidCertificateStatus === 'PENDING' ||
+                    firstAidCertificateStatus === 'REJECTED') && (
                     <Badge
                       variant="outline"
-                      className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400"
+                      className={`px-3 py-2 text-sm font-medium ${
+                        firstAidCertificateStatus === 'APPROVED'
+                          ? 'border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400'
+                          : firstAidCertificateStatus === 'PENDING'
+                            ? 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400'
+                            : 'border-gray-300 text-gray-600 bg-gray-50'
+                      }`}
                     >
-                      ✓ First Aid Certified
+                      {firstAidCertificateStatus === 'APPROVED'
+                        ? '✓ First Aid Certified'
+                        : firstAidCertificateStatus === 'PENDING'
+                          ? '⏳ First Aid Certificate Pending'
+                          : 'First Aid Certificate'}
                     </Badge>
                   )}
                 </div>

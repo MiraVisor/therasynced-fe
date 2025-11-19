@@ -28,13 +28,13 @@ import {
   getFirstAidCertificateStatus,
   uploadFirstAidCertificate,
 } from '@/redux/api/certificateApi';
+import { uploadVerificationDocumentsBatch } from '@/redux/api/imageUploadApi';
 import {
   deleteVerificationDocument,
   getFreelancerFiles,
   getVerificationDocuments,
   getVerificationStatus,
   requestVerification,
-  uploadVerificationDocument,
 } from '@/redux/api/verificationApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { selectAllFiles, selectFilesError } from '@/redux/slices/verificationSlice';
@@ -247,6 +247,8 @@ export default function VerificationPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingCertificate, setIsUploadingCertificate] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const MAX_FILES_PER_UPLOAD = 10;
 
   // Determine if we should show loading - only if no data exists
   const hasVerificationData =
@@ -372,15 +374,43 @@ export default function VerificationPage() {
     }
   };
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async (files: File[]) => {
+    if (files.length === 0) return;
+
+    if (files.length > MAX_FILES_PER_UPLOAD) {
+      setUploadError(`You can only upload up to ${MAX_FILES_PER_UPLOAD} files at a time.`);
+      toast.error(`Please select no more than ${MAX_FILES_PER_UPLOAD} files per upload.`);
+      return;
+    }
+
     setIsUploading(true);
+    setUploadError(null);
+
     try {
-      await dispatch(uploadVerificationDocument(file) as any);
-      toast.success('Document uploaded successfully');
-      // Refetch files data after successful upload
+      // Upload all files in a single batch request
+      const result = await dispatch(uploadVerificationDocumentsBatch(files) as any);
+
+      if (result.type.endsWith('/fulfilled')) {
+        // Check if response is an array (batch response) or single object
+        const responseData = result.payload?.data || result.payload;
+        const uploadedCount = Array.isArray(responseData) ? responseData.length : 1;
+
+        toast.success(
+          `${uploadedCount} file${uploadedCount !== 1 ? 's' : ''} uploaded successfully`,
+        );
+      } else {
+        // Handle rejection
+        const errorMessage = result.payload || 'Failed to upload documents';
+        setUploadError(errorMessage);
+        toast.error(errorMessage);
+      }
+
+      // Refetch files data after upload
       await dispatch(getFreelancerFiles({ silent: true }) as any);
     } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to upload document');
+      const errorMessage = error?.data?.message || error?.message || 'Failed to upload documents';
+      setUploadError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -400,9 +430,9 @@ export default function VerificationPage() {
     }
   };
 
-  const handleDeleteDocument = async (documentId: string) => {
+  const handleDeleteDocument = async (documentUrl: string) => {
     try {
-      await dispatch(deleteVerificationDocument(documentId) as any);
+      await dispatch(deleteVerificationDocument(documentUrl) as any);
       toast.success('Document deleted successfully');
       // Refetch files data after successful deletion
       await dispatch(getFreelancerFiles({ silent: true }) as any);
@@ -411,15 +441,15 @@ export default function VerificationPage() {
     }
   };
 
-  const handleDeleteFile = async (fileId: string, fileType: string) => {
+  const handleDeleteFile = async (fileUrl: string, fileType: string) => {
     try {
       if (fileType === 'CERTIFICATE') {
         // Delete first aid certificate
         await dispatch(deleteCertificate() as any);
         toast.success('First aid certificate deleted successfully');
       } else if (fileType === 'VERIFICATION_DOCUMENT') {
-        // Delete verification document
-        await dispatch(deleteVerificationDocument(fileId) as any);
+        // Delete verification document using the full URL
+        await dispatch(deleteVerificationDocument(fileUrl) as any);
         toast.success('Verification document deleted successfully');
       }
       // Refetch files data after successful deletion
@@ -626,6 +656,22 @@ export default function VerificationPage() {
                 </Alert>
               )}
 
+              {/* Info message about file limit */}
+              <Alert className="border-blue-200 bg-blue-50">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  <strong>Upload Limit:</strong> You can upload up to {MAX_FILES_PER_UPLOAD} files
+                  at a time. You can add more files after this upload.
+                </AlertDescription>
+              </Alert>
+
+              {uploadError && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">{uploadError}</AlertDescription>
+                </Alert>
+              )}
+
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <input
                   type="file"
@@ -633,9 +679,35 @@ export default function VerificationPage() {
                   multiple
                   onChange={(e) => {
                     if (e.target.files) {
-                      for (const file of Array.from(e.target.files)) {
-                        handleFileUpload(file);
+                      const files = Array.from(e.target.files);
+
+                      // Validate file count
+                      if (files.length > MAX_FILES_PER_UPLOAD) {
+                        setUploadError(
+                          `Please select no more than ${MAX_FILES_PER_UPLOAD} files. You selected ${files.length} files.`,
+                        );
+                        toast.error(
+                          `Maximum ${MAX_FILES_PER_UPLOAD} files allowed per upload. Please select fewer files.`,
+                        );
+                        // Reset the input
+                        e.target.value = '';
+                        return;
                       }
+
+                      // Clear any previous errors
+                      setUploadError(null);
+
+                      // Store selected files for display
+                      setSelectedFiles(files);
+
+                      // Upload the batch of files
+                      handleFileUpload(files).finally(() => {
+                        // Clear selected files after upload completes
+                        setSelectedFiles([]);
+                      });
+
+                      // Reset the input to allow selecting more files later
+                      e.target.value = '';
                     }
                   }}
                   disabled={isUploading}
@@ -649,10 +721,13 @@ export default function VerificationPage() {
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                   )}
                   <p className="mt-2 text-sm font-medium text-gray-900">
-                    {isUploading ? 'Uploading...' : 'Upload Verification Documents'}
+                    {isUploading ? 'Uploading files...' : 'Upload Verification Documents'}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    .jpg, .jpeg, .png, .pdf up to 5MB each (multiple allowed)
+                    .jpg, .jpeg, .png, .pdf up to 5MB each
+                  </p>
+                  <p className="text-xs text-primary mt-1 font-medium">
+                    Maximum {MAX_FILES_PER_UPLOAD} files per upload
                   </p>
                 </label>
               </div>

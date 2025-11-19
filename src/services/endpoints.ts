@@ -106,7 +106,11 @@ export const ENDPOINTS = {
   verification: {
     uploadDocument: '/freelancer/verification/upload-document',
     getDocuments: '/freelancer/verification/documents',
-    deleteDocument: (docId: string) => `/freelancer/verification/document/${docId}`,
+    deleteDocument: (documentUrl: string) => {
+      // URL-encode the document URL for the path parameter
+      const encodedUrl = encodeURIComponent(documentUrl);
+      return `/freelancer/verification/document/${encodedUrl}`;
+    },
     status: '/freelancer/verification/status',
     requestVerification: '/freelancer/verification/request',
   },

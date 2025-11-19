@@ -298,6 +298,59 @@ const VerificationsPage = () => {
       cell: ({ row }) => <StatusBadge status={row.original.verificationStatus} size="sm" />,
     },
     {
+      id: 'verificationDocuments',
+      header: 'Verification Documents',
+      cell: ({ row }) => {
+        const documents = row.original.verificationDocuments;
+        if (!documents || documents.length === 0) {
+          return <span className="font-inter text-sm text-muted-foreground">Not uploaded</span>;
+        }
+
+        // Extract filename from URL for display
+        const getDocumentName = (url: string, index: number) => {
+          try {
+            const urlParts = url.split('/');
+            const filename = urlParts[urlParts.length - 1];
+            // Remove query parameters if any
+            const cleanName = filename.split('?')[0];
+            // Decode URL encoding
+            const decoded = decodeURIComponent(cleanName);
+            // If it's still a hash or unclear, use a generic name
+            if (decoded.length < 3 || decoded.includes('%')) {
+              return `Document ${index + 1}`;
+            }
+            return decoded.length > 30 ? `${decoded.substring(0, 30)}...` : decoded;
+          } catch {
+            return `Document ${index + 1}`;
+          }
+        };
+
+        return (
+          <div className="flex flex-col gap-1.5 max-w-xs">
+            <span className="font-inter text-xs text-muted-foreground mb-1">
+              {documents.length} {documents.length === 1 ? 'document' : 'documents'}
+            </span>
+            <div className="flex flex-col gap-1">
+              {documents.map((docUrl: string, index: number) => (
+                <a
+                  key={index}
+                  href={docUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-inter text-xs text-primary hover:underline flex items-center gap-1.5 truncate"
+                  title={getDocumentName(docUrl, index)}
+                >
+                  <FileText className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{getDocumentName(docUrl, index)}</span>
+                  <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                </a>
+              ))}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       id: 'firstAidCertificate',
       header: 'First Aid Certificate',
       cell: ({ row }) => {

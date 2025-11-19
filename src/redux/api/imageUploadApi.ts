@@ -24,7 +24,7 @@ export const uploadSingleImage = createAsyncThunk(
   },
 );
 
-// Upload verification document
+// Upload verification document (single file - kept for backward compatibility)
 export const uploadVerificationDocument = createAsyncThunk(
   'imageUpload/uploadVerificationDocument',
   async (file: File, { rejectWithValue }) => {
@@ -41,6 +41,33 @@ export const uploadVerificationDocument = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to upload verification document',
+      );
+    }
+  },
+);
+
+// Upload multiple verification documents in a single batch
+export const uploadVerificationDocumentsBatch = createAsyncThunk(
+  'imageUpload/uploadVerificationDocumentsBatch',
+  async (files: File[], { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      // Append all files to FormData with the same field name 'documents'
+      files.forEach((file) => {
+        formData.append('documents', file);
+      });
+
+      const response = await api.post(ENDPOINTS.image.uploadVerificationDocument, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Backend should return an array of results
+      return response.data as FileUploadResponse | FileUploadResponse[];
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to upload verification documents',
       );
     }
   },

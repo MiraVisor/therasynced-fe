@@ -62,7 +62,7 @@ const getFileIcon = (fileName: string) => {
 };
 
 export const createFilesColumns = (
-  onDeleteFile?: (fileId: string, fileType: string) => void,
+  onDeleteFile?: (fileUrl: string, fileType: string) => void,
 ): ColumnDef<FreelancerFile>[] => [
   {
     accessorKey: 'fileName',
@@ -149,7 +149,7 @@ export const createFilesColumns = (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onDeleteFile(file.id, file.fileType)}
+              onClick={() => onDeleteFile(file.url, file.fileType)}
               title="Delete file"
               className="text-red-600 hover:text-red-700"
             >

@@ -72,12 +72,14 @@ export const getVerificationDocuments = createAsyncThunk(
 );
 
 // Delete verification document
+// documentUrl: The full URL of the document from the response (e.g., from getFreelancerFiles)
 export const deleteVerificationDocument = createAsyncThunk(
   'verification/deleteDocument',
-  async (documentId: string, { rejectWithValue }) => {
+  async (documentUrl: string, { rejectWithValue }) => {
     try {
-      const response = await api.delete(ENDPOINTS.verification.deleteDocument(documentId));
-      return { documentId, ...response.data };
+      // The endpoint will automatically URL-encode the documentUrl
+      const response = await api.delete(ENDPOINTS.verification.deleteDocument(documentUrl));
+      return { documentUrl, ...response.data };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to delete document');
     }

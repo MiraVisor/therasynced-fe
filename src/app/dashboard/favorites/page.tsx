@@ -181,7 +181,27 @@ const FavoritesPage = () => {
 
     try {
       const mappedFavorites = favorites.map(mapFreelancerToExpert);
-      setFilteredFavorites(mappedFavorites);
+
+      // Apply local filtering if search query exists (as backup to API filtering)
+      let filtered = mappedFavorites;
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        filtered = mappedFavorites.filter((expert) => {
+          const name = expert.name?.toLowerCase() || '';
+          const specialty = expert.specialty?.toLowerCase() || '';
+          const jobTitle = expert.jobTitle?.name?.toLowerCase() || '';
+          const description = expert.description?.toLowerCase() || '';
+
+          return (
+            name.includes(query) ||
+            specialty.includes(query) ||
+            jobTitle.includes(query) ||
+            description.includes(query)
+          );
+        });
+      }
+
+      setFilteredFavorites(filtered);
       // Clear searching state when data is loaded
       setIsSearching(false);
     } catch (error) {
@@ -189,7 +209,7 @@ const FavoritesPage = () => {
       setFilteredFavorites([]);
       setIsSearching(false);
     }
-  }, [favorites]);
+  }, [favorites, searchQuery]);
 
   return (
     <DashboardPageWrapper
