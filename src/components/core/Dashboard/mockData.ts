@@ -24,7 +24,7 @@ export const mockStatsData = [
   },
   {
     title: 'Sessions This Month',
-    value: '$89,000',
+    value: 'EUR 89,000',
     trend: {
       value: 4.3,
       isUp: false,
@@ -34,7 +34,7 @@ export const mockStatsData = [
   },
   {
     title: 'Revenue',
-    value: '$13,400',
+    value: 'EUR 13,400',
     trend: {
       value: 1.8,
       isUp: true,

@@ -249,8 +249,10 @@ export default function SubscriptionManagement() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Subscription</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage your subscription plan</p>
+        <h1 className="text-3xl font-poppins font-bold text-charcoal">Subscription</h1>
+        <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
+          Manage your subscription plan
+        </p>
       </div>
 
       {/* Current Subscription Status */}
@@ -258,7 +260,7 @@ export default function SubscriptionManagement() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">
+              <CardTitle className="text-xl font-poppins font-bold text-charcoal">
                 {hasPlan ? 'Current Plan' : 'Subscription Status'}
               </CardTitle>
               <Badge
@@ -281,11 +283,11 @@ export default function SubscriptionManagement() {
             {hasPlan && currentSubscription.plan && (
               <div className="flex items-center justify-between rounded-lg bg-primary/10 p-4">
                 <div>
-                  <h3 className="font-semibold text-primary">
+                  <h3 className="font-poppins font-semibold text-primary">
                     {currentSubscription.plan.displayName}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    €{currentSubscription.plan.price}/month
+                  <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                    EUR {currentSubscription.plan.price}/month
                   </p>
                 </div>
                 <Crown className="h-8 w-8 text-primary" />
@@ -375,7 +377,7 @@ export default function SubscriptionManagement() {
 
       {/* Available Plans */}
       <div>
-        <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-4 text-2xl font-poppins font-bold text-charcoal">
           {currentSubscription && currentSubscription.plan
             ? 'Upgrade or Change Plan'
             : 'Choose a Plan'}

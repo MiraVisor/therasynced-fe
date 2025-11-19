@@ -179,7 +179,9 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Reschedule Appointment</h1>
+                <h1 className="text-lg font-poppins font-semibold text-charcoal">
+                  Reschedule Appointment
+                </h1>
                 <p className="text-sm text-gray-500">Choose a new date and time</p>
               </div>
             </div>
@@ -206,7 +208,7 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900">
+                        <h2 className="text-xl font-poppins font-semibold text-charcoal">
                           {freelancer?.name || 'Unknown'}
                         </h2>
                         <p className="text-gray-600">
@@ -261,7 +263,9 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
             {/* Date Selection - Airbnb style */}
             <Card className="border-0 shadow-sm">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Select a new date</CardTitle>
+                <CardTitle className="text-xl font-poppins font-bold text-charcoal">
+                  Select a new date
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Quick Date Selection */}
@@ -302,7 +306,7 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
             {selectedDate && (
               <Card className="border-0 shadow-sm">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-lg">
+                  <CardTitle className="text-xl font-poppins font-bold text-charcoal">
                     Available times for {getDateDisplay(selectedDate)}
                   </CardTitle>
                 </CardHeader>
@@ -360,7 +364,9 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
             {/* Booking Summary Card - Airbnb style */}
             <Card className="border-0 shadow-sm sticky top-24">
               <CardHeader>
-                <CardTitle className="text-lg">Booking Summary</CardTitle>
+                <CardTitle className="text-xl font-poppins font-bold text-charcoal">
+                  Booking Summary
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Services */}

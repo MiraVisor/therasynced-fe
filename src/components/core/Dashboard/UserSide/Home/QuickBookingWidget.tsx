@@ -41,7 +41,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
       <Card className="border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-poppins font-semibold text-gray-900 dark:text-white">
               Book Your Next Session
             </h2>
           </div>
@@ -73,7 +73,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
     return (
       <Card className="border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-xl font-poppins font-semibold text-gray-900 dark:text-white mb-2">
             Book Your Next Session
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">

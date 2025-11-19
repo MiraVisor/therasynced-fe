@@ -81,13 +81,7 @@ export const EnhancedStatCard: React.FC<EnhancedStatCardProps> = ({
             </div>
             {trend?.label && <p className="text-xs text-muted-foreground mt-1">{trend.label}</p>}
           </div>
-          <div
-            className={cn(
-              'p-3 rounded-2xl transition-all duration-300',
-              iconBg,
-              interactive && 'group-hover:scale-110',
-            )}
-          >
+          <div className={cn('p-3 rounded-2xl', iconBg)}>
             <Icon className={cn('h-6 w-6', iconColor)} />
           </div>
         </div>

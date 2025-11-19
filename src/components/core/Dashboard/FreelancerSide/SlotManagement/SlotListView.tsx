@@ -1,7 +1,7 @@
 'use client';
 
 import { endOfWeek, format, isSameDay, isSameMonth, startOfWeek } from 'date-fns';
-import { Calendar, ChevronRight, Clock, Euro, MapPin, Package } from 'lucide-react';
+import { Calendar, ChevronRight, Clock, MapPin, Package } from 'lucide-react';
 import { View } from 'react-big-calendar';
 
 import { Badge } from '@/components/ui/badge';
@@ -134,14 +134,13 @@ export const SlotListView = ({ slots, onSelectSlot, view, selectedDate }: SlotLi
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Euro className="h-4 w-4" />
                       <div className="flex items-center gap-1">
                         <span>
-                          €{slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+                          EUR {slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
                         </span>
                         {slot.booking?.discountAmount && slot.booking.discountAmount > 0 && (
                           <span className="text-xs text-green-600 line-through">
-                            €{slot.basePrice.toFixed(2)}
+                            EUR {slot.basePrice.toFixed(2)}
                           </span>
                         )}
                       </div>

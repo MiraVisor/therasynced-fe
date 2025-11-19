@@ -78,19 +78,19 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
         <div className="flex items-center gap-4">
           {/* Date Badge */}
           <div
-            className={`px-3 py-1 rounded-full text-sm font-medium ${getDateBadgeColor(booking)}`}
+            className={`px-3 py-1 rounded-full text-sm font-inter font-medium ${getDateBadgeColor(booking)}`}
           >
             {getBookingDate(booking)}
           </div>
 
           {/* Therapist Info */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-poppins font-semibold text-xs flex-shrink-0">
               {getExpertName(booking)?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                <h3 className="font-poppins font-semibold text-gray-900 dark:text-white truncate">
                   {getExpertName(booking)}
                 </h3>
                 <VerificationBadge
@@ -98,7 +98,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
                   size="sm"
                 />
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-3 text-sm font-inter text-gray-600 dark:text-gray-400">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   <span>{getBookingTime(booking)}</span>
@@ -114,8 +114,8 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
           {/* Price and Actions */}
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="font-semibold text-gray-900 dark:text-white">
-                €{booking?.totalAmount || '0'}
+              <div className="font-poppins font-semibold text-gray-900 dark:text-white">
+                EUR {booking?.totalAmount || '0'}
               </div>
             </div>
             <Button

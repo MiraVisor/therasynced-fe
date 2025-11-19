@@ -10,9 +10,19 @@ export interface AdminBookingDto {
   patientName: string;
   therapistId: string;
   therapistName: string;
-  date: string;
-  reason: string;
-  status: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // ISO timestamp
+  endTime: string; // ISO timestamp
+  price: number; // Booking total amount
+  duration: number; // Minutes
+  location: {
+    name: string;
+    address: string;
+    type: string;
+  } | null; // null for HOME locations
+  locationType: string; // 'CLINIC' | 'HOME'
+  createdAt: string; // ISO timestamp
+  status: string; // Booking status
 }
 
 export interface AdminBookingsStatsDto {

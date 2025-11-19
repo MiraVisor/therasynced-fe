@@ -17,9 +17,9 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
-import { ImprovedDatePicker } from '@/components/common/input/ImprovedDatePicker';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -30,8 +30,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { BACKEND_URL } from '@/services/endpoints';
+import { JobTitle } from '@/types/types';
 
 // Define options locally
 const genderOptions = [
@@ -69,7 +71,21 @@ const signupSchema = z
     city: z.string().optional(),
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
+    mainJobTitleId: z.string().optional(),
   })
+  .refine(
+    (data) => {
+      // Job title required for freelancers
+      if (data.role === 'freelancer' && !data.mainJobTitleId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Job title is required for freelancers',
+      path: ['mainJobTitleId'],
+    },
+  )
   .refine((data) => {
     // Password only required if not OAuth
     if (!data.password && !data.email?.includes('@oauth')) {
@@ -107,6 +123,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isRequestingLocation, setIsRequestingLocation] = useState(false);
   const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
+  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
+  const [isLoadingJobTitles, setIsLoadingJobTitles] = useState(false);
 
   const {
     register,
@@ -127,12 +145,57 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       city: '',
       role: '',
       clinicAddress: '',
+      mainJobTitleId: '',
     },
     mode: 'onChange',
   });
 
   const selectedRole = watch('role');
   const selectedDob = watch('dob');
+  const selectedJobTitleId = watch('mainJobTitleId');
+
+  // Load job titles when role is freelancer
+  useEffect(() => {
+    if (selectedRole === 'freelancer' && jobTitles.length === 0) {
+      loadJobTitles();
+    }
+  }, [selectedRole]);
+
+  const loadJobTitles = async () => {
+    try {
+      setIsLoadingJobTitles(true);
+      const response = await dispatch(getActiveJobTitles() as any);
+
+      // Handle both fulfilled and rejected responses
+      if (response.type?.endsWith('/fulfilled')) {
+        if (Array.isArray(response.payload)) {
+          setJobTitles(response.payload);
+          if (response.payload.length === 0) {
+            console.warn('No job titles returned from API');
+          }
+        } else {
+          console.error('Invalid job titles response format:', response.payload);
+          setJobTitles([]);
+        }
+      } else if (response.type?.endsWith('/rejected')) {
+        console.error('Failed to load job titles:', response.payload || response.error);
+        toast.error('Failed to load job titles');
+        setJobTitles([]);
+      } else if (response.payload && Array.isArray(response.payload)) {
+        // Fallback for direct payload
+        setJobTitles(response.payload);
+      } else {
+        console.error('Unexpected response format:', response);
+        setJobTitles([]);
+      }
+    } catch (error) {
+      console.error('Failed to load job titles:', error);
+      toast.error('Failed to load job titles');
+      setJobTitles([]);
+    } finally {
+      setIsLoadingJobTitles(false);
+    }
+  };
 
   // Determine steps based on role
   const getSteps = () => {
@@ -147,7 +210,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         { id: 1, title: 'Role', description: "How you'll use the platform" },
         { id: 2, title: 'Account Setup', description: 'Create your account' },
         { id: 3, title: 'Personal Details', description: 'Additional information' },
-        { id: 4, title: 'Clinic Address', description: 'Add your clinic address' },
+        { id: 4, title: 'Job Title', description: 'Select your profession' },
+        { id: 5, title: 'Clinic Address', description: 'Add your clinic address' },
       ];
     }
     return [{ id: 1, title: 'Role', description: "How you'll use the platform" }];
@@ -210,10 +274,14 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         // For OAuth, only validate name and email were filled
         return await trigger(['name', 'email']);
       case 4:
-        // Clinic address for freelancer
+        // Job title for freelancer
         if (selectedRole === 'freelancer') {
-          return await trigger('clinicAddress');
+          return await trigger('mainJobTitleId');
         }
+        return true;
+      case 5:
+        // Clinic address for freelancer (optional)
+        // No validation needed since it's optional
         return true;
       default:
         return true;
@@ -237,7 +305,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       return;
     }
 
-    if (selectedRole === 'freelancer' && currentStep === 4) {
+    if (selectedRole === 'freelancer' && currentStep === 5) {
       // Freelancer completes after clinic address
       handleSubmit();
       return;
@@ -318,6 +386,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       city: formValues.city || undefined,
       clinicAddress:
         selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,
+      mainJobTitleId:
+        selectedRole === 'freelancer' ? formValues.mainJobTitleId || undefined : undefined,
     };
 
     // Remove undefined values
@@ -353,9 +423,12 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         const dob = getValues('dob');
         return !!dob && !errors.dob;
       case 4:
-        // Clinic address for freelancer (required)
-        const address = getValues('clinicAddress');
-        return !!address && address.trim().length > 0 && !errors.clinicAddress;
+        // Job title for freelancer (required)
+        return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
+      case 5:
+        // Clinic address for freelancer (optional)
+        // Always allow proceeding from this step since clinic address is optional
+        return true;
       default:
         return true;
     }
@@ -649,22 +722,62 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 <label htmlFor="dob" className="text-xs font-inter font-medium text-gray-700">
                   Date of Birth
                 </label>
-                <ImprovedDatePicker
-                  id="dob"
-                  value={selectedDob}
-                  onChange={(date) => {
-                    if (date instanceof Date) {
-                      setValue('dob', date, { shouldValidate: true });
-                    } else {
-                      setValue('dob', undefined, { shouldValidate: true });
-                    }
-                  }}
-                  error={!!errors.dob}
-                  placeholder="DD/MM/YYYY"
-                  aria-label="Date of birth"
-                  aria-invalid={!!errors.dob}
-                  aria-describedby={errors.dob ? 'dob-error' : undefined}
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        'w-full h-10 justify-start text-left font-normal',
+                        !selectedDob && 'text-muted-foreground',
+                        selectedDob && 'text-charcoal',
+                        errors.dob && 'border-red-500 focus:border-red-500',
+                      )}
+                      id="dob"
+                      aria-label="Date of birth"
+                      aria-invalid={!!errors.dob}
+                      aria-describedby={errors.dob ? 'dob-error' : undefined}
+                    >
+                      {selectedDob ? format(selectedDob, 'PPP') : <span>DD/MM/YYYY</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDob}
+                      onSelect={(date) => {
+                        if (date) {
+                          // Validate age (must be 18+)
+                          const today = new Date();
+                          const minAge = new Date(
+                            today.getFullYear() - 18,
+                            today.getMonth(),
+                            today.getDate(),
+                          );
+                          if (date > minAge) {
+                            toast.error('You must be at least 18 years old');
+                            return;
+                          }
+                          setValue('dob', date, { shouldValidate: true });
+                        } else {
+                          setValue('dob', undefined, { shouldValidate: true });
+                        }
+                      }}
+                      disabled={(date) => {
+                        const today = new Date();
+                        const minAge = new Date(
+                          today.getFullYear() - 18,
+                          today.getMonth(),
+                          today.getDate(),
+                        );
+                        return date > minAge || date > today;
+                      }}
+                      captionLayout="dropdown"
+                      fromYear={1900}
+                      toYear={new Date().getFullYear()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 {errors.dob && (
                   <p id="dob-error" className="text-red-500 text-xs font-inter mt-0.5" role="alert">
                     {errors.dob.message}
@@ -748,12 +861,94 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         );
 
       case 4:
+        // Job Title (Freelancer only)
+        return (
+          <div className="w-full space-y-2">
+            <div className="text-center space-y-1 mb-4">
+              <h3 className="text-xl font-poppins font-bold text-charcoal">Job Title</h3>
+              <p className="text-xs font-inter text-gray-600">
+                Select your profession or specialty
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label
+                className="text-xs font-inter font-medium text-gray-700"
+                htmlFor="mainJobTitleId"
+              >
+                Job Title
+              </label>
+              <Select
+                value={selectedJobTitleId || ''}
+                onValueChange={(value) => {
+                  setValue('mainJobTitleId', value, { shouldValidate: true });
+                  trigger('mainJobTitleId');
+                }}
+                disabled={isLoadingJobTitles}
+              >
+                <SelectTrigger
+                  id="mainJobTitleId"
+                  aria-label="Job title"
+                  aria-invalid={!!errors.mainJobTitleId}
+                  aria-describedby={errors.mainJobTitleId ? 'jobTitle-error' : undefined}
+                  className={cn(
+                    'w-full h-10 font-inter text-sm',
+                    errors.mainJobTitleId && 'border-red-500 focus:border-red-500',
+                  )}
+                >
+                  <SelectValue
+                    placeholder={
+                      isLoadingJobTitles
+                        ? 'Loading job titles...'
+                        : jobTitles.length === 0
+                          ? 'No job titles available'
+                          : 'Select your job title'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {jobTitles.length === 0 ? (
+                    <SelectItem value="" disabled>
+                      {isLoadingJobTitles ? 'Loading...' : 'No job titles available'}
+                    </SelectItem>
+                  ) : (
+                    jobTitles.map((jobTitle) => (
+                      <SelectItem key={jobTitle.id} value={jobTitle.id} className="font-inter">
+                        <div>
+                          <span className="text-sm font-medium">{jobTitle.name}</span>
+                          {jobTitle.description && (
+                            <span className="text-xs text-gray-500 block">
+                              {jobTitle.description}
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {errors.mainJobTitleId && (
+                <p
+                  id="jobTitle-error"
+                  className="text-red-500 text-xs font-inter mt-0.5"
+                  role="alert"
+                >
+                  {errors.mainJobTitleId.message}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+
+      case 5:
         // Clinic Address (Freelancer only)
         return (
           <div className="w-full space-y-2">
             <div className="text-center space-y-1 mb-4">
               <h3 className="text-xl font-poppins font-bold text-charcoal">Clinic Address</h3>
-              <p className="text-xs font-inter text-gray-600">Enter your clinic address</p>
+              <p className="text-xs font-inter text-gray-600">
+                Enter your clinic address (optional)
+              </p>
             </div>
 
             <div className="space-y-1">
@@ -761,14 +956,19 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                 className="text-xs font-inter font-medium text-gray-700"
                 htmlFor="clinicAddress"
               >
-                Clinic Address
+                Clinic Address <span className="text-gray-500 font-normal">(optional)</span>
               </label>
               <textarea
                 {...register('clinicAddress', {
-                  required: 'Clinic address is required',
-                  minLength: {
-                    value: 5,
-                    message: 'Address must be at least 5 characters',
+                  // Clinic address is optional, but if provided, it should be at least 5 characters
+                  validate: (value) => {
+                    if (!value || value.trim().length === 0) {
+                      return true; // Empty is allowed
+                    }
+                    if (value.trim().length < 5) {
+                      return 'Address must be at least 5 characters';
+                    }
+                    return true;
                   },
                 })}
                 id="clinicAddress"
@@ -805,7 +1005,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   // Only show step indicator after role selection (step 1)
   const showStepIndicator = currentStep > 1;
   const displayStep = currentStep - 1; // Step number to display (starts from 1 after role selection)
-  const totalSteps = selectedRole === 'patient' ? 2 : selectedRole === 'freelancer' ? 3 : 2; // Total steps after role selection (account setup + personal details + clinic address for freelancer)
+  const totalSteps = selectedRole === 'patient' ? 2 : selectedRole === 'freelancer' ? 4 : 2; // Total steps after role selection (account setup + personal details + job title + clinic address for freelancer)
   const stepsToShow = steps.filter((step) => step.id > 1); // Steps to show in progress bar (exclude role selection)
 
   return (

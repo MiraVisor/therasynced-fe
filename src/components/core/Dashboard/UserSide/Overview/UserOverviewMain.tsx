@@ -2,21 +2,31 @@
 
 import { Search } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { getPatientStamps } from '@/redux/api/loyaltyApi';
-import { fetchFreelancers, loadMoreFreelancers } from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { freelancerService } from '@/services/freelancerService';
 import { Expert } from '@/types/types';
+import { getCurrentFeaturedTier } from '@/utils/tierUtils';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import { ExpertList } from './ExpertSection';
+import SearchWithDropdown from './SearchWithDropdown';
 
 const mapFreelancerToExpert = (freelancer: any): Expert => {
+  // Debug: Log raw freelancer data to check structure
+  if (!freelancer.planFeatures && freelancer.id) {
+    // eslint-disable-next-line no-console
+    console.log('Freelancer missing planFeatures:', {
+      id: freelancer.id,
+      name: freelancer.name,
+      hasPlanFeatures: !!freelancer.planFeatures,
+      allKeys: Object.keys(freelancer),
+      subscriptionPlan: freelancer.subscriptionPlan,
+      tier: freelancer.tier,
+    });
+  }
   // Extract services and their location types
   const services = freelancer.services || [];
   const allLocationTypes = new Set<string>();
@@ -91,43 +101,12 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     // Available slots count
     availableSlots: freelancer.slotSummary?.availableSlots || 0,
     totalSlots: freelancer.slotSummary?.totalSlots || 0,
+    // Tier information
+    planFeatures: freelancer.planFeatures || null,
+    tier: freelancer.planFeatures?.planType || null,
+    // Stamp information (included in API response when user is authenticated)
+    stampInfo: freelancer.stampInfo || null,
   };
-};
-
-// Enhanced Search and Filter Component
-const EnhancedSearchBar = ({
-  onSearch,
-  isSearching,
-}: {
-  onSearch: (query: string) => void;
-  isSearching: boolean;
-}) => {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    onSearch(value);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-        <Input
-          type="text"
-          placeholder="Search freelancers by name, specialty, or keywords..."
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10 pr-4 py-3 text-base border-gray-200 focus:border-primary focus:ring-primary"
-        />
-        {isSearching && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <LoadingSpinner size="md" />
-          </div>
-        )}
-      </div>
-    </div>
-  );
 };
 
 // Enhanced Loading Skeleton
@@ -170,18 +149,205 @@ const ExpertCardSkeleton = () => (
 );
 
 const UserOverview = () => {
-  const dispatch = useDispatch();
-  const { experts, loading, initialLoading, error, pagination, loadingMore } = useSelector(
-    (state: RootState) => state.overview,
-  );
-  const { stampSummaries, isLoading: stampsLoading } = useSelector(
-    (state: RootState) => state.stamps,
-  );
-  const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
+  // Separate state for each tier
+  const [goldFreelancers, setGoldFreelancers] = useState<Expert[]>([]);
+  const [silverFreelancers, setSilverFreelancers] = useState<Expert[]>([]);
+  const [bronzeFreelancers, setBronzeFreelancers] = useState<Expert[]>([]);
+
+  // Loading states per tier
+  const [loadingGold, setLoadingGold] = useState(false);
+  const [loadingSilver, setLoadingSilver] = useState(false);
+  const [loadingBronze, setLoadingBronze] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  // Pagination per tier
+  const [goldPagination, setGoldPagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  } | null>(null);
+  const [silverPagination, setSilverPagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  } | null>(null);
+  const [bronzePagination, setBronzePagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  } | null>(null);
+
+  // Loading more states per tier
+  const [loadingMoreGold, setLoadingMoreGold] = useState(false);
+  const [loadingMoreSilver, setLoadingMoreSilver] = useState(false);
+  const [loadingMoreBronze, setLoadingMoreBronze] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const stampsFetchedRef = useRef(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Featured tier from backend (with fallback to local calculation)
+  const defaultTier = getCurrentFeaturedTier(); // Fallback
+  const [activeTab, setActiveTab] = useState<'gold' | 'silver' | 'bronze'>(defaultTier);
+  const featuredTierSetRef = useRef(false); // Track if we've set tab from backend
+
+  // Fetch tier-specific freelancers
+  const fetchTierFreelancers = useCallback(
+    async (
+      tier: 'gold' | 'silver' | 'bronze',
+      page: number = 1,
+      name?: string,
+      append: boolean = false,
+    ) => {
+      const limit = 6;
+      try {
+        if (tier === 'gold') {
+          if (append) {
+            setLoadingMoreGold(true);
+          } else {
+            setLoadingGold(true);
+          }
+          const response = await freelancerService.getGoldFreelancers({ page, limit, name });
+          if (response.success && Array.isArray(response.data)) {
+            const mapped = response.data.map(mapFreelancerToExpert);
+            if (page === 1 || !append) {
+              setGoldFreelancers(mapped);
+            } else {
+              setGoldFreelancers((prev) => [...prev, ...mapped]);
+            }
+            setGoldPagination(response.pagination);
+
+            // Extract featuredTier from backend response (only on first page load)
+            if (page === 1 && !append && response.featuredTier && !featuredTierSetRef.current) {
+              // Set active tab to featured tier on initial load (only once)
+              setActiveTab(response.featuredTier);
+              featuredTierSetRef.current = true;
+            }
+          }
+          setLoadingGold(false);
+          setLoadingMoreGold(false);
+        } else if (tier === 'silver') {
+          if (append) {
+            setLoadingMoreSilver(true);
+          } else {
+            setLoadingSilver(true);
+          }
+          const response = await freelancerService.getSilverFreelancers({ page, limit, name });
+          if (response.success && Array.isArray(response.data)) {
+            const mapped = response.data.map(mapFreelancerToExpert);
+            if (page === 1 || !append) {
+              setSilverFreelancers(mapped);
+            } else {
+              setSilverFreelancers((prev) => [...prev, ...mapped]);
+            }
+            setSilverPagination(response.pagination);
+
+            // Extract featuredTier from backend response (only on first page load)
+            if (page === 1 && !append && response.featuredTier && !featuredTierSetRef.current) {
+              // Set active tab to featured tier on initial load (only once)
+              setActiveTab(response.featuredTier);
+              featuredTierSetRef.current = true;
+            }
+          }
+          setLoadingSilver(false);
+          setLoadingMoreSilver(false);
+        } else if (tier === 'bronze') {
+          if (append) {
+            setLoadingMoreBronze(true);
+          } else {
+            setLoadingBronze(true);
+          }
+          const response = await freelancerService.getBronzeFreelancers({ page, limit, name });
+          if (response.success && Array.isArray(response.data)) {
+            const mapped = response.data.map(mapFreelancerToExpert);
+            if (page === 1 || !append) {
+              setBronzeFreelancers(mapped);
+            } else {
+              setBronzeFreelancers((prev) => [...prev, ...mapped]);
+            }
+            setBronzePagination(response.pagination);
+
+            // Extract featuredTier from backend response (only on first page load)
+            if (page === 1 && !append && response.featuredTier && !featuredTierSetRef.current) {
+              // Set active tab to featured tier on initial load (only once)
+              setActiveTab(response.featuredTier);
+              featuredTierSetRef.current = true;
+            }
+          }
+          setLoadingBronze(false);
+          setLoadingMoreBronze(false);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`Error fetching ${tier} freelancers:`, error);
+        if (tier === 'gold') {
+          setLoadingGold(false);
+          setLoadingMoreGold(false);
+        } else if (tier === 'silver') {
+          setLoadingSilver(false);
+          setLoadingMoreSilver(false);
+        } else if (tier === 'bronze') {
+          setLoadingBronze(false);
+          setLoadingMoreBronze(false);
+        }
+      }
+    },
+    [],
+  );
+
+  // Load more handlers for each tier
+  const handleLoadMoreGold = useCallback(() => {
+    if (goldPagination?.hasNext && !loadingMoreGold) {
+      fetchTierFreelancers('gold', (goldPagination.page || 1) + 1, searchQuery || undefined, true);
+    }
+  }, [goldPagination, loadingMoreGold, searchQuery, fetchTierFreelancers]);
+
+  const handleLoadMoreSilver = useCallback(() => {
+    if (silverPagination?.hasNext && !loadingMoreSilver) {
+      fetchTierFreelancers(
+        'silver',
+        (silverPagination.page || 1) + 1,
+        searchQuery || undefined,
+        true,
+      );
+    }
+  }, [silverPagination, loadingMoreSilver, searchQuery, fetchTierFreelancers]);
+
+  const handleLoadMoreBronze = useCallback(() => {
+    if (bronzePagination?.hasNext && !loadingMoreBronze) {
+      fetchTierFreelancers(
+        'bronze',
+        (bronzePagination.page || 1) + 1,
+        searchQuery || undefined,
+        true,
+      );
+    }
+  }, [bronzePagination, loadingMoreBronze, searchQuery, fetchTierFreelancers]);
+
+  // Fetch all tiers on initial load
+  useEffect(() => {
+    if (searchQuery) return; // Don't fetch if searching
+
+    setInitialLoading(true);
+    // Fetch Gold first to get featuredTier, then fetch others
+    fetchTierFreelancers('gold', 1)
+      .then(() => {
+        // After getting featuredTier from Gold response, fetch other tiers
+        return Promise.all([fetchTierFreelancers('silver', 1), fetchTierFreelancers('bronze', 1)]);
+      })
+      .finally(() => {
+        setInitialLoading(false);
+      });
+  }, [fetchTierFreelancers, searchQuery]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -194,12 +360,17 @@ const UserOverview = () => {
 
       debounceTimeoutRef.current = setTimeout(() => {
         setSearchQuery(query);
-        // Trigger new fetch with search query
-        dispatch(fetchFreelancers({ page: 1, limit: 6, name: query || undefined }) as any);
-        setIsSearching(false);
+        // Fetch all tiers with search query
+        Promise.all([
+          fetchTierFreelancers('gold', 1, query || undefined),
+          fetchTierFreelancers('silver', 1, query || undefined),
+          fetchTierFreelancers('bronze', 1, query || undefined),
+        ]).finally(() => {
+          setIsSearching(false);
+        });
       }, 500);
     },
-    [dispatch],
+    [fetchTierFreelancers],
   );
 
   const handleSearch = useCallback(
@@ -209,78 +380,9 @@ const UserOverview = () => {
     [debouncedSearch],
   );
 
-  // Infinite scroll setup
-  const hasNextPage = pagination?.hasNext || false;
-
-  // Debug pagination state
-  useEffect(() => {}, [pagination, hasNextPage]);
-
-  const handleLoadMore = () => {
-    if (pagination && hasNextPage && !loadingMore) {
-      dispatch(
-        loadMoreFreelancers({
-          page: pagination.page + 1,
-          limit: 6,
-          name: searchQuery || undefined,
-        }) as any,
-      );
-    }
-  };
-
-  const { loadingRef } = useInfiniteScroll({
-    hasNextPage,
-    isLoading: loadingMore,
-    onLoadMore: handleLoadMore,
-    threshold: 200,
-  });
-
-  // Only fetch initial data if we don't have a search query active
-  useEffect(() => {
-    // Don't fetch if there's an active search query
-    if (searchQuery) return;
-
-    const hasExperts = experts.length > 0;
-    dispatch(fetchFreelancers({ page: 1, limit: 6, silent: hasExperts }) as any);
-  }, [dispatch, experts.length, searchQuery]);
-
-  // Fetch stamps once when page loads (only if not already loaded or loading)
-  useEffect(() => {
-    // Only fetch if:
-    // 1. Not currently loading
-    // 2. Not already fetched (using ref to prevent re-fetches on re-renders)
-    // 3. No stamps data exists
-    if (
-      !stampsLoading &&
-      !stampsFetchedRef.current &&
-      (!stampSummaries || stampSummaries.length === 0)
-    ) {
-      stampsFetchedRef.current = true;
-      dispatch(getPatientStamps() as any);
-    }
-    // Reset ref if stamps are loaded (for future refreshes if needed)
-    if (stampSummaries && stampSummaries.length > 0) {
-      stampsFetchedRef.current = true;
-    }
-  }, [dispatch, stampsLoading, stampSummaries?.length]);
-
-  useEffect(() => {
-    if (!experts || !Array.isArray(experts)) {
-      setFilteredExperts([]);
-      return;
-    }
-
-    // Map experts directly without client-side filtering since we do server-side search now
-    try {
-      const mappedExperts = experts.map(mapFreelancerToExpert);
-      setFilteredExperts(mappedExperts);
-      // Clear searching state when data is loaded
-      setIsSearching(false);
-    } catch (error) {
-      // Handle mapping errors gracefully
-      setFilteredExperts([]);
-      setIsSearching(false);
-    }
-  }, [experts]);
+  // Calculate totals
+  const totalFreelancers =
+    goldFreelancers.length + silverFreelancers.length + bronzeFreelancers.length;
 
   return (
     <DashboardPageWrapper
@@ -296,51 +398,28 @@ const UserOverview = () => {
             </p>
           </div>
 
-          <EnhancedSearchBar onSearch={handleSearch} isSearching={isSearching} />
+          <SearchWithDropdown onSearch={handleSearch} isSearching={isSearching} />
         </div>
       }
     >
       <div className="space-y-8">
-        {/* Results Header */}
-        <div className="flex items-center justify-between">
+        {/* Search Results Info */}
+        {searchQuery && (
           <div>
-            <h2 className="text-xl font-poppins font-semibold text-charcoal">
-              {initialLoading || (loading && experts.length === 0)
-                ? 'Loading freelancers...'
-                : `${filteredExperts.length} freelancers found`}
-            </h2>
-            {searchQuery && (
-              <p className="text-sm font-inter text-muted-foreground mt-1">
-                Results for {searchQuery}
-              </p>
-            )}
+            <p className="text-sm font-inter text-muted-foreground">
+              Results for &quot;{searchQuery}&quot;
+            </p>
           </div>
-        </div>
+        )}
 
         {/* Content */}
-        {initialLoading || (loading && experts.length === 0) ? (
+        {initialLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {Array.from({ length: 9 }).map((_, i) => (
               <ExpertCardSkeleton key={i} />
             ))}
           </div>
-        ) : error ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 bg-error/10 rounded-full flex items-center justify-center">
-              <span className="text-2xl">⚠️</span>
-            </div>
-            <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
-              Unable to load freelancers
-            </h3>
-            <p className="font-inter text-muted-foreground mb-4">{error}</p>
-            <Button
-              onClick={() => dispatch(fetchFreelancers({ page: 1, limit: 12 }) as any)}
-              className="bg-primary hover:bg-primary/90 text-white"
-            >
-              Try Again
-            </Button>
-          </div>
-        ) : filteredExperts.length === 0 ? (
+        ) : totalFreelancers === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <Search className="w-8 h-8 text-gray-400" />
@@ -361,7 +440,12 @@ const UserOverview = () => {
                 if (debounceTimeoutRef.current) {
                   clearTimeout(debounceTimeoutRef.current);
                 }
-                dispatch(fetchFreelancers({ page: 1, limit: 6 }) as any);
+                // Refetch all tiers
+                Promise.all([
+                  fetchTierFreelancers('gold', 1),
+                  fetchTierFreelancers('silver', 1),
+                  fetchTierFreelancers('bronze', 1),
+                ]);
               }}
               variant="outline"
               className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"
@@ -371,27 +455,224 @@ const UserOverview = () => {
           </div>
         ) : (
           <>
-            <ExpertList experts={filteredExperts} />
-
-            {/* Infinite Scroll Loading Indicator */}
-            {hasNextPage && (
-              <div ref={loadingRef} className="flex justify-center py-8">
-                {loadingMore ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full">
-                    {Array.from({ length: 3 }).map((i) => (
-                      <ExpertCardSkeleton key={`loading-${i}`} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <LoadingSpinner size="md" />
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                      Loading more freelancers...
+            {/* Featured Therapists with Tabs */}
+            <div className="space-y-6">
+              {!searchQuery && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-poppins font-bold text-charcoal">
+                      Featured Therapists
+                    </h2>
+                    <p className="text-sm font-inter text-muted-foreground mt-1">
+                      Default tab rotates daily for equal visibility
                     </p>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+
+              {searchQuery ? (
+                // Show all results combined when searching
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-poppins font-bold text-charcoal">
+                      Search Results
+                    </h2>
+                  </div>
+                  {loadingGold || loadingSilver || loadingBronze ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <ExpertCardSkeleton key={`search-skeleton-${i}`} />
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <ExpertList
+                        experts={[...goldFreelancers, ...silverFreelancers, ...bronzeFreelancers]}
+                      />
+                      {(goldPagination?.hasNext ||
+                        silverPagination?.hasNext ||
+                        bronzePagination?.hasNext) && (
+                        <div className="flex justify-center mt-6">
+                          <Button
+                            onClick={() => {
+                              // Load more for all tiers that have more
+                              if (goldPagination?.hasNext && !loadingMoreGold) {
+                                handleLoadMoreGold();
+                              }
+                              if (silverPagination?.hasNext && !loadingMoreSilver) {
+                                handleLoadMoreSilver();
+                              }
+                              if (bronzePagination?.hasNext && !loadingMoreBronze) {
+                                handleLoadMoreBronze();
+                              }
+                            }}
+                            disabled={loadingMoreGold || loadingMoreSilver || loadingMoreBronze}
+                            variant="outline"
+                            className="border-primary text-primary hover:bg-primary/5"
+                          >
+                            {loadingMoreGold || loadingMoreSilver || loadingMoreBronze ? (
+                              <span className="flex items-center gap-2">
+                                <LoadingSpinner size="sm" />
+                                Loading...
+                              </span>
+                            ) : (
+                              `Load More Results`
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value) => setActiveTab(value as 'gold' | 'silver' | 'bronze')}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full max-w-md grid-cols-3">
+                    <TabsTrigger value="gold" className="flex items-center gap-2">
+                      <span className="text-yellow-500">🥇</span>
+                      Gold
+                    </TabsTrigger>
+                    <TabsTrigger value="silver" className="flex items-center gap-2">
+                      <span className="text-gray-400">🥈</span>
+                      Silver
+                    </TabsTrigger>
+                    <TabsTrigger value="bronze" className="flex items-center gap-2">
+                      <span className="text-amber-700">🥉</span>
+                      Bronze
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* Gold Tier Tab */}
+                  <TabsContent value="gold" className="mt-6 space-y-4">
+                    {loadingGold && goldFreelancers.length === 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <ExpertCardSkeleton key={`gold-skeleton-${i}`} />
+                        ))}
+                      </div>
+                    ) : goldFreelancers.length > 0 ? (
+                      <>
+                        <ExpertList experts={goldFreelancers} />
+                        {goldPagination?.hasNext && (
+                          <div className="flex justify-center mt-6">
+                            <Button
+                              onClick={handleLoadMoreGold}
+                              disabled={loadingMoreGold}
+                              variant="outline"
+                              className="border-primary text-primary hover:bg-primary/5"
+                            >
+                              {loadingMoreGold ? (
+                                <span className="flex items-center gap-2">
+                                  <LoadingSpinner size="sm" />
+                                  Loading...
+                                </span>
+                              ) : (
+                                `Load More Gold (${
+                                  (goldPagination.total || 0) - goldFreelancers.length
+                                } remaining)`
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-sm text-muted-foreground">
+                          No Gold freelancers available
+                        </p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  {/* Silver Tier Tab */}
+                  <TabsContent value="silver" className="mt-6 space-y-4">
+                    {loadingSilver && silverFreelancers.length === 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <ExpertCardSkeleton key={`silver-skeleton-${i}`} />
+                        ))}
+                      </div>
+                    ) : silverFreelancers.length > 0 ? (
+                      <>
+                        <ExpertList experts={silverFreelancers} />
+                        {silverPagination?.hasNext && (
+                          <div className="flex justify-center mt-6">
+                            <Button
+                              onClick={handleLoadMoreSilver}
+                              disabled={loadingMoreSilver}
+                              variant="outline"
+                              className="border-primary text-primary hover:bg-primary/5"
+                            >
+                              {loadingMoreSilver ? (
+                                <span className="flex items-center gap-2">
+                                  <LoadingSpinner size="sm" />
+                                  Loading...
+                                </span>
+                              ) : (
+                                `Load More Silver (${
+                                  (silverPagination.total || 0) - silverFreelancers.length
+                                } remaining)`
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-sm text-muted-foreground">
+                          No Silver freelancers available
+                        </p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  {/* Bronze Tier Tab */}
+                  <TabsContent value="bronze" className="mt-6 space-y-4">
+                    {loadingBronze && bronzeFreelancers.length === 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <ExpertCardSkeleton key={`bronze-skeleton-${i}`} />
+                        ))}
+                      </div>
+                    ) : bronzeFreelancers.length > 0 ? (
+                      <>
+                        <ExpertList experts={bronzeFreelancers} />
+                        {bronzePagination?.hasNext && (
+                          <div className="flex justify-center mt-6">
+                            <Button
+                              onClick={handleLoadMoreBronze}
+                              disabled={loadingMoreBronze}
+                              variant="outline"
+                              className="border-primary text-primary hover:bg-primary/5"
+                            >
+                              {loadingMoreBronze ? (
+                                <span className="flex items-center gap-2">
+                                  <LoadingSpinner size="sm" />
+                                  Loading...
+                                </span>
+                              ) : (
+                                `Load More Bronze (${
+                                  (bronzePagination.total || 0) - bronzeFreelancers.length
+                                } remaining)`
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-sm text-muted-foreground">
+                          No Bronze freelancers available
+                        </p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              )}
+            </div>
           </>
         )}
       </div>

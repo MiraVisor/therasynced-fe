@@ -36,27 +36,33 @@ const DashboardWidget: React.FC<DashboardWidgetProps> = ({
 
   const isClickable = !!(href || onClick);
   const cardClassName = isClickable
-    ? `border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group ${className}`
+    ? `border border-gray-200 dark:border-gray-700 cursor-pointer group ${className}`
     : `border border-gray-200 dark:border-gray-700 ${className}`;
 
   return (
     <Card className={cardClassName} onClick={isClickable ? handleClick : undefined}>
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center space-y-3 relative">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-200">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
             <Icon className="w-6 h-6 text-primary" />
           </div>
 
           <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}</div>
-            <div className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</div>
-            {subtitle && <div className="text-xs text-gray-500 dark:text-gray-500">{subtitle}</div>}
+            <div className="text-2xl font-poppins font-bold text-gray-900 dark:text-white">
+              {value}
+            </div>
+            <div className="text-sm font-inter font-medium text-gray-600 dark:text-gray-400">
+              {title}
+            </div>
+            {subtitle && (
+              <div className="text-xs font-inter text-gray-500 dark:text-gray-500">{subtitle}</div>
+            )}
           </div>
 
           {/* Arrow icon for clickable widgets */}
           {(href || onClick) && (
             <div className="absolute top-2 right-2">
-              <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+              <ArrowRight className="w-4 h-4 text-gray-400" />
             </div>
           )}
         </div>

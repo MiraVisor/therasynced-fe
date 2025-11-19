@@ -101,7 +101,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+              <CardTitle className="text-xl font-poppins font-bold text-charcoal mb-1">
                 {freelancer.name}
               </CardTitle>
               <p className="text-gray-600 dark:text-gray-400 mb-2">{freelancer.specialty}</p>

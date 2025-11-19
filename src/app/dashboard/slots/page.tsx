@@ -2,26 +2,28 @@
 
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Clock,
   DollarSign,
   Plus,
   TrendingUp,
+  X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import { DatePicker } from '@/components/common/input/DatePicker';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { CreateSlotForm } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/CreateSlotForm';
 import { DaySlotSection } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/DaySlotSection';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
 import { UpgradeModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/UpgradeModal';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -32,27 +34,20 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getDecodedToken } from '@/lib/utils';
-import * as slotApi from '@/redux/api/slotApi';
 import { getSubscriptionPlans } from '@/redux/api/subscriptionApi';
 import { useAppDispatch, useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
 import { deleteSlot, fetchMySlots, fetchMySlotsStats } from '@/redux/slices/slotSlice';
 import { RootState } from '@/redux/store';
-import { Slot, SlotStats } from '@/types/types';
+import { Slot } from '@/types/types';
 
 const SlotsPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { role } = useAuth();
-  const {
-    slots,
-    isLoading,
-    isCreating,
-    slotStats,
-    isLoadingStats,
-    initialLoadingStats,
-    backgroundRefreshingStats,
-  } = useSelector((state: RootState) => state.slot);
+  const { slots, isLoading, isCreating, slotStats, isLoadingStats, initialLoadingStats } =
+    useSelector((state: RootState) => state.slot);
   const { currentSubscription, plans } = useAppSelector((state) => state.subscription);
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -61,7 +56,6 @@ const SlotsPage = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
 
@@ -120,6 +114,8 @@ const SlotsPage = () => {
     setShowCreateSlotForm(false);
     fetchSlotsForWeek(currentWeekStart, true);
     dispatch(fetchMySlotsStats({ silent: true }) as any);
+    // Scroll to top to see the new slots
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCreateSlotClick = () => {
@@ -151,10 +147,24 @@ const SlotsPage = () => {
     setShowDetailsDialog(true);
   };
 
-  const handleDeleteFromDialog = (slotId: string) => {
-    dispatch(deleteSlot(slotId) as any);
+  const handleDeleteFromDialog = async (slotId: string) => {
     setShowDetailsDialog(false);
-    dispatch(fetchMySlots({ page: 1, limit: 100 }) as any);
+    setSelectedSlot(null);
+    try {
+      await dispatch(deleteSlot(slotId) as any).unwrap();
+      toast.success('Slot deleted successfully');
+      // Update stats after successful deletion
+      dispatch(fetchMySlotsStats({ silent: true }) as any);
+      // Note: The slot is already removed from UI via optimistic update in the reducer
+      // We don't refresh the slots list here to avoid race conditions where the server
+      // might not have processed the delete yet and would restore the slot
+      // The optimistic update ensures immediate UI feedback
+    } catch (error: any) {
+      const errorMessage = error?.error || error?.message || 'Failed to delete slot';
+      toast.error(errorMessage);
+      // Refresh to restore the slot if deletion failed (optimistic update will be overwritten)
+      fetchSlotsForWeek(currentWeekStart, true);
+    }
   };
 
   const handleDeleteSlot = async () => {
@@ -192,7 +202,6 @@ const SlotsPage = () => {
     if (date) {
       const newWeekStart = startOfWeek(date, { weekStartsOn: 1 });
       setCurrentWeekStart(newWeekStart);
-      setShowDatePicker(false);
       fetchSlotsForWeek(newWeekStart, true);
     }
   };
@@ -239,46 +248,198 @@ const SlotsPage = () => {
 
   const weekDays = getWeekDays();
 
-  const renderSlotCard = (slot: Slot) => {
-    return <div key={slot.id} />;
-  };
+  // Check if slot limit is reached
+  const isSlotLimitReached = useMemo(() => {
+    // If unlimited, never reached
+    if (slotStats?.subscriptionInfo?.isUnlimited) return false;
+
+    // Check if remaining slots is 0
+    if (slotStats?.subscriptionInfo?.remainingSlots === 0) return true;
+
+    // Fallback check: if maxSlots is set and totalSlots >= maxSlots
+    if (
+      currentSubscription?.plan?.maxSlots !== null &&
+      currentSubscription?.plan?.maxSlots !== undefined &&
+      slotStats &&
+      slotStats.totalSlots >= (currentSubscription.plan.maxSlots || 0)
+    ) {
+      return true;
+    }
+
+    return false;
+  }, [slotStats, currentSubscription]);
 
   return (
     <DashboardPageWrapper
       userRole={role}
       header={
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-poppins font-bold text-charcoal">Your Schedule</h2>
               <p className="font-inter text-muted-foreground mt-1">
                 Manage your availability and bookings for the week
               </p>
             </div>
-            <Button onClick={handleCreateSlotClick} disabled={isCreating} className="h-11 px-6">
-              {isCreating ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-5 w-5 mr-2" />
-                  Add Availability
-                </>
-              )}
-            </Button>
+            {!isSlotLimitReached && (
+              <Button onClick={handleCreateSlotClick} disabled={isCreating} className="h-11 px-6">
+                {isCreating ? (
+                  <>
+                    <LoadingSpinner size="sm" className="mr-2" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Availability
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       }
     >
       <div className="space-y-6">
+        {/* Create Slot Form - Inline */}
+        {showCreateSlotForm && (
+          <Card className="border-2 border-primary/20 shadow-lg">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-poppins font-semibold text-charcoal">
+                    Add Your Availability
+                  </CardTitle>
+                  <CardDescription>
+                    Set up your available times for clients to book. You can add multiple slots at
+                    once.
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowCreateSlotForm(false)}
+                  className="h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CreateSlotForm onSuccess={handleSlotCreateSuccess} />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Subscription Info Section */}
+        {slotStats?.subscriptionInfo && (
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-poppins font-semibold text-lg text-charcoal">
+                  Subscription & Slot Limits
+                </h3>
+                <p className="font-inter text-sm text-gray-500 mt-1">
+                  {slotStats.subscriptionInfo.planName
+                    ? `${slotStats.subscriptionInfo.planName} Plan`
+                    : 'No active subscription'}
+                </p>
+              </div>
+              {slotStats.subscriptionInfo.remainingSlots === 0 && (
+                <div className="px-3 py-1.5 bg-error/10 border border-error/20 rounded-lg">
+                  <span className="text-xs font-inter font-medium text-error">
+                    Slot limit reached
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {slotStats.subscriptionInfo.isUnlimited ? (
+              <div className="flex items-center gap-2 p-4 bg-success/5 rounded-lg border border-success/20">
+                <div className="flex-1">
+                  <div className="font-poppins text-2xl font-bold text-success mb-1">
+                    Unlimited Slots
+                  </div>
+                  <div className="font-inter text-sm text-gray-600">
+                    {slotStats.subscriptionInfo.activeSlotsCount} active slot
+                    {slotStats.subscriptionInfo.activeSlotsCount !== 1 ? 's' : ''}
+                  </div>
+                </div>
+              </div>
+            ) : slotStats.subscriptionInfo.planName ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-inter text-sm font-medium text-gray-700">
+                    {slotStats.subscriptionInfo.activeSlotsCount} /{' '}
+                    {slotStats.subscriptionInfo.maxSlots} slots used
+                  </span>
+                  <span className="font-inter text-sm font-medium text-charcoal">
+                    {slotStats.subscriptionInfo.remainingSlots !== null
+                      ? `${slotStats.subscriptionInfo.remainingSlots} remaining`
+                      : 'Unlimited'}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      slotStats.subscriptionInfo.remainingSlots === 0
+                        ? 'bg-error'
+                        : slotStats.subscriptionInfo.remainingSlots !== null &&
+                            slotStats.subscriptionInfo.remainingSlots <= 2
+                          ? 'bg-warning'
+                          : 'bg-success'
+                    }`}
+                    style={{
+                      width: `${Math.min(
+                        (slotStats.subscriptionInfo.activeSlotsCount /
+                          (slotStats.subscriptionInfo.maxSlots || 1)) *
+                          100,
+                        100,
+                      )}%`,
+                    }}
+                  />
+                </div>
+                {slotStats.subscriptionInfo.remainingSlots === 0 && (
+                  <div className="mt-3 p-3 bg-error/5 border border-error/20 rounded-lg">
+                    <p className="text-sm font-inter text-error">
+                      You&apos;ve reached your slot limit. Please upgrade your plan to create more
+                      slots.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 border-primary text-primary hover:bg-primary hover:text-white"
+                      onClick={() => router.push('/dashboard/account?tab=subscription')}
+                    >
+                      Upgrade Plan
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm font-inter text-gray-600 mb-3">
+                  Please subscribe to create slots and start accepting bookings.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                  onClick={() => router.push('/dashboard/account?tab=subscription')}
+                >
+                  View Plans
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard
             title="Total Slots"
             value={displayStats.total.toString()}
-            icon={Calendar}
+            icon={CalendarIcon}
             iconColor="text-info"
             iconBg="bg-info/10"
             loading={initialLoadingStats || (isLoadingStats && !slotStats)}
@@ -322,15 +483,31 @@ const SlotsPage = () => {
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            <Button
-              variant="ghost"
-              onClick={() => setShowDatePicker(true)}
-              className="text-base lg:text-lg font-semibold text-charcoal hover:bg-gray-100 px-4 py-2"
-              disabled={isNavigatingWeek}
-            >
-              {format(currentWeekStart, 'MMM d')} -{' '}
-              {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-base lg:text-lg font-semibold text-charcoal hover:bg-gray-100 px-4 py-2"
+                  disabled={isNavigatingWeek}
+                >
+                  {format(currentWeekStart, 'MMM d')} -{' '}
+                  {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="center">
+                <Calendar
+                  mode="single"
+                  selected={currentWeekStart}
+                  onSelect={(date) => {
+                    if (date) {
+                      handleDatePickerChange(date);
+                    }
+                  }}
+                  initialFocus
+                  className="rounded-md border"
+                />
+              </PopoverContent>
+            </Popover>
 
             <Button
               variant="outline"
@@ -374,32 +551,6 @@ const SlotsPage = () => {
           </div>
         )}
       </div>
-
-      {/* Date Picker Dialog */}
-      <Dialog open={showDatePicker} onOpenChange={setShowDatePicker}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Select Date</DialogTitle>
-            <DialogDescription>Choose a date to navigate to that week</DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <DatePicker value={currentWeekStart} onChange={handleDatePickerChange} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Slot Form Dialog */}
-      <Dialog open={showCreateSlotForm} onOpenChange={setShowCreateSlotForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add Your Availability</DialogTitle>
-            <DialogDescription>
-              Set up your available times for clients to book. You can add multiple slots at once.
-            </DialogDescription>
-          </DialogHeader>
-          <CreateSlotForm onSuccess={handleSlotCreateSuccess} />
-        </DialogContent>
-      </Dialog>
 
       {/* Slot Details Dialog */}
       {selectedSlot && (

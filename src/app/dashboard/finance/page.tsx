@@ -8,7 +8,6 @@ import {
   Clock,
   CreditCard,
   DollarSign,
-  RefreshCw,
   TrendingUp,
   Users,
   XCircle,
@@ -31,7 +30,6 @@ import {
 } from 'recharts';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { ChartsSkeleton } from '@/components/ui/skeletons/ChartsSkeleton';
 import { PlansOverviewSkeleton } from '@/components/ui/skeletons/PlansOverviewSkeleton';
@@ -95,17 +93,26 @@ export default function FinancePage() {
 
   // Format currency value
   const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return `EUR ${value.toLocaleString('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value);
+    })}`;
   };
 
   // Format number value
   const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-US').format(value);
+  };
+
+  // Format Y-axis tick for charts
+  const formatYAxisTick = (value: number): string => {
+    if (value >= 1000000) {
+      return `EUR ${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `EUR ${(value / 1000).toFixed(1)}k`;
+    } else {
+      return `EUR ${value}`;
+    }
   };
 
   const statsData = revenueData
@@ -162,7 +169,7 @@ export default function FinancePage() {
     : [
         {
           title: 'Total Revenue',
-          value: '$0',
+          value: 'EUR 0',
           trend: undefined,
           icon: DollarSign,
           iconColor: 'text-primary',
@@ -186,7 +193,7 @@ export default function FinancePage() {
         },
         {
           title: 'Average session price',
-          value: '$0',
+          value: 'EUR 0',
           trend: undefined,
           icon: TrendingUp,
           iconColor: 'text-warning',
@@ -203,25 +210,6 @@ export default function FinancePage() {
             <p className="text-sm text-gray-500 mt-1">
               Track revenue, subscriptions, and financial metrics
             </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => {
-                // Refresh data
-                window.location.reload();
-              }}
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-
-            <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Updated just now</span>
-            </div>
           </div>
         </div>
       }
@@ -256,7 +244,7 @@ export default function FinancePage() {
           {initialLoading || (isLoading && !revenueData && !subscriptionData) ? (
             <RevenueMetricsSkeleton />
           ) : (
-            <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10 rounded-xl p-6 border border-primary/20 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-primary/10 rounded-xl p-6 border border-primary/20 shadow-sm">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -269,7 +257,7 @@ export default function FinancePage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
                       MRR
@@ -279,11 +267,11 @@ export default function FinancePage() {
                   <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
                     {subscriptionData
                       ? formatCurrency(subscriptionData.monthlyRecurringRevenue)
-                      : '$0'}
+                      : 'EUR 0'}
                   </div>
                   <div className="text-xs text-gray-500">Monthly Recurring</div>
                 </div>
-                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
                       Monthly
@@ -291,7 +279,7 @@ export default function FinancePage() {
                     <div className="w-2 h-2 rounded-full bg-info"></div>
                   </div>
                   <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
-                    {subscriptionData ? formatCurrency(subscriptionData.monthlyRevenue) : '$0'}
+                    {subscriptionData ? formatCurrency(subscriptionData.monthlyRevenue) : 'EUR 0'}
                   </div>
                   {subscriptionData?.lastMonthRevenue !== undefined &&
                   subscriptionData.lastMonthRevenue !== 0 ? (
@@ -329,7 +317,7 @@ export default function FinancePage() {
                     <div className="text-xs text-gray-400">No comparison data</div>
                   )}
                 </div>
-                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
                       ARR
@@ -339,11 +327,11 @@ export default function FinancePage() {
                   <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
                     {subscriptionData
                       ? formatCurrency(subscriptionData.annualRecurringRevenue)
-                      : '$0'}
+                      : 'EUR 0'}
                   </div>
                   <div className="text-xs text-gray-500">Annual Recurring</div>
                 </div>
-                <div className="bg-white/90 backdrop-blur rounded-lg p-4 hover:bg-white transition-colors border border-gray-100">
+                <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs font-inter text-gray-500 uppercase tracking-wide">
                       ARPU
@@ -353,7 +341,7 @@ export default function FinancePage() {
                   <div className="font-poppins text-2xl font-bold text-charcoal mb-1">
                     {subscriptionData
                       ? formatCurrency(subscriptionData.averageRevenuePerSubscription)
-                      : '$0'}
+                      : 'EUR 0'}
                   </div>
                   <div className="text-xs text-gray-500">Avg per User</div>
                 </div>
@@ -368,7 +356,7 @@ export default function FinancePage() {
           {isLoading ? (
             <SubscriptionStatusSkeleton />
           ) : (
-            <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="font-poppins font-bold text-lg text-charcoal">
@@ -392,8 +380,8 @@ export default function FinancePage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <div className="group flex flex-col items-center justify-center p-4 bg-success/5 rounded-lg border border-success/20 hover:bg-success/10 hover:border-success/30 transition-all cursor-pointer">
-                  <div className="p-2 bg-success/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center justify-center p-4 bg-success/5 rounded-lg border border-success/20 cursor-pointer">
+                  <div className="p-2 bg-success/10 rounded-full mb-2">
                     <Users className="h-4 w-4 text-success" />
                   </div>
                   <div className="font-poppins text-2xl font-bold text-charcoal">
@@ -401,8 +389,8 @@ export default function FinancePage() {
                   </div>
                   <div className="text-xs font-inter font-medium text-gray-600 mt-1">Active</div>
                 </div>
-                <div className="group flex flex-col items-center justify-center p-4 bg-warning/5 rounded-lg border border-warning/20 hover:bg-warning/10 hover:border-warning/30 transition-all cursor-pointer">
-                  <div className="p-2 bg-warning/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center justify-center p-4 bg-warning/5 rounded-lg border border-warning/20 cursor-pointer">
+                  <div className="p-2 bg-warning/10 rounded-full mb-2">
                     <Clock className="h-4 w-4 text-warning" />
                   </div>
                   <div className="font-poppins text-2xl font-bold text-charcoal">
@@ -410,8 +398,8 @@ export default function FinancePage() {
                   </div>
                   <div className="text-xs font-inter font-medium text-gray-600 mt-1">Trialing</div>
                 </div>
-                <div className="group flex flex-col items-center justify-center p-4 bg-error/5 rounded-lg border border-error/20 hover:bg-error/10 hover:border-error/30 transition-all cursor-pointer">
-                  <div className="p-2 bg-error/10 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center justify-center p-4 bg-error/5 rounded-lg border border-error/20 cursor-pointer">
+                  <div className="p-2 bg-error/10 rounded-full mb-2">
                     <XCircle className="h-4 w-4 text-error" />
                   </div>
                   <div className="font-poppins text-2xl font-bold text-charcoal">
@@ -419,8 +407,8 @@ export default function FinancePage() {
                   </div>
                   <div className="text-xs font-inter font-medium text-gray-600 mt-1">Canceled</div>
                 </div>
-                <div className="group flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg border border-orange-200 hover:bg-orange-100 hover:border-orange-300 transition-all cursor-pointer">
-                  <div className="p-2 bg-orange-100 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg border border-orange-200 cursor-pointer">
+                  <div className="p-2 bg-orange-100 rounded-full mb-2">
                     <AlertTriangle className="h-4 w-4 text-orange-500" />
                   </div>
                   <div className="font-poppins text-2xl font-bold text-charcoal">
@@ -428,8 +416,8 @@ export default function FinancePage() {
                   </div>
                   <div className="text-xs font-inter font-medium text-gray-600 mt-1">Past Due</div>
                 </div>
-                <div className="group flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 hover:border-red-300 transition-all cursor-pointer">
-                  <div className="p-2 bg-red-100 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg border border-red-200 cursor-pointer">
+                  <div className="p-2 bg-red-100 rounded-full mb-2">
                     <Zap className="h-4 w-4 text-red-500" />
                   </div>
                   <div className="font-poppins text-2xl font-bold text-charcoal">
@@ -445,7 +433,7 @@ export default function FinancePage() {
           {isLoading ? (
             <SubscriptionAnalyticsSkeleton />
           ) : (
-            <div className="bg-gradient-to-br from-info/5 via-info/3 to-info/10 rounded-xl p-6 border border-info/20 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-gradient-to-br from-info/5 via-info/3 to-info/10 rounded-xl p-6 border border-info/20 shadow-sm">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-poppins font-bold text-lg text-charcoal">Analytics</h3>
                 <div className="p-1.5 bg-info/10 rounded-lg">
@@ -454,7 +442,7 @@ export default function FinancePage() {
               </div>
               <div className="space-y-3">
                 {/* Retention Rate - Highlighted */}
-                <div className="bg-white/90 backdrop-blur rounded-xl p-5 border border-info/20 hover:border-info/30 transition-all">
+                <div className="bg-white/90 backdrop-blur rounded-xl p-5 border border-info/20">
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="text-xs font-inter text-gray-500 uppercase tracking-wide mb-1">
@@ -470,7 +458,7 @@ export default function FinancePage() {
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-success to-success/70 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-success to-success/70 rounded-full"
                       style={{
                         width: `${subscriptionData ? subscriptionData.retentionRate : 0}%`,
                       }}
@@ -480,7 +468,7 @@ export default function FinancePage() {
 
                 {/* New & Canceled */}
                 <div className="grid grid-cols-1 gap-3">
-                  <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100 hover:border-success/30 hover:bg-white transition-all">
+                  <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-success/10 rounded-lg">
@@ -497,7 +485,7 @@ export default function FinancePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100 hover:border-error/30 hover:bg-white transition-all">
+                  <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-error/10 rounded-lg">
@@ -548,7 +536,7 @@ export default function FinancePage() {
         {isLoading ? (
           <PlansOverviewSkeleton />
         ) : (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="font-poppins font-bold text-lg text-charcoal">
@@ -569,7 +557,7 @@ export default function FinancePage() {
               </Button> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer">
+              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 border border-primary/20 cursor-pointer">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
                 <div className="relative">
                   <div className="flex items-center justify-between mb-4">
@@ -598,7 +586,7 @@ export default function FinancePage() {
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
                         <div
-                          className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full transition-all duration-700 ease-out"
+                          className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full"
                           style={{
                             width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.BRONZE / subscriptionData.totalActive) * 100) : 0}%`,
                           }}
@@ -609,7 +597,7 @@ export default function FinancePage() {
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-info/10 to-info/5 p-6 border border-info/20 hover:border-info/40 hover:shadow-lg transition-all cursor-pointer">
+              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-info/10 to-info/5 p-6 border border-info/20 cursor-pointer">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-info/5 rounded-full -mr-16 -mt-16"></div>
                 <div className="relative">
                   <div className="flex items-center justify-between mb-4">
@@ -638,7 +626,7 @@ export default function FinancePage() {
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
                         <div
-                          className="bg-gradient-to-r from-info to-info/70 h-full rounded-full transition-all duration-700 ease-out"
+                          className="bg-gradient-to-r from-info to-info/70 h-full rounded-full"
                           style={{
                             width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.SILVER / subscriptionData.totalActive) * 100) : 0}%`,
                           }}
@@ -649,7 +637,7 @@ export default function FinancePage() {
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-success/10 to-success/5 p-6 border border-success/20 hover:border-success/40 hover:shadow-lg transition-all cursor-pointer">
+              <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-success/10 to-success/5 p-6 border border-success/20 cursor-pointer">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -mr-16 -mt-16"></div>
                 <div className="relative">
                   <div className="flex items-center justify-between mb-4">
@@ -678,7 +666,7 @@ export default function FinancePage() {
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
                         <div
-                          className="bg-gradient-to-r from-success to-success/70 h-full rounded-full transition-all duration-700 ease-out"
+                          className="bg-gradient-to-r from-success to-success/70 h-full rounded-full"
                           style={{
                             width: `${subscriptionData && subscriptionData.totalActive > 0 ? Math.round((subscriptionData.subscriptionsByPlan.GOLD / subscriptionData.totalActive) * 100) : 0}%`,
                           }}
@@ -715,13 +703,13 @@ export default function FinancePage() {
                         data={
                           revenueData
                             ? [
-                                { name: 'Total Revenue', value: revenueData.totalRevenue.value },
+                                { name: 'This Month', value: revenueData.totalRevenue.value },
                                 { name: 'Avg Monthly', value: revenueData.averageMonthlyRevenue },
                                 { name: 'This Week', value: revenueData.revenueThisWeek },
                                 { name: 'This Year', value: revenueData.revenueThisYear },
                               ]
                             : [
-                                { name: 'Total Revenue', value: 0 },
+                                { name: 'This Month', value: 0 },
                                 { name: 'Avg Monthly', value: 0 },
                                 { name: 'This Week', value: 0 },
                                 { name: 'This Year', value: 0 },
@@ -740,7 +728,7 @@ export default function FinancePage() {
                           axisLine={false}
                           tickLine={false}
                           tick={{ fontSize: 12, fill: '#888' }}
-                          tickFormatter={(value) => `$${value / 1000}k`}
+                          tickFormatter={formatYAxisTick}
                         />
                         <Tooltip
                           contentStyle={{
@@ -792,7 +780,7 @@ export default function FinancePage() {
                           axisLine={false}
                           tickLine={false}
                           tick={{ fontSize: 12, fill: '#888' }}
-                          tickFormatter={(value) => `$${value / 1000}k`}
+                          tickFormatter={formatYAxisTick}
                         />
                         <Tooltip
                           contentStyle={{

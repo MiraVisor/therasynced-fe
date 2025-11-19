@@ -55,7 +55,7 @@ const AnalyticsPage = () => {
 
   // Format currency
   const formatCurrency = (amount: number): string => {
-    return `€${amount.toLocaleString('en-US', {
+    return `EUR ${amount.toLocaleString('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })}`;
@@ -100,7 +100,7 @@ const AnalyticsPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Completed Sessions */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -129,7 +129,7 @@ const AnalyticsPage = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="p-3 rounded-2xl bg-emerald-50 group-hover:scale-110 transition-transform duration-300">
+                  <div className="p-3 rounded-2xl bg-emerald-50">
                     <CheckCircle className="h-6 w-6 text-emerald-600" />
                   </div>
                 </div>
@@ -137,7 +137,7 @@ const AnalyticsPage = () => {
             </Card>
 
             {/* Total Hours */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -149,7 +149,7 @@ const AnalyticsPage = () => {
                       {analyticsData?.completionRate.toFixed(1) || '0.0'}% completion rate
                     </p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-blue-50 group-hover:scale-110 transition-transform duration-300">
+                  <div className="p-3 rounded-2xl bg-blue-50">
                     <Clock className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
@@ -157,7 +157,7 @@ const AnalyticsPage = () => {
             </Card>
 
             {/* Average Rating */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -174,7 +174,7 @@ const AnalyticsPage = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="p-3 rounded-2xl bg-purple-50 group-hover:scale-110 transition-transform duration-300">
+                  <div className="p-3 rounded-2xl bg-purple-50">
                     <Star className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
@@ -182,7 +182,7 @@ const AnalyticsPage = () => {
             </Card>
 
             {/* Active Clients */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-lg transition-all duration-300">
+            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -195,7 +195,7 @@ const AnalyticsPage = () => {
                       returning
                     </p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-amber-50 group-hover:scale-110 transition-transform duration-300">
+                  <div className="p-3 rounded-2xl bg-amber-50">
                     <Users className="h-6 w-6 text-amber-600" />
                   </div>
                 </div>
@@ -258,7 +258,7 @@ const AnalyticsPage = () => {
                       <span className="text-xl font-poppins font-bold text-charcoal">
                         {analyticsData
                           ? formatCurrency(analyticsData.revenueAnalytics.totalRevenue)
-                          : '€0'}
+                          : 'EUR 0'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -268,7 +268,7 @@ const AnalyticsPage = () => {
                       <span className="text-lg font-poppins font-semibold text-charcoal">
                         {analyticsData
                           ? formatCurrency(analyticsData.revenueAnalytics.averageSessionPrice)
-                          : '€0'}
+                          : 'EUR 0'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

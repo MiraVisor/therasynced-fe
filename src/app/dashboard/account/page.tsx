@@ -1,5 +1,6 @@
 'use client';
 
+import { format } from 'date-fns';
 import {
   ArrowRight,
   Award,
@@ -20,7 +21,6 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import { DatePicker } from '@/components/common/input/DatePicker';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import SubscriptionManagement from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionManagement';
@@ -37,8 +37,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -52,6 +54,7 @@ import {
 } from '@/components/ui/skeletons/AccountSectionSkeleton';
 import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkeleton';
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
+import { cn } from '@/lib/utils';
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
@@ -79,6 +82,8 @@ export default function AccountPage() {
   const [activeSection, setActiveSection] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
+  const [isProfessionalInfoLoading, setIsProfessionalInfoLoading] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isSubscriptionLoading] = useState(false);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
@@ -255,9 +260,9 @@ export default function AccountPage() {
     );
   };
 
-  const handleProfileUpdate = async () => {
+  const handlePersonalInfoUpdate = async () => {
     try {
-      setIsLoading(true);
+      setIsPersonalInfoLoading(true);
 
       // Basic validation
       if (!formData.name.trim()) {
@@ -301,8 +306,6 @@ export default function AccountPage() {
         ...(formData.city && { city: formData.city.trim() }),
         ...(formData.gender && { gender: formData.gender }),
         ...(formData.dob && { dob: dobToSend }),
-        ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
-        ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
       });
 
       if (response.success) {
@@ -317,7 +320,32 @@ export default function AccountPage() {
     } catch (error: any) {
       toast.error(error?.message || 'Failed to update profile');
     } finally {
-      setIsLoading(false);
+      setIsPersonalInfoLoading(false);
+    }
+  };
+
+  const handleProfessionalInfoUpdate = async () => {
+    try {
+      setIsProfessionalInfoLoading(true);
+
+      const response = await updateProfile({
+        ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
+        ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
+      });
+
+      if (response.success) {
+        toast.success('Professional information updated successfully');
+        setProfileUpdated(true);
+        await loadUserProfile();
+
+        setTimeout(() => setProfileUpdated(false), 3000);
+      } else {
+        toast.error(response.message || 'Failed to update professional information');
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to update professional information');
+    } finally {
+      setIsProfessionalInfoLoading(false);
     }
   };
 
@@ -418,7 +446,9 @@ export default function AccountPage() {
         {/* Profile Form */}
         <div className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+            <h3 className="text-lg font-poppins font-semibold text-gray-900">
+              Personal Information
+            </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -431,8 +461,8 @@ export default function AccountPage() {
                 placeholder="Enter your full name"
                 value={formData.name || ''}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
-                disabled={isProfileLoading || isLoading}
+                className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+                disabled={isProfileLoading || isPersonalInfoLoading}
               />
             </div>
 
@@ -446,7 +476,7 @@ export default function AccountPage() {
                 placeholder="Enter your email"
                 value={formData.email || ''}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
+                className="h-11 text-sm font-inter border-gray-300 bg-gray-50 cursor-not-allowed text-charcoal"
                 disabled
               />
             </div>
@@ -467,7 +497,7 @@ export default function AccountPage() {
                         ? 'Admin'
                         : 'Unknown'
                 }
-                className="h-11 border-gray-300 bg-gray-50 cursor-not-allowed transition-colors"
+                className="h-11 text-sm font-inter border-gray-300 bg-gray-50 cursor-not-allowed text-charcoal"
                 disabled
               />
               <p className="text-xs text-gray-500">Role cannot be changed</p>
@@ -501,15 +531,24 @@ export default function AccountPage() {
               <Select
                 value={formData.gender || ''}
                 onValueChange={(value) => handleInputChange('gender', value)}
+                disabled={isProfileLoading || isPersonalInfoLoading}
               >
-                <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors">
+                <SelectTrigger className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal data-[placeholder]:text-gray-500">
                   <SelectValue placeholder="Select your gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                  <SelectItem value="male" className="text-sm font-inter">
+                    Male
+                  </SelectItem>
+                  <SelectItem value="female" className="text-sm font-inter">
+                    Female
+                  </SelectItem>
+                  <SelectItem value="other" className="text-sm font-inter">
+                    Other
+                  </SelectItem>
+                  <SelectItem value="prefer_not_to_say" className="text-sm font-inter">
+                    Prefer not to say
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -519,35 +558,75 @@ export default function AccountPage() {
                 Date of Birth
               </Label>
 
-              <div className="h-11">
-                <DatePicker
-                  title=""
-                  value={formData.dob ? new Date(formData.dob) : undefined}
-                  onChange={(date) =>
-                    handleInputChange(
-                      'dob',
-                      date
-                        ? (() => {
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                          })()
-                        : '',
-                    )
-                  }
-                />
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={isProfileLoading || isPersonalInfoLoading}
+                    className={cn(
+                      'w-full h-11 justify-start text-left font-normal text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors',
+                      !formData.dob && 'text-gray-500',
+                      formData.dob && 'text-charcoal',
+                    )}
+                  >
+                    {formData.dob ? (
+                      format(new Date(formData.dob), 'PPP')
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.dob ? new Date(formData.dob) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        // Validate age (must be 18+)
+                        const today = new Date();
+                        const minAge = new Date(
+                          today.getFullYear() - 18,
+                          today.getMonth(),
+                          today.getDate(),
+                        );
+                        if (date > minAge) {
+                          toast.error('You must be at least 18 years old');
+                          return;
+                        }
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        handleInputChange('dob', `${year}-${month}-${day}`);
+                      } else {
+                        handleInputChange('dob', '');
+                      }
+                    }}
+                    disabled={(date) => {
+                      const today = new Date();
+                      const minAge = new Date(
+                        today.getFullYear() - 18,
+                        today.getMonth(),
+                        today.getDate(),
+                      );
+                      return date > minAge || date > today;
+                    }}
+                    captionLayout="dropdown"
+                    fromYear={1900}
+                    toYear={new Date().getFullYear()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-6">
             <Button
-              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
-              onClick={handleProfileUpdate}
-              disabled={isLoading || isProfileLoading}
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
+              onClick={handlePersonalInfoUpdate}
+              disabled={isPersonalInfoLoading || isProfileLoading}
             >
-              {isLoading ? (
+              {isPersonalInfoLoading ? (
                 <>Saving...</>
               ) : (
                 <>
@@ -563,7 +642,9 @@ export default function AccountPage() {
         {role === ROLES.FREELANCER && (
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Professional Information</h3>
+              <h3 className="text-lg font-poppins font-semibold text-gray-900">
+                Professional Information
+              </h3>
               <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
                 Freelancer
               </Badge>
@@ -583,9 +664,9 @@ export default function AccountPage() {
                       handleJobTitleChange(selectedJobTitle);
                     }
                   }}
-                  disabled={isProfileLoading || isLoading || isLoadingJobTitles}
+                  disabled={isProfileLoading || isProfessionalInfoLoading || isLoadingJobTitles}
                 >
-                  <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors">
+                  <SelectTrigger className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal data-[placeholder]:text-gray-500">
                     <SelectValue
                       placeholder={
                         isLoadingJobTitles
@@ -603,11 +684,15 @@ export default function AccountPage() {
                       </div>
                     ) : (
                       jobTitles.map((jobTitle) => (
-                        <SelectItem key={jobTitle.id} value={jobTitle.id}>
+                        <SelectItem
+                          key={jobTitle.id}
+                          value={jobTitle.id}
+                          className="text-sm font-inter"
+                        >
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{jobTitle.name}</span>
+                            <span className="text-sm font-medium font-inter">{jobTitle.name}</span>
                             {jobTitle.description && (
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 font-inter">
                                 - {jobTitle.description}
                               </span>
                             )}
@@ -629,19 +714,19 @@ export default function AccountPage() {
                   placeholder="Enter your clinic or practice address"
                   value={formData.clinicAddress || ''}
                   onChange={(e) => handleInputChange('clinicAddress', e.target.value)}
-                  className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
-                  disabled={isProfileLoading || isLoading}
+                  className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+                  disabled={isProfileLoading || isProfessionalInfoLoading}
                 />
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-6">
               <Button
-                className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
-                onClick={handleProfileUpdate}
-                disabled={isLoading || isProfileLoading}
+                className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
+                onClick={handleProfessionalInfoUpdate}
+                disabled={isProfessionalInfoLoading || isProfileLoading}
               >
-                {isLoading ? (
+                {isProfessionalInfoLoading ? (
                   <>Saving...</>
                 ) : (
                   <>
@@ -666,7 +751,7 @@ export default function AccountPage() {
       <div className="space-y-8">
         {/* Account Status */}
         {/* <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Account Status</h3>
+          <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-6">Account Status</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
@@ -721,7 +806,9 @@ export default function AccountPage() {
 
         {/* Email Management */}
         <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Email Management</h3>
+          <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-6">
+            Email Management
+          </h3>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="newEmail" className="text-sm font-medium text-gray-700">
@@ -733,11 +820,12 @@ export default function AccountPage() {
                 placeholder="Enter new email address"
                 autoComplete="off"
                 defaultValue=""
-                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+                className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+                disabled={isLoading}
               />
             </div>
             <Button
-              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6"
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 text-sm font-inter font-medium"
               onClick={() => {
                 const newEmail = (document.getElementById('newEmail') as HTMLInputElement)?.value;
                 if (newEmail) {
@@ -756,7 +844,9 @@ export default function AccountPage() {
 
         {/* Password Management */}
         <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Password Management</h3>
+          <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-6">
+            Password Management
+          </h3>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -771,7 +861,8 @@ export default function AccountPage() {
                     placeholder="Enter current password"
                     value={passwordData.currentPassword}
                     onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                    className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors pr-10"
+                    className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal pr-10"
+                    disabled={isLoading}
                   />
                   <Button
                     type="button"
@@ -795,7 +886,8 @@ export default function AccountPage() {
                   placeholder="Enter new password"
                   value={passwordData.newPassword}
                   onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-                  className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+                  className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -810,12 +902,13 @@ export default function AccountPage() {
                 placeholder="Confirm new password"
                 value={passwordData.confirmPassword}
                 onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-                className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500 focus:ring-2 transition-colors"
+                className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+                disabled={isLoading}
               />
             </div>
 
             <Button
-              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
               onClick={handlePasswordUpdate}
               disabled={isLoading}
             >
@@ -827,7 +920,7 @@ export default function AccountPage() {
 
         {/* Danger Zone */}
         <div className="bg-white border border-red-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-red-800 mb-4">Danger Zone</h3>
+          <h3 className="text-lg font-poppins font-semibold text-red-800 mb-4">Danger Zone</h3>
           <div className="p-4 border border-red-200 rounded-lg bg-red-50">
             <h4 className="font-medium text-red-800 mb-2">Delete Account</h4>
             <p className="text-sm text-red-600 mb-4">
@@ -851,7 +944,9 @@ export default function AccountPage() {
   const renderNotificationsSection = () => (
     <div className="space-y-8">
       <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Notification Types</h3>
+        <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-6">
+          Notification Types
+        </h3>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white">
@@ -900,7 +995,7 @@ export default function AccountPage() {
     return (
       <div className="space-y-8">
         <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Help & Support</h3>
+          <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-6">Help & Support</h3>
 
           <div className="space-y-6">
             {/* Contact Admin Button */}
@@ -979,7 +1074,7 @@ export default function AccountPage() {
       userRole={role}
       header={
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
+          <h1 className="text-3xl font-poppins font-bold text-gray-900">Account Settings</h1>
           <p className="text-gray-600 text-lg">Manage your account settings and preferences</p>
         </div>
       }

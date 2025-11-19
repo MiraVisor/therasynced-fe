@@ -144,7 +144,7 @@ export function TotalRevenueChart() {
         <div className="flex items-center gap-2 min-w-[220px] justify-end">
           <Popover>
             <PopoverTrigger asChild>
-              <button className="inline-flex items-center rounded-md border border-gray-200 bg-white px-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <button className="inline-flex items-center rounded-md border border-gray-200 bg-white px-4 py-2 text-base font-inter font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
                 <span className="mr-2">
                   {selectedMonth} {selectedYear}
                 </span>

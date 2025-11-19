@@ -71,12 +71,10 @@ const AdminHome = () => {
 
   // Format currency value
   const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return `EUR ${value.toLocaleString('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value);
+    })}`;
   };
 
   // Format number value
@@ -120,7 +118,7 @@ const AdminHome = () => {
     },
     {
       title: 'Sessions This Month',
-      value: formatCurrency(overviewData?.sessionsThisMonth?.value || 0),
+      value: formatNumber(overviewData?.sessionsThisMonth?.value || 0),
       trend: {
         value: Math.abs(overviewData?.sessionsThisMonth?.percentageChange || 0),
         isUp: (overviewData?.sessionsThisMonth?.percentageChange || 0) >= 0,

@@ -41,7 +41,7 @@ const FreelancerHome = () => {
 
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
-    return `€${(revenueInCents / 100).toLocaleString('en-US', {
+    return `EUR ${(revenueInCents / 100).toLocaleString('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })}`;
@@ -84,7 +84,7 @@ const FreelancerHome = () => {
           value: '0',
           icon: <Calendar className="h-4 w-4 text-primary" />,
         },
-        { label: 'Revenue', value: '€0', icon: <Coins className="h-4 w-4 text-success" /> },
+        { label: 'Revenue', value: 'EUR 0', icon: <Coins className="h-4 w-4 text-success" /> },
         { label: 'Messages', value: '0', icon: <MessageSquare className="h-4 w-4 text-info" /> },
         { label: 'Growth', value: '+0%', icon: <TrendingUp className="h-4 w-4 text-warning" /> },
       ];

@@ -1,7 +1,7 @@
-import { CheckCircle, CheckCircle2, Heart, Loader2, Stamp, Star } from 'lucide-react';
+import { CheckCircle2, Heart, Loader2, Stamp, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TierBadge } from '@/components/ui/tier-badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VerificationBadge } from '@/components/ui/verification-badge';
+import { cn } from '@/lib/utils';
 import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
-import { Expert } from '@/types/types';
+import { Expert, SubscriptionPlanType } from '@/types/types';
 
 interface ExpertCardProps extends Expert {
   showFavoriteText?: boolean;
@@ -28,6 +29,7 @@ interface ExpertCardProps extends Expert {
     | 'REJECTED'
     | 'UNVERIFIED';
   firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  tier?: SubscriptionPlanType | null;
 }
 
 const ExpertCard: React.FC<ExpertCardProps> = ({
@@ -49,16 +51,15 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   slots = [],
   verificationStatus = 'unverified',
   firstAidCertificateStatus,
+  tier,
+  planFeatures,
+  stampInfo,
 }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
-
-  // Get stamp information for this therapist
-  const { stampSummaries } = useSelector((state: RootState) => state.stamps);
-  const therapistStamp = stampSummaries?.find((stamp) => stamp.therapist.id === id);
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
     const freelancerData = {
@@ -117,9 +118,50 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   // Check if slots are available
   const hasAvailableSlots = slots && slots.length > 0;
 
+  // Get tier from props or planFeatures
+  const freelancerTier = tier || planFeatures?.planType || null;
+
+  // Get pricing information from new structure
+  const getPricingInfo = () => {
+    if (!pricing) return null;
+
+    // Check for new pricing structure (lowestPrice, currency, hasPriceRange)
+    if ('lowestPrice' in pricing && pricing.lowestPrice) {
+      return {
+        lowestPrice: pricing.lowestPrice,
+        highestPrice: 'highestPrice' in pricing ? pricing.highestPrice : null,
+        currency: 'currency' in pricing && pricing.currency ? pricing.currency : 'EUR',
+        hasPriceRange: 'hasPriceRange' in pricing ? pricing.hasPriceRange : false,
+      };
+    }
+
+    // Fallback to old structure for backward compatibility
+    const prices: number[] = [];
+    if (pricing.online?.min) prices.push(pricing.online.min);
+    if (pricing.office?.min) prices.push(pricing.office.min);
+    if (pricing.home?.min) prices.push(pricing.home.min);
+
+    if (prices.length > 0) {
+      return {
+        lowestPrice: Math.min(...prices),
+        highestPrice: null,
+        currency: 'EUR',
+        hasPriceRange: false,
+      };
+    }
+
+    return null;
+  };
+
+  const pricingInfo = getPricingInfo();
+
   return (
     <TooltipProvider>
-      <Card className="group transition-all duration-300 border-gray-200/80 dark:border-gray-700 overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm hover:border-primary/30 shadow-soft hover:shadow-soft-lg min-h-[320px] flex flex-col">
+      <Card
+        className={cn(
+          'group overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm shadow-soft min-h-[320px] flex flex-col border-gray-200/80 dark:border-gray-700',
+        )}
+      >
         <CardHeader className="pb-3 px-4">
           {showFavoriteText && (
             <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-white">
@@ -132,15 +174,25 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               <div className="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-base flex-shrink-0 border-2 border-primary/20">
                 {freelancerName?.charAt(0).toUpperCase()}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate transition-colors">
+              <div className="flex-1 min-w-0 space-y-1.5">
+                {/* Row 1: Name and Verification Badge */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-base font-poppins font-semibold text-gray-900 dark:text-white truncate">
                     {freelancerName}
                   </h4>
                   <VerificationBadge status={verificationStatus} size="sm" />
                 </div>
+
+                {/* Row 2: Tier Badge */}
+                {freelancerTier && (
+                  <div>
+                    <TierBadge tier={freelancerTier} size="sm" showIcon={true} />
+                  </div>
+                )}
+
+                {/* Row 3: Rating/Reviews */}
                 {rating && rating > 0 ? (
-                  <div className="flex items-center gap-1 mt-2">
+                  <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
@@ -152,18 +204,14 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                     </span>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    No ratings yet
-                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">No ratings yet</div>
                 )}
               </div>
             </div>
 
             <button
-              className={`p-2 rounded-full transition-all duration-200 hover:scale-110 flex-shrink-0 ${
-                isFavorite
-                  ? 'text-red-500 bg-red-50 dark:bg-red-900/20'
-                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+              className={`p-2 rounded-full flex-shrink-0 ${
+                isFavorite ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'text-gray-400'
               } ${isFavoriteLoading ? 'cursor-not-allowed opacity-50' : ''}`}
               onClick={handleFavorite}
               disabled={isFavoriteLoading}
@@ -181,10 +229,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
           {/* Expert Details */}
           <div className="mb-4 space-y-2 bg-gradient-to-br from-mint/10 to-transparent rounded-lg p-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-inter text-muted-foreground">Experience:</span>
-              <span className="font-poppins font-semibold text-charcoal">{yearsOfExperience}</span>
-            </div>
             {cardInfo?.patientStories && (
               <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-muted-foreground">Reviews:</span>
@@ -196,34 +240,48 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
             <div className="flex items-center justify-between text-sm">
               <span className="font-inter text-muted-foreground">Stamps:</span>
               <div className="flex items-center gap-1.5">
-                {Array.from({ length: therapistStamp?.stampTarget || 5 }, (_, index) => {
-                  const isFilled = therapistStamp && index < therapistStamp.currentStampCount;
-                  return (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-center w-5 h-5 rounded-full border transition-all ${
-                        isFilled
-                          ? 'bg-primary border-primary text-white'
-                          : 'bg-gray-100 border-gray-300 text-gray-400'
-                      }`}
-                    >
-                      {isFilled ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <Stamp className="h-3 w-3" />
-                      )}
-                    </div>
-                  );
-                })}
+                {(() => {
+                  const target = stampInfo?.stampTarget ?? 5;
+                  const currentCount = Number(stampInfo?.currentStampCount ?? 0);
+                  const maxCount = Math.min(currentCount, target);
+                  return Array.from({ length: target }, (_, index) => {
+                    const isFilled = stampInfo && index < maxCount;
+                    return (
+                      <div
+                        key={index}
+                        className={`flex items-center justify-center w-5 h-5 rounded-full border ${
+                          isFilled
+                            ? 'bg-primary border-primary text-white'
+                            : 'bg-gray-100 border-gray-300 text-gray-400'
+                        }`}
+                      >
+                        {isFilled ? (
+                          <CheckCircle2 className="h-3 w-3" />
+                        ) : (
+                          <Stamp className="h-3 w-3" />
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
             {(availableSlots || 0) > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-muted-foreground">Availability:</span>
-                <div className="flex items-center gap-1 text-success">
-                  <CheckCircle className="w-3 h-3" />
-                  <span className="font-poppins font-semibold">{availableSlots || 0} slots</span>
-                </div>
+                <span className="font-poppins font-semibold text-success">
+                  {availableSlots || 0} slots
+                </span>
+              </div>
+            )}
+            {pricingInfo && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-inter text-muted-foreground">Starting price:</span>
+                <span className="font-poppins font-semibold text-charcoal">
+                  {pricingInfo.hasPriceRange && pricingInfo.highestPrice
+                    ? `${pricingInfo.currency} ${pricingInfo.lowestPrice} - ${pricingInfo.highestPrice}`
+                    : `${pricingInfo.currency} ${pricingInfo.lowestPrice}`}
+                </span>
               </div>
             )}
           </div>
@@ -289,18 +347,22 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                   {/* Profile Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <DialogTitle className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white truncate">
+                      <DialogTitle className="text-2xl lg:text-3xl font-poppins font-bold text-gray-900 dark:text-white truncate">
                         {freelancerName}
                       </DialogTitle>
                       <VerificationBadge status={verificationStatus} size="md" />
                     </div>
 
                     {jobTitle?.name && (
-                      <p className="text-lg text-primary font-medium mb-1">{jobTitle.name}</p>
+                      <p className="text-lg font-inter text-primary font-medium mb-1">
+                        {jobTitle.name}
+                      </p>
                     )}
 
                     {specialty && (
-                      <p className="text-base text-gray-600 dark:text-gray-400 mb-2">{specialty}</p>
+                      <p className="text-base font-inter text-gray-600 dark:text-gray-400 mb-2">
+                        {specialty}
+                      </p>
                     )}
 
                     {/* Rating and Experience */}
@@ -320,15 +382,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                       ) : (
                         <span className="text-gray-500 dark:text-gray-400">No ratings yet</span>
                       )}
-
-                      {yearsOfExperience && (
-                        <>
-                          <span className="text-gray-300 dark:text-gray-600">•</span>
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {yearsOfExperience} years experience
-                          </span>
-                        </>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -337,46 +390,49 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
             {/* Content */}
             <div className="p-6 space-y-6">
-              {/* Description */}
-              {description && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    About
-                  </h4>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{description}</p>
-                </div>
-              )}
-
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">{availableSlots || 0}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Available Slots</div>
+                  <div className="text-2xl font-poppins font-bold text-primary mb-1">
+                    {availableSlots || 0}
+                  </div>
+                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                    Available Slots
+                  </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">
+                  <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {cardInfo?.patientStories || 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
+                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                    Total Reviews
+                  </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">{services.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Services</div>
+                  <div className="text-2xl font-poppins font-bold text-primary mb-1">
+                    {services.length}
+                  </div>
+                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                    Services
+                  </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">{sessionTypes.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Session Types</div>
+                  <div className="text-2xl font-poppins font-bold text-primary mb-1">
+                    {sessionTypes.length}
+                  </div>
+                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                    Session Types
+                  </div>
                 </div>
               </div>
 
               {/* Services Section */}
               {services.length > 0 && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
                     Services Offered
                   </h4>
@@ -385,7 +441,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                       <Badge
                         key={index}
                         variant="secondary"
-                        className="px-3 py-2 text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+                        className="px-3 py-2 text-sm font-medium bg-primary/10 text-primary border border-primary/20"
                       >
                         {service.name}
                       </Badge>
@@ -397,7 +453,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               {/* Session Types */}
               {sessionTypes && sessionTypes.length > 0 && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
                     Session Types Available
                   </h4>
@@ -418,38 +474,38 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               {/* Pricing Information */}
               {pricing && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
                     Pricing Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {pricing.online && (
                       <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <div className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-1">
                           Online Sessions
                         </div>
-                        <div className="text-lg font-bold text-gray-900 dark:text-white">
-                          ${pricing.online.min} - ${pricing.online.max}
+                        <div className="text-lg font-poppins font-bold text-gray-900 dark:text-white">
+                          EUR {pricing.online.min} - {pricing.online.max}
                         </div>
                       </div>
                     )}
                     {pricing.office && (
                       <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <div className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-1">
                           Office Sessions
                         </div>
-                        <div className="text-lg font-bold text-gray-900 dark:text-white">
-                          ${pricing.office.min} - ${pricing.office.max}
+                        <div className="text-lg font-poppins font-bold text-gray-900 dark:text-white">
+                          EUR {pricing.office.min} - {pricing.office.max}
                         </div>
                       </div>
                     )}
                     {pricing.home && (
                       <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <div className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-1">
                           Home Visits
                         </div>
-                        <div className="text-lg font-bold text-gray-900 dark:text-white">
-                          ${pricing.home.min} - ${pricing.home.max}
+                        <div className="text-lg font-poppins font-bold text-gray-900 dark:text-white">
+                          EUR {pricing.home.min} - {pricing.home.max}
                         </div>
                       </div>
                     )}
@@ -491,56 +547,43 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               {/* Action Buttons */}
               <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 {/* Primary Action */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {hasAvailableSlots ? (
-                    <Button
-                      className="h-12 text-base font-semibold shadow-md bg-primary hover:bg-primary/90 text-white"
-                      onClick={() => {
-                        setShowProfileDialog(false);
-                        handleBookNow();
-                      }}
-                      tabIndex={1}
-                      autoFocus
-                    >
-                      📅 Book a Session
-                    </Button>
-                  ) : (
-                    <TooltipProvider delayDuration={300}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-block w-full">
-                            <Button
-                              className="w-full h-12 text-base font-semibold shadow-md bg-primary/50 text-white opacity-60 cursor-not-allowed hover:bg-primary/50"
-                              disabled
-                              tabIndex={1}
-                              autoFocus
-                            >
-                              📅 Book a Session
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
-                          <div className="flex items-center gap-2">
-                            <span className="text-orange-400">⚠️</span>
-                            <span>No slots available</span>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-
+                {hasAvailableSlots ? (
                   <Button
-                    variant="outline"
-                    className="h-12 text-base font-semibold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
+                    className="w-full h-12 text-base font-semibold shadow-md bg-primary hover:bg-primary/90 text-white"
                     onClick={() => {
                       setShowProfileDialog(false);
-                      router.push(`/dashboard/explore`);
+                      handleBookNow();
                     }}
-                    tabIndex={2}
+                    tabIndex={1}
+                    autoFocus
                   >
-                    🔍 View All Therapists
+                    Book a Session
                   </Button>
-                </div>
+                ) : (
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-block w-full">
+                          <Button
+                            variant="outline"
+                            className="w-full h-12 text-base font-semibold shadow-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-400"
+                            disabled
+                            tabIndex={1}
+                            autoFocus
+                          >
+                            Book a Session
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
+                        <div className="flex items-center gap-2">
+                          <span className="text-orange-400">⚠️</span>
+                          <span>No slots available</span>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
 
                 {/* Secondary Actions */}
                 <div className="grid grid-cols-2 gap-3">
@@ -562,7 +605,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                     onClick={() => setShowReportDialog(true)}
                     tabIndex={4}
                   >
-                    🚨 Report
+                    Report
                   </Button>
                 </div>
               </div>

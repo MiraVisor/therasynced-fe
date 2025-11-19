@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import { Check, CheckCheck, ChevronLeft, Search, Send, User } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -44,6 +45,8 @@ const MessagesPage = () => {
   const currentUser = getDecodedToken();
   const currentUserId = currentUser?.sub;
   const { role } = useAuth();
+  const searchParams = useSearchParams();
+  const targetUserId = searchParams.get('userId') || searchParams.get('freelancerId');
 
   const {
     contacts,
@@ -63,6 +66,8 @@ const MessagesPage = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showChat, setShowChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasHandledUserIdRef = useRef(false);
+  const previousTargetUserIdRef = useRef<string | null>(null);
 
   const selectedContact = activeConversationId
     ? getContactByConversationId(activeConversationId)
@@ -80,6 +85,82 @@ const MessagesPage = () => {
       setTimeout(scrollToBottom, 100);
     }
   }, [activeConversation, loading.messages, selectedContact?.conversationId]);
+
+  // Reset handler when targetUserId changes (e.g., navigating from different bookings)
+  useEffect(() => {
+    if (targetUserId !== previousTargetUserIdRef.current) {
+      hasHandledUserIdRef.current = false;
+      previousTargetUserIdRef.current = targetUserId;
+    }
+  }, [targetUserId]);
+
+  // Handle userId/freelancerId query parameter - find or create conversation
+  useEffect(() => {
+    if (targetUserId && !hasHandledUserIdRef.current && !loading.contacts) {
+      // Wait for contacts to load
+      if (contacts.length === 0 && loading.contacts) {
+        return;
+      }
+
+      hasHandledUserIdRef.current = true;
+
+      // Find contact by userId
+      const contact = contacts.find((c) => c.id === targetUserId);
+
+      if (contact) {
+        // Contact exists, select the conversation
+        selectConversation(contact.conversationId);
+        if (isMobile) {
+          setShowChat(true);
+        }
+        // Mark as read if there are unread messages
+        if (contact.unreadCount > 0) {
+          setTimeout(() => {
+            markConversationAsRead(contact.conversationId);
+          }, 500);
+        }
+      } else {
+        // Contact doesn't exist, send a message to create conversation
+        // The sendMessage will create the conversation automatically
+        const createConversation = async () => {
+          try {
+            await sendMessage(targetUserId, 'Hello!');
+            // The contact will appear via socket updates, handled in the next useEffect
+          } catch (error: any) {
+            console.error('Failed to start conversation:', error);
+            toast.error(error?.message || 'Failed to start conversation');
+            hasHandledUserIdRef.current = false; // Allow retry
+          }
+        };
+
+        createConversation();
+      }
+    }
+  }, [
+    targetUserId,
+    contacts,
+    loading.contacts,
+    selectConversation,
+    sendMessage,
+    isMobile,
+    markConversationAsRead,
+  ]);
+
+  // Handle new contact appearing after sending message (when conversation is created)
+  useEffect(() => {
+    if (targetUserId && hasHandledUserIdRef.current) {
+      const contact = contacts.find((c) => c.id === targetUserId);
+      if (contact) {
+        // Contact appeared (either existed or was just created), select it if not already selected
+        if (activeConversationId !== contact.conversationId) {
+          selectConversation(contact.conversationId);
+          if (isMobile) {
+            setShowChat(true);
+          }
+        }
+      }
+    }
+  }, [contacts, targetUserId, activeConversationId, selectConversation, isMobile]);
 
   // Mark messages as read when viewing a conversation with unread messages
   useEffect(() => {

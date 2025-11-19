@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Building, CheckCircle2, Clock, DollarSign, Home } from 'lucide-react';
+import { Building, CheckCircle2, Clock, Home } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -100,9 +100,8 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
           </Badge>
           <div className="text-right">
             <div className="flex items-center gap-1 mb-0.5">
-              <DollarSign className="h-3 w-3 text-muted-foreground" />
               <span className="text-lg font-poppins font-bold text-primary">
-                €{slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+                EUR {slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
               </span>
             </div>
             {slot.booking?.discountAmount && slot.booking.discountAmount > 0 && (
@@ -116,9 +115,12 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, isSelected })
         {/* Main Content */}
         <div className="flex items-start gap-3">
           {/* Time */}
-          <div className="flex flex-col items-center justify-center bg-primary/5 rounded-lg p-3 min-w-[60px] border border-primary/10">
+          <div className="flex flex-col items-center justify-center bg-primary/5 rounded-lg p-3 min-w-[70px] border border-primary/10">
             <div className="text-xl font-poppins font-bold text-primary">
               {format(slotDate, 'h:mm')}
+            </div>
+            <div className="text-[10px] font-inter font-medium text-primary/70 uppercase tracking-wide">
+              {format(slotDate, 'a')}
             </div>
             <div className="text-[10px] font-inter text-muted-foreground mt-0.5">
               {slot.duration}min

@@ -1,4 +1,5 @@
-// 'use client';
+'use client';
+
 import UserOverviewMain from '@/components/core/Dashboard/UserSide/Overview/UserOverviewMain';
 
 const ExplorePage = () => {

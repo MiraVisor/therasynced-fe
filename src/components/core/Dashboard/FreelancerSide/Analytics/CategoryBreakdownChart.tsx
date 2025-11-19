@@ -114,7 +114,7 @@ const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownCh
                 if (name === 'percentage') {
                   return [`${value.toFixed(1)}%`, 'Percentage'];
                 }
-                return [`€${value}`, 'Revenue'];
+                return [`EUR ${value}`, 'Revenue'];
               }}
               labelFormatter={(label) => chartData.find((d) => d.name === label)?.fullName || label}
             />

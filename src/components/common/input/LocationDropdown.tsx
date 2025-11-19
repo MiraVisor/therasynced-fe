@@ -122,8 +122,9 @@ export function LocationDropdown({
                     variant="outline"
                     role="combobox"
                     className={cn(
-                      'w-full h-10 justify-between font-inter border-gray-300 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-all duration-200 text-sm',
-                      (!field.value || field.value.trim() === '') && 'text-muted-foreground',
+                      'w-full h-11 justify-between font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-all duration-200 text-sm',
+                      (!field.value || field.value.trim() === '') && 'text-gray-500',
+                      field.value && field.value.trim() !== '' && 'text-charcoal',
                     )}
                   >
                     {field.value && field.value.trim() !== ''
@@ -148,11 +149,12 @@ export function LocationDropdown({
                             form.setValue('location', location.value);
                             onValueChange(location.value);
                           }}
+                          className="text-sm font-inter data-[selected=true]:!bg-gray-100 data-[selected=true]:!text-gray-900 hover:bg-gray-50"
                         >
                           {location.label}
                           <Check
                             className={cn(
-                              'ml-auto h-4 w-4',
+                              'ml-auto h-4 w-4 text-gray-600',
                               location.value === field.value ? 'opacity-100' : 'opacity-0',
                             )}
                           />

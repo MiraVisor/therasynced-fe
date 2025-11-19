@@ -74,19 +74,21 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-poppins font-semibold text-sm flex-shrink-0">
               {freelancer.name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">{freelancer.name}</h2>
+                <h2 className="text-xl font-poppins font-semibold">{freelancer.name}</h2>
                 <VerificationBadge
                   status={freelancer.verificationStatus || 'unverified'}
                   size="sm"
                 />
               </div>
               {freelancer.specialty && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{freelancer.specialty}</p>
+                <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                  {freelancer.specialty}
+                </p>
               )}
             </div>
           </DialogTitle>
@@ -111,7 +113,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
 
           {/* Available Slots */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Available Times</h3>
+            <h3 className="text-lg font-poppins font-semibold mb-4">Available Times</h3>
             {availableSlots.length > 0 ? (
               <div className="grid gap-3">
                 {availableSlots.map((slot) => {
@@ -146,7 +148,9 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                               </span>
                             </div>
                           </div>
-                          <div className="text-lg font-semibold text-primary">€{slot.price}</div>
+                          <div className="text-lg font-poppins font-semibold text-primary">
+                            EUR {slot.price}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

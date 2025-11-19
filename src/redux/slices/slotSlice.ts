@@ -48,7 +48,13 @@ export const createSlot = createAsyncThunk(
       const response = await slotApi.createSlot(data);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create slot');
+      // The API interceptor wraps errors, so check multiple possible locations
+      const errorMessage =
+        error?.message ||
+        error?.data?.message ||
+        error?.response?.data?.message ||
+        'Failed to create slot';
+      return rejectWithValue(errorMessage);
     }
   },
 );
@@ -194,7 +200,7 @@ const slotSlice = createSlice({
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
-        state.slots.unshift(...tempSlots);
+        state.slots.unshift(...(tempSlots as Slot[]));
       })
       .addCase(createSlot.fulfilled, (state, action) => {
         state.isCreating = false;

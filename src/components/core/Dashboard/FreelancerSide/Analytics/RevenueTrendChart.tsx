@@ -98,7 +98,7 @@ const RevenueTrendChart = ({ data, isLoading = false }: RevenueTrendChartProps) 
               tickMargin={6}
               tick={{ fill: '#2C3E50', fontSize: 11 }}
               width={50}
-              tickFormatter={(value) => `€${value}`}
+              tickFormatter={(value) => `EUR ${value}`}
             />
             <Tooltip
               contentStyle={{
@@ -107,7 +107,7 @@ const RevenueTrendChart = ({ data, isLoading = false }: RevenueTrendChartProps) 
                 borderRadius: '8px',
                 padding: '8px',
               }}
-              formatter={(value: number) => [`€${value}`, 'Revenue']}
+              formatter={(value: number) => [`EUR ${value}`, 'Revenue']}
             />
             <Area
               type="monotone"

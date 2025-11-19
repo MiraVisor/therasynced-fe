@@ -1,5 +1,18 @@
 import { format } from 'date-fns';
-import { Award, CheckCircle2, Edit2, Gift, Mail, Package, Save, XCircle } from 'lucide-react';
+import {
+  Award,
+  Calendar,
+  CheckCircle2,
+  Edit2,
+  Gift,
+  Mail,
+  MessageSquare,
+  Package,
+  Save,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -35,6 +48,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   onDelete,
   onEdit,
 }) => {
+  const router = useRouter();
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(slot.notes || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -44,15 +58,6 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   useEffect(() => {
     setNotes(slot.notes || '');
   }, [slot.notes]);
-
-  // Debug: Log service categories
-  useEffect(() => {
-    if (isOpen) {
-      console.log('Slot in dialog:', slot);
-      console.log('Available Service Categories:', slot.availableServiceCategories);
-      console.log('Available Service Categories length:', slot.availableServiceCategories?.length);
-    }
-  }, [isOpen, slot]);
 
   const getStatusBadge = (status: string) => {
     switch (status.toUpperCase()) {
@@ -174,7 +179,25 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
     return format(date, formatString);
   };
 
-  // Safely create date objects
+  // Handle message button click for booked slots
+  const handleMessage = () => {
+    const client = slot.booking?.client;
+    if (client?.id) {
+      router.push(`/dashboard/messages?userId=${client.id}`);
+      onClose();
+    } else {
+      toast.error('Client information not available');
+    }
+  };
+
+  // Handle reschedule for available slots
+  const handleReschedule = () => {
+    // For now, show a toast. In the future, this could open a reschedule dialog
+    toast.info(
+      'Reschedule functionality coming soon. You can delete this slot and create a new one.',
+    );
+    // TODO: Implement reschedule dialog or navigation
+  };
 
   const client = slot.booking?.client;
 
@@ -196,27 +219,29 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         </DialogHeader>
 
         <div className="px-6 py-6">
-          {/* Client Information Section (if booked) */}
-          {slot.status === 'BOOKED' && client && (
-            <div className="mb-6 pb-6 border-b">
-              <div className="flex items-start gap-4">
-                <Avatar className="h-16 w-16 border-2 border-primary/20">
-                  <AvatarFallback className="text-xl font-poppins font-semibold bg-primary/10 text-primary">
-                    {client.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-poppins text-xl font-bold text-charcoal mb-1">
-                    {client.name}
-                  </h3>
-                  <p className="font-inter text-muted-foreground flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    {client.email}
-                  </p>
+          {/* Client Information Section (if booked or completed) */}
+          {(slot.status === 'BOOKED' ||
+            (slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED')) &&
+            client && (
+              <div className="mb-6 pb-6 border-b">
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-16 w-16 border-2 border-primary/20">
+                    <AvatarFallback className="text-xl font-poppins font-semibold bg-primary/10 text-primary">
+                      {client.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="font-poppins text-xl font-bold text-charcoal mb-1">
+                      {client.name}
+                    </h3>
+                    <p className="font-inter text-muted-foreground flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      {client.email}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Two Column Information Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -235,16 +260,6 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                 <p className="font-inter text-sm text-muted-foreground mt-1">
                   Duration: {slot.duration || 0} minutes
                 </p>
-              </div>
-
-              <div>
-                <Label className="font-inter text-xs text-muted-foreground mb-1">Price</Label>
-                <p className="font-poppins text-xl font-bold text-charcoal">€{slot.basePrice}</p>
-                {slot.booking && (
-                  <p className="font-inter text-sm text-muted-foreground mt-1">
-                    Total: €{slot.booking.totalAmount}
-                  </p>
-                )}
               </div>
 
               {slot.startTime && (
@@ -268,7 +283,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                     <p className="font-inter text-charcoal">{slot.location.address}</p>
                     {slot.location.additionalFee > 0 && (
                       <p className="font-inter text-sm text-muted-foreground mt-1">
-                        Additional Fee: €{slot.location.additionalFee}
+                        Additional Fee: EUR {slot.location.additionalFee}
                       </p>
                     )}
                   </div>
@@ -285,26 +300,29 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                   </div>
                 )}
               </div>
-              {slot.booking && slot.booking.discountAmount && slot.booking.discountAmount > 0 ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <p className="font-poppins text-xl font-bold text-charcoal">
-                      €{slot.booking.totalAmount.toFixed(2)}
-                    </p>
-                    <span className="text-sm text-gray-500 line-through">
-                      €{slot.basePrice.toFixed(2)}
-                    </span>
+              <div>
+                <Label className="font-inter text-xs text-muted-foreground mb-1">Price</Label>
+                {slot.booking && slot.booking.discountAmount && slot.booking.discountAmount > 0 ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <p className="font-poppins text-xl font-bold text-green-600">
+                        EUR {slot.booking.totalAmount.toFixed(2)}
+                      </p>
+                      <span className="text-sm font-inter text-gray-500 line-through">
+                        EUR {slot.basePrice.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="text-sm text-green-600 font-medium">
+                      {slot.booking.discountPercentage}% stamp discount applied (-EUR{' '}
+                      {slot.booking.discountAmount.toFixed(2)})
+                    </div>
                   </div>
-                  <div className="text-sm text-green-600 font-medium">
-                    {slot.booking.discountPercentage}% stamp discount applied (-€
-                    {slot.booking.discountAmount.toFixed(2)})
-                  </div>
-                </div>
-              ) : (
-                <p className="font-poppins text-xl font-bold text-charcoal">
-                  €{slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
-                </p>
-              )}
+                ) : (
+                  <p className="font-poppins text-xl font-bold text-primary">
+                    EUR {slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+                  </p>
+                )}
+              </div>
 
               {slot.location && (
                 <div>
@@ -312,7 +330,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                   <p className="font-inter text-charcoal">{slot.location.address}</p>
                   {slot.location.additionalFee > 0 && (
                     <p className="font-inter text-sm text-muted-foreground mt-1">
-                      Additional Fee: €{slot.location.additionalFee}
+                      Additional Fee: EUR {slot.location.additionalFee}
                     </p>
                   )}
                 </div>
@@ -367,40 +385,56 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
             </div>
           )}
 
-          {/* Booking Service Categories (if booked) */}
+          {/* Booking Service Categories (if booked or completed) */}
           {slot.booking &&
-            (slot.booking as any).serviceCategories &&
-            (slot.booking as any).serviceCategories.length > 0 && (
+            slot.booking.serviceCategories &&
+            slot.booking.serviceCategories.length > 0 && (
               <div className="mt-6 pt-6 border-t">
                 <Label className="font-inter text-xs text-muted-foreground mb-2 block">
-                  Booked Service Categories
+                  {slot.booking.status && slot.booking.status.toUpperCase() === 'COMPLETED'
+                    ? 'Completed Service Categories'
+                    : 'Selected Service Categories'}
                 </Label>
                 <div className="space-y-2">
-                  {(slot.booking as any).serviceCategories.map((category: any, index: number) => (
-                    <div
-                      key={category.id || index}
-                      className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200"
-                    >
-                      <div className="p-2 rounded-lg bg-green-100 mt-0.5">
-                        <Package className="h-4 w-4 text-green-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-poppins font-semibold text-charcoal mb-1">
-                          {category.name || 'Service Category'}
-                        </p>
-                        {category.description && (
-                          <p className="font-inter text-sm text-muted-foreground mb-1">
-                            {category.description}
+                  {slot.booking.serviceCategories.map((category, index) => {
+                    const isCompleted =
+                      slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED';
+                    return (
+                      <div
+                        key={category.id || index}
+                        className={`flex items-start gap-3 p-3 rounded-lg border ${
+                          isCompleted
+                            ? 'bg-purple-50 border-purple-200'
+                            : 'bg-green-50 border-green-200'
+                        }`}
+                      >
+                        <div
+                          className={`p-2 rounded-lg mt-0.5 ${
+                            isCompleted ? 'bg-purple-100' : 'bg-green-100'
+                          }`}
+                        >
+                          <Package
+                            className={`h-4 w-4 ${isCompleted ? 'text-purple-600' : 'text-green-600'}`}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-poppins font-semibold text-charcoal mb-1">
+                            {category.name || 'Service Category'}
                           </p>
-                        )}
-                        {category.jobTitle && (
-                          <Badge variant="outline" className="text-xs mt-1">
-                            {category.jobTitle.name}
-                          </Badge>
-                        )}
+                          {category.description && (
+                            <p className="font-inter text-sm text-muted-foreground mb-1">
+                              {category.description}
+                            </p>
+                          )}
+                          {category.jobTitle && (
+                            <Badge variant="outline" className="text-xs mt-1">
+                              {category.jobTitle.name}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -427,7 +461,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                         enough stamps
                       </p>
                       <p className="font-poppins text-lg font-bold text-green-900">
-                        Discount: -€{slot.booking.discountAmount.toFixed(2)}
+                        Discount: -EUR {slot.booking.discountAmount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -512,30 +546,96 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         </div>
 
         <DialogFooter className="flex sm:flex-row flex-col gap-2 px-6 pb-6">
-          {slot.status === 'BOOKED' &&
-            slot.booking &&
-            slot.booking.status !== 'COMPLETED' &&
-            slot.booking.status !== 'completed' && (
+          {/* Actions for BOOKED slots */}
+          {slot.status === 'BOOKED' && client && (
+            <>
               <Button
-                onClick={handleCompleteBooking}
-                disabled={isCompleting}
-                className="bg-success hover:bg-success/90 text-white flex-1 sm:flex-initial"
+                onClick={handleMessage}
+                className="bg-primary hover:bg-primary/90 text-white flex-1 sm:flex-initial"
               >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                {isCompleting ? 'Completing...' : 'Mark as Completed'}
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Message Client
+              </Button>
+              {slot.booking &&
+                slot.booking.status !== 'COMPLETED' &&
+                slot.booking.status !== 'completed' && (
+                  <Button
+                    onClick={handleCompleteBooking}
+                    disabled={isCompleting}
+                    className="bg-success hover:bg-success/90 text-white flex-1 sm:flex-initial"
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    {isCompleting ? 'Completing...' : 'Mark as Completed'}
+                  </Button>
+                )}
+            </>
+          )}
+
+          {/* Actions for AVAILABLE slots - No messaging for AVAILABLE */}
+          {slot.status === 'AVAILABLE' && (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleReschedule}
+                className="flex-1 sm:flex-initial"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Reschedule
+              </Button>
+              {onDelete && (
+                <Button
+                  variant="destructive"
+                  onClick={() => onDelete(slot.id)}
+                  className="flex-1 sm:flex-initial"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Slot
+                </Button>
+              )}
+            </>
+          )}
+
+          {/* Actions for RESERVED slots - No messaging for RESERVED */}
+          {slot.status === 'RESERVED' && (
+            <>
+              {onDelete && (
+                <Button
+                  variant="destructive"
+                  onClick={() => onDelete(slot.id)}
+                  className="flex-1 sm:flex-initial"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Slot
+                </Button>
+              )}
+            </>
+          )}
+
+          {/* Actions for COMPLETED slots */}
+          {(slot.status === 'COMPLETED' ||
+            (slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED')) &&
+            client && (
+              <Button
+                onClick={handleMessage}
+                className="bg-primary hover:bg-primary/90 text-white flex-1 sm:flex-initial"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Message Client
               </Button>
             )}
-          {slot.status === 'AVAILABLE' && onDelete && (
-            <Button variant="destructive" onClick={() => onDelete(slot.id)}>
-              <XCircle className="h-4 w-4 mr-2" />
-              Cancel Slot
+
+          {/* Actions for CANCELLED slots - Allow messaging for cancelled bookings */}
+          {slot.status === 'CANCELLED' && client && (
+            <Button
+              onClick={handleMessage}
+              className="bg-primary hover:bg-primary/90 text-white flex-1 sm:flex-initial"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Message Client
             </Button>
           )}
-          {slot.status === 'AVAILABLE' && onEdit && (
-            <Button variant="outline" onClick={() => onEdit(slot)}>
-              Edit Slot
-            </Button>
-          )}
+
+          {/* Close button */}
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>

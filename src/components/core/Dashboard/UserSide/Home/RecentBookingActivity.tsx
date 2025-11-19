@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Clock, MapPin, MoreVertical, Video } from 'lucide-react';
+import { Calendar, Clock, MapPin, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -8,12 +8,6 @@ import { toast } from 'react-toastify';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { getPatientBookingHistory } from '@/redux/api/bookingApi';
 
 interface RecentBookingActivityProps {
@@ -140,7 +134,7 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
           <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
             Recent Activity
           </CardTitle>
-          <CardDescription>Your recent booking activity</CardDescription>
+          <CardDescription className="font-inter">Your recent booking activity</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -184,13 +178,15 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
           <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
             Recent Activity
           </CardTitle>
-          <CardDescription>Your recent booking activity</CardDescription>
+          <CardDescription className="font-inter">Your recent booking activity</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">No recent bookings</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-sm font-inter text-gray-500 dark:text-gray-400">
+              No recent bookings
+            </p>
+            <p className="text-xs font-inter text-gray-400 dark:text-gray-500 mt-1">
               Your booking history will appear here
             </p>
           </div>
@@ -205,7 +201,7 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
         <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
           Recent Activity
         </CardTitle>
-        <CardDescription>Your recent booking activity</CardDescription>
+        <CardDescription className="font-inter">Your recent booking activity</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -215,16 +211,16 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
             return (
               <div
                 key={booking.id}
-                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-all duration-200"
+                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                    <h3 className="font-poppins font-semibold text-gray-900 dark:text-white truncate">
                       {booking.slot.freelancer?.name || 'Unknown Therapist'}
                     </h3>
                     <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-4 text-sm font-inter text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       <span>{formatDate(booking.slot.startTime)}</span>
@@ -240,24 +236,12 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
                   </div>
                   {booking.totalAmount && (
                     <div className="mt-2">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        €{booking.totalAmount}
+                      <span className="text-sm font-poppins font-semibold text-gray-900 dark:text-white">
+                        EUR {booking.totalAmount}
                       </span>
                     </div>
                   )}
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-4">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => router.push(`/dashboard/my-bookings`)}>
-                      View Details
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             );
           })}

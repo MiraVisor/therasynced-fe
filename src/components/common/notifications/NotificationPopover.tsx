@@ -51,8 +51,12 @@ export function NotificationPopover({
   const unreadNotifications = notifications.filter((n) => !n.isRead);
   const readNotifications = notifications.filter((n) => n.isRead);
 
-  const handleMarkAllAsRead = () => {
-    onMarkAllAsRead();
+  const handleMarkAllAsRead = async () => {
+    try {
+      await onMarkAllAsRead();
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    }
   };
 
   return (

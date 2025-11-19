@@ -31,7 +31,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
   return (
     <div className={`bg-white rounded-lg shadow-sm p-5 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-medium">Monthly Revenue</h3>
+        <h3 className="text-base font-poppins font-medium">Monthly Revenue</h3>
         <select
           className="text-sm border rounded-md px-4 py-2 focus:outline-none focus:ring"
           value={month}
