@@ -242,7 +242,7 @@ const BookingDetailsModal = ({
                               <p className="text-sm text-gray-500">{service.duration}</p>
                             )}
                           </div>
-                          <p className="font-medium">€{service.price}</p>
+                          <p className="font-medium">EUR {service.price}</p>
                         </div>
                       ))}
                     </div>
@@ -293,7 +293,7 @@ const BookingDetailsModal = ({
                             className="flex justify-between items-center"
                           >
                             <span className="text-gray-600">{service.name}</span>
-                            <span>€{service.price}</span>
+                            <span>EUR {service.price}</span>
                           </div>
                         ))}
                         <Separator />
@@ -301,7 +301,7 @@ const BookingDetailsModal = ({
                     )}
                     <div className="flex justify-between items-center text-lg font-bold">
                       <span>Total</span>
-                      <span className="text-blue-600">€{booking.totalAmount}</span>
+                      <span className="text-blue-600">EUR {booking.totalAmount}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -456,10 +456,10 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     },
     cell: ({ row }) => {
       const price = parseFloat(row.getValue('totalAmount'));
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'EUR',
-      }).format(price);
+      const formatted = `EUR ${price.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
 
       return (
         <div className="font-medium text-gray-900 text-sm whitespace-nowrap text-left">

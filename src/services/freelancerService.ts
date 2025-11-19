@@ -1,3 +1,5 @@
+import { TierFreelancerResponse } from '@/types/types';
+
 import api from './api';
 import { ENDPOINTS } from './endpoints';
 
@@ -92,6 +94,50 @@ export const freelancerService = {
   getAnalytics: async (): Promise<FreelancerAnalyticsResponse> => {
     const response = await api.get(ENDPOINTS.freelancer.analytics);
     return response.data.data;
+  },
+
+  // Get Bronze tier freelancers
+  getBronzeFreelancers: async (params?: {
+    limit?: number;
+    page?: number;
+    name?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<TierFreelancerResponse> => {
+    const response = await api.get(ENDPOINTS.freelancer.tierBronze, { params });
+    return response.data;
+  },
+
+  // Get Silver tier freelancers
+  getSilverFreelancers: async (params?: {
+    limit?: number;
+    page?: number;
+    name?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<TierFreelancerResponse> => {
+    const response = await api.get(ENDPOINTS.freelancer.tierSilver, { params });
+    return response.data;
+  },
+
+  // Get Gold tier freelancers
+  getGoldFreelancers: async (params?: {
+    limit?: number;
+    page?: number;
+    name?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<TierFreelancerResponse> => {
+    const response = await api.get(ENDPOINTS.freelancer.tierGold, { params });
+    return response.data;
+  },
+
+  // Search freelancers for autocomplete (uses existing endpoint with limit)
+  searchFreelancersAutocomplete: async (query: string, limit: number = 8) => {
+    const response = await api.get(ENDPOINTS.freelancer.all, {
+      params: { name: query, limit, page: 1 },
+    });
+    return response.data;
   },
 };
 

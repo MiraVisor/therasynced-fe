@@ -54,13 +54,14 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const isUpcoming =
     booking.status === 'CONFIRMED' && new Date(booking.slot.startTime) > new Date();
 
+  // Show message button for all bookings except AVAILABLE and RESERVED statuses
+  // User side: Show for CONFIRMED, COMPLETED, CANCELLED
+  const canMessage = booking.status !== 'AVAILABLE' && booking.status !== 'RESERVED' && onMessage;
+  const canReschedule = isUpcoming && onReschedule;
+  const canCancel = isUpcoming && onCancel;
+
   return (
-    <EnhancedCard
-      variant="default"
-      interactive
-      onClick={onClick}
-      className="transition-all duration-300 hover:shadow-md"
-    >
+    <EnhancedCard variant="default" interactive onClick={onClick}>
       <div className="p-5">
         {/* Header with status badge and price */}
         <div className="flex items-center justify-between mb-4">
@@ -75,7 +76,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           <div className="text-right">
             <div className="flex items-center gap-1">
               <span className="text-xl font-poppins font-bold text-primary">
-                €{booking.totalAmount.toFixed(2)}
+                EUR {booking.totalAmount.toFixed(2)}
               </span>
             </div>
           </div>
@@ -152,9 +153,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        {isUpcoming && (onMessage || onReschedule || onCancel) && (
+        {(canMessage || canReschedule || canCancel) && (
           <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200">
-            {onMessage && (
+            {canMessage && (
               <Button
                 variant="outline"
                 size="sm"
@@ -165,10 +166,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 }}
               >
                 <MessageCircle className="h-3 w-3 mr-1" />
-                Message
+                Message Freelancer
               </Button>
             )}
-            {onReschedule && (
+            {canReschedule && (
               <Button
                 variant="outline"
                 size="sm"
@@ -182,7 +183,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 Reschedule
               </Button>
             )}
-            {onCancel && (
+            {canCancel && (
               <Button
                 variant="outline"
                 size="sm"

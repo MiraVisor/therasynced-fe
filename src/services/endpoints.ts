@@ -73,6 +73,9 @@ export const ENDPOINTS = {
     files: '/freelancer/files', // Get all uploaded files
     stats: '/freelancer/admin/stats',
     analytics: '/freelancer/analytics',
+    tierBronze: '/freelancer/tier/bronze',
+    tierSilver: '/freelancer/tier/silver',
+    tierGold: '/freelancer/tier/gold',
   },
   // Dashboard endpoints
   dashboard: {

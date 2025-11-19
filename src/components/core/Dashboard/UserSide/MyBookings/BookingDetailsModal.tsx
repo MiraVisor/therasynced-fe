@@ -65,7 +65,8 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const isCancelled = booking.status === 'CANCELLED';
   const canCancel = booking.status === 'CONFIRMED' && isUpcoming;
   const canReschedule = booking.status === 'CONFIRMED' && isUpcoming;
-  const canMessage = booking.status === 'CONFIRMED' && !isCancelled;
+  // User side: Show message for all bookings except AVAILABLE and RESERVED
+  const canMessage = booking.status !== 'AVAILABLE' && booking.status !== 'RESERVED';
   const canReview = isCompleted && !isCancelled;
 
   const getStatusColor = (status: string) => {

@@ -33,7 +33,9 @@ export const TotalTransactionList = ({ transactions }: Props) => {
                   {tx.date} | Therapy Session
                 </div>
               </div>
-              <div className="font-poppins font-semibold text-sm text-foreground">${tx.amount}</div>
+              <div className="font-poppins font-semibold text-sm text-foreground">
+                EUR {tx.amount}
+              </div>
             </div>
             {index < transactions.length - 1 && <Separator className="my-2" />}
           </React.Fragment>

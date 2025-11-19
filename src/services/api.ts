@@ -13,15 +13,25 @@ const api = axios.create({
 // Request Interceptor
 api.interceptors.request.use(
   (config) => {
-    // Don't add Authorization header for authentication endpoints
+    // Don't add Authorization header for authentication endpoints or public endpoints
     const isAuthEndpoint = config.url?.startsWith('/auth/');
+    const isPublicEndpoint =
+      config.headers?.['X-Skip-Auth'] === 'true' ||
+      config.url?.startsWith('/service/job-titles') ||
+      config.url?.startsWith('/service/categories');
 
-    if (!isAuthEndpoint) {
+    if (!isAuthEndpoint && !isPublicEndpoint) {
       const token = getCookie('token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+
+    // Remove the skip auth header if it was set
+    if (config.headers?.['X-Skip-Auth']) {
+      delete config.headers['X-Skip-Auth'];
+    }
+
     return config;
   },
   (error) => Promise.reject(error),

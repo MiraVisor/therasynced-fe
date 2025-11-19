@@ -33,10 +33,7 @@ export default function SubscriptionBadge() {
   };
 
   return (
-    <Card
-      className="cursor-pointer border-2 border-primary/20 hover:border-primary/40 transition-all duration-200"
-      onClick={handleClick}
-    >
+    <Card className="cursor-pointer border-2 border-primary/20" onClick={handleClick}>
       <div className="flex items-center gap-3 p-3">
         <Crown className="h-5 w-5 text-primary" />
         <div className="flex-1">

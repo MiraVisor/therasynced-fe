@@ -33,7 +33,9 @@ export const AppointmentHeader = ({ appointment }: AppointmentHeaderProps) => {
     <CardHeader className="space-y-4 pb-4">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <CardTitle className="text-2xl font-bold">{appointment.title}</CardTitle>
+          <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
+            {appointment.title}
+          </CardTitle>
           <CardDescription className="text-base">
             {format(new Date(appointment.start), 'EEEE, MMMM d, yyyy')}
           </CardDescription>

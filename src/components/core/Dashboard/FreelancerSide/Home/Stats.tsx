@@ -11,7 +11,7 @@ interface StatsProps {
 const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
-    return `€${(revenueInCents / 100).toLocaleString('en-US', {
+    return `EUR ${(revenueInCents / 100).toLocaleString('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })}`;
@@ -45,7 +45,7 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
       sparklineData: [0, 0, 0, 0, 0, 0, 0],
     },
     weeklyRevenue: {
-      value: '€0',
+      value: 'EUR 0',
       trend: { value: 0, isUp: true, label: 'from last week' },
       sparklineData: [0, 0, 0, 0, 0, 0, 0],
     },

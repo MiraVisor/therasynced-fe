@@ -117,7 +117,7 @@ const ServiceAnalyticsChart = ({ data, isLoading = false }: ServiceAnalyticsChar
                 if (name === 'bookings') {
                   return [`${value} bookings`, 'Bookings'];
                 }
-                return [`€${value}`, 'Revenue'];
+                return [`EUR ${value}`, 'Revenue'];
               }}
               labelFormatter={(label) => chartData.find((d) => d.name === label)?.fullName || label}
             />

@@ -11,10 +11,24 @@ interface DatePickerProps {
   title?: string;
   value?: Date;
   onChange?: (date: Date | undefined) => void;
+  min?: string | Date;
+  max?: string | Date;
+  allowFuture?: boolean;
 }
 
-export function DatePicker({ title, value, onChange }: DatePickerProps) {
+export function DatePicker({
+  title,
+  value,
+  onChange,
+  min,
+  max,
+  allowFuture = true,
+}: DatePickerProps) {
   const [date, setDate] = React.useState<Date | undefined>(value);
+
+  React.useEffect(() => {
+    setDate(value);
+  }, [value]);
 
   const handleDateChange = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
@@ -22,6 +36,22 @@ export function DatePicker({ title, value, onChange }: DatePickerProps) {
       onChange(selectedDate);
     }
   };
+
+  // Calculate min date - default to today if not provided
+  const minDate = min
+    ? typeof min === 'string'
+      ? min
+      : format(min, 'yyyy-MM-dd')
+    : format(new Date(), 'yyyy-MM-dd');
+
+  // Calculate max date - default to 10 years from now if allowFuture is true
+  const maxDate = max
+    ? typeof max === 'string'
+      ? max
+      : format(max, 'yyyy-MM-dd')
+    : allowFuture
+      ? format(new Date(new Date().setFullYear(new Date().getFullYear() + 10)), 'yyyy-MM-dd')
+      : format(new Date(), 'yyyy-MM-dd');
 
   return (
     <div className="w-full space-y-1">
@@ -65,16 +95,8 @@ export function DatePicker({ title, value, onChange }: DatePickerProps) {
                 handleDateChange(undefined);
               }
             }}
-            min="1900-01-01"
-            max={(() => {
-              const today = new Date();
-              const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-              return [
-                maxDate.getFullYear(),
-                String(maxDate.getMonth() + 1).padStart(2, '0'),
-                String(maxDate.getDate()).padStart(2, '0'),
-              ].join('-');
-            })()}
+            min={minDate}
+            max={maxDate}
             className="rounded-md border border-gray-300 px-3 py-2 w-full h-11 text-sm font-normal text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
             autoFocus
           />

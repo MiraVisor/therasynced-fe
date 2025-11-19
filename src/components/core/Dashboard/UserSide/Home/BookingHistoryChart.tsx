@@ -184,7 +184,7 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
         className={`${className} border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl`}
       >
         <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-4">
-          <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
+          <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
             Booking History
           </CardTitle>
           <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
@@ -217,10 +217,10 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
       className={`${className} border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl`}
     >
       <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-4">
-        <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
+        <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
           Booking History
         </CardTitle>
-        <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
+        <CardDescription className="font-inter">
           Your appointments over the last 12 weeks
         </CardDescription>
       </CardHeader>
@@ -228,15 +228,15 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
         {stats && (
           <div className="grid grid-cols-3 gap-4 mb-5">
             <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Total</p>
-              <p className="text-xl font-semibold text-charcoal">{stats.total}</p>
+              <p className="text-xs font-inter text-muted-foreground mb-1">Total</p>
+              <p className="text-xl font-poppins font-semibold text-charcoal">{stats.total}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Avg/Month</p>
-              <p className="text-xl font-semibold text-charcoal">{stats.average}</p>
+              <p className="text-xs font-inter text-muted-foreground mb-1">Avg/Month</p>
+              <p className="text-xl font-poppins font-semibold text-charcoal">{stats.average}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Trend</p>
+              <p className="text-xs font-inter text-muted-foreground mb-1">Trend</p>
               <div className="flex items-center justify-center gap-1">
                 {stats.trend > 0 ? (
                   <ArrowUp className="h-4 w-4 text-green-600" />
@@ -246,7 +246,7 @@ const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
                   <TrendingUp className="h-4 w-4 text-gray-400" />
                 )}
                 <p
-                  className={`text-xl font-semibold ${stats.trend > 0 ? 'text-green-600' : stats.trend < 0 ? 'text-red-600' : 'text-charcoal'}`}
+                  className={`text-xl font-poppins font-semibold ${stats.trend > 0 ? 'text-green-600' : stats.trend < 0 ? 'text-red-600' : 'text-charcoal'}`}
                 >
                   {Math.abs(stats.trend)}%
                 </p>

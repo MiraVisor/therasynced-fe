@@ -109,8 +109,8 @@ export default function LoyaltyPage() {
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Loyalty Program</h1>
-            <p className="text-gray-600">Earn points and redeem rewards</p>
+            <h1 className="text-3xl font-poppins font-bold text-gray-900">Loyalty Program</h1>
+            <p className="text-gray-600 font-inter">Earn points and redeem rewards</p>
           </div>
         }
       >
@@ -125,8 +125,8 @@ export default function LoyaltyPage() {
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Loyalty Program</h1>
-            <p className="text-gray-600">Earn points and redeem rewards</p>
+            <h1 className="text-3xl font-poppins font-bold text-gray-900">Loyalty Program</h1>
+            <p className="text-gray-600 font-inter">Earn points and redeem rewards</p>
           </div>
         }
       >
@@ -153,8 +153,8 @@ export default function LoyaltyPage() {
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Stamp Details</h1>
-            <p className="text-gray-600">View your stamp progress with this therapist</p>
+            <h1 className="text-3xl font-poppins font-bold text-gray-900">Stamp Details</h1>
+            <p className="text-gray-600 font-inter">View your stamp progress with this therapist</p>
           </div>
         }
       >
@@ -167,8 +167,8 @@ export default function LoyaltyPage() {
     <DashboardPageWrapper
       header={
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Loyalty Program</h1>
-          <p className="text-gray-600">Earn points and redeem rewards</p>
+          <h1 className="text-3xl font-poppins font-bold text-gray-900">Loyalty Program</h1>
+          <p className="text-gray-600 font-inter">Earn points and redeem rewards</p>
         </div>
       }
     >
@@ -189,10 +189,10 @@ export default function LoyaltyPage() {
               <CardContent className="p-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                   <div className="flex-1 text-center md:text-left">
-                    <h2 className="text-4xl font-bold text-gray-900 mb-2">
+                    <h2 className="text-4xl font-poppins font-bold text-gray-900 mb-2">
                       {profile.availablePoints ? profile.availablePoints.toLocaleString() : 0}
                     </h2>
-                    <p className="text-lg text-gray-600 mb-6">Available Points</p>
+                    <p className="text-lg font-inter text-gray-600 mb-6">Available Points</p>
 
                     {/* Progress Bar */}
                     <div className="space-y-2">
@@ -210,7 +210,7 @@ export default function LoyaltyPage() {
                     <div className={`px-6 py-4 rounded-lg border-2 ${getTierColor(profile.tier)}`}>
                       <div className="flex items-center gap-2">
                         {getTierIcon(profile.tier)}
-                        <span className="text-lg font-bold">{profile.tier}</span>
+                        <span className="text-lg font-poppins font-bold">{profile.tier}</span>
                       </div>
                     </div>
                     <Badge variant="outline" className="text-xs">
@@ -323,16 +323,16 @@ export default function LoyaltyPage() {
                             </div>
                           )}
                           <div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-inter font-medium text-gray-900">
                               {transaction.description}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs font-inter text-gray-500">
                               {new Date(transaction.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                         <div
-                          className={`text-sm font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}
+                          className={`text-sm font-poppins font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}
                         >
                           {transaction.type === 'EARNED' ? '+' : '-'}
                           {transaction.points}
@@ -367,10 +367,10 @@ export default function LoyaltyPage() {
                             <Gift className="h-4 w-4 text-blue-600" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-inter font-medium text-gray-900">
                               {redemption.reward.name}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs font-inter text-gray-500">
                               {new Date(redemption.createdAt).toLocaleDateString()}
                             </p>
                           </div>

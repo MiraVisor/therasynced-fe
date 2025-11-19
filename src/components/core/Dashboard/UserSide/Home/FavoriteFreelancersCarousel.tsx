@@ -66,7 +66,9 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
             Favorite Freelancers
           </CardTitle>
-          <CardDescription>Your saved therapists and experts</CardDescription>
+          <CardDescription className="font-inter">
+            Your saved therapists and experts
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 overflow-hidden">
@@ -103,7 +105,9 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
             Favorite Freelancers
           </CardTitle>
-          <CardDescription>Your saved therapists and experts</CardDescription>
+          <CardDescription className="font-inter">
+            Your saved therapists and experts
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
@@ -154,15 +158,18 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
                 availableSlots: freelancer.slotSummary?.totalSlots || 0,
                 slotSummary: freelancer.slotSummary,
                 slots: freelancer.slots || [],
+                pricing: freelancer.pricing,
+                // Include stampInfo from freelancer response (if available)
+                stampInfo: (freelancer as any).stampInfo || null,
               };
 
               return (
                 <CarouselItem
                   key={freelancer.id}
-                  className="basis-4/5 md:basis-3/5 lg:basis-2/5 min-w-[330px] pl-2 md:pl-4 transition-all duration-300 data-[active=true]:opacity-100 data-[active=true]:blur-0 data-[active=true]:scale-100 data-[active=false]:opacity-60 data-[active=false]:blur-[1px] data-[active=false]:scale-95"
+                  className="basis-4/5 md:basis-3/5 lg:basis-2/5 min-w-[330px] pl-2 md:pl-4"
                 >
                   <div className="flex justify-center">
-                    <div className="w-full max-w-sm transform transition-all duration-300 hover:scale-105 relative">
+                    <div className="w-full max-w-sm relative">
                       <FavoriteFreelancerCard freelancer={expert} onBook={handleBook} />
                     </div>
                   </div>
@@ -170,8 +177,8 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
               );
             })}
           </CarouselContent>
-          <CarouselPrevious className="-left-4 hidden md:flex opacity-70 hover:opacity-100 transition-opacity z-20" />
-          <CarouselNext className="-right-4 hidden md:flex opacity-70 hover:opacity-100 transition-opacity z-20" />
+          <CarouselPrevious className="-left-4 hidden md:flex opacity-70 z-20" />
+          <CarouselNext className="-right-4 hidden md:flex opacity-70 z-20" />
         </Carousel>
       </CardContent>
     </Card>

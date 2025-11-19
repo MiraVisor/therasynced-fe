@@ -114,7 +114,7 @@ export default function LoyaltyManagement() {
             </div>
             <div>
               <p className="text-sm text-gray-600">Current Tier</p>
-              <p className="text-lg font-semibold text-gray-900">{profile.tier}</p>
+              <p className="text-lg font-poppins font-semibold text-gray-900">{profile.tier}</p>
             </div>
           </div>
         </div>
@@ -211,7 +211,9 @@ export default function LoyaltyManagement() {
             {/* Points Transactions */}
             {recentTransactions.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Points Activity</h3>
+                <h3 className="text-sm font-poppins font-medium text-gray-700 mb-3">
+                  Recent Points Activity
+                </h3>
                 <div className="space-y-2">
                   {recentTransactions.map((transaction) => (
                     <div
@@ -243,7 +245,9 @@ export default function LoyaltyManagement() {
             {/* Redemptions */}
             {recentRedemptions.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Redemptions</h3>
+                <h3 className="text-sm font-poppins font-medium text-gray-700 mb-3">
+                  Recent Redemptions
+                </h3>
                 <div className="space-y-2">
                   {recentRedemptions.map((redemption) => (
                     <div

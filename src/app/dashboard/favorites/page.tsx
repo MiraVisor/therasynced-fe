@@ -91,6 +91,11 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     // Available slots count
     availableSlots: freelancer.slotSummary?.availableSlots || 0,
     totalSlots: freelancer.slotSummary?.totalSlots || 0,
+    // Tier information
+    planFeatures: freelancer.planFeatures || null,
+    tier: freelancer.planFeatures?.planType || null,
+    // Stamp information (included in API response when user is authenticated)
+    stampInfo: freelancer.stampInfo || null,
   };
 };
 

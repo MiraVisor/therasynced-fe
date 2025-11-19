@@ -18,6 +18,20 @@ export const getAllFreelancers = async (params?: {
 }): Promise<ApiResponse<Expert[]>> => {
   const response = await api.get('/freelancer/all', { params });
 
+  // Debug: Log raw API response to check for planFeatures
+  if (response.data?.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
+    const sampleFreelancer = response.data.data[0];
+    // eslint-disable-next-line no-console
+    console.log('Raw API response sample freelancer:', {
+      id: sampleFreelancer.id,
+      name: sampleFreelancer.name,
+      hasPlanFeatures: !!sampleFreelancer.planFeatures,
+      planFeatures: sampleFreelancer.planFeatures,
+      planType: sampleFreelancer.planFeatures?.planType,
+      allKeys: Object.keys(sampleFreelancer),
+    });
+  }
+
   // The backend returns data in a different format
   // We need to extract pagination from meta or construct it
   const result = {
@@ -34,6 +48,7 @@ export const getAllFreelancers = async (params?: {
       },
     meta: response.data.meta,
   };
+  // eslint-disable-next-line no-console
   console.log('Processed API response:', result);
   return result;
 };

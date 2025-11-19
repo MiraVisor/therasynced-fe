@@ -155,7 +155,24 @@ const AdminBookingsPage = () => {
     }
   }, [error]);
 
+  // Format currency
+  const formatCurrency = (value: number): string => {
+    return `EUR ${value.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
   const columns: ColumnDef<AdminBookingDto>[] = [
+    {
+      accessorKey: 'id',
+      header: 'Booking ID',
+      cell: ({ row }) => (
+        <div className="font-inter text-sm text-charcoal font-mono select-all">
+          {row.original.id}
+        </div>
+      ),
+    },
     {
       accessorKey: 'therapistName',
       header: 'Therapist',
@@ -165,20 +182,80 @@ const AdminBookingsPage = () => {
         </div>
       ),
     },
-
+    {
+      accessorKey: 'date',
+      header: 'Date & Time',
+      cell: ({ row }) => {
+        const startDate = new Date(row.original.startTime);
+        const endDate = new Date(row.original.endTime);
+        return (
+          <div className="font-inter text-sm text-charcoal">
+            <div>
+              {startDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </div>
+            <div className="text-gray-500 text-xs">
+              {startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} -{' '}
+              {endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'price',
+      header: 'Price',
+      cell: ({ row }) => (
+        <div className="font-inter text-sm font-medium text-charcoal">
+          {formatCurrency(row.original.price)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'duration',
+      header: 'Duration',
+      cell: ({ row }) => (
+        <div className="font-inter text-sm text-charcoal">{row.original.duration} min</div>
+      ),
+    },
+    {
+      accessorKey: 'location',
+      header: 'Location',
+      cell: ({ row }) => {
+        if (row.original.locationType === 'HOME') {
+          return (
+            <div className="font-inter text-sm text-charcoal">
+              <div className="font-medium">Home</div>
+            </div>
+          );
+        }
+        if (row.original.location) {
+          return (
+            <div className="font-inter text-sm text-charcoal">
+              <div className="font-medium">{row.original.location.name}</div>
+              <div
+                className="text-gray-500 text-xs truncate max-w-xs"
+                title={row.original.location.address}
+              >
+                {row.original.location.address}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div className="font-inter text-sm text-charcoal capitalize">
+            {row.original.locationType || 'N/A'}
+          </div>
+        );
+      },
+    },
     {
       accessorKey: 'status',
       header: 'Status',
       cell: ({ row }) => <StatusBadge status={row.original.status} size="sm" />,
-    },
-    {
-      accessorKey: 'date',
-      header: 'Date',
-      cell: ({ row }) => (
-        <div className="font-inter text-sm text-charcoal">
-          {new Date(row.original.date).toLocaleDateString()}
-        </div>
-      ),
     },
   ];
 
@@ -210,8 +287,8 @@ const AdminBookingsPage = () => {
           columns={columns}
           data={bookings}
           title="All Bookings"
-          searchKey="patientName"
-          searchPlaceholder="Search By FreeLancer..."
+          searchKey="therapistName"
+          searchPlaceholder="Search by therapist name..."
           enableSorting={false}
           enableFiltering={true}
           enableColumnVisibility={true}

@@ -161,7 +161,7 @@ const SubscriptionsPage = () => {
                     <div className="mb-8">
                       <div className="flex items-baseline gap-2 mb-4">
                         <span className="font-poppins font-bold text-6xl leading-none text-primary">
-                          €{plan.price}
+                          EUR {plan.price}
                         </span>
                         <span className="font-inter text-lg text-muted-foreground font-medium">
                           /month
@@ -224,7 +224,7 @@ const SubscriptionsPage = () => {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="price" className="font-inter font-medium">
-                  Monthly Price (€)
+                  Monthly Price (EUR)
                 </Label>
                 <Input
                   id="price"

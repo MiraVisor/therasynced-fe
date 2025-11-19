@@ -217,6 +217,7 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
+    font-family: var(--font-inter), sans-serif;
   }
 
   * {
@@ -225,6 +226,41 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Default font for headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-poppins), sans-serif;
+  }
+
+  /* Default font for body text and UI elements */
+  p,
+  span,
+  div,
+  label,
+  input,
+  textarea,
+  select,
+  button,
+  a {
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  /* CardTitle and DialogTitle should use Poppins by default */
+  [class*='CardTitle'],
+  [class*='DialogTitle'] {
+    font-family: var(--font-poppins), sans-serif;
+  }
+
+  /* CardDescription should use Inter by default */
+  [class*='CardDescription'],
+  [class*='DialogDescription'] {
+    font-family: var(--font-inter), sans-serif;
   }
 }
 

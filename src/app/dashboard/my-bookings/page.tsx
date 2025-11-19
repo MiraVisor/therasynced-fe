@@ -1,15 +1,7 @@
 'use client';
 
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Filter,
-  Search,
-  User,
-} from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,7 +12,6 @@ import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBook
 import { DayBookingSection } from '@/components/core/Dashboard/UserSide/MyBookings/DayBookingSection';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -32,13 +23,6 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { BookingCardSkeleton } from '@/components/ui/skeletons/BookingCardSkeleton';
 import * as bookingApi from '@/redux/api/bookingApi';
 import { cancelUserBooking, fetchUserBookings } from '@/redux/slices/bookingSlice';
@@ -157,27 +141,42 @@ export default function MyBookingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch bookings for the week
-  useEffect(() => {
-    const fetchBookingsForWeek = async () => {
-      const weekStart = startOfWeek(currentWeekStart, { weekStartsOn: 1 });
+  const fetchBookingsForWeek = useCallback(
+    async (weekStartDate: Date, resetBookings = false) => {
+      // Calculate week range (Monday 00:00 to Sunday 23:59:59)
+      const weekStart = new Date(weekStartDate);
+      weekStart.setHours(0, 0, 0, 0);
+
+      const weekEnd = new Date(weekStartDate);
+      weekEnd.setDate(weekStartDate.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
 
       const hasBookings = bookings.length > 0;
-      // Fetch with pagination and sorting
-      dispatch(
-        fetchUserBookings({
-          page: 1,
-          limit: 1000,
-          sortBy: 'slot.startTime',
-          sortOrder: 'asc',
-          silent: hasBookings,
-          date: weekStart.toISOString().split('T')[0], // Format: YYYY-MM-DD
-        }) as any,
-      );
-    };
 
-    fetchBookingsForWeek();
-  }, [dispatch, currentWeekStart]);
+      try {
+        // Fetch with pagination and sorting using the week start date
+        await dispatch(
+          fetchUserBookings({
+            page: 1,
+            limit: 1000,
+            sortBy: 'slot.startTime',
+            sortOrder: 'asc',
+            silent: hasBookings && !resetBookings,
+            date: weekStart.toISOString().split('T')[0], // Format: YYYY-MM-DD
+          }) as any,
+        ).unwrap();
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+        toast.error('Failed to load bookings for this week');
+      }
+    },
+    [dispatch, bookings.length],
+  );
+
+  // Fetch bookings for the week
+  useEffect(() => {
+    fetchBookingsForWeek(currentWeekStart, true);
+  }, [fetchBookingsForWeek, currentWeekStart]);
 
   // Handler functions for booking actions
   const handleMessage = (booking: Booking) => {
@@ -237,13 +236,13 @@ export default function MyBookingsPage() {
     setIsNavigatingWeek(true);
     try {
       if (direction === 'prev') {
-        const newDate = addDays(currentWeekStart, -7);
-        // Ensure we're at the start of the week
-        setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
+        const newWeekStart = addDays(currentWeekStart, -7);
+        setCurrentWeekStart(newWeekStart);
+        fetchBookingsForWeek(newWeekStart, true);
       } else {
-        const newDate = addDays(currentWeekStart, 7);
-        // Ensure we're at the start of the week
-        setCurrentWeekStart(startOfWeek(newDate, { weekStartsOn: 1 }));
+        const newWeekStart = addDays(currentWeekStart, 7);
+        setCurrentWeekStart(newWeekStart);
+        fetchBookingsForWeek(newWeekStart, true);
       }
     } finally {
       setIsNavigatingWeek(false);
@@ -253,9 +252,9 @@ export default function MyBookingsPage() {
   // Calendar date picker handler
   const handleCalendarDateSelect = (date: Date | undefined) => {
     if (date) {
-      // Navigate to the week containing the selected date
-      const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-      setCurrentWeekStart(weekStart);
+      const newWeekStart = startOfWeek(date, { weekStartsOn: 1 });
+      setCurrentWeekStart(newWeekStart);
+      fetchBookingsForWeek(newWeekStart, true);
     }
   };
 
@@ -264,8 +263,6 @@ export default function MyBookingsPage() {
     const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
     return eachDayOfInterval({ start: currentWeekStart, end: weekEnd });
   };
-
-  const currentWeekDays = getCurrentWeekDaysForHighlight();
 
   // Filter and sort bookings based on search, status, and date
   const filteredBookings = bookings
@@ -356,65 +353,56 @@ export default function MyBookingsPage() {
 
           {/* Week Navigation */}
           <div className="flex items-center justify-between gap-4 w-full">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateWeek('prev')}
-              className="h-10 w-10 p-0"
-              disabled={isNavigatingWeek}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center justify-between gap-4 w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateWeek('prev')}
+                className="h-10 w-10 p-0"
+                disabled={isNavigatingWeek}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="h-10 px-4 font-poppins font-medium text-charcoal hover:bg-gray-50 flex items-center gap-2"
-                  disabled={isNavigatingWeek}
-                >
-                  <CalendarIcon className="h-4 w-4" />
-
-                  <span className="text-base lg:text-lg">
-                    {`${format(currentWeekStart, 'do MMM')} - ${format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'do MMM')}`}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="center">
-                <Calendar
-                  mode="single"
-                  selected={currentWeekStart}
-                  onSelect={handleCalendarDateSelect}
-                  captionLayout="dropdown"
-                  fromYear={new Date().getFullYear() - 2}
-                  toYear={new Date().getFullYear() + 1}
-                  weekStartsOn={1}
-                  modifiers={{
-                    selectedWeek: currentWeekDays,
-                  }}
-                  modifiersClassNames={{
-                    selectedWeek: 'bg-primary/10 text-primary font-semibold',
-                  }}
-                  className="rounded-md border-0"
-                />
-                <div className="p-3 pt-0 border-t">
-                  <div className="text-xs font-inter text-muted-foreground text-center">
-                    Showing bookings for the week of {format(currentWeekStart, 'MMM d, yyyy')} -{' '}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="text-base lg:text-lg font-semibold text-charcoal hover:bg-gray-100 px-4 py-2"
+                    disabled={isNavigatingWeek}
+                  >
+                    {format(currentWeekStart, 'MMM d')} -{' '}
                     {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-            {/* <LoadingSpinner size="sm" /> */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateWeek('next')}
-              className="h-10 w-10 p-0"
-              disabled={isNavigatingWeek}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="center">
+                  <Calendar
+                    mode="single"
+                    selected={currentWeekStart}
+                    onSelect={(date) => {
+                      if (date) {
+                        handleCalendarDateSelect(date);
+                      }
+                    }}
+                    initialFocus
+                    className="rounded-md border"
+                    captionLayout="dropdown"
+                    fromYear={2020}
+                    toYear={2030}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateWeek('next')}
+                className="h-10 w-10 p-0"
+                disabled={isNavigatingWeek}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           {/* Day Sections */}

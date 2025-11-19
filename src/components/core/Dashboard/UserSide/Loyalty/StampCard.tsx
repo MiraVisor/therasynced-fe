@@ -28,7 +28,7 @@ export function StampCard({ stamp, onViewDetail }: StampCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card>
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           {/* Therapist Avatar */}
@@ -45,8 +45,10 @@ export function StampCard({ stamp, onViewDetail }: StampCardProps) {
           {/* Stamp Info */}
           <div className="flex-1 space-y-3">
             <div>
-              <h3 className="font-semibold text-lg text-gray-900">{stamp.therapist.name}</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-poppins font-semibold text-lg text-gray-900">
+                {stamp.therapist.name}
+              </h3>
+              <p className="text-sm font-inter text-gray-600">
                 {stamp.currentStampCount} of {stamp.stampTarget} stamps
               </p>
             </div>
@@ -54,7 +56,7 @@ export function StampCard({ stamp, onViewDetail }: StampCardProps) {
             {/* Progress Bar */}
             <div className="space-y-2">
               <Progress value={progressPercentage} className="h-2" />
-              <div className="flex justify-between text-xs text-gray-600">
+              <div className="flex justify-between text-xs font-inter text-gray-600">
                 <span>{stamp.stampsRemaining} stamps to reward</span>
                 <span>{Math.round(progressPercentage)}% complete</span>
               </div>
@@ -78,7 +80,7 @@ export function StampCard({ stamp, onViewDetail }: StampCardProps) {
             )}
 
             {/* Stats */}
-            <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-4 text-sm font-inter text-gray-600">
               <div className="flex items-center gap-1">
                 <Sparkles className="h-4 w-4" />
                 <span>{stamp.rewardCyclesCompleted} cycles completed</span>

@@ -43,25 +43,29 @@ export const PlanCard = ({
       )}
 
       <CardHeader className="flex-grow pb-4">
-        <CardTitle className="text-2xl font-bold text-primary">{plan.displayName}</CardTitle>
-        <CardDescription className="text-base">{plan.description}</CardDescription>
+        <CardTitle className="text-2xl font-poppins font-bold text-primary">
+          {plan.displayName}
+        </CardTitle>
+        <CardDescription className="text-base font-inter">{plan.description}</CardDescription>
         <div className="mt-4">
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold">€{plan.price}</span>
-            <span className="text-gray-600 dark:text-gray-400">/month</span>
+            <span className="text-3xl font-poppins font-bold text-primary">EUR {plan.price}</span>
+            <span className="text-sm font-inter text-gray-600 dark:text-gray-400">/month</span>
           </div>
-          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{displaySlots}</div>
+          <div className="mt-2 text-sm font-inter text-gray-600 dark:text-gray-400">
+            {displaySlots}
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="flex-grow space-y-3 pb-6">
         <div>
-          <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">Features:</h4>
+          <h4 className="mb-3 font-poppins font-semibold text-charcoal">Features:</h4>
           <ul className="space-y-2">
             {plan.features.map((feature, index) => (
               <li
                 key={index}
-                className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300"
+                className="flex items-start gap-2 text-sm font-inter text-gray-700 dark:text-gray-300"
               >
                 <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                 <span>{feature}</span>

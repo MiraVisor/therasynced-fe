@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Clock, Euro, ExternalLink, MapPin, Video } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, MapPin, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -163,7 +163,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
             <div className="flex-1 min-w-0">
               {/* Header with name and verification */}
               <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                <h2 className="text-xl font-poppins font-bold text-charcoal truncate">
                   {freelancerName}
                 </h2>
                 <VerificationBadge
@@ -174,7 +174,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
 
               {/* Job title or specialty */}
               {booking?.slot?.freelancer?.mainJobTitle && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                <p className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-3">
                   {booking.slot.freelancer.mainJobTitle.name}
                 </p>
               )}
@@ -232,10 +232,11 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
           <div className="flex flex-col items-end justify-between gap-4 md:border-l md:pl-6 md:border-gray-200 dark:md:border-gray-700">
             {booking?.totalAmount && (
               <div className="text-center">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Amount</p>
-                <div className="flex items-center gap-1 text-2xl font-bold text-primary">
-                  <Euro className="w-5 h-5" />
-                  <span>{booking.totalAmount}</span>
+                <p className="text-xs font-inter text-gray-500 dark:text-gray-400 mb-1">
+                  Total Amount
+                </p>
+                <div className="flex items-center gap-1 text-2xl font-poppins font-bold text-primary">
+                  <span>EUR {booking.totalAmount}</span>
                 </div>
               </div>
             )}

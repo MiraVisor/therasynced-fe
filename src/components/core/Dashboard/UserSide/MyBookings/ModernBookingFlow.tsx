@@ -449,10 +449,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           <div className="space-y-8">
             {/* Header */}
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-3xl font-poppins font-bold text-charcoal">
                 Select a date & time
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
+              <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
                 Choose when you&apos;d like to meet with {therapist?.name}
               </p>
             </div>
@@ -498,9 +498,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
               {/* Date Selection */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Select Date
-                  </h3>
+                  <h3 className="text-lg font-poppins font-semibold text-charcoal">Select Date</h3>
                   {totalDatePages > 1 && (
                     <div className="flex items-center gap-2">
                       <Button
@@ -540,10 +538,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     return (
                       <button
                         key={date}
-                        className={`relative p-3 rounded-xl border transition-all duration-200 hover:border-gray-300 ${
+                        className={`relative p-3 rounded-xl border ${
                           isSelected
                             ? 'border-primary bg-primary text-white shadow-md'
-                            : 'border-gray-200 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
+                            : 'border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700'
                         }`}
                         onClick={() => setSelectedDate(date)}
                       >
@@ -554,7 +552,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                             {dayOfWeek}
                           </div>
                           <div
-                            className={`text-lg font-semibold ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}
+                            className={`text-lg font-poppins font-semibold ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}
                           >
                             {dayNumber}
                           </div>
@@ -601,7 +599,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
               {/* Time Selection */}
               {selectedDate && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-poppins font-semibold text-charcoal">
                     Available Times
                   </h3>
                   <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto">
@@ -622,14 +620,14 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                       return (
                         <button
                           key={slot.id}
-                          className={`relative p-3 rounded-lg border-2 transition-all duration-200 font-medium text-sm ${
+                          className={`relative p-3 rounded-lg border-2 font-medium text-sm ${
                             isSelected
                               ? 'border-primary bg-primary text-white shadow-lg'
                               : isBooked
                                 ? 'border-red-200 bg-red-50 text-red-400 cursor-not-allowed opacity-60'
                                 : isReservedByOthers
                                   ? 'border-yellow-200 bg-yellow-50 text-yellow-600 cursor-not-allowed opacity-60'
-                                  : 'border-gray-200 bg-white hover:border-primary hover:shadow-md text-gray-900 dark:bg-gray-800 dark:text-white'
+                                  : 'border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white'
                           }`}
                           onClick={() => {
                             if (!isReservedByOthers && !isBooked) {
@@ -683,7 +681,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                           </div>
                         </div>
                         <div className="ml-auto font-bold text-green-900 dark:text-green-100">
-                          €{slotsByDate[selectedDate].find((s) => s.id === selectedTime)?.basePrice}
+                          EUR{' '}
+                          {slotsByDate[selectedDate].find((s) => s.id === selectedTime)?.basePrice}
                         </div>
                       </div>
                     </div>
@@ -699,10 +698,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           <div className="space-y-8">
             {/* Header */}
             <div className="text-center space-y-3">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">
                 Tell us about your session
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
+              <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
                 Help {therapist?.name} prepare for your appointment (optional)
               </p>
             </div>
@@ -712,16 +711,16 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
               {/* Services Selection */}
               {availableServices && availableServices.length > 0 ? (
                 <div className="space-y-4">
-                  <Label className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <Label className="text-lg font-poppins font-semibold text-charcoal">
                     Available Services for This Slot
                   </Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
                     Select from services available for your selected time slot
                   </p>
                   <div className="grid gap-3">
                     {availableServices.map((service: any) => (
                       <div key={service.id} className="relative">
-                        <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer">
                           <input
                             type="checkbox"
                             className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
@@ -782,7 +781,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                 </div>
               ) : selectedTime ? (
                 <div className="space-y-4">
-                  <Label className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <Label className="text-lg font-poppins font-semibold text-charcoal">
                     Services
                   </Label>
                   <div className="text-sm text-gray-600 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -794,13 +793,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
               {/* Additional Notes */}
               <div className="space-y-4">
-                <Label
-                  htmlFor="notes"
-                  className="text-lg font-semibold text-gray-900 dark:text-white"
-                >
+                <Label htmlFor="notes" className="text-lg font-poppins font-semibold text-charcoal">
                   Additional Notes (Optional)
                 </Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
                   Share any specific concerns, goals, or preferences for your session
                 </p>
                 <Textarea
@@ -821,7 +817,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     <Home className="w-5 h-5 text-blue-600" />
                     <Label
                       htmlFor="clientAddress"
-                      className="text-lg font-semibold text-blue-900 dark:text-blue-100"
+                      className="text-lg font-poppins font-semibold text-blue-900 dark:text-blue-100"
                     >
                       Home Address
                     </Label>
@@ -846,10 +842,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           <div className="space-y-8">
             {/* Header */}
             <div className="text-center space-y-3">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">
                 Confirm your booking
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
+              <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
                 Review your appointment details and complete your booking
               </p>
             </div>
@@ -867,10 +863,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                       </div>
                     </Avatar>
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-xl font-poppins font-bold text-charcoal">
                         {therapist?.name}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 font-medium">
+                      <p className="text-gray-600 dark:text-gray-400 font-inter font-medium">
                         {therapist?.specialty}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
@@ -895,7 +891,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-primary" />
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Date & Time</h4>
+                        <h4 className="font-poppins font-semibold text-charcoal">Date & Time</h4>
                       </div>
                       <div className="pl-7">
                         <p className="font-medium text-gray-900 dark:text-white">
@@ -927,7 +923,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <FileText className="w-5 h-5 text-primary" />
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Services</h4>
+                        <h4 className="font-poppins font-semibold text-charcoal">Services</h4>
                       </div>
                       <div className="pl-7">
                         {(serviceForm?.watch('serviceCategoryIds')?.length ?? 0) > 0 ? (
@@ -953,7 +949,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                   {/* Additional Details */}
                   {(detailsForm.watch('notes') || detailsForm.watch('clientAddress')) && (
                     <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                      <h4 className="font-poppins font-semibold text-charcoal mb-3">
                         Additional Details
                       </h4>
                       <div className="space-y-3">
@@ -1011,9 +1007,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                           <div className="space-y-2">
                             <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400">Base Price:</span>
-                              <span className="text-gray-900 dark:text-white">
-                                €{basePrice.toFixed(2)}
+                              <span className="text-gray-600 dark:text-gray-400 font-inter">
+                                Base Price:
+                              </span>
+                              <span className="font-poppins font-semibold text-primary">
+                                EUR {basePrice.toFixed(2)}
                               </span>
                             </div>
                             {hasDiscount && (
@@ -1023,20 +1021,20 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                                     Stamp Discount ({discountPercentage}%):
                                   </span>
                                   <span className="text-green-600 dark:text-green-400 font-medium">
-                                    -€{discountAmount.toFixed(2)}
+                                    -EUR {discountAmount.toFixed(2)}
                                   </span>
                                 </div>
                                 <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    <span className="text-lg font-poppins font-semibold text-charcoal">
                                       Total Price:
                                     </span>
                                     <div className="flex flex-col items-end">
-                                      <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                        €{finalPrice.toFixed(2)}
+                                      <span className="text-2xl font-poppins font-bold text-green-600 dark:text-green-400">
+                                        EUR {finalPrice.toFixed(2)}
                                       </span>
-                                      <span className="text-xs text-gray-500 line-through">
-                                        €{basePrice.toFixed(2)}
+                                      <span className="text-xs font-inter text-gray-500 line-through">
+                                        EUR {basePrice.toFixed(2)}
                                       </span>
                                     </div>
                                   </div>
@@ -1045,11 +1043,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                             )}
                             {!hasDiscount && (
                               <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                <span className="text-lg font-poppins font-semibold text-charcoal">
                                   Total Price:
                                 </span>
-                                <span className="text-2xl font-bold text-primary">
-                                  €{basePrice.toFixed(2)}
+                                <span className="text-2xl font-poppins font-bold text-primary">
+                                  EUR {basePrice.toFixed(2)}
                                 </span>
                               </div>
                             )}
@@ -1202,7 +1200,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                       </div>
                     </Avatar>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                      <h3 className="font-poppins font-bold text-lg text-charcoal">
                         {therapist?.name}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400">{therapist?.specialty}</p>
@@ -1218,7 +1216,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
                   {/* Booking Details */}
                   <div className="space-y-4">
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Your booking</h4>
+                    <h4 className="font-poppins font-semibold text-charcoal">Your booking</h4>
 
                     {/* Date & Time */}
                     {selectedDate && selectedTime && (
@@ -1318,11 +1316,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                               {hasDiscount && (
                                 <>
                                   <div className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-600 dark:text-gray-400">
+                                    <span className="text-gray-600 dark:text-gray-400 font-inter">
                                       Base Price:
                                     </span>
-                                    <span className="text-gray-900 dark:text-white">
-                                      €{basePrice.toFixed(2)}
+                                    <span className="font-poppins font-semibold text-primary">
+                                      EUR {basePrice.toFixed(2)}
                                     </span>
                                   </div>
                                   <div className="flex items-center justify-between text-sm">
@@ -1330,20 +1328,20 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                                       Stamp Discount ({discountPercentage}%):
                                     </span>
                                     <span className="text-green-600 dark:text-green-400 font-medium">
-                                      -€{discountAmount.toFixed(2)}
+                                      -EUR {discountAmount.toFixed(2)}
                                     </span>
                                   </div>
                                   <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center justify-between">
-                                      <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                      <span className="text-lg font-poppins font-semibold text-charcoal">
                                         Total
                                       </span>
                                       <div className="flex flex-col items-end">
-                                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                          €{finalPrice.toFixed(2)}
+                                        <span className="text-2xl font-poppins font-bold text-green-600 dark:text-green-400">
+                                          EUR {finalPrice.toFixed(2)}
                                         </span>
-                                        <span className="text-xs text-gray-500 line-through">
-                                          €{basePrice.toFixed(2)}
+                                        <span className="text-xs font-inter text-gray-500 line-through">
+                                          EUR {basePrice.toFixed(2)}
                                         </span>
                                       </div>
                                     </div>
@@ -1357,11 +1355,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                               )}
                               {!hasDiscount && (
                                 <div className="flex items-center justify-between">
-                                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  <span className="text-lg font-poppins font-semibold text-charcoal">
                                     Total
                                   </span>
-                                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    €{basePrice.toFixed(2)}
+                                  <span className="text-2xl font-poppins font-bold text-primary">
+                                    EUR {basePrice.toFixed(2)}
                                   </span>
                                 </div>
                               )}
