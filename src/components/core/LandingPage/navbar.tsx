@@ -4,9 +4,10 @@ import { MenuIcon, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import SlideArrowButton from '@/components/ui/SlideArrowButton';
 
 const navLinks = [
   { href: '#services', label: 'Our Services' },
@@ -17,6 +18,7 @@ const navLinks = [
 
 const Navbar = () => {
   const { resolvedTheme } = useTheme();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
@@ -52,12 +54,11 @@ const Navbar = () => {
 
         {/* CTA + Theme Toggle */}
         <div className="flex items-center gap-4">
-          {/* <ModeToggle /> */}
-          <Link href="/authentication/sign-in" passHref>
-            <Button className="w-full hidden sm:flex sm:w-auto lg:w-52 lg:h-12 px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg bg-primary hover:bg-primary/90 shadow-md hover:shadow-primary/25 lg:hover:scale-105 transition-all duration-300 group items-center justify-center gap-2">
-              Get Started
-            </Button>
-          </Link>
+          <SlideArrowButton
+            text="Get Started"
+            className="hidden sm:flex lg:w-52 lg:h-12"
+            onClick={() => router.push('/authentication/sign-in')}
+          />
 
           {/* Mobile Hamburger */}
           <button
@@ -88,12 +89,14 @@ const Navbar = () => {
             </Link>
           ))}
 
-          <Button
-            className="w-full sm:w-auto lg:w-52 lg:h-12 px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg bg-primary hover:bg-primary/90 shadow-md hover:shadow-primary/25 lg:hover:scale-105 transition-all duration-300 group flex items-center justify-center gap-2"
-            onClick={closeMenu}
-          >
-            Get Started
-          </Button>
+          <SlideArrowButton
+            text="Get Started"
+            className="hidden sm:flex lg:w-52 lg:h-12"
+            onClick={() => {
+              closeMenu();
+              router.push('/authentication/sign-in');
+            }}
+          />
         </div>
       </div>
 
