@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -65,9 +66,13 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const isCancelled = booking.status === 'CANCELLED';
   const canCancel = booking.status === 'CONFIRMED' && isUpcoming;
   const canReschedule = booking.status === 'CONFIRMED' && isUpcoming;
-  // User side: Show message for all bookings except AVAILABLE and RESERVED
-  const canMessage = booking.status !== 'AVAILABLE' && booking.status !== 'RESERVED';
-  const canReview = isCompleted && !isCancelled;
+  // User side: Show message for all bookings
+  const canMessage = onMessage;
+  // Use backend's canBeRated field if available, otherwise fall back to calculated value
+  const canReview =
+    booking.canBeRated !== undefined
+      ? booking.canBeRated && !booking.hasRating
+      : isCompleted && !isCancelled;
 
   const getStatusColor = (status: string) => {
     if (isUpcoming) return 'bg-info/10 text-info border border-info/20';
@@ -83,13 +88,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     if (status === 'RESCHEDULED') return 'Rescheduled';
     if (status === 'CANCELLED') return 'Cancelled';
     return status.charAt(0) + status.slice(1).toLowerCase();
-  };
-
-  const getLocationText = () => {
-    if (slot.locationType === 'ONLINE') return 'Online';
-    if (slot.locationType === 'CLINIC') return 'Clinic';
-    if (slot.locationType === 'HOME') return 'Home Visit';
-    return 'Office';
   };
 
   const getLocationDetails = () => {
@@ -162,8 +160,35 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                   {freelancer?.name || 'Unknown'}
                 </h4>
                 {freelancer?.email && (
-                  <p className="text-sm font-inter text-muted-foreground">{freelancer.email}</p>
+                  <p className="text-sm font-inter text-muted-foreground mb-2">
+                    {freelancer.email}
+                  </p>
                 )}
+                {/* Ratings Display */}
+                <div className="mt-2 space-y-2">
+                  {/* Freelancer Overall Rating */}
+                  {((freelancer as any)?.cardInfo?.averageRating ||
+                    (freelancer as any)?.averageRating) && (
+                    <RatingDisplay
+                      rating={
+                        (freelancer as any)?.cardInfo?.averageRating ||
+                        (freelancer as any)?.averageRating
+                      }
+                      size="sm"
+                      showCount={true}
+                      reviewCount={(freelancer as any)?.cardInfo?.totalRatings || 0}
+                    />
+                  )}
+                  {/* Booking Specific Rating - Styled as a distinct badge */}
+                  {booking.hasRating && booking.rating && (
+                    <div className="flex items-center gap-3 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+                      <span className="text-sm font-poppins font-semibold text-primary">
+                        Your Rating for this Booking:
+                      </span>
+                      <RatingDisplay rating={booking.rating.rating} size="sm" showCount={false} />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

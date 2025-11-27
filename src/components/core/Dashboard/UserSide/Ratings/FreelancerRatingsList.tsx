@@ -1,0 +1,140 @@
+'use client';
+
+import { format } from 'date-fns';
+import { Star } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { getFreelancerRatings } from '@/redux/api/ratingApi';
+import { RatingWithDetails } from '@/types/types';
+
+import { RatingDisplay } from './RatingDisplay';
+
+interface FreelancerRatingsListProps {
+  freelancerId: string;
+  initialRatings?: RatingWithDetails[];
+  initialPagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
+  freelancerId,
+  initialRatings = [],
+  initialPagination,
+}) => {
+  const [ratings, setRatings] = useState<RatingWithDetails[]>(initialRatings);
+  const [pagination, setPagination] = useState(initialPagination);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(initialPagination?.page || 1);
+
+  const loadRatings = async (pageNum: number) => {
+    setLoading(true);
+    try {
+      const response = await getFreelancerRatings(freelancerId, {
+        page: pageNum,
+        limit: 10,
+      });
+      setRatings(response.data);
+      setPagination(response.pagination);
+      setPage(pageNum);
+    } catch (error) {
+      console.error('Error loading ratings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (ratings.length === 0 && !loading) {
+    return (
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        <RatingDisplay rating={0} reviewCount={0} size="sm" showCount={false} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-4">
+        {ratings.map((rating) => (
+          <div
+            key={rating.id}
+            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">
+                    {rating.patient.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-poppins font-semibold text-charcoal text-sm">
+                      {rating.patient.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {format(new Date(rating.createdAt), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-4 h-4 ${
+                      star <= rating.rating
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Showing {ratings.length} of {pagination.total} ratings
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadRatings(page - 1)}
+              disabled={!pagination.hasPrev || loading}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Page {page} of {pagination.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadRatings(page + 1)}
+              disabled={!pagination.hasNext || loading}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading ratings...</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FreelancerRatingsList;

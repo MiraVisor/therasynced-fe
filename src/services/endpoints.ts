@@ -76,6 +76,7 @@ export const ENDPOINTS = {
     tierBronze: '/freelancer/tier/bronze',
     tierSilver: '/freelancer/tier/silver',
     tierGold: '/freelancer/tier/gold',
+    search: '/freelancer/search',
   },
   // Dashboard endpoints
   dashboard: {
@@ -160,6 +161,13 @@ export const ENDPOINTS = {
     billingPortal: '/subscription/billing-portal',
     checkout: '/subscription/checkout',
     verifyCheckout: '/subscription/verify-checkout',
+  },
+  // Rating endpoints
+  ratings: {
+    create: '/ratings',
+    getFreelancerRatings: (freelancerId: string) => `/ratings/freelancer/${freelancerId}`,
+    checkBookingEligibility: (bookingId: string) => `/ratings/booking/${bookingId}`,
+    getMyRatings: '/ratings/my-ratings',
   },
   // Admin endpoints
   admin: {

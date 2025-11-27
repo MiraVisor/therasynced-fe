@@ -7,8 +7,6 @@ import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import CategoryBreakdownChart from '@/components/core/Dashboard/FreelancerSide/Analytics/CategoryBreakdownChart';
-import RevenueTrendChart from '@/components/core/Dashboard/FreelancerSide/Analytics/RevenueTrendChart';
-import ServiceAnalyticsChart from '@/components/core/Dashboard/FreelancerSide/Analytics/ServiceAnalyticsChart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { fetchFreelancerAnalytics } from '@/redux/slices/analyticsSlice';
@@ -295,24 +293,10 @@ const AnalyticsPage = () => {
                   </div>
                 </CardContent>
               </Card>
-              <RevenueTrendChart
-                data={analyticsData?.revenueAnalytics?.timeSeries?.map((item) => ({
-                  date: new Date(item.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  }),
-                  revenue: item.revenue,
-                }))}
-                isLoading={false}
-              />
             </div>
 
             {/* Right Column: Service Analytics */}
             <div className="space-y-6">
-              <ServiceAnalyticsChart
-                data={analyticsData?.serviceAnalytics || []}
-                isLoading={false}
-              />
               <CategoryBreakdownChart
                 data={analyticsData?.serviceCategoryAnalytics || []}
                 isLoading={false}

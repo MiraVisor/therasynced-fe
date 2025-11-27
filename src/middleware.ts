@@ -28,10 +28,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // If accessing root path with valid token, redirect to dashboard
-  if (isRootRoute && isTokenValid) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
+  // Allow root path to be accessible even with valid token (landing page will show Dashboard button)
+  // Remove the redirect so users can see the landing page
 
   // Allow all other requests to proceed
   return NextResponse.next();

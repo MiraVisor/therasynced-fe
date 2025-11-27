@@ -257,7 +257,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         rating: freelancerData.rating || 0,
         reviews: freelancerData.reviews || 0,
         avatar: freelancerData.profilePicture,
-        experience: freelancerData.yearsOfExperience || '0+ years',
         location: freelancerData.location || 'Online',
         services:
           freelancerServices.length > 0 ? freelancerServices : freelancerData.services || [],
@@ -280,7 +279,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       name: firstSlot.freelancerName || firstSlot.freelancer?.name,
       specialty: firstSlot.freelancer?.mainService || 'Therapist', // Fallback
       rating: firstSlot.averageRating || firstSlot.freelancer?.averageRating || 0,
-      reviews: firstSlot.numberOfRatings || firstSlot.freelancer?.patientStories || 0,
+      reviews: firstSlot.numberOfRatings || firstSlot.freelancer?.cardInfo?.totalRatings || 0,
       avatar: firstSlot.profilePicture || firstSlot.freelancer?.profilePicture,
       experience: firstSlot.freelancer?.yearsOfExperience
         ? `${firstSlot.freelancer.yearsOfExperience}+ years`
@@ -432,11 +431,31 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           });
           router.push('/dashboard/my-bookings');
         } else {
-          throw new Error(result.payload || 'Failed to book appointment');
+          // Handle error payload (could be string or object with status)
+          const errorPayload = result.payload;
+          const errorMessage =
+            typeof errorPayload === 'string'
+              ? errorPayload
+              : errorPayload?.message || 'Failed to book appointment';
+          const errorStatus = typeof errorPayload === 'object' ? errorPayload?.status : null;
+          throw { message: errorMessage, status: errorStatus, statusCode: errorStatus };
         }
       }
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to book appointment');
+      // Handle 403 errors for expired trial freelancers
+      if (err?.status === 403 || err?.statusCode === 403) {
+        const errorMessage =
+          err?.message ||
+          err?.data?.message ||
+          "This freelancer's trial has expired. They cannot accept new bookings. Please subscribe to continue.";
+        toast.error(errorMessage, {
+          autoClose: 7000, // Show longer for important messages
+        });
+        // Optionally redirect or refresh the page to update freelancer list
+        // router.refresh();
+      } else {
+        toast.error(err?.message || 'Failed to book appointment');
+      }
     } finally {
       setBookingLoading(false);
     }

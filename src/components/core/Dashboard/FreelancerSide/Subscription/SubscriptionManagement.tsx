@@ -78,29 +78,28 @@ export default function SubscriptionManagement() {
 
       // Check subscription status - prioritize Redux state (most up-to-date) over token
       const statusFromState = currentSubscription?.status;
-      const statusFromToken = subscriptionStatus;
-      // Use state status first, fall back to token only if state is missing
-      const currentStatus = statusFromState || statusFromToken;
 
       // Check if subscription exists
       const hasSubscription = !!currentSubscription;
 
+      // Check if user has a paid plan (not just a trial record)
+      // Trial users who never subscribed won't have a plan property
+      const hasPlan = currentSubscription?.plan !== undefined;
+
       // Determine if subscription is active
       // Active means: ACTIVE/TRIALING status OR canceled but still active until period end
-      const isActiveStatus = currentStatus === 'ACTIVE' || currentStatus === 'TRIALING';
       const isCanceledButActive = currentSubscription?.cancelAtPeriodEnd === true;
 
       // Decision: Use update endpoint if we have a subscription that appears active
+      // IMPORTANT: Trial users without a plan (never subscribed) should use checkout, not update
       // We check statusFromState directly to avoid token staleness issues
-      // If statusFromState is ACTIVE or TRIALING, definitely use update
-      // If statusFromState is missing but we have currentSubscription, also try update
-      // (backend will validate and error if needed)
+      // For ACTIVE status: always use update (they have a paid subscription)
+      // For TRIALING status: only use update if they have a plan (had subscription before)
+      // For canceled subscriptions: use update if they have a plan
       const shouldUseUpdate =
         hasSubscription &&
-        (statusFromState === 'ACTIVE' ||
-          statusFromState === 'TRIALING' ||
-          isActiveStatus ||
-          isCanceledButActive);
+        hasPlan &&
+        (statusFromState === 'ACTIVE' || statusFromState === 'TRIALING' || isCanceledButActive);
 
       if (shouldUseUpdate) {
         const result = await dispatch(updateSubscription({ planType }));
@@ -294,14 +293,19 @@ export default function SubscriptionManagement() {
               </div>
             )}
 
-            {/* Show inactive message */}
-            {isInactive && (
+            {/* Show inactive message or expired trial */}
+            {(isInactive || currentSubscription.trialExpired || status === 'TRIAL_EXPIRED') && (
               <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-900/20">
-                <Info className="h-4 w-4 text-orange-600" />
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
                 <AlertTitle>Trial Expired</AlertTitle>
-                <AlertDescription>
-                  {currentSubscription.message ||
-                    'Please subscribe to continue using the platform.'}
+                <AlertDescription className="space-y-2">
+                  <div>
+                    {currentSubscription.message ||
+                      'Your trial has expired. Please subscribe to continue accepting bookings and creating slots.'}
+                  </div>
+                  <Button onClick={() => handleSelectPlan('SILVER')} className="mt-3" size="sm">
+                    Subscribe Now
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}
@@ -311,9 +315,26 @@ export default function SubscriptionManagement() {
               <Alert className="border-primary bg-primary/10">
                 <Info className="h-4 w-4 text-primary" />
                 <AlertTitle>Trial Period Active</AlertTitle>
-                <AlertDescription>
-                  You have {getDaysInTrial()} days remaining in your trial period. Subscribe to a
-                  plan to continue using the platform.
+                <AlertDescription className="space-y-2">
+                  <div>
+                    {currentSubscription.message ||
+                      `You have ${getDaysInTrial()} days remaining in your trial period. Subscribe to a plan to continue using the platform.`}
+                  </div>
+                  {currentSubscription.slotsUsed !== undefined &&
+                    currentSubscription.slotsLimit !== undefined && (
+                      <div className="mt-2 text-sm">
+                        <strong>Slots:</strong> {currentSubscription.slotsUsed}/
+                        {currentSubscription.slotsLimit} active slots
+                        {currentSubscription.slotsUsed >= currentSubscription.slotsLimit && (
+                          <span className="ml-2 text-orange-600 dark:text-orange-400">
+                            (Limit reached - upgrade to create more)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  <Button onClick={() => handleSelectPlan('SILVER')} className="mt-3" size="sm">
+                    Upgrade Now
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}

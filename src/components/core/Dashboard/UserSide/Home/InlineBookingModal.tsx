@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Clock, MapPin, Star, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, Star } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -103,9 +103,6 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                   <Star className="w-4 h-4 text-yellow-500 fill-current" />
                   <span className="font-medium">{freelancer.rating}</span>
                   <span className="text-sm text-gray-500">({freelancer.reviews || 0} reviews)</span>
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {freelancer.yearsOfExperience} years experience
                 </div>
               </div>
             </CardContent>

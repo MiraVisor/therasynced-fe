@@ -1,7 +1,6 @@
 import { format } from 'date-fns';
 import {
   Award,
-  Calendar,
   CheckCircle2,
   Edit2,
   Gift,
@@ -16,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,6 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   onClose,
   onComplete,
   onDelete,
-  onEdit,
 }) => {
   const router = useRouter();
   const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -188,15 +187,6 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
     } else {
       toast.error('Client information not available');
     }
-  };
-
-  // Handle reschedule for available slots
-  const handleReschedule = () => {
-    // For now, show a toast. In the future, this could open a reschedule dialog
-    toast.info(
-      'Reschedule functionality coming soon. You can delete this slot and create a new one.',
-    );
-    // TODO: Implement reschedule dialog or navigation
   };
 
   const client = slot.booking?.client;
@@ -469,6 +459,28 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
               </div>
             )}
 
+          {/* Client Rating (if booking has been rated) */}
+          {slot.booking?.rating && (
+            <div className="mt-6 pt-6 border-t">
+              <Label className="font-inter text-xs text-muted-foreground mb-2 block">
+                Client Rating
+              </Label>
+              <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                <div className="flex items-center gap-3">
+                  <RatingDisplay rating={slot.booking.rating.rating} size="md" showCount={false} />
+                  <span className="font-poppins font-semibold text-charcoal">
+                    {slot.booking.rating.rating}/5
+                  </span>
+                  {slot.booking.rating.createdAt && (
+                    <span className="font-inter text-sm text-muted-foreground ml-auto">
+                      Rated on {safeFormatDate(slot.booking.rating.createdAt, 'MMM d, yyyy')}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Client Notes (if booked) */}
           {slot.booking?.notes && (
             <div className="mt-6 pt-6 border-t">
@@ -546,75 +558,11 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         </div>
 
         <DialogFooter className="flex sm:flex-row flex-col gap-2 px-6 pb-6">
-          {/* Actions for BOOKED slots */}
-          {slot.status === 'BOOKED' && client && (
-            <>
-              <Button
-                onClick={handleMessage}
-                className="bg-primary hover:bg-primary/90 text-white flex-1 sm:flex-initial"
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Message Client
-              </Button>
-              {slot.booking &&
-                slot.booking.status !== 'COMPLETED' &&
-                slot.booking.status !== 'completed' && (
-                  <Button
-                    onClick={handleCompleteBooking}
-                    disabled={isCompleting}
-                    className="bg-success hover:bg-success/90 text-white flex-1 sm:flex-initial"
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    {isCompleting ? 'Completing...' : 'Mark as Completed'}
-                  </Button>
-                )}
-            </>
-          )}
-
-          {/* Actions for AVAILABLE slots - No messaging for AVAILABLE */}
-          {slot.status === 'AVAILABLE' && (
-            <>
-              <Button
-                variant="outline"
-                onClick={handleReschedule}
-                className="flex-1 sm:flex-initial"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Reschedule
-              </Button>
-              {onDelete && (
-                <Button
-                  variant="destructive"
-                  onClick={() => onDelete(slot.id)}
-                  className="flex-1 sm:flex-initial"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Slot
-                </Button>
-              )}
-            </>
-          )}
-
-          {/* Actions for RESERVED slots - No messaging for RESERVED */}
-          {slot.status === 'RESERVED' && (
-            <>
-              {onDelete && (
-                <Button
-                  variant="destructive"
-                  onClick={() => onDelete(slot.id)}
-                  className="flex-1 sm:flex-initial"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Slot
-                </Button>
-              )}
-            </>
-          )}
-
-          {/* Actions for COMPLETED slots */}
-          {(slot.status === 'COMPLETED' ||
-            (slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED')) &&
-            client && (
+          {/* Message Client button - Show once for slots with client (BOOKED, COMPLETED, or CANCELLED) */}
+          {client &&
+            (slot.status === 'BOOKED' ||
+              slot.status === 'CANCELLED' ||
+              (slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED')) && (
               <Button
                 onClick={handleMessage}
                 className="bg-primary hover:bg-primary/90 text-white flex-1 sm:flex-initial"
@@ -624,14 +572,42 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
               </Button>
             )}
 
-          {/* Actions for CANCELLED slots - Allow messaging for cancelled bookings */}
-          {slot.status === 'CANCELLED' && client && (
+          {/* Actions for BOOKED slots */}
+          {slot.status === 'BOOKED' &&
+            slot.booking &&
+            slot.booking.status !== 'COMPLETED' &&
+            slot.booking.status !== 'completed' && (
+              <Button
+                onClick={handleCompleteBooking}
+                disabled={isCompleting}
+                className="bg-success hover:bg-success/90 text-white flex-1 sm:flex-initial"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                {isCompleting ? 'Completing...' : 'Mark as Completed'}
+              </Button>
+            )}
+
+          {/* Actions for AVAILABLE slots */}
+          {slot.status === 'AVAILABLE' && onDelete && (
             <Button
-              onClick={handleMessage}
-              className="bg-primary hover:bg-primary/90 text-white flex-1 sm:flex-initial"
+              variant="destructive"
+              onClick={() => onDelete(slot.id)}
+              className="flex-1 sm:flex-initial"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Message Client
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Slot
+            </Button>
+          )}
+
+          {/* Actions for RESERVED slots */}
+          {slot.status === 'RESERVED' && onDelete && (
+            <Button
+              variant="destructive"
+              onClick={() => onDelete(slot.id)}
+              className="flex-1 sm:flex-initial"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Slot
             </Button>
           )}
 

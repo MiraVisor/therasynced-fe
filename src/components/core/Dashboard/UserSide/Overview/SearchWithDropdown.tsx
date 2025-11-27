@@ -39,7 +39,7 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
       name: freelancer.name || cardInfo.name,
       specialty: cardInfo.mainService || freelancer.services?.[0]?.name || '',
       rating: cardInfo.averageRating || freelancer.averageRating,
-      reviews: cardInfo.patientStories || 0,
+      reviews: cardInfo.totalRatings || 0,
       description: freelancer.description || cardInfo.title || '',
       isFavorite: freelancer.isFavorite ?? false,
       profilePicture: freelancer.profilePicture,
@@ -47,6 +47,7 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
       planFeatures: freelancer.planFeatures || null,
       tier: freelancer.planFeatures?.planType || null,
       verificationStatus: freelancer.verificationStatus || 'unverified',
+      subscriptionStatus: freelancer.subscriptionStatus || undefined,
     };
   };
 
@@ -252,7 +253,7 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
                           size="sm"
                         />
                         {freelancer.tier && (
-                          <TierBadge tier={freelancer.tier} size="sm" showIcon={false} />
+                          <TierBadge tier={freelancer.tier} size="sm" showIcon={true} />
                         )}
                       </div>
                       {freelancer.specialty && (

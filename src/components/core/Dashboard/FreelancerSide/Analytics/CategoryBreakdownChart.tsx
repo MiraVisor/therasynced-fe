@@ -1,7 +1,5 @@
 'use client';
 
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ServiceCategoryAnalytics {
@@ -16,14 +14,17 @@ interface CategoryBreakdownChartProps {
   isLoading?: boolean;
 }
 
+// Test data for visualization (remove in production)
+
 const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownChartProps) => {
-  // Transform data for chart
-  const chartData = data.map((category) => ({
-    name:
-      category.categoryName.length > 15
-        ? `${category.categoryName.substring(0, 15)}...`
-        : category.categoryName,
-    fullName: category.categoryName,
+  // Use test data if no data provided (for visualization purposes)
+  const displayData = data && data;
+  // Sort by bookings (descending) for better visualization
+  const sortedData = [...displayData].sort((a, b) => b.bookings - a.bookings);
+
+  // Transform data for chart - use full names for horizontal chart
+  const chartData = sortedData.map((category) => ({
+    name: category.categoryName,
     bookings: category.bookings,
     revenue: category.revenue,
     percentage: category.percentage,
@@ -43,7 +44,7 @@ const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownCh
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!displayData || displayData.length === 0) {
     return (
       <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
         <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
@@ -63,8 +64,11 @@ const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownCh
     );
   }
 
+  // Calculate max bookings for percentage bar
+  const maxBookings = Math.max(...chartData.map((d) => d.bookings), 1);
+
   return (
-    <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl min-h-[398px]">
+    <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
       <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
         <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
           Category Breakdown
@@ -73,60 +77,50 @@ const CategoryBreakdownChart = ({ data, isLoading = false }: CategoryBreakdownCh
           Bookings by category
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex items-center justify-center w-full h-[250px] p-6">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-            <XAxis
-              dataKey="name"
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: '#2C3E50', fontSize: 11 }}
-              angle={-45}
-              textAnchor="end"
-              height={80}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: '#2C3E50', fontSize: 11 }}
-              width={50}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#fff',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                padding: '8px',
-              }}
-              formatter={(value: number, name: string) => {
-                if (name === 'bookings') {
-                  return [`${value} bookings`, 'Bookings'];
-                }
-                if (name === 'percentage') {
-                  return [`${value.toFixed(1)}%`, 'Percentage'];
-                }
-                return [`EUR ${value}`, 'Revenue'];
-              }}
-              labelFormatter={(label) => chartData.find((d) => d.name === label)?.fullName || label}
-            />
-            <Bar
-              dataKey="bookings"
-              fill="#007745"
-              radius={[6, 6, 0, 0]}
-              maxBarSize={50}
-              className="hover:fill-primary transition-all duration-200"
-            />
-          </BarChart>
-        </ResponsiveContainer>
+      <CardContent className="p-6 h-[300px] overflow-y-auto">
+        <div className="space-y-4">
+          {chartData.map((category, index) => (
+            <div
+              key={index}
+              className="border border-gray-200 rounded-lg p-4 hover:border-primary/30 hover:shadow-sm transition-all duration-200"
+            >
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-poppins font-semibold text-charcoal text-base mb-1">
+                    {category.name}
+                  </h3>
+                  <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-inter text-sm text-muted-foreground">Bookings:</span>
+                      <span className="font-poppins font-semibold text-charcoal">
+                        {category.bookings}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-inter text-sm text-muted-foreground">Revenue:</span>
+                      <span className="font-poppins font-semibold text-primary">
+                        EUR {category.revenue.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-inter text-sm text-muted-foreground">Share:</span>
+                      <span className="font-poppins font-semibold text-charcoal">
+                        {category.percentage.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Visual progress bar */}
+              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500"
+                  style={{ width: `${(category.bookings / maxBookings) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

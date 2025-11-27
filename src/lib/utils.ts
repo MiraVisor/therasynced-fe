@@ -55,3 +55,21 @@ export const getDecodedToken = (): DecodedToken | null => {
 export function isRole(value: unknown): value is ROLES {
   return typeof value === 'string' && Object.values(ROLES).includes(value as ROLES);
 }
+
+export const isTokenValid = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  const token = getCookie('token');
+  if (!token) return false;
+
+  const decodedToken = getDecodedToken();
+  if (!decodedToken) return false;
+
+  // Check if token is expired
+  const currentTime = Math.floor(Date.now() / 1000);
+  if (decodedToken.exp && decodedToken.exp < currentTime) {
+    return false;
+  }
+
+  return true;
+};
