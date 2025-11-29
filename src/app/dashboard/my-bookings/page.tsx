@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBookings/BookingDetailsModal';
 import { DayBookingSection } from '@/components/core/Dashboard/UserSide/MyBookings/DayBookingSection';
+import { RatingModal } from '@/components/core/Dashboard/UserSide/Ratings/RatingModal';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -122,6 +123,8 @@ export default function MyBookingsPage() {
   const [bookingStats, setBookingStats] = useState<BookingStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [bookingToRate, setBookingToRate] = useState<Booking | null>(null);
 
   const fetchBookingStats = useCallback(async () => {
     setIsLoadingStats(true);
@@ -202,11 +205,15 @@ export default function MyBookingsPage() {
     setShowDetailsModal(true);
   };
 
-  const handleReview = () => {
-    // Navigate to review page or open review modal
-    // For now, we'll show a toast - you can implement a review modal/route later
-    toast.info('Review functionality coming soon');
-    // router.push(`/dashboard/bookings/${booking.id}/review`);
+  const handleReview = (booking: Booking) => {
+    setBookingToRate(booking);
+    setShowRatingModal(true);
+  };
+
+  const handleRatingSuccess = () => {
+    // Refresh bookings after successful rating
+    fetchBookingsForWeek(currentWeekStart, true);
+    fetchBookingStats();
   };
 
   const confirmCancel = async () => {
@@ -259,10 +266,6 @@ export default function MyBookingsPage() {
   };
 
   // Get all days in the current week for highlighting
-  const getCurrentWeekDaysForHighlight = () => {
-    const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
-    return eachDayOfInterval({ start: currentWeekStart, end: weekEnd });
-  };
 
   // Filter and sort bookings based on search, status, and date
   const filteredBookings = bookings
@@ -553,6 +556,14 @@ export default function MyBookingsPage() {
         onCancel={handleCancel}
         onReview={handleReview}
         cancellingBookingId={cancellingBookingId}
+      />
+
+      {/* Rating Modal */}
+      <RatingModal
+        open={showRatingModal}
+        onOpenChange={setShowRatingModal}
+        booking={bookingToRate}
+        onSuccess={handleRatingSuccess}
       />
     </DashboardPageWrapper>
   );

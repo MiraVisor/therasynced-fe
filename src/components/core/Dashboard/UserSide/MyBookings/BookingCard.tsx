@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
-import { Calendar, MapPin, MessageCircle, Package, RotateCcw, X } from 'lucide-react';
+import { Calendar, MapPin, MessageCircle, RotateCcw, X } from 'lucide-react';
 
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,9 +55,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const isUpcoming =
     booking.status === 'CONFIRMED' && new Date(booking.slot.startTime) > new Date();
 
-  // Show message button for all bookings except AVAILABLE and RESERVED statuses
+  // Show message button for all bookings
   // User side: Show for CONFIRMED, COMPLETED, CANCELLED
-  const canMessage = booking.status !== 'AVAILABLE' && booking.status !== 'RESERVED' && onMessage;
+  const canMessage = onMessage;
   const canReschedule = isUpcoming && onReschedule;
   const canCancel = isUpcoming && onCancel;
 
@@ -116,37 +117,17 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                   <MapPin className="h-3.5 w-3.5" />
                   <span className="truncate">{getLocationText()}</span>
                 </div>
-                {/* Service Categories */}
-                {((booking.serviceCategories && booking.serviceCategories.length > 0) ||
-                  (booking.services && booking.services.length > 0)) && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {(booking.serviceCategories && booking.serviceCategories.length > 0
-                      ? booking.serviceCategories
-                      : booking.services || []
-                    )
-                      .slice(0, 2)
-                      .map((item: any, index: number) => (
-                        <Badge
-                          key={item.id || index}
-                          variant="outline"
-                          className="text-xs px-2 py-0.5 flex items-center gap-1"
-                        >
-                          <Package className="h-3 w-3" />
-                          {item.name}
-                        </Badge>
-                      ))}
-                    {((booking.serviceCategories && booking.serviceCategories.length > 2) ||
-                      (booking.services && booking.services.length > 2)) && (
-                      <Badge variant="outline" className="text-xs px-2 py-0.5">
-                        +
-                        {((booking.serviceCategories && booking.serviceCategories.length) ||
-                          booking.services?.length ||
-                          0) - 2}{' '}
-                        more
-                      </Badge>
-                    )}
-                  </div>
-                )}
+                {/* Ratings Display */}
+                <div className="mb-2 space-y-2">
+                  {/* Freelancer Overall Rating */}
+                  {(freelancer as any)?.averageRating && (
+                    <RatingDisplay
+                      rating={(freelancer as any).averageRating}
+                      size="sm"
+                      showCount={false}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>

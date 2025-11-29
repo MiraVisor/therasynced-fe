@@ -5,9 +5,10 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import SlideArrowButton from '@/components/ui/SlideArrowButton';
+import { isTokenValid } from '@/lib/utils';
 
 const navLinks = [
   { href: '#services', label: 'Our Services' },
@@ -20,9 +21,22 @@ const Navbar = () => {
   const { resolvedTheme } = useTheme();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [hasValidToken, setHasValidToken] = useState(false);
+
+  useEffect(() => {
+    setHasValidToken(isTokenValid());
+  }, []);
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
+
+  const handleCTAClick = () => {
+    if (hasValidToken) {
+      router.push('/dashboard');
+    } else {
+      router.push('/authentication/sign-in');
+    }
+  };
 
   return (
     <header className="w-full z-50 px-4 sm:px-6 lg:px-8 py-2.5 border-b border-muted/10">
@@ -55,9 +69,9 @@ const Navbar = () => {
         {/* CTA + Theme Toggle */}
         <div className="flex items-center gap-4">
           <SlideArrowButton
-            text="Get Started"
+            text={hasValidToken ? 'Dashboard' : 'Get Started'}
             className="hidden sm:flex lg:w-52 lg:h-12"
-            onClick={() => router.push('/authentication/sign-in')}
+            onClick={handleCTAClick}
           />
 
           {/* Mobile Hamburger */}
@@ -90,11 +104,11 @@ const Navbar = () => {
           ))}
 
           <SlideArrowButton
-            text="Get Started"
-            className="hidden sm:flex lg:w-52 lg:h-12"
+            text={hasValidToken ? 'Dashboard' : 'Get Started'}
+            className="w-full lg:w-52 lg:h-12"
             onClick={() => {
               closeMenu();
-              router.push('/authentication/sign-in');
+              handleCTAClick();
             }}
           />
         </div>

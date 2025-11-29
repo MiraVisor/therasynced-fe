@@ -42,9 +42,6 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
 
   // Calculate experience from creation date
   const createdAt = freelancer.createdAt ? new Date(freelancer.createdAt) : null;
-  const yearsOfExperience = createdAt
-    ? Math.floor((new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365))
-    : undefined;
 
   // Get rating and reviews from cardInfo
   const cardInfo = freelancer.cardInfo || {};
@@ -59,7 +56,6 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     name: freelancer.name || cardInfo.name,
     specialty: cardInfo.mainService || primaryService,
     jobTitle: freelancer.mainJobTitle, // Add job title mapping
-    yearsOfExperience: yearsOfExperience?.toString() || '',
     rating: validRating,
     reviews: freelancer.favoritedBy?.length || 0,
     description: freelancer.description || cardInfo.title,

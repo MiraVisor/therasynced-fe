@@ -32,8 +32,8 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
         id: freelancer.id,
         name: freelancer.name,
         specialty: freelancer.specialty,
-        yearsOfExperience: freelancer.yearsOfExperience,
         rating: freelancer.rating,
+        reviews: freelancer.reviews,
         description: freelancer.description,
         isFavorite: freelancer.isFavorite,
         services: freelancer.services,
@@ -148,9 +148,8 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
                 specialty:
                   freelancer.mainJobTitle?.name || freelancer.cardInfo?.mainService || 'Therapist',
                 jobTitle: freelancer.mainJobTitle,
-                yearsOfExperience: freelancer.cardInfo?.yearsOfExperience || '',
                 rating: freelancer.cardInfo?.averageRating || 0,
-                reviews: freelancer.cardInfo?.patientStories || 0,
+                reviews: freelancer.cardInfo?.totalRatings || 0,
                 description: freelancer.cardInfo?.title || '',
                 isFavorite: freelancer.isFavorite,
                 profilePicture: freelancer.profilePicture,
@@ -158,7 +157,6 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
                 availableSlots: freelancer.slotSummary?.totalSlots || 0,
                 slotSummary: freelancer.slotSummary,
                 slots: freelancer.slots || [],
-                pricing: freelancer.pricing,
                 // Include stampInfo from freelancer response (if available)
                 stampInfo: (freelancer as any).stampInfo || null,
               };

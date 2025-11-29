@@ -1,12 +1,12 @@
 'use client';
 
-import { CheckCircle2, Heart, Loader2, Stamp, Star } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -23,7 +23,6 @@ interface FavoriteFreelancerCardProps {
 }
 
 const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelancer, onBook }) => {
-  const router = useRouter();
   const dispatch = useDispatch();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
@@ -147,21 +146,12 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
                 )}
 
                 {/* Row 3: Rating/Reviews */}
-                {freelancer.rating && freelancer.rating > 0 ? (
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3 h-3 ${i < Math.floor(freelancer.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                      />
-                    ))}
-                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                      ({freelancer.rating})
-                    </span>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">No ratings yet</div>
-                )}
+                <RatingDisplay
+                  rating={freelancer.rating}
+                  reviewCount={freelancer.cardInfo?.totalRatings || 0}
+                  size="sm"
+                  showCount={false}
+                />
               </div>
             </div>
 
@@ -322,21 +312,12 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
 
                     {/* Rating and Experience */}
                     <div className="flex items-center gap-4 text-sm">
-                      {freelancer.rating && freelancer.rating > 0 ? (
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${i < Math.floor(freelancer.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                            />
-                          ))}
-                          <span className="text-gray-600 dark:text-gray-400 ml-1 font-medium">
-                            {freelancer.rating.toFixed(1)} ({freelancer.reviews || 0} reviews)
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-500 dark:text-gray-400">No ratings yet</span>
-                      )}
+                      <RatingDisplay
+                        rating={freelancer.rating}
+                        reviewCount={freelancer.cardInfo?.totalRatings || freelancer.reviews || 0}
+                        size="md"
+                        showCount={true}
+                      />
                     </div>
                   </div>
                 </div>

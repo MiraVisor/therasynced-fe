@@ -35,6 +35,7 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getDecodedToken } from '@/lib/utils';
 import { getSubscriptionPlans } from '@/redux/api/subscriptionApi';
 import { useAppDispatch, useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
@@ -250,6 +251,11 @@ const SlotsPage = () => {
 
   // Check if slot limit is reached
   const isSlotLimitReached = useMemo(() => {
+    // First check canCreateSlots from subscription status (for trial freelancers)
+    if (currentSubscription?.canCreateSlots === false) {
+      return true;
+    }
+
     // If unlimited, never reached
     if (slotStats?.subscriptionInfo?.isUnlimited) return false;
 
@@ -281,7 +287,7 @@ const SlotsPage = () => {
                 Manage your availability and bookings for the week
               </p>
             </div>
-            {!isSlotLimitReached && (
+            {!isSlotLimitReached ? (
               <Button onClick={handleCreateSlotClick} disabled={isCreating} className="h-11 px-6">
                 {isCreating ? (
                   <>
@@ -295,6 +301,30 @@ const SlotsPage = () => {
                   </>
                 )}
               </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      onClick={() => setShowUpgradeModal(true)}
+                      disabled
+                      variant="outline"
+                      className="h-11 px-6"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      Add Availability
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {currentSubscription?.canCreateSlots === false
+                      ? currentSubscription?.message ||
+                        "You've reached the trial limit of 5 slots. Upgrade to create more."
+                      : "You've reached your slot limit. Upgrade to create more."}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
         </div>

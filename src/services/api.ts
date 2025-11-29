@@ -1,6 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
 
 import { getCookie, removeCookie } from '@/lib/utils';
+import { logout } from '@/redux/slices/authSlice';
+import store from '@/redux/store';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
@@ -49,7 +51,11 @@ api.interceptors.response.use(
       const isAuthEndpoint = error.config?.url?.startsWith('/auth/');
 
       if (!isAuthEndpoint) {
-        // Clear invalid token
+        // Dispatch logout action to clear Redux state
+        store.dispatch(logout());
+
+        // Note: logout action already removes the cookie, but we keep removeCookie
+        // here as a safety measure in case the action hasn't run yet
         removeCookie('token');
 
         // Only redirect if we're not already on an auth page

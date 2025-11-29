@@ -1,10 +1,11 @@
-import { CheckCircle2, Heart, Loader2, Stamp, Star } from 'lucide-react';
+import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -37,7 +38,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   name,
   specialty,
   jobTitle,
-  yearsOfExperience,
   rating,
   description,
   isFavorite = false,
@@ -66,7 +66,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       id,
       name,
       specialty,
-      yearsOfExperience,
       rating,
       description,
       isFavorite,
@@ -121,39 +120,14 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   // Get tier from props or planFeatures
   const freelancerTier = tier || planFeatures?.planType || null;
 
+  // Get rating from cardInfo.averageRating (real calculated ratings from API) as primary source
+  // Fall back to rating prop if cardInfo.averageRating is not available
+  const displayRating =
+    cardInfo?.averageRating !== undefined && cardInfo.averageRating !== null
+      ? cardInfo.averageRating
+      : rating;
+
   // Get pricing information from new structure
-  const getPricingInfo = () => {
-    if (!pricing) return null;
-
-    // Check for new pricing structure (lowestPrice, currency, hasPriceRange)
-    if ('lowestPrice' in pricing && pricing.lowestPrice) {
-      return {
-        lowestPrice: pricing.lowestPrice,
-        highestPrice: 'highestPrice' in pricing ? pricing.highestPrice : null,
-        currency: 'currency' in pricing && pricing.currency ? pricing.currency : 'EUR',
-        hasPriceRange: 'hasPriceRange' in pricing ? pricing.hasPriceRange : false,
-      };
-    }
-
-    // Fallback to old structure for backward compatibility
-    const prices: number[] = [];
-    if (pricing.online?.min) prices.push(pricing.online.min);
-    if (pricing.office?.min) prices.push(pricing.office.min);
-    if (pricing.home?.min) prices.push(pricing.home.min);
-
-    if (prices.length > 0) {
-      return {
-        lowestPrice: Math.min(...prices),
-        highestPrice: null,
-        currency: 'EUR',
-        hasPriceRange: false,
-      };
-    }
-
-    return null;
-  };
-
-  const pricingInfo = getPricingInfo();
 
   return (
     <TooltipProvider>
@@ -191,21 +165,12 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 )}
 
                 {/* Row 3: Rating/Reviews */}
-                {rating && rating > 0 ? (
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                      />
-                    ))}
-                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                      ({rating})
-                    </span>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">No ratings yet</div>
-                )}
+                <RatingDisplay
+                  rating={displayRating}
+                  reviewCount={cardInfo?.totalRatings || 0}
+                  size="sm"
+                  showCount={false}
+                />
               </div>
             </div>
 
@@ -229,11 +194,11 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
           {/* Expert Details */}
           <div className="mb-4 space-y-2 bg-gradient-to-br from-mint/10 to-transparent rounded-lg p-3">
-            {cardInfo?.patientStories && (
+            {cardInfo?.totalRatings && (
               <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-muted-foreground">Reviews:</span>
                 <span className="font-poppins font-semibold text-charcoal">
-                  {cardInfo.patientStories}
+                  {cardInfo.totalRatings}
                 </span>
               </div>
             )}
@@ -271,16 +236,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 <span className="font-inter text-muted-foreground">Availability:</span>
                 <span className="font-poppins font-semibold text-success">
                   {availableSlots || 0} slots
-                </span>
-              </div>
-            )}
-            {pricingInfo && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-inter text-muted-foreground">Starting price:</span>
-                <span className="font-poppins font-semibold text-charcoal">
-                  {pricingInfo.hasPriceRange && pricingInfo.highestPrice
-                    ? `${pricingInfo.currency} ${pricingInfo.lowestPrice} - ${pricingInfo.highestPrice}`
-                    : `${pricingInfo.currency} ${pricingInfo.lowestPrice}`}
                 </span>
               </div>
             )}
@@ -361,21 +316,12 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
                     {/* Rating and Experience */}
                     <div className="flex items-center gap-4 text-sm">
-                      {rating && rating > 0 ? (
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                            />
-                          ))}
-                          <span className="text-gray-600 dark:text-gray-400 ml-1 font-medium">
-                            {rating.toFixed(1)} ({cardInfo?.patientStories || 0} reviews)
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-500 dark:text-gray-400">No ratings yet</span>
-                      )}
+                      <RatingDisplay
+                        rating={displayRating}
+                        reviewCount={cardInfo?.totalRatings || 0}
+                        size="md"
+                        showCount={true}
+                      />
                     </div>
                   </div>
                 </div>
@@ -397,7 +343,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
-                    {cardInfo?.patientStories || 0}
+                    {cardInfo?.totalRatings || 0}
                   </div>
                   <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
                     Total Reviews

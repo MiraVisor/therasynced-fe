@@ -139,6 +139,77 @@ export const freelancerService = {
     });
     return response.data;
   },
+
+  // Unified search freelancers with filters
+  searchFreelancers: async (params?: {
+    query?: string;
+    specialty?: string[];
+    serviceCategories?: string[];
+    location?: string;
+    priceMin?: number;
+    priceMax?: number;
+    sessionType?: ('HOME' | 'CLINIC')[];
+    availableThisWeek?: boolean;
+    verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | string;
+    minRating?: number;
+    tier?: string[];
+    sortBy?: 'relevance' | 'rating' | 'price' | 'availability' | 'newest';
+    sortOrder?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
+  }): Promise<TierFreelancerResponse> => {
+    // Build query string manually to handle arrays without brackets
+    // Backend expects: specialty=uuid1&specialty=uuid2 (not specialty[]=uuid1)
+    const searchParams = new URLSearchParams();
+
+    // Add non-array params
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.query) searchParams.append('query', params.query);
+    if (params?.location) searchParams.append('location', params.location);
+    if (params?.priceMin !== undefined) searchParams.append('priceMin', params.priceMin.toString());
+    if (params?.priceMax !== undefined) searchParams.append('priceMax', params.priceMax.toString());
+    if (params?.availableThisWeek) searchParams.append('availableThisWeek', 'true');
+    if (params?.minRating !== undefined)
+      searchParams.append('minRating', params.minRating.toString());
+    if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+    if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+
+    // Add array params - each value as separate param (no brackets)
+    if (params?.specialty && params.specialty.length > 0) {
+      params.specialty.forEach((id) => {
+        searchParams.append('specialty', id);
+      });
+    }
+    if (params?.serviceCategories && params.serviceCategories.length > 0) {
+      params.serviceCategories.forEach((id) => {
+        searchParams.append('serviceCategories', id);
+      });
+    }
+    if (params?.sessionType && params.sessionType.length > 0) {
+      params.sessionType.forEach((type) => {
+        searchParams.append('sessionType', type);
+      });
+    }
+    if (params?.tier && params.tier.length > 0) {
+      params.tier.forEach((tier) => {
+        searchParams.append('tier', tier);
+      });
+    }
+
+    // verificationStatus should be single value, not array
+    if (params?.verificationStatus) {
+      const status = Array.isArray(params.verificationStatus)
+        ? params.verificationStatus[0]
+        : params.verificationStatus;
+      if (status) {
+        searchParams.append('verificationStatus', status);
+      }
+    }
+
+    const response = await api.get(`${ENDPOINTS.freelancer.search}?${searchParams.toString()}`);
+    return response.data;
+  },
 };
 
 export default freelancerService;

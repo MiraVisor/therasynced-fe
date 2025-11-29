@@ -85,6 +85,22 @@ export interface ServiceCategory {
   };
 }
 
+/**
+ * Card info structure for freelancer display
+ * Used in freelancer search results, cards, and listings
+ */
+export interface CardInfo {
+  name: string;
+  title?: string;
+  mainService?: string;
+  yearsOfExperience?: string;
+  country?: string;
+  averageRating?: number; // Can be undefined if no ratings
+  totalRatings: number; // Always present (0 if no ratings) - backend returns 0 if no ratings
+  patientStories?: number; // Legacy field, use totalRatings instead
+  initials?: string;
+}
+
 // First Aid Certificate Info
 export interface FirstAidCertificateInfo {
   firstAidCertificateUrl: string;
@@ -249,7 +265,6 @@ export interface Expert {
   name: string;
   specialty: string;
   jobTitle?: JobTitle; // Add job title field
-  yearsOfExperience: string;
   rating?: number;
   reviews: number;
   description: string;
@@ -294,13 +309,21 @@ export interface Expert {
   // Favorites information
   favoritedBy?: any[];
   // Card info
-  cardInfo?: any;
+  cardInfo?: CardInfo;
   // Available slots count
   availableSlots?: number;
   totalSlots?: number;
   // Tier information
   planFeatures?: PlanFeatures | null;
   tier?: SubscriptionPlanType | null;
+  // Subscription status (included in tier endpoint responses)
+  subscriptionStatus?: {
+    isTrial: boolean; // true if active trial freelancer
+    isExpiredTrial: boolean; // true if trial expired (shouldn't appear in results)
+    trialEndsAt: string | null; // ISO date string or null
+    canAcceptBookings: boolean; // true for active trial or subscribed freelancers
+    message: string | null; // Status message or null
+  };
   // Stamp information (included in freelancer API responses when user is authenticated)
   stampInfo?: {
     currentStampCount: number;
@@ -447,6 +470,7 @@ export interface Slot {
         name: string;
       };
     }>; // Service categories booked for this appointment
+    rating?: BookingRating | null; // The rating object if the booking has been rated
     createdAt: string;
     updatedAt: string;
   } | null;
@@ -594,6 +618,224 @@ export interface CompleteBookingDto {
   completionNotes?: string;
 }
 
+// ============================================
+// Core Rating Types
+// ============================================
+
+/**
+ * Base rating object structure
+ */
+export interface Rating {
+  id: string;
+  bookingId: string;
+  freelancerId: string;
+  patientId: string;
+  rating: number; // 1-5 stars
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+}
+
+/**
+ * Rating with patient information (used in freelancer ratings list)
+ */
+export interface RatingWithPatient extends Rating {
+  patient: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  booking?: {
+    id: string;
+    slotId: string;
+    status: string;
+  };
+}
+
+/**
+ * Rating with freelancer information (used in patient's ratings list)
+ */
+export interface RatingWithFreelancer extends Rating {
+  freelancer: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  booking?: {
+    id: string;
+    slotId: string;
+    status: string;
+  };
+}
+
+/**
+ * Legacy alias for RatingWithPatient (for backward compatibility)
+ * @deprecated Use RatingWithPatient instead
+ */
+export interface RatingWithDetails extends RatingWithPatient {}
+
+// ============================================
+// Booking Rating Types
+// ============================================
+
+/**
+ * Rating object as it appears in booking responses
+ * (from /api/v1/booking/patient/all and /api/v1/slot/list)
+ */
+export interface BookingRating extends Rating {
+  // Same as base Rating - no additional fields
+}
+
+/**
+ * Booking rating eligibility response
+ * (from GET /api/v1/ratings/booking/:bookingId)
+ */
+export interface BookingRatingEligibility {
+  canBeRated: boolean;
+  hasRating: boolean;
+  rating: BookingRating | null;
+  reason: string | null; // Reason why it can't be rated (if applicable)
+}
+
+/**
+ * Legacy alias for BookingRatingEligibility (for backward compatibility)
+ * @deprecated Use BookingRatingEligibility instead
+ */
+export interface RatingEligibility extends BookingRatingEligibility {}
+
+/**
+ * Create rating request
+ * (for POST /api/v1/ratings)
+ */
+export interface CreateRatingRequest {
+  bookingId: string;
+  rating: number; // 1-5
+}
+
+/**
+ * Legacy alias for CreateRatingRequest (for backward compatibility)
+ * @deprecated Use CreateRatingRequest instead
+ */
+export interface CreateRatingDto extends CreateRatingRequest {}
+
+/**
+ * Create rating response
+ * (from POST /api/v1/ratings)
+ */
+export interface CreateRatingResponse {
+  success: true;
+  message: 'Rating submitted successfully';
+  data: Rating;
+}
+
+/**
+ * Legacy alias for CreateRatingResponse (for backward compatibility)
+ * @deprecated Use CreateRatingResponse instead
+ */
+export interface RatingResponse extends CreateRatingResponse {}
+
+// ============================================
+// Freelancer Rating Types
+// ============================================
+
+/**
+ * Freelancer rating summary (used in freelancer card/list responses)
+ * (from /api/v1/freelancer/search, /api/v1/freelancer/all, etc.)
+ */
+export interface FreelancerRatingSummary {
+  averageRating: number | null; // Overall average rating (1-5)
+  totalRatings: number; // Total number of ratings received
+}
+
+/**
+ * Freelancer ratings list response
+ * (from GET /api/v1/ratings/freelancer/:freelancerId)
+ */
+export interface FreelancerRatingsResponse {
+  data: RatingWithPatient[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+/**
+ * Patient's ratings list response
+ * (from GET /api/v1/ratings/my-ratings)
+ */
+export interface MyRatingsResponse {
+  data: RatingWithFreelancer[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+// ============================================
+// API Query Parameters
+// ============================================
+
+/**
+ * Query parameters for getting ratings
+ */
+export interface GetRatingsQuery {
+  page?: number;
+  limit?: number;
+  minRating?: number; // Filter by minimum rating (1-5)
+  maxRating?: number; // Filter by maximum rating (1-5)
+}
+
+/**
+ * Legacy alias for GetRatingsQuery (for backward compatibility)
+ * @deprecated Use GetRatingsQuery instead
+ */
+export interface GetRatingsParams extends GetRatingsQuery {}
+
+// ============================================
+// Type Guards & Helpers
+// ============================================
+
+/**
+ * Type guard to check if a rating exists
+ */
+export function hasRating(rating: BookingRating | null | undefined): rating is BookingRating {
+  return rating !== null && rating !== undefined;
+}
+
+/**
+ * Type guard to check if freelancer has ratings
+ */
+export function hasFreelancerRatings(
+  summary: FreelancerRatingSummary,
+): summary is Required<FreelancerRatingSummary> {
+  return summary.averageRating !== null && summary.totalRatings > 0;
+}
+
+/**
+ * Helper to format rating display
+ */
+export function formatRating(rating: number | null | undefined): string {
+  if (rating === null || rating === undefined) {
+    return 'No ratings';
+  }
+  return `${rating.toFixed(1)} ⭐`;
+}
+
+/**
+ * Helper to get rating percentage for display
+ */
+export function getRatingPercentage(rating: number | null): number {
+  if (rating === null) return 0;
+  return (rating / 5) * 100; // Convert 1-5 scale to 0-100%
+}
+
 // Location types to match backend
 export interface Location {
   id: string;
@@ -617,6 +859,9 @@ export interface Booking {
   cancelledById?: string;
   cancelledReason?: string;
   rescheduledFromId?: string;
+  canBeRated?: boolean; // From backend API - indicates if booking can be rated
+  hasRating?: boolean; // From backend API - indicates if booking already has a rating
+  rating?: BookingRating | null; // The rating object if the booking has been rated
   slot: {
     id: string;
     startTime: string;
@@ -629,6 +874,8 @@ export interface Booking {
       name: string;
       email: string;
       profilePicture?: string;
+      averageRating?: number; // Overall average rating from ratings
+      cardInfo?: CardInfo;
     };
     location?: {
       id: string;
@@ -694,16 +941,7 @@ export interface Freelancer {
   firstAidCertificateApprovedAt?: Date | null;
   firstAidCertificateRejectedAt?: Date | null;
   firstAidCertificateRejectionReason?: string | null;
-  cardInfo: {
-    name: string;
-    title: string;
-    mainService: string;
-    yearsOfExperience: string;
-    country: string;
-    averageRating: number;
-    patientStories: number;
-    initials: string;
-  };
+  cardInfo: CardInfo;
   slotSummary?: {
     nextAvailable: {
       id: string;
@@ -1024,6 +1262,7 @@ export interface PlanFeatures {
 
 export type SubscriptionStatus =
   | 'TRIALING'
+  | 'TRIAL_EXPIRED'
   | 'ACTIVE'
   | 'PAST_DUE'
   | 'CANCELED'
@@ -1062,6 +1301,11 @@ export interface Subscription {
   createdAt?: string;
   subscription?: Subscription | null; // Nested subscription details if active
   isInTrial?: boolean;
+  trialExpired?: boolean; // true if trial has expired
+  canCreateSlots?: boolean; // true if can create slots (trial: slotsUsed < 5, subscribed: true)
+  canAcceptBookings?: boolean; // true for active trial or subscribed freelancers
+  slotsUsed?: number; // Current active slots count (for trial: 0-5)
+  slotsLimit?: number; // Slot limit (for trial: 5, for subscribed: plan.maxSlots or unlimited)
   message?: string; // Message from API when inactive
 }
 
@@ -1108,12 +1352,27 @@ export interface TierFreelancerResponse {
     hasNext: boolean;
     hasPrev: boolean;
   };
-  featuredTier: TierType;
-  rotationInfo: RotationInfo;
+  featuredTier?: TierType;
+  rotationInfo?: RotationInfo;
   meta: {
     timestamp: string;
     path: string;
   };
+}
+
+// Search filters interface
+export interface SearchFilters {
+  query: string;
+  specialty: string[];
+  serviceCategories: string[];
+  location: string;
+  priceMin?: number;
+  priceMax?: number;
+  sessionType: ('HOME' | 'CLINIC')[];
+  availableThisWeek: boolean;
+  verificationStatus: ('PENDING' | 'APPROVED' | 'REJECTED')[];
+  minRating?: number;
+  tier?: ('GOLD' | 'SILVER' | 'BRONZE')[];
 }
 
 export interface CreateSubscriptionResponseData {

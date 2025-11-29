@@ -2,11 +2,26 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import SlideArrowButton from '@/components/ui/SlideArrowButton';
+import { isTokenValid } from '@/lib/utils';
 
 const Hero = () => {
   const router = useRouter();
+  const [hasValidToken, setHasValidToken] = useState(false);
+
+  useEffect(() => {
+    setHasValidToken(isTokenValid());
+  }, []);
+
+  const handleCTAClick = () => {
+    if (hasValidToken) {
+      router.push('/dashboard');
+    } else {
+      router.push('/authentication/sign-in');
+    }
+  };
 
   return (
     <section className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500">
@@ -37,10 +52,10 @@ const Hero = () => {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-[90vw] xs:max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none items-center justify-center">
             <SlideArrowButton
-              text="Start Your Journey"
+              text={hasValidToken ? 'Dashboard' : 'Start Your Journey'}
               reverse={true}
               className="w-full sm:w-auto lg:w-64 lg:h-12"
-              onClick={() => router.push('/authentication/sign-in')}
+              onClick={handleCTAClick}
             />
           </div>
         </div>

@@ -5,30 +5,31 @@ export * from './chatApi';
 export * from './complaintApi';
 // Explicitly export exploreApi functions to avoid conflicts
 export {
-  getRecentFavoriteFreelancer,
   getAllFavoriteFreelancers,
   getPatientBookings as getExplorePatientBookings,
+  getRecentFavoriteFreelancer,
   rescheduleBooking as rescheduleBookingExplore,
 } from './exploreApi';
 export * from './freelancerApi';
 // Explicitly export imageUploadApi functions to avoid conflicts
 export {
+  deleteImage,
+  uploadFirstAidCertificate as uploadFirstAidCertificateImage,
   uploadSingleImage,
   uploadVerificationDocument as uploadVerificationDocumentImage,
-  uploadFirstAidCertificate as uploadFirstAidCertificateImage,
-  deleteImage,
 } from './imageUploadApi';
 export * from './jobTitleApi';
 export * from './loyaltyApi';
 // Explicitly export overviewApi functions to avoid conflicts
 export {
-  getFreelancerServices as getFreelancerServicesOverview,
-  getAllFreelancers as getAllFreelancersOverview,
-  favoriteFreelancer as favoriteFreelancerOverview,
   createBooking as createBookingOverview,
+  favoriteFreelancer as favoriteFreelancerOverview,
+  getAllFreelancers as getAllFreelancersOverview,
+  getFreelancerServices as getFreelancerServicesOverview,
   reserveSlot as reserveSlotOverview,
 } from './overviewApi';
 export * from './profileApi';
+export * from './ratingApi';
 // Explicitly export serviceApi functions to avoid conflicts
 export { getFreelancerServices as getFreelancerServicesService } from './serviceApi';
 export * from './serviceCategoriesApi';

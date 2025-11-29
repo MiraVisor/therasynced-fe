@@ -49,29 +49,14 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
   const allLocationTypes = new Set<string>();
 
   // Convert location types to session types
-  const sessionTypes = Array.from(allLocationTypes).map((type) => {
-    switch (type) {
-      case 'HOME':
-        return 'home';
-      case 'CLINIC':
-        return 'clinic';
-      default:
-        return 'home';
-    }
-  });
 
   // Get primary service name
   const primaryService = services.length > 0 ? services[0]?.name : undefined;
 
   // Get location information
   const locations = freelancer.locations || [];
-  const primaryLocation = locations.length > 0 ? locations[0]?.name : undefined;
 
   // Calculate experience from creation date
-  const createdAt = freelancer.createdAt ? new Date(freelancer.createdAt) : null;
-  const yearsOfExperience = createdAt
-    ? Math.floor((new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365))
-    : undefined;
 
   // Get rating and reviews from cardInfo
   const cardInfo = freelancer.cardInfo || {};
@@ -86,41 +71,19 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     name: freelancer.name || cardInfo.name,
     specialty: cardInfo.mainService || primaryService,
     jobTitle: freelancer.mainJobTitle, // Add job title mapping
-    yearsOfExperience: yearsOfExperience?.toString() || '',
     rating: validRating,
-    reviews: freelancer.favoritedBy?.length || 0,
+    reviews: cardInfo.totalRatings || freelancer.cardInfo?.patientStories || 0,
     description: freelancer.description || cardInfo.title,
     isFavorite: freelancer.isFavorite ?? false,
-    // Additional data for profile dialog
     profilePicture: freelancer.profilePicture,
-    services: Array.isArray(services)
-      ? services.filter((service: any) => service && service.isActive)
-      : [],
-    location: primaryLocation,
-    sessionTypes: sessionTypes,
-    pricing: freelancer.pricing,
-    // Additional data from API
-    email: freelancer.email,
-    gender: freelancer.gender,
-    city: freelancer.city,
-    isEmailVerified: freelancer.isEmailVerified,
-    isActive: freelancer.isActive,
-    authProvider: freelancer.authProvider,
-    verificationStatus: freelancer.verificationStatus,
-    firstAidCertificateStatus: freelancer.firstAidCertificateStatus,
-    // Slot information
     slots: freelancer.slots || [],
     slotSummary: freelancer.slotSummary || {},
-    // Favorites information
-    favoritedBy: freelancer.favoritedBy || [],
-    // Card info
     cardInfo: cardInfo,
-    // Available slots count
     availableSlots: freelancer.slotSummary?.availableSlots || 0,
     totalSlots: freelancer.slotSummary?.totalSlots || 0,
-    // Tier information
     planFeatures: freelancer.planFeatures || null,
     tier: freelancer.planFeatures?.planType || null,
+    subscriptionStatus: freelancer.subscriptionStatus || undefined,
   };
 };
 
@@ -159,8 +122,9 @@ const UserExploreMain = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
-  const { favorites, loading, initialLoading, bookings, bookingsLoading, bookingsInitialLoading } =
-    useSelector((state: RootState) => state.explore as any);
+  const { favorites, loading, bookings, bookingsLoading } = useSelector(
+    (state: RootState) => state.explore as any,
+  );
   const { experts: allExperts, loading: expertsLoading } = useSelector(
     (state: RootState) => state.overview,
   );
@@ -211,7 +175,7 @@ const UserExploreMain = () => {
     setIsBookingModalOpen(true);
   };
 
-  const handleBookSession = (freelancer: Expert, slot: any) => {
+  const handleBookSession = () => {
     // TODO: Implement actual booking logic
     setIsBookingModalOpen(false);
     setSelectedFreelancer(null);

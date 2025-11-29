@@ -182,7 +182,13 @@ export const bookAppointment = createAsyncThunk(
         return rejectWithValue(res.message || 'Failed to book appointment');
       }
     } catch (err: any) {
-      return rejectWithValue(err?.message || 'Failed to book appointment');
+      // Preserve status code and message for error handling
+      return rejectWithValue({
+        message: err?.message || err?.data?.message || 'Failed to book appointment',
+        status: err?.status || err?.statusCode,
+        statusCode: err?.statusCode || err?.status,
+        data: err?.data,
+      });
     }
   },
 );
