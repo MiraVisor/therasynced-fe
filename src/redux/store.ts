@@ -14,6 +14,7 @@ import imageUploadSlice from './slices/imageUploadSlice';
 import jobTitlesSlice from './slices/jobTitlesSlice';
 import loyaltySlice from './slices/loyaltySlice';
 import overviewSlice from './slices/overviewSlice';
+import profileSlice from './slices/profileSlice';
 import serviceCategoriesSlice from './slices/serviceCategoriesSlice';
 import serviceSlice from './slices/serviceSlice';
 import slotReducer from './slices/slotSlice';
@@ -35,6 +36,7 @@ export const store = configureStore({
     jobTitles: jobTitlesSlice,
     loyalty: loyaltySlice,
     overview: overviewSlice,
+    profile: profileSlice,
     booking: bookingSlice,
     slot: slotReducer,
     serviceCategories: serviceCategoriesSlice,

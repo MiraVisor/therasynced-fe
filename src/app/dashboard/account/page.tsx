@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
@@ -56,8 +56,10 @@ import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkelet
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
 import { cn } from '@/lib/utils';
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
-import { changeEmail, changePassword, getProfile, updateProfile } from '@/redux/api/profileApi';
+import { changeEmail, changePassword, updateProfile } from '@/redux/api/profileApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
+import { fetchProfile, updateMainJobTitle, updateProfileData } from '@/redux/slices/profileSlice';
+import { RootState } from '@/redux/store';
 import { JobTitle, ROLES } from '@/types/types';
 
 interface UserProfile {
@@ -84,7 +86,6 @@ export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
   const [isProfessionalInfoLoading, setIsProfessionalInfoLoading] = useState(false);
-  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isSubscriptionLoading] = useState(false);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -93,6 +94,15 @@ export default function AccountPage() {
   const { role, logout } = useAuth();
   const dispatch = useDispatch();
 
+  // Get profile data from Redux
+  const {
+    data: profileData,
+    loading,
+    initialLoading,
+    error: profileError,
+  } = useSelector((state: RootState) => state.profile);
+
+  // Local form state for editing
   const [formData, setFormData] = useState<UserProfile>({
     name: '',
     email: '',
@@ -125,7 +135,29 @@ export default function AccountPage() {
       await loadUserProfile();
     };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sync Redux profile data to local form state
+  useEffect(() => {
+    if (profileData) {
+      setFormData({
+        id: profileData.id,
+        name: profileData.name || '',
+        email: profileData.email || '',
+        profilePicture: profileData.profilePicture,
+        gender: profileData.gender || '',
+        dob: profileData.dob || '',
+        city: profileData.city || '',
+        isEmailVerified: profileData.isEmailVerified,
+        isActive: profileData.isActive,
+        role: profileData.role || '',
+        mainJobTitleId: profileData.mainJobTitleId,
+        mainJobTitle: profileData.mainJobTitle,
+        clinicAddress: profileData.clinicAddress || '',
+      });
+    }
+  }, [profileData]);
 
   // Update job title when job titles are loaded and we have a mainJobTitleId
   useEffect(() => {
@@ -141,18 +173,26 @@ export default function AccountPage() {
   }, [jobTitles, formData.mainJobTitleId, formData.mainJobTitle]);
 
   const loadJobTitles = async () => {
+    const hasData = jobTitles.length > 0;
     try {
-      setIsLoadingJobTitles(true);
+      // Only show loading if we don't have data yet
+      if (!hasData) {
+        setIsLoadingJobTitles(true);
+      }
       const response = await dispatch(getActiveJobTitles() as any);
 
       if (response.payload && Array.isArray(response.payload) && response.payload.length > 0) {
         setJobTitles(response.payload);
-      } else {
+      } else if (!hasData) {
+        // Only clear job titles if we didn't have data before
         setJobTitles([]);
       }
     } catch (error) {
       // Don't show error toast for job titles as it's not critical
-      setJobTitles([]);
+      // Don't clear existing data on error
+      if (!hasData) {
+        setJobTitles([]);
+      }
     } finally {
       setIsLoadingJobTitles(false);
     }
@@ -160,80 +200,15 @@ export default function AccountPage() {
 
   const loadUserProfile = async () => {
     try {
-      setIsProfileLoading(true);
-
-      const response = await getProfile();
-
-      // Handle the actual API response structure
-      let userData: any;
-      if (response && response.success && response.data && response.data.user) {
-        // Actual API structure: { success: true, data: { user: { ... } } }
-        userData = response.data.user;
-      } else {
-        toast.error('Invalid profile data received from server');
-        setIsProfileLoading(false);
-        return;
+      // If we have profile data, fetch silently in background
+      // If no data exists, show loading state
+      await dispatch(fetchProfile({ silent: !!profileData, jobTitles }) as any);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load user profile';
+      // Only show error toast if we don't have existing data
+      if (!profileData) {
+        toast.error(`Failed to load profile: ${errorMessage}`);
       }
-
-      // Validate that we have the minimum required data
-      if (!userData || !userData.id) {
-        toast.error('Profile data is incomplete');
-        setIsProfileLoading(false);
-        return;
-      }
-
-      // Handle DOB without timezone conversion
-      let formattedDob = '';
-      if (userData.dob) {
-        // If DOB is already in YYYY-MM-DD format, use it directly
-        if (/^\d{4}-\d{2}-\d{2}$/.test(userData.dob)) {
-          formattedDob = userData.dob;
-        } else {
-          // If it's an ISO string, extract just the date part
-          try {
-            const date = new Date(userData.dob);
-            if (!isNaN(date.getTime())) {
-              // Extract YYYY-MM-DD from ISO string without timezone conversion
-              const isoString = date.toISOString();
-              formattedDob = isoString.split('T')[0];
-            }
-          } catch (error) {}
-        }
-      }
-
-      const newFormData = {
-        id: userData.id,
-        name: userData.name || '',
-        email: userData.email || '',
-        profilePicture: userData.profilePicture,
-        gender: userData.gender || '',
-        dob: formattedDob,
-        city: userData.city || '',
-        isEmailVerified: userData.isEmailVerified || false,
-        isActive: userData.isActive !== undefined ? userData.isActive : true,
-        role: userData.role || '',
-        // Professional information
-        mainJobTitleId: userData.mainJobTitleId, // Store the ID from API
-        mainJobTitle: userData.mainJobTitleId
-          ? jobTitles.find((jt) => jt.id === userData.mainJobTitleId)
-          : undefined,
-        clinicAddress: userData.clinicAddress || '',
-      };
-
-      setFormData(newFormData);
-    } catch (error: any) {
-      // More specific error messages
-      if (error?.status === 401) {
-        toast.error('Authentication failed. Please log in again.');
-      } else if (error?.status === 404) {
-        toast.error('Profile not found. Please contact support.');
-      } else if (error?.status >= 500) {
-        toast.error('Server error. Please try again later.');
-      } else {
-        toast.error(error?.message || 'Failed to load user profile');
-      }
-    } finally {
-      setIsProfileLoading(false);
     }
   };
 
@@ -311,7 +286,15 @@ export default function AccountPage() {
       if (response.success) {
         toast.success('Profile updated successfully');
         setProfileUpdated(true);
-        await loadUserProfile();
+        // Update Redux state
+        dispatch(
+          updateProfileData({
+            name: formData.name.trim(),
+            ...(formData.city && { city: formData.city.trim() }),
+            ...(formData.gender && { gender: formData.gender }),
+            ...(formData.dob && { dob: dobToSend }),
+          }) as any,
+        );
 
         setTimeout(() => setProfileUpdated(false), 3000);
       } else {
@@ -336,7 +319,16 @@ export default function AccountPage() {
       if (response.success) {
         toast.success('Professional information updated successfully');
         setProfileUpdated(true);
-        await loadUserProfile();
+        // Update Redux state
+        dispatch(
+          updateProfileData({
+            ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
+            ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
+          }) as any,
+        );
+        if (formData.mainJobTitle) {
+          dispatch(updateMainJobTitle(formData.mainJobTitle) as any);
+        }
 
         setTimeout(() => setProfileUpdated(false), 3000);
       } else {
@@ -393,7 +385,8 @@ export default function AccountPage() {
 
       if (response.success) {
         toast.success('Email change initiated. Please check your new email for verification.');
-        await loadUserProfile();
+        // Reload profile silently to get updated email status
+        await dispatch(fetchProfile({ silent: true, jobTitles }) as any);
       } else {
         toast.error(response.message || 'Failed to initiate email change');
       }
@@ -437,7 +430,8 @@ export default function AccountPage() {
   ];
 
   const renderProfileSection = () => {
-    if (isProfileLoading) {
+    // Show skeleton if: we're loading AND we don't have data yet
+    if ((initialLoading || loading) && !profileData) {
       return <ProfileSectionSkeleton showProfessionalSection={role === ROLES.FREELANCER} />;
     }
 
@@ -462,7 +456,7 @@ export default function AccountPage() {
                 value={formData.name || ''}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
-                disabled={isProfileLoading || isPersonalInfoLoading}
+                disabled={((initialLoading || loading) && !profileData) || isPersonalInfoLoading}
               />
             </div>
 
@@ -531,7 +525,7 @@ export default function AccountPage() {
               <Select
                 value={formData.gender || ''}
                 onValueChange={(value) => handleInputChange('gender', value)}
-                disabled={isProfileLoading || isPersonalInfoLoading}
+                disabled={((initialLoading || loading) && !profileData) || isPersonalInfoLoading}
               >
                 <SelectTrigger className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal data-[placeholder]:text-gray-500">
                   <SelectValue placeholder="Select your gender" />
@@ -562,7 +556,9 @@ export default function AccountPage() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    disabled={isProfileLoading || isPersonalInfoLoading}
+                    disabled={
+                      ((initialLoading || loading) && !profileData) || isPersonalInfoLoading
+                    }
                     className={cn(
                       'w-full h-11 justify-start text-left font-normal text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors',
                       !formData.dob && 'text-gray-500',
@@ -624,7 +620,7 @@ export default function AccountPage() {
             <Button
               className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
               onClick={handlePersonalInfoUpdate}
-              disabled={isPersonalInfoLoading || isProfileLoading}
+              disabled={isPersonalInfoLoading || ((initialLoading || loading) && !profileData)}
             >
               {isPersonalInfoLoading ? (
                 <>Saving...</>
@@ -664,7 +660,11 @@ export default function AccountPage() {
                       handleJobTitleChange(selectedJobTitle);
                     }
                   }}
-                  disabled={isProfileLoading || isProfessionalInfoLoading || isLoadingJobTitles}
+                  disabled={
+                    ((initialLoading || loading) && !profileData) ||
+                    isProfessionalInfoLoading ||
+                    isLoadingJobTitles
+                  }
                 >
                   <SelectTrigger className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal data-[placeholder]:text-gray-500">
                     <SelectValue
@@ -715,7 +715,9 @@ export default function AccountPage() {
                   value={formData.clinicAddress || ''}
                   onChange={(e) => handleInputChange('clinicAddress', e.target.value)}
                   className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
-                  disabled={isProfileLoading || isProfessionalInfoLoading}
+                  disabled={
+                    ((initialLoading || loading) && !profileData) || isProfessionalInfoLoading
+                  }
                 />
               </div>
             </div>
@@ -724,7 +726,9 @@ export default function AccountPage() {
               <Button
                 className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
                 onClick={handleProfessionalInfoUpdate}
-                disabled={isProfessionalInfoLoading || isProfileLoading}
+                disabled={
+                  isProfessionalInfoLoading || ((initialLoading || loading) && !profileData)
+                }
               >
                 {isProfessionalInfoLoading ? (
                   <>Saving...</>
@@ -743,7 +747,8 @@ export default function AccountPage() {
   };
 
   const renderAccountSection = () => {
-    if (isProfileLoading) {
+    // Show skeleton if: we're loading AND we don't have data yet
+    if ((initialLoading || loading) && !profileData) {
       return <AccountSectionSkeleton />;
     }
 
@@ -988,7 +993,8 @@ export default function AccountPage() {
   );
 
   const renderHelpSection = () => {
-    if (isProfileLoading) {
+    // Show skeleton if: we're loading AND we don't have data yet
+    if ((initialLoading || loading) && !profileData) {
       return <HelpSectionSkeleton />;
     }
 
