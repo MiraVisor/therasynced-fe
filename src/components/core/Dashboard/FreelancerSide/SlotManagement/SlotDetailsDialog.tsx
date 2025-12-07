@@ -3,6 +3,7 @@ import {
   Award,
   CheckCircle2,
   Edit2,
+  FileText,
   Gift,
   Mail,
   MessageSquare,
@@ -15,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { InvoiceGenerationDialog } from '@/components/core/Dashboard/FreelancerSide/Appointment/InvoiceGenerationDialog';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +31,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { bookingService } from '@/services/bookingService';
-import { LocationType, Slot } from '@/types/types';
+import { Appointment, LocationType, Slot } from '@/types/types';
 
 interface SlotDetailsDialogProps {
   slot: Slot;
@@ -52,6 +54,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   const [notes, setNotes] = useState(slot.notes || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
 
   // Update notes when slot changes
   useEffect(() => {
@@ -190,6 +193,29 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   };
 
   const client = slot.booking?.client;
+
+  // Convert slot to appointment format for invoice generation
+  const convertSlotToAppointment = (): Appointment | null => {
+    if (!slot.booking || !client) return null;
+
+    return {
+      id: slot.booking.id,
+      title: `Session with ${client.name}`,
+      start: slot.startTime,
+      end: slot.endTime || slot.startTime,
+      status: slot.booking.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED',
+      clientName: client.name,
+      location: slot.locationType,
+      notes: slot.booking.notes || slot.notes || '',
+      locationType: slot.locationType,
+      clientAddress: slot.locationType === LocationType.HOME ? slot.booking.clientAddress : null,
+      freelancer: {
+        clinicAddress: slot.location?.address || null,
+      },
+    };
+  };
+
+  const appointmentData = convertSlotToAppointment();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -572,6 +598,20 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
               </Button>
             )}
 
+          {/* Generate Invoice button - Show for BOOKED or COMPLETED slots with booking */}
+          {slot.booking &&
+            (slot.status === 'BOOKED' ||
+              (slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED')) && (
+              <Button
+                onClick={() => setShowInvoiceDialog(true)}
+                variant="outline"
+                className="border-primary/20 text-primary hover:bg-primary/10 hover:text-primary flex-1 sm:flex-initial"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Generate Invoice
+              </Button>
+            )}
+
           {/* Actions for BOOKED slots */}
           {slot.status === 'BOOKED' &&
             slot.booking &&
@@ -617,6 +657,16 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Invoice Generation Dialog */}
+      {appointmentData && (
+        <InvoiceGenerationDialog
+          appointment={appointmentData}
+          open={showInvoiceDialog}
+          onOpenChange={setShowInvoiceDialog}
+          initialPrice={slot.booking?.totalAmount || slot.basePrice}
+        />
+      )}
     </Dialog>
   );
 };

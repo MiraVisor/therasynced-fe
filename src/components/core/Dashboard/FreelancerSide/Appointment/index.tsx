@@ -12,7 +12,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
-import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -39,6 +39,8 @@ import {
 } from '@/redux/slices/appointmentSlice';
 import { RootState } from '@/redux/store';
 import { Appointment, LocationType } from '@/types/types';
+
+import { InvoiceGenerationDialog } from './InvoiceGenerationDialog';
 
 // Generate time slots from 7am to 7pm
 const generateTimeSlots = () => {
@@ -89,6 +91,7 @@ const Appointments = () => {
 
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date()); // Reset to current date
   const [viewType, setViewType] = useState<'day' | 'month'>('day');
@@ -708,7 +711,17 @@ const Appointments = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex pt-4 border-t border-gray-200">
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowInvoiceDialog(true);
+                  }}
+                  className="flex-1 gap-2 border-primary/20 text-primary hover:bg-primary/10 hover:text-primary"
+                >
+                  <FileText className="h-4 w-4" />
+                  Generate Invoice
+                </Button>
                 <Button
                   variant="destructive"
                   onClick={() => {
@@ -757,6 +770,15 @@ const Appointments = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Invoice Generation Dialog */}
+      {selectedAppointment && (
+        <InvoiceGenerationDialog
+          appointment={selectedAppointment}
+          open={showInvoiceDialog}
+          onOpenChange={setShowInvoiceDialog}
+        />
+      )}
     </DashboardPageWrapper>
   );
 };
