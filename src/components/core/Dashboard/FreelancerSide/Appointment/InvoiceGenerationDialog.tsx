@@ -2,7 +2,7 @@
 
 import { pdf } from '@react-pdf/renderer';
 import { format } from 'date-fns';
-import { Download, FileText, Loader2, X } from 'lucide-react';
+import { Download, FileText, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -22,6 +22,12 @@ interface InvoiceGenerationDialogProps {
   initialPrice?: number;
 }
 
+interface ServiceItem {
+  id: string;
+  name: string;
+  price: string;
+}
+
 export const InvoiceGenerationDialog = ({
   appointment,
   open,
@@ -29,14 +35,47 @@ export const InvoiceGenerationDialog = ({
   initialPrice,
 }: InvoiceGenerationDialogProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [totalAmount, setTotalAmount] = useState(initialPrice?.toString() || '');
+  const [businessName, setBusinessName] = useState('');
+  const [basePrice, setBasePrice] = useState(initialPrice?.toString() || '');
+  const [services, setServices] = useState<ServiceItem[]>([]);
 
-  // Update totalAmount when initialPrice changes
+  // Initialize business name from user data
+  useEffect(() => {
+    const userString = localStorage.getItem('user');
+    const user = userString ? JSON.parse(userString) : null;
+    if (user?.name) {
+      setBusinessName(user.name);
+    }
+  }, []);
+
+  // Update basePrice when initialPrice changes
   useEffect(() => {
     if (initialPrice) {
-      setTotalAmount(initialPrice.toString());
+      setBasePrice(initialPrice.toString());
     }
   }, [initialPrice]);
+
+  const calculateTotal = () => {
+    const base = parseFloat(basePrice) || 0;
+    const servicesTotal = services.reduce((sum, service) => {
+      return sum + (parseFloat(service.price) || 0);
+    }, 0);
+    return base + servicesTotal;
+  };
+
+  const addService = () => {
+    setServices([...services, { id: Date.now().toString(), name: '', price: '' }]);
+  };
+
+  const removeService = (id: string) => {
+    setServices(services.filter((service) => service.id !== id));
+  };
+
+  const updateService = (id: string, field: 'name' | 'price', value: string) => {
+    setServices(
+      services.map((service) => (service.id === id ? { ...service, [field]: value } : service)),
+    );
+  };
 
   const generateInvoiceNumber = () => {
     const date = new Date();
@@ -45,9 +84,28 @@ export const InvoiceGenerationDialog = ({
   };
 
   const handleDownloadInvoice = async () => {
-    if (!totalAmount || parseFloat(totalAmount) <= 0) {
-      toast.error('Please enter a valid price');
+    const total = calculateTotal();
+
+    if (!basePrice || parseFloat(basePrice) <= 0) {
+      toast.error('Please enter a valid base price');
       return;
+    }
+
+    if (total <= 0) {
+      toast.error('Total amount must be greater than 0');
+      return;
+    }
+
+    // Validate services
+    for (const service of services) {
+      if (!service.name.trim()) {
+        toast.error('Please enter a name for all services or remove empty ones');
+        return;
+      }
+      if (!service.price || parseFloat(service.price) <= 0) {
+        toast.error('Please enter a valid price for all services');
+        return;
+      }
     }
 
     setIsGenerating(true);
@@ -60,6 +118,7 @@ export const InvoiceGenerationDialog = ({
       const invoiceData: InvoiceData = {
         invoiceNumber: generateInvoiceNumber(),
         invoiceDate: new Date().toISOString(),
+        businessName: businessName.trim() || user?.name || 'Business Name',
         freelancerName: user?.name || 'Freelancer Name',
         freelancerEmail: user?.email || '',
         freelancerAddress: appointment.freelancer?.clinicAddress || undefined,
@@ -70,9 +129,12 @@ export const InvoiceGenerationDialog = ({
         duration: Math.round(
           (new Date(appointment.end).getTime() - new Date(appointment.start).getTime()) / 60000,
         ),
-        services: [],
-        basePrice: parseFloat(totalAmount),
-        totalAmount: parseFloat(totalAmount),
+        services: services.map((service) => ({
+          name: service.name,
+          price: parseFloat(service.price),
+        })),
+        basePrice: parseFloat(basePrice),
+        totalAmount: total,
         notes: appointment.notes || undefined,
         locationType: appointment.location,
         location:
@@ -106,15 +168,15 @@ export const InvoiceGenerationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <FileText className="h-6 w-6 text-primary" />
             Generate Invoice
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto px-6 py-4 flex-1">
           {/* Prefilled Appointment Details */}
           <div className="bg-muted/50 rounded-lg p-4 space-y-3">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
@@ -122,7 +184,7 @@ export const InvoiceGenerationDialog = ({
             </h3>
             <Separator />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Patient Name</p>
                 <p className="font-medium">{appointment.clientName}</p>
@@ -161,28 +223,115 @@ export const InvoiceGenerationDialog = ({
           </div>
 
           {/* Editable Fields */}
-          <div>
-            <Label htmlFor="totalAmount" className="text-sm font-semibold">
-              Total Amount <span className="text-destructive">*</span>
-            </Label>
-            <div className="relative mt-1.5">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                EUR
-              </span>
+          <div className="space-y-4">
+            {/* Business Name */}
+            <div>
+              <Label htmlFor="businessName" className="text-sm font-semibold">
+                Business/Practice Name <span className="text-destructive">*</span>
+              </Label>
               <Input
-                id="totalAmount"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                className="pl-12"
-                value={totalAmount}
-                onChange={(e) => setTotalAmount(e.target.value)}
+                id="businessName"
+                type="text"
+                placeholder="e.g., Your Practice Name"
+                className="mt-1.5"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                This will appear at the top of the invoice
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Enter the total amount to be charged for this session
-            </p>
+
+            {/* Base Price */}
+            <div>
+              <Label htmlFor="basePrice" className="text-sm font-semibold">
+                Base Price <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative mt-1.5">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  EUR
+                </span>
+                <Input
+                  id="basePrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  className="pl-12"
+                  value={basePrice}
+                  onChange={(e) => setBasePrice(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Additional Services */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                <Label className="text-sm font-semibold">Additional Services (Optional)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addService}
+                  className="w-full sm:w-auto"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Service
+                </Button>
+              </div>
+
+              {services.length > 0 && (
+                <div className="space-y-3 mt-3">
+                  {services.map((service) => (
+                    <div
+                      key={service.id}
+                      className="flex gap-2 items-start p-3 bg-muted/30 rounded-lg border"
+                    >
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          placeholder="Service name"
+                          value={service.name}
+                          onChange={(e) => updateService(service.id, 'name', e.target.value)}
+                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                            EUR
+                          </span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            className="pl-12"
+                            value={service.price}
+                            onChange={(e) => updateService(service.id, 'price', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeService(service.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Total Display */}
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Total Amount:</span>
+                <span className="text-2xl font-bold text-primary">
+                  EUR {calculateTotal().toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Preview Info */}
@@ -198,14 +347,25 @@ export const InvoiceGenerationDialog = ({
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 justify-end pt-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isGenerating}>
+        {/* Action Buttons - Fixed at bottom */}
+        <div className="px-6 py-4 border-t bg-background shrink-0">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isGenerating}
+              className="w-full sm:w-auto"
+            >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button onClick={handleDownloadInvoice} disabled={isGenerating} className="gap-2">
+            <Button
+              onClick={handleDownloadInvoice}
+              disabled={isGenerating}
+              className="gap-2 w-full sm:w-auto"
+            >
               {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
