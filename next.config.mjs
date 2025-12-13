@@ -61,6 +61,46 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              process.env.NODE_ENV === 'development'
+                ? [
+                    "default-src 'self'",
+                    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
+                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                    "font-src 'self' https://fonts.gstatic.com data:",
+                    "img-src 'self' data: https: blob:",
+                    "connect-src 'self' http://localhost:* https://api.stripe.com https://*.cloudinary.com ws://localhost:*",
+                    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+                    "object-src 'none'",
+                    "base-uri 'self'",
+                    "form-action 'self'",
+                    "frame-ancestors 'none'",
+                  ].join('; ')
+                : [
+                    "default-src 'self'",
+                    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
+                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                    "font-src 'self' https://fonts.gstatic.com data:",
+                    "img-src 'self' data: https: blob:",
+                    "connect-src 'self' https://api.stripe.com https://*.cloudinary.com",
+                    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+                    "object-src 'none'",
+                    "base-uri 'self'",
+                    "form-action 'self'",
+                    "frame-ancestors 'none'",
+                    "upgrade-insecure-requests",
+                  ].join('; '),
+          },
         ],
       },
     ];

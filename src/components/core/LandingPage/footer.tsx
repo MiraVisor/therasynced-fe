@@ -69,10 +69,10 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Legal & Support */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-lg xs:text-xl font-semibold text-gray-900 dark:text-white">
-              Support
+              Legal & Support
             </h3>
             <ul className="space-y-2 text-base xs:text-lg text-gray-700 dark:text-neutral-300">
               <li>
@@ -93,42 +93,55 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/privacy"
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
-                  Terms and Conditions
+                  Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/terms"
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
-                  Privacy Policy
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/cookies"
+                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
+                >
+                  Cookie Policy
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
+        {/* Platform Disclaimer */}
+        <div className="border-t border-gray-200/50 dark:border-neutral-800/50 pt-6">
+          <p className="text-sm text-gray-600 dark:text-neutral-400 text-center max-w-4xl mx-auto">
+            <strong className="text-gray-900 dark:text-white">Platform Disclaimer:</strong>{' '}
+            TheraSynced is a booking platform that connects clients with licensed healthcare
+            professionals and therapists. We do not provide medical advice, diagnosis, or treatment
+            services. All healthcare services are provided by independent practitioners who are
+            responsible for their own professional conduct and services.
+          </p>
+        </div>
+
         {/* Bottom Bar */}
         <div className="border-t border-gray-200/50 dark:border-neutral-800/50 pt-6 text-sm flex flex-col sm:flex-row justify-between items-center gap-4 text-gray-700 dark:text-neutral-300">
-          <p className="text-center sm:text-left">
-            Copyright © 2025 therasynced | All Rights Reserved
-          </p>
+          <div className="text-center sm:text-left">
+            <p className="mb-2">Copyright © 2025 therasynced | All Rights Reserved</p>
+          </div>
           <div className="flex flex-wrap justify-center sm:justify-end gap-4">
-            <Link
-              href="#"
-              className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-            >
-              Terms and Conditions
-            </Link>
-            <Link
-              href="#"
-              className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-            >
-              Privacy Policy
-            </Link>
+            <p className="mb-2">
+              For data protection inquiries:{' '}
+              <a href="mailto:privacy@therasynced.com" className="text-primary hover:underline">
+                privacy@therasynced.com
+              </a>
+            </p>
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import {
   Briefcase,
   Calendar,
   CreditCard,
+  FileText,
   Heart,
   Home,
   LogOut,
@@ -79,6 +80,16 @@ const navigationLinks = {
       url: '/dashboard/account',
       icon: Settings,
     },
+    {
+      name: 'Data Rights',
+      url: '/dashboard/data-rights',
+      icon: FileText,
+    },
+    {
+      name: 'My Access Logs',
+      url: '/dashboard/data-rights/logs',
+      icon: Shield,
+    },
   ],
   FREELANCER: [
     {
@@ -115,6 +126,16 @@ const navigationLinks = {
       name: 'Account',
       url: '/dashboard/account',
       icon: Settings,
+    },
+    {
+      name: 'Data Rights',
+      url: '/dashboard/data-rights',
+      icon: FileText,
+    },
+    {
+      name: 'My Access Logs',
+      url: '/dashboard/data-rights/logs',
+      icon: Shield,
     },
   ],
   ADMIN: [
@@ -167,6 +188,16 @@ const navigationLinks = {
       name: 'Account',
       url: '/dashboard/account',
       icon: Settings,
+    },
+    {
+      name: 'Data Rights',
+      url: '/dashboard/data-rights',
+      icon: FileText,
+    },
+    {
+      name: 'Health Data Access Logs',
+      url: '/dashboard/admin/health-data-logs',
+      icon: Shield,
     },
   ],
 };
