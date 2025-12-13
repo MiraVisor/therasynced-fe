@@ -114,8 +114,12 @@ export default function SlotDetailPage() {
       <div className="space-y-6">
         <Tabs defaultValue="info" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="info">Info</TabsTrigger>
-            <TabsTrigger value="forms">Forms</TabsTrigger>
+            <TabsTrigger value="info" className="font-inter text-sm font-medium">
+              Info
+            </TabsTrigger>
+            <TabsTrigger value="forms" className="font-inter text-sm font-medium">
+              Forms
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="mt-6">

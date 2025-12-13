@@ -571,28 +571,30 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
 
           {/* Form Type Selector */}
           <div className="space-y-2">
-            <Label>Form Type</Label>
+            <Label className="font-inter text-sm font-medium">Form Type</Label>
             <Select
               value={formData.formType || FormType.NONE}
               onValueChange={(value) => setFormData({ ...formData, formType: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="font-inter text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={FormType.NONE}>{FORM_TYPE_LABELS[FormType.NONE]}</SelectItem>
-                <SelectItem value={FormType.SOAP_NOTE}>
+                <SelectItem value={FormType.NONE} className="font-inter text-sm">
+                  {FORM_TYPE_LABELS[FormType.NONE]}
+                </SelectItem>
+                <SelectItem value={FormType.SOAP_NOTE} className="font-inter text-sm">
                   {FORM_TYPE_LABELS[FormType.SOAP_NOTE]}
                 </SelectItem>
-                <SelectItem value={FormType.MEDICAL_HISTORY}>
+                <SelectItem value={FormType.MEDICAL_HISTORY} className="font-inter text-sm">
                   {FORM_TYPE_LABELS[FormType.MEDICAL_HISTORY]}
                 </SelectItem>
-                <SelectItem value={FormType.ROM_ASSESSMENT}>
+                <SelectItem value={FormType.ROM_ASSESSMENT} className="font-inter text-sm">
                   {FORM_TYPE_LABELS[FormType.ROM_ASSESSMENT]}
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
+            <p className="font-inter text-xs text-muted-foreground">
               Select the form type that will be used for bookings in this slot
             </p>
           </div>
