@@ -41,6 +41,10 @@ export default function EmailVerificationForm({
           We&apos;ve sent a verification link to{' '}
           <span className="font-medium text-charcoal">{email || 'your email'}</span>
         </p>
+        <p className="text-xs font-inter text-gray-500 mt-2">
+          Click the link in your email to verify your account. You can close this tab after clicking
+          the link.
+        </p>
       </div>
 
       {/* Main Content Area */}
@@ -54,7 +58,8 @@ export default function EmailVerificationForm({
                 <ol className="list-decimal list-inside space-y-1 text-xs font-inter">
                   <li>Check your email inbox (and spam folder)</li>
                   <li>Click the verification link in the email</li>
-                  <li>You&apos;ll be automatically redirected to the dashboard</li>
+                  <li>You&apos;ll be automatically logged in and redirected to the dashboard</li>
+                  <li>You can close this tab after clicking the verification link</li>
                 </ol>
               </div>
             </div>

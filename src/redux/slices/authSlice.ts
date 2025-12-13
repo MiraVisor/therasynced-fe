@@ -131,12 +131,18 @@ const authSlice = createSlice({
         state.role = null;
       })
       .addCase(verifyEmailLinkUser.pending, () => {})
-      .addCase(verifyEmailLinkUser.fulfilled, (state) => {
-        // Email verification doesn't return token, just mark as verified
-        // The user will need to login separately
-        state.isAuthenticated = false;
-        state.token = null;
-        state.role = null;
+      .addCase(verifyEmailLinkUser.fulfilled, (state, action) => {
+        // Extract token and user data from response
+        const token = action.payload.data.data.token;
+        const role = action.payload.data.data.user.role;
+
+        state.token = token;
+        state.role = role;
+        state.isAuthenticated = true;
+
+        if (typeof window !== 'undefined') {
+          setCookie('token', token);
+        }
       })
       .addCase(verifyEmailLinkUser.rejected, (state) => {
         state.isAuthenticated = false;
