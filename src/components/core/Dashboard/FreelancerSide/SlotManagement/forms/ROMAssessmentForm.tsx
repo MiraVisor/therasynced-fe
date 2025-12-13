@@ -70,7 +70,7 @@ interface ROMAssessmentFormProps {
   slot: Slot;
 }
 
-// Helper to create default ROM structure
+// Helper to create default ROM structure for lower limbs
 const createROMStructure = (assessmentDate: string, followUpDate: string) => ({
   assessmentDate,
   followUpDate,
@@ -109,6 +109,129 @@ const createROMStructure = (assessmentDate: string, followUpDate: string) => ({
   },
 });
 
+// Helper to create default ROM structure for upper limbs
+const createUpperLimbROMStructure = (assessmentDate: string, followUpDate: string) => ({
+  assessmentDate,
+  followUpDate,
+  shoulder: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    abduction: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    adduction: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    medialRotation: {
+      leftAssessment: '',
+      rightAssessment: '',
+      leftFollowUp: '',
+      rightFollowUp: '',
+    },
+    lateralRotation: {
+      leftAssessment: '',
+      rightAssessment: '',
+      leftFollowUp: '',
+      rightFollowUp: '',
+    },
+  },
+  elbow: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  forearm: {
+    pronation: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    supination: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  wrist: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    radialDeviation: {
+      leftAssessment: '',
+      rightAssessment: '',
+      leftFollowUp: '',
+      rightFollowUp: '',
+    },
+    ulnarDeviation: {
+      leftAssessment: '',
+      rightAssessment: '',
+      leftFollowUp: '',
+      rightFollowUp: '',
+    },
+  },
+  fingers: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    abduction: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+});
+
+// Helper to create default muscle test structure for lower limbs
+const createLowerLimbMuscleTestStructure = (assessmentDate: string, followUpDate: string) => ({
+  assessmentDate,
+  followUpDate,
+  hip: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    abduction: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    adduction: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  knee: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  ankle: {
+    dorsiFlexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    plantarFlexion: {
+      leftAssessment: '',
+      rightAssessment: '',
+      leftFollowUp: '',
+      rightFollowUp: '',
+    },
+    inversion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    eversion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  foot: {
+    toeFlexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    toeExtension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  trunk: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    lateralFlexion: {
+      leftAssessment: '',
+      rightAssessment: '',
+      leftFollowUp: '',
+      rightFollowUp: '',
+    },
+    rotation: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+});
+
+// Helper to create default muscle test structure for upper limbs
+const createUpperLimbMuscleTestStructure = (assessmentDate: string, followUpDate: string) => ({
+  assessmentDate,
+  followUpDate,
+  shoulder: {
+    elevators: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    depressors: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    antepulsors: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    retropulsors: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  elbow: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  forearm: {
+    pronation: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    supination: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  wrist: {
+    flexion: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    extension: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+  fingers: {
+    abductors: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+    opposition: { leftAssessment: '', rightAssessment: '', leftFollowUp: '', rightFollowUp: '' },
+  },
+});
+
 const defaultValues: ROMAssessmentFormData = {
   physicalExaminationNotes: '',
   skinSoftTissues: {
@@ -136,7 +259,7 @@ const defaultValues: ROMAssessmentFormData = {
     babinsky: { right: '', left: '', comments: '' },
   },
   lowerLimbROM: createROMStructure(format(new Date(), 'yyyy-MM-dd'), ''),
-  upperLimbROM: createROMStructure(format(new Date(), 'yyyy-MM-dd'), ''),
+  upperLimbROM: createUpperLimbROMStructure(format(new Date(), 'yyyy-MM-dd'), ''),
   neckROM: {
     flexion: '',
     extension: '',
@@ -155,8 +278,8 @@ const defaultValues: ROMAssessmentFormData = {
     rotationRight: '',
     rotationLeft: '',
   },
-  lowerLimbMuscleTest: createROMStructure(format(new Date(), 'yyyy-MM-dd'), ''),
-  upperLimbMuscleTest: createROMStructure(format(new Date(), 'yyyy-MM-dd'), ''),
+  lowerLimbMuscleTest: createLowerLimbMuscleTestStructure(format(new Date(), 'yyyy-MM-dd'), ''),
+  upperLimbMuscleTest: createUpperLimbMuscleTestStructure(format(new Date(), 'yyyy-MM-dd'), ''),
   functionalEvaluation: {
     balance: { sitting: '', standing: '' },
     coordination: {
