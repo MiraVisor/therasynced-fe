@@ -16,6 +16,7 @@ import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { createFilesColumns } from '@/components/common/DataTable/files-columns';
+import { HealthDataConsent } from '@/components/common/HealthDataConsent';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -248,6 +249,7 @@ export default function VerificationPage() {
   const [isUploadingCertificate, setIsUploadingCertificate] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [hasCertificateConsent, setHasCertificateConsent] = useState(false);
   const MAX_FILES_PER_UPLOAD = 10;
 
   // Determine if we should show loading - only if no data exists
@@ -417,6 +419,13 @@ export default function VerificationPage() {
   };
 
   const handleCertificateUpload = async (file: File) => {
+    if (!hasCertificateConsent) {
+      toast.error(
+        'You must grant explicit consent for health data processing before uploading a first aid certificate.',
+      );
+      return;
+    }
+
     setIsUploadingCertificate(true);
     try {
       await dispatch(uploadFirstAidCertificate(file) as any);
@@ -576,9 +585,17 @@ export default function VerificationPage() {
                 {/* {getStatusBadge(certificateStatus.status)} */}
               </div>
 
+              {/* Health Data Consent */}
+              <HealthDataConsent
+                consentType="FIRST_AID_CERTIFICATE"
+                onConsentChange={setHasCertificateConsent}
+                required={true}
+                showDisclaimer={true}
+              />
+
               {certificateStatus.rejectionReason && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
+                <Alert className="border-red-200 bg-red-50" role="alert">
+                  <AlertCircle className="h-4 w-4 text-red-600" aria-hidden="true" />
                   <AlertDescription className="text-red-800">
                     <strong>Rejection Reason:</strong> {certificateStatus.rejectionReason}
                   </AlertDescription>
@@ -594,21 +611,41 @@ export default function VerificationPage() {
                       handleCertificateUpload(e.target.files[0]);
                     }
                   }}
-                  disabled={isUploadingCertificate}
+                  disabled={isUploadingCertificate || !hasCertificateConsent}
                   className="hidden"
                   id="certificate-upload"
+                  aria-label="Upload first aid certificate"
+                  aria-describedby="certificate-upload-instructions"
+                  aria-required="true"
+                  aria-invalid={!hasCertificateConsent}
                 />
-                <label htmlFor="certificate-upload" className="cursor-pointer block">
+                <label
+                  htmlFor="certificate-upload"
+                  className={`cursor-pointer block ${!hasCertificateConsent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  role="button"
+                  aria-disabled={!hasCertificateConsent}
+                >
                   {isUploadingCertificate ? (
                     <LoadingSpinner size="lg" />
                   ) : (
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
                   )}
                   <p className="mt-2 text-sm font-medium text-gray-900">
-                    {isUploadingCertificate ? 'Uploading...' : 'Upload First Aid Certificate'}
+                    {isUploadingCertificate
+                      ? 'Uploading...'
+                      : !hasCertificateConsent
+                        ? 'Consent required to upload'
+                        : 'Upload First Aid Certificate'}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">.jpg, .jpeg, .png, .pdf up to 5MB</p>
+                  <p id="certificate-upload-instructions" className="text-xs text-gray-500 mt-1">
+                    .jpg, .jpeg, .png, .pdf up to 5MB
+                  </p>
                 </label>
+                {!hasCertificateConsent && (
+                  <p className="text-xs text-red-600 mt-2" role="alert" aria-live="polite">
+                    You must grant consent above before uploading a certificate.
+                  </p>
+                )}
               </div>
 
               {certificateStatus.uploadedAt && (

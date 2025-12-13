@@ -244,6 +244,23 @@ export const ENDPOINTS = {
       getSubscriptions: '/admin/finance/subscriptions',
     },
   },
+  // Data Rights endpoints (GDPR compliance)
+  dataRights: {
+    export: '/data-rights/export',
+    exportPortable: '/data-rights/export-portable',
+    deleteAccount: '/data-rights/delete-account',
+    restrictProcessing: '/data-rights/restrict-processing',
+    objectProcessing: '/data-rights/object-processing',
+    breaches: '/data-rights/breaches', // Admin only
+    ropa: '/data-rights/ropa', // Admin only
+    myHealthDataLogs: '/data-rights/my-health-data-logs',
+    healthDataLogs: '/data-rights/health-data-logs', // Admin only
+  },
+  // Consent management endpoints
+  consent: {
+    healthData: '/consent/health-data',
+    cookies: '/consent/cookies',
+  },
 };
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;

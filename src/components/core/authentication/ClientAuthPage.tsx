@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import EmailVerificationForm from '@/components/core/authentication/EmailVerificationForm';
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
 import SignInForm from '@/components/core/authentication/SignInForm';
+import { sendVerificationEmailApi } from '@/redux/api/authApi';
 import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { signUpUser } from '@/redux/slices/authSlice';
 
@@ -49,9 +50,11 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     dispatch(signUpUser(data))
       .unwrap()
       .then((res) => {
-        toast.success(res?.message || 'Account created successfully!');
-        // Redirect to dashboard (no email verification needed)
-        router.push('/dashboard');
+        toast.success(
+          'Account created successfully! Please check your email for the verification link.',
+        );
+        // Show email verification page instead of redirecting to dashboard
+        setCurrentView('email-verification');
       })
       .catch((err) => {
         toast.error(err?.message || 'Sign-Up Failed');
@@ -67,8 +70,17 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
   };
 
   const handleResendEmail = async () => {
-    // TODO: Implement resend verification email API call
-    toast.info('Verification email resent to your inbox');
+    if (!userEmail) {
+      toast.error('Email address not found');
+      return;
+    }
+
+    try {
+      await sendVerificationEmailApi({ email: userEmail });
+      toast.success('Verification email resent to your inbox');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to resend verification email');
+    }
   };
 
   const renderAuthForm = () => {

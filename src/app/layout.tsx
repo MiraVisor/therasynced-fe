@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Open_Sans, Poppins } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 
+import CookieConsent from '@/components/common/CookieConsent';
 import { ThemeProvider } from '@/components/theme-provider';
 import { StoreProvider } from '@/redux/StoreProvider';
 
@@ -108,10 +109,23 @@ export default function RootLayout({
         className={`${openSans.variable} ${inter.variable} ${poppins.variable} antialiased`}
         suppressHydrationWarning
       >
+        {/* Skip to main content link for accessibility */}
+        <a
+          href="#main-content"
+          className="absolute left-[-9999px] focus:left-4 focus:top-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:not-sr-only"
+          aria-label="Skip to main content"
+        >
+          Skip to main content
+        </a>
         <StoreProvider>
           <ToastContainer />
           {/* <SocketConnectionTest /> */}
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
+            <CookieConsent />
+          </ThemeProvider>
         </StoreProvider>
       </body>
     </html>

@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
+import { HealthDataConsent } from '@/components/common/HealthDataConsent';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,6 +66,7 @@ export const ReportFreelancerDialog = ({
 }: ReportFreelancerDialogProps) => {
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
 
   const {
     register,
@@ -83,6 +85,13 @@ export const ReportFreelancerDialog = ({
   });
 
   const onSubmit = async (data: ComplaintFormData) => {
+    if (!hasConsent) {
+      toast.error(
+        'You must grant explicit consent for health data processing before submitting a complaint.',
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = await dispatch(
@@ -98,6 +107,7 @@ export const ReportFreelancerDialog = ({
       if (createComplaint.fulfilled.match(result)) {
         toast.success('Complaint submitted successfully');
         reset();
+        setHasConsent(false);
         onClose();
       } else {
         toast.error('Failed to submit complaint');
@@ -125,15 +135,35 @@ export const ReportFreelancerDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+          aria-label="Report freelancer form"
+        >
+          {/* Health Data Consent */}
+          <HealthDataConsent
+            consentType="COMPLAINTS"
+            onConsentChange={setHasConsent}
+            required={true}
+            showDisclaimer={true}
+          />
+
           {/* Category Selection */}
           <div className="space-y-2">
-            <Label htmlFor="category">Category *</Label>
+            <Label htmlFor="category">
+              Category <span className="text-red-600 dark:text-red-400">*</span>
+            </Label>
             <Select
               value={watch('category')}
               onValueChange={(value) => setValue('category', value)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger
+                className="w-full"
+                id="category"
+                aria-required="true"
+                aria-invalid={!!errors.category}
+                aria-describedby={errors.category ? 'category-error' : undefined}
+              >
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
@@ -145,8 +175,13 @@ export const ReportFreelancerDialog = ({
               </SelectContent>
             </Select>
             {errors.category && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" />
+              <p
+                id="category-error"
+                className="text-sm text-red-600 flex items-center gap-1"
+                role="alert"
+                aria-live="polite"
+              >
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 {errors.category.message}
               </p>
             )}
@@ -154,16 +189,26 @@ export const ReportFreelancerDialog = ({
 
           {/* Reason */}
           <div className="space-y-2">
-            <Label htmlFor="reason">Brief Reason *</Label>
+            <Label htmlFor="reason">
+              Brief Reason <span className="text-red-600 dark:text-red-400">*</span>
+            </Label>
             <Input
               id="reason"
               {...register('reason')}
               placeholder="e.g., Arrived 30 minutes late"
               className={errors.reason ? 'border-red-500' : ''}
+              aria-required="true"
+              aria-invalid={!!errors.reason}
+              aria-describedby={errors.reason ? 'reason-error' : undefined}
             />
             {errors.reason && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" />
+              <p
+                id="reason-error"
+                className="text-sm text-red-600 flex items-center gap-1"
+                role="alert"
+                aria-live="polite"
+              >
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 {errors.reason.message}
               </p>
             )}
@@ -171,17 +216,27 @@ export const ReportFreelancerDialog = ({
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Detailed Description *</Label>
+            <Label htmlFor="description">
+              Detailed Description <span className="text-red-600 dark:text-red-400">*</span>
+            </Label>
             <Textarea
               id="description"
               {...register('description')}
               placeholder="Please provide a detailed explanation of the incident..."
               rows={5}
               className={errors.description ? 'border-red-500' : ''}
+              aria-required="true"
+              aria-invalid={!!errors.description}
+              aria-describedby={errors.description ? 'description-error' : undefined}
             />
             {errors.description && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" />
+              <p
+                id="description-error"
+                className="text-sm text-red-600 flex items-center gap-1"
+                role="alert"
+                aria-live="polite"
+              >
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 {errors.description.message}
               </p>
             )}
@@ -202,16 +257,25 @@ export const ReportFreelancerDialog = ({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              aria-label="Cancel complaint submission"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !hasConsent}
+              aria-label={!hasConsent ? 'Consent required before submitting' : 'Submit complaint'}
+            >
               {isSubmitting ? (
                 <>Submitting...</>
               ) : (
                 <>
                   Submit Report
-                  <Send className="ml-2 h-4 w-4" />
+                  <Send className="ml-2 h-4 w-4" aria-hidden="true" />
                 </>
               )}
             </Button>
