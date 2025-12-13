@@ -49,6 +49,8 @@ import { createSlot } from '@/redux/slices/slotSlice';
 import type { AppDispatch } from '@/redux/store';
 import { RootState } from '@/redux/store';
 import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
+import { FORM_TYPE_LABELS, FormType } from '@/types/formTypes';
 import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
 
 interface CreateSlotFormProps {
@@ -181,6 +183,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
     slots: [],
     serviceCategoryIds: [],
     notes: '',
+    formType: FormType.NONE, // Default to N/A
   });
 
   // Bulk slot creation state
@@ -564,6 +567,34 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Form Type Selector */}
+          <div className="space-y-2">
+            <Label>Form Type</Label>
+            <Select
+              value={formData.formType || FormType.NONE}
+              onValueChange={(value) => setFormData({ ...formData, formType: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={FormType.NONE}>{FORM_TYPE_LABELS[FormType.NONE]}</SelectItem>
+                <SelectItem value={FormType.SOAP_NOTE}>
+                  {FORM_TYPE_LABELS[FormType.SOAP_NOTE]}
+                </SelectItem>
+                <SelectItem value={FormType.MEDICAL_HISTORY}>
+                  {FORM_TYPE_LABELS[FormType.MEDICAL_HISTORY]}
+                </SelectItem>
+                <SelectItem value={FormType.ROM_ASSESSMENT}>
+                  {FORM_TYPE_LABELS[FormType.ROM_ASSESSMENT]}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Select the form type that will be used for bookings in this slot
+            </p>
           </div>
         </CardContent>
       </Card>

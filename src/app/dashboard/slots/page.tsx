@@ -19,7 +19,6 @@ import { toast } from 'react-toastify';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { CreateSlotForm } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/CreateSlotForm';
 import { DaySlotSection } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/DaySlotSection';
-import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
 import { UpgradeModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/UpgradeModal';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -51,9 +50,6 @@ const SlotsPage = () => {
     useSelector((state: RootState) => state.slot);
   const { currentSubscription, plans } = useAppSelector((state) => state.subscription);
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
@@ -144,43 +140,10 @@ const SlotsPage = () => {
   };
 
   const handleSlotClick = (slot: Slot) => {
-    setSelectedSlot(slot);
-    setShowDetailsDialog(true);
+    router.push(`/dashboard/slots/${slot.id}`);
   };
 
-  const handleDeleteFromDialog = async (slotId: string) => {
-    setShowDetailsDialog(false);
-    setSelectedSlot(null);
-    try {
-      await dispatch(deleteSlot(slotId) as any).unwrap();
-      toast.success('Slot deleted successfully');
-      // Update stats after successful deletion
-      dispatch(fetchMySlotsStats({ silent: true }) as any);
-      // Note: The slot is already removed from UI via optimistic update in the reducer
-      // We don't refresh the slots list here to avoid race conditions where the server
-      // might not have processed the delete yet and would restore the slot
-      // The optimistic update ensures immediate UI feedback
-    } catch (error: any) {
-      const errorMessage = error?.error || error?.message || 'Failed to delete slot';
-      toast.error(errorMessage);
-      // Refresh to restore the slot if deletion failed (optimistic update will be overwritten)
-      fetchSlotsForWeek(currentWeekStart, true);
-    }
-  };
-
-  const handleDeleteSlot = async () => {
-    if (!selectedSlot) return;
-    setShowDeleteDialog(false);
-    setSelectedSlot(null);
-    try {
-      await dispatch(deleteSlot(selectedSlot.id) as any).unwrap();
-      toast.success('Slot deleted successfully');
-      dispatch(fetchMySlotsStats({ silent: true }) as any);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete slot');
-      fetchSlotsForWeek(currentWeekStart, true);
-    }
-  };
+  // Delete functionality moved to slot detail page
 
   const navigateWeek = async (direction: 'prev' | 'next') => {
     setIsNavigatingWeek(true);
@@ -582,41 +545,29 @@ const SlotsPage = () => {
         )}
       </div>
 
-      {/* Slot Details Dialog */}
-      {selectedSlot && (
-        <SlotDetailsDialog
-          slot={selectedSlot}
-          isOpen={showDetailsDialog}
-          onClose={() => {
-            setShowDetailsDialog(false);
-            setSelectedSlot(null);
-          }}
-          onDelete={handleDeleteFromDialog}
-          onComplete={() => {
-            // Refresh slots after completion
-            fetchSlotsForWeek(currentWeekStart, true);
-            fetchMySlotsStats({ silent: true });
-          }}
-        />
-      )}
-
-      {/* Delete Slot Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+      {/* Date Picker Dialog */}
+      <Dialog open={showDatePicker} onOpenChange={setShowDatePicker}>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Cancel Slot</DialogTitle>
+            <DialogTitle>Select Date</DialogTitle>
+            <DialogDescription>Choose a date to navigate to that week</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <DatePicker value={currentWeekStart} onChange={handleDatePickerChange} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Slot Form Dialog */}
+      <Dialog open={showCreateSlotForm} onOpenChange={setShowCreateSlotForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Your Availability</DialogTitle>
             <DialogDescription>
-              Are you sure you want to cancel this slot? This action cannot be undone.
+              Set up your available times for clients to book. You can add multiple slots at once.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              Keep Slot
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteSlot}>
-              Cancel Slot
-            </Button>
-          </DialogFooter>
+          <CreateSlotForm onSuccess={handleSlotCreateSuccess} />
         </DialogContent>
       </Dialog>
 

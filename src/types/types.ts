@@ -445,6 +445,7 @@ export interface Slot {
   notes?: string;
   availableServices?: Service[]; // Legacy: Services available for this slot
   availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
+  formType?: string; // Form type for this slot (SOAP_NOTE, MEDICAL_HISTORY, ROM_ASSESSMENT, NONE)
   booking?: {
     id: string;
     status: string;
@@ -505,6 +506,7 @@ export interface CreateSlotDto {
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
+  formType?: string; // Form type for this slot (SOAP_NOTE, MEDICAL_HISTORY, ROM_ASSESSMENT, NONE)
 }
 
 export interface CreateServiceDto {
@@ -906,6 +908,7 @@ export interface Booking {
     email: string;
     profilePicture?: string;
   };
+  formData?: Record<string, any>; // Form data filled for this booking
   createdAt: string;
   updatedAt: string;
 }
