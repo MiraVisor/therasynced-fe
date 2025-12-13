@@ -144,8 +144,7 @@ const SlotsPage = () => {
   };
 
   const handleSlotClick = (slot: Slot) => {
-    setSelectedSlot(slot);
-    setShowDetailsDialog(true);
+    router.push(`/dashboard/slots/${slot.id}`);
   };
 
   const handleDeleteFromDialog = async (slotId: string) => {
