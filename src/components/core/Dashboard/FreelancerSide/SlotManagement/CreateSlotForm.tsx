@@ -16,6 +16,7 @@ import {
   Clock,
   Copy,
   Euro,
+  FileText,
   MapPin,
   Package,
   Plus,
@@ -49,6 +50,7 @@ import { createSlot } from '@/redux/slices/slotSlice';
 import type { AppDispatch } from '@/redux/store';
 import { RootState } from '@/redux/store';
 import api from '@/services/api';
+import { FORM_TYPE_LABELS, FormType } from '@/types/formTypes';
 import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
 
 interface CreateSlotFormProps {
@@ -181,6 +183,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
     slots: [],
     serviceCategoryIds: [],
     notes: '',
+    formType: FormType.NONE,
   });
 
   // Bulk slot creation state
@@ -564,6 +567,32 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Form Type Selector - Full Width */}
+          <div className="space-y-2 mt-4">
+            <Label className="text-sm font-medium flex items-center gap-2 font-inter">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              Form Type
+            </Label>
+            <Select
+              value={formData.formType || FormType.NONE}
+              onValueChange={(value) => setFormData({ ...formData, formType: value as FormType })}
+            >
+              <SelectTrigger className="h-11 font-inter">
+                <SelectValue placeholder="Select a form type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(FormType).map((type) => (
+                  <SelectItem key={type} value={type} className="font-inter">
+                    {FORM_TYPE_LABELS[type]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground font-inter">
+              Select the medical form type for this slot (optional)
+            </p>
           </div>
         </CardContent>
       </Card>

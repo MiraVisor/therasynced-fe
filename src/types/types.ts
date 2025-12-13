@@ -443,6 +443,7 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
+  formType?: import('./formTypes').FormType;
   availableServices?: Service[]; // Legacy: Services available for this slot
   availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
   booking?: {
@@ -505,6 +506,7 @@ export interface CreateSlotDto {
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
+  formType?: import('./formTypes').FormType;
 }
 
 export interface CreateServiceDto {
@@ -862,6 +864,7 @@ export interface Booking {
   canBeRated?: boolean; // From backend API - indicates if booking can be rated
   hasRating?: boolean; // From backend API - indicates if booking already has a rating
   rating?: BookingRating | null; // The rating object if the booking has been rated
+  formData?: Record<string, any> | null;
   slot: {
     id: string;
     startTime: string;
