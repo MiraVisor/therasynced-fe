@@ -39,6 +39,10 @@ const createMockSlot = (): Slot => ({
       name: 'Demo Client',
       email: 'demo@example.com',
     },
+    status: 'BOOKED',
+    totalAmount: 100,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 });
 
