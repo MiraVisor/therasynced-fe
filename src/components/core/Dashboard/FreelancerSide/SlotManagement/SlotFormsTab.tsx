@@ -1,12 +1,21 @@
 'use client';
 
-import { AlertCircle, FileText } from 'lucide-react';
+import { format } from 'date-fns';
+import { AlertCircle, Edit, Eye, FileText, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { HealthDataConsent } from '@/components/common/HealthDataConsent';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -15,8 +24,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { bookingFormDraftService } from '@/services/draftStorage.service';
+import { formSubmissionService } from '@/services/formSubmission.service';
+import { FormSubmission } from '@/types/formSubmission';
 import {
   FORM_TYPE_LABELS,
   FormType,
@@ -47,6 +59,11 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
   const [isLoadingDraft, setIsLoadingDraft] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [formSubmissions, setFormSubmissions] = useState<FormSubmission[]>([]);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const clientId = slot.booking?.client?.id;
   const bookingId = slot.booking?.id || slot.id;
 
@@ -126,6 +143,36 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
     loadDraft();
   }, [bookingId]);
 
+  // Load form submissions on mount
+  useEffect(() => {
+    async function loadSubmissions() {
+      if (!bookingId) {
+        return;
+      }
+
+      try {
+        setIsLoadingSubmissions(true);
+        const response = await formSubmissionService.getFormSubmissions(bookingId);
+        setFormSubmissions(response.data || []);
+      } catch (error: any) {
+        console.error('Failed to load form submissions:', error);
+
+        // Only show error for non-404 errors (404 means no submissions exist, which is fine)
+        if (error.status !== 404) {
+          // Silently fail for now - submissions are optional and shouldn't block the UI
+          // Could add a subtle error indicator if needed
+          console.warn('Failed to load form submissions, continuing without them');
+        }
+        // Set empty array on any error to prevent UI issues
+        setFormSubmissions([]);
+      } finally {
+        setIsLoadingSubmissions(false);
+      }
+    }
+
+    loadSubmissions();
+  }, [bookingId]);
+
   const handleFormTypeChange = async (newType: FormType) => {
     if (newType !== selectedFormType && formData) {
       const confirmChange = window.confirm(
@@ -189,22 +236,179 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
   const handleFormSubmit = async (
     data: SOAPNoteFormData | MedicalHistoryFormData | ROMAssessmentFormData,
   ) => {
-    try {
-      setFormData(data);
-      // Save immediately on submit
-      await saveNow();
-      toast.success('Form data saved successfully');
+    if (!bookingId) {
+      toast.error('Booking ID is required to submit forms.');
+      return;
+    }
 
-      // Clear draft after successful submission (form is now submitted)
+    if (!hasHealthDataConsent) {
+      toast.error(
+        'Health data consent is required before submitting forms. Please grant consent first.',
+      );
+      return;
+    }
+
+    if (selectedFormType === FormType.NONE) {
+      toast.error('Please select a form type before submitting.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Submit the form to the submission endpoint
+      const formTypeMap: Record<FormType, 'SOAP_NOTE' | 'MEDICAL_HISTORY' | 'ROM_ASSESSMENT'> = {
+        [FormType.SOAP_NOTE]: 'SOAP_NOTE',
+        [FormType.MEDICAL_HISTORY]: 'MEDICAL_HISTORY',
+        [FormType.ROM_ASSESSMENT]: 'ROM_ASSESSMENT',
+        [FormType.NONE]: 'SOAP_NOTE', // Fallback, shouldn't happen
+      };
+
+      const response = await formSubmissionService.submitForm(bookingId, {
+        formType: formTypeMap[selectedFormType],
+        formData: data as Record<string, any>,
+        submittedAt: new Date().toISOString(),
+      });
+
+      // Update local state
+      setFormData(data);
+
+      // Refresh submissions list
+      try {
+        const submissionsResponse = await formSubmissionService.getFormSubmissions(bookingId);
+        setFormSubmissions(submissionsResponse.data || []);
+      } catch (error) {
+        console.warn('Failed to refresh submissions list:', error);
+        // Non-critical error, continue
+      }
+
+      // Optionally delete draft after successful submission
       try {
         await bookingFormDraftService.deleteDraft(bookingId);
       } catch (error) {
-        // Ignore errors when clearing draft
+        // Ignore errors when clearing draft - non-critical
         console.warn('Failed to clear draft after submission:', error);
       }
-    } catch (error) {
-      console.error('Failed to save form data:', error);
-      toast.error('Failed to save form data');
+
+      toast.success('Form submitted successfully!');
+    } catch (error: any) {
+      console.error('Failed to submit form:', error);
+
+      // Handle specific error types
+      if (error.status === 404) {
+        const errorMessage = error.message?.toLowerCase() || '';
+        if (errorMessage.includes('consent')) {
+          toast.error('Health data consent is required. Please grant consent first.');
+        } else if (errorMessage.includes('booking') || errorMessage.includes('not found')) {
+          toast.error('Booking not found. Please refresh the page and try again.');
+        } else {
+          toast.error('Resource not found. Please try again.');
+        }
+      } else if (error.status === 400) {
+        // Validation errors
+        const errorMessage =
+          error.message || error.data?.message || 'Invalid form data. Please check your inputs.';
+        toast.error(errorMessage);
+      } else if (error.status === 401) {
+        toast.error('Authentication required. Please log in again.');
+      } else if (error.status === 403) {
+        toast.error('You do not have permission to submit this form.');
+      } else if (error.status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      } else if (error.status >= 500) {
+        toast.error('Server error. Please try again later or contact support.');
+      } else if (error.message) {
+        // Use the error message from the API
+        toast.error(error.message);
+      } else {
+        // Generic network or unknown error
+        toast.error('Failed to submit form. Please check your connection and try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleViewSubmission = async (submissionId: string) => {
+    if (!bookingId) {
+      toast.error('Booking ID is required.');
+      return;
+    }
+
+    try {
+      const response = await formSubmissionService.getFormSubmission(bookingId, submissionId);
+      setSelectedSubmission(response.data);
+      setIsViewDialogOpen(true);
+    } catch (error: any) {
+      console.error('Failed to load submission:', error);
+
+      if (error.status === 404) {
+        toast.error('Form submission not found. It may have been deleted.');
+        // Refresh the list to remove the missing submission
+        try {
+          const submissionsResponse = await formSubmissionService.getFormSubmissions(bookingId);
+          setFormSubmissions(submissionsResponse.data || []);
+        } catch (refreshError) {
+          console.error('Failed to refresh submissions:', refreshError);
+        }
+      } else if (error.status === 401) {
+        toast.error('Authentication required. Please log in again.');
+      } else if (error.status === 403) {
+        toast.error('You do not have permission to view this submission.');
+      } else {
+        toast.error('Failed to load form submission. Please try again.');
+      }
+    }
+  };
+
+  const handleDeleteSubmission = async (submissionId: string) => {
+    if (!bookingId) {
+      toast.error('Booking ID is required.');
+      return;
+    }
+
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this form submission? This action cannot be undone.',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await formSubmissionService.deleteFormSubmission(bookingId, submissionId);
+
+      // Refresh submissions list
+      try {
+        const response = await formSubmissionService.getFormSubmissions(bookingId);
+        setFormSubmissions(response.data || []);
+      } catch (refreshError) {
+        console.error('Failed to refresh submissions after delete:', refreshError);
+        // Remove from local state if refresh fails
+        setFormSubmissions((prev) => prev.filter((s) => s.id !== submissionId));
+      }
+
+      toast.success('Form submission deleted successfully');
+    } catch (error: any) {
+      console.error('Failed to delete submission:', error);
+
+      if (error.status === 404) {
+        toast.error('Form submission not found. It may have already been deleted.');
+        // Refresh the list
+        try {
+          const response = await formSubmissionService.getFormSubmissions(bookingId);
+          setFormSubmissions(response.data || []);
+        } catch (refreshError) {
+          console.error('Failed to refresh submissions:', refreshError);
+        }
+      } else if (error.status === 401) {
+        toast.error('Authentication required. Please log in again.');
+      } else if (error.status === 403) {
+        toast.error('You do not have permission to delete this submission.');
+      } else if (error.status >= 500) {
+        toast.error('Server error. Please try again later.');
+      } else {
+        toast.error('Failed to delete form submission. Please try again.');
+      }
     }
   };
 
@@ -357,6 +561,64 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
         />
       )}
 
+      {/* Submitted Forms Section */}
+      {formSubmissions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-poppins font-semibold text-charcoal flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Submitted Forms
+            </CardTitle>
+            <CardDescription className="font-inter">
+              View and manage previously submitted forms for this booking
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingSubmissions ? (
+              <p className="text-sm font-inter text-muted-foreground">Loading submissions...</p>
+            ) : (
+              <div className="space-y-3">
+                {formSubmissions.map((submission) => (
+                  <div
+                    key={submission.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="font-inter font-medium text-charcoal">
+                        {FORM_TYPE_LABELS[submission.formType as FormType] || submission.formType}
+                      </p>
+                      <p className="text-xs font-inter text-muted-foreground mt-1">
+                        Submitted on {format(new Date(submission.submittedAt), 'PPp')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewSubmission(submission.id)}
+                        className="font-inter"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteSubmission(submission.id)}
+                        className="font-inter text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Dynamic Form Rendering - Only show if consent is granted or form doesn't require consent */}
       {!requiredConsentType || hasHealthDataConsent || selectedFormType === FormType.NONE ? (
         renderForm()
@@ -373,6 +635,31 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
           </CardContent>
         </Card>
       )}
+
+      {/* View Submission Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-poppins font-semibold">
+              {selectedSubmission && FORM_TYPE_LABELS[selectedSubmission.formType as FormType]}{' '}
+              Submission
+            </DialogTitle>
+            <DialogDescription className="font-inter">
+              Submitted on{' '}
+              {selectedSubmission && format(new Date(selectedSubmission.submittedAt), 'PPp')}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedSubmission && (
+            <div className="space-y-4 mt-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <pre className="text-xs font-mono overflow-x-auto">
+                  {JSON.stringify(selectedSubmission.formData, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

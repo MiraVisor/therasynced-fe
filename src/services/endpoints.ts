@@ -64,6 +64,11 @@ export const ENDPOINTS = {
     freelancerToday: '/booking/freelancer/today',
     freelancerByDate: '/booking/freelancer/appointments-by-date',
     adminHistory: '/booking/history/admin',
+    // Form submission endpoints
+    formSubmission: (bookingId: string) => `/api/v1/booking/${bookingId}/form`,
+    formSubmissions: (bookingId: string) => `/api/v1/booking/${bookingId}/forms`,
+    formSubmissionById: (bookingId: string, formId: string) =>
+      `/api/v1/booking/${bookingId}/form/${formId}`,
   },
   freelancer: {
     all: '/freelancer/all',
