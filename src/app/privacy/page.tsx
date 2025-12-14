@@ -92,6 +92,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
               <li>Medical history forms</li>
+              <li>ROM (Range of Motion) Assessment forms</li>
               <li>SOAP (Subjective, Objective, Assessment, Plan) notes</li>
               <li>Health-related complaints or concerns</li>
               <li>First aid certificates (for healthcare professionals)</li>

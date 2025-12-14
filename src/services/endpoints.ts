@@ -243,9 +243,15 @@ export const ENDPOINTS = {
       getRevenue: '/admin/finance/revenue',
       getSubscriptions: '/admin/finance/subscriptions',
     },
+    // User management
+    users: {
+      search: '/admin/users/search',
+      getAll: '/admin/users',
+    },
   },
   // Data Rights endpoints (GDPR compliance)
   dataRights: {
+    status: '/data-rights/status',
     export: '/data-rights/export',
     exportPortable: '/data-rights/export-portable',
     deleteAccount: '/data-rights/delete-account',
@@ -255,6 +261,9 @@ export const ENDPOINTS = {
     ropa: '/data-rights/ropa', // Admin only
     myHealthDataLogs: '/data-rights/my-health-data-logs',
     healthDataLogs: '/data-rights/health-data-logs', // Admin only
+    // Admin export endpoints
+    adminExport: '/data-rights/admin/export',
+    adminExportLogs: '/data-rights/admin/export-logs',
   },
   // Consent management endpoints
   consent: {

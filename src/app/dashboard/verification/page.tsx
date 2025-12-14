@@ -586,12 +586,27 @@ export default function VerificationPage() {
               </div>
 
               {/* Health Data Consent */}
-              <HealthDataConsent
-                consentType="FIRST_AID_CERTIFICATE"
-                onConsentChange={setHasCertificateConsent}
-                required={true}
-                showDisclaimer={true}
-              />
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                      Data Processing Consent Required
+                    </h4>
+                    <p className="text-xs text-gray-600">
+                      To upload your first aid certificate, you must grant consent for us to store
+                      and process this document for professional verification purposes.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-gray-200">
+                    <HealthDataConsent
+                      consentType="FIRST_AID_CERTIFICATE"
+                      onConsentChange={setHasCertificateConsent}
+                      required={true}
+                      showDisclaimer={true}
+                    />
+                  </div>
+                </div>
+              </div>
 
               {certificateStatus.rejectionReason && (
                 <Alert className="border-red-200 bg-red-50" role="alert">
@@ -634,17 +649,20 @@ export default function VerificationPage() {
                     {isUploadingCertificate
                       ? 'Uploading...'
                       : !hasCertificateConsent
-                        ? 'Consent required to upload'
-                        : 'Upload First Aid Certificate'}
+                        ? 'Upload disabled - Consent required'
+                        : 'Click to upload your certificate'}
                   </p>
                   <p id="certificate-upload-instructions" className="text-xs text-gray-500 mt-1">
                     .jpg, .jpeg, .png, .pdf up to 5MB
                   </p>
                 </label>
                 {!hasCertificateConsent && (
-                  <p className="text-xs text-red-600 mt-2" role="alert" aria-live="polite">
-                    You must grant consent above before uploading a certificate.
-                  </p>
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <p className="text-xs text-amber-800 font-medium" role="alert" aria-live="polite">
+                      <AlertCircle className="inline h-3 w-3 mr-1" />
+                      Please grant consent in the section above to enable file upload.
+                    </p>
+                  </div>
                 )}
               </div>
 

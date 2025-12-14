@@ -9,12 +9,14 @@ import {
   CreditCard,
   Eye,
   EyeOff,
+  FileText,
   HelpCircle,
   Lock,
   Mail,
   Shield,
   Trash2,
   User,
+  ClipboardList,
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -23,6 +25,8 @@ import { toast } from 'react-toastify';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { DataAccessLogsSection } from '@/components/core/Dashboard/Account/DataAccessLogsSection';
+import { DataRightsSection } from '@/components/core/Dashboard/Account/DataRightsSection';
 import SubscriptionManagement from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionManagement';
 import StampsManagement from '@/components/core/Dashboard/UserSide/Loyalty/StampsManagement';
 import {
@@ -423,6 +427,8 @@ export default function AccountPage() {
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Shield },
+    { id: 'data-rights', label: 'Data Rights', icon: FileText },
+    { id: 'logs', label: 'Data Access Logs', icon: ClipboardList },
     // { id: 'notifications', label: 'Notifications', icon: Bell },
     ...(showBilling ? [{ id: 'subscription', label: 'Subscription', icon: CreditCard }] : []),
     ...(showStamps ? [{ id: 'stamps', label: 'Stamps', icon: Award }] : []),
@@ -1107,9 +1113,11 @@ export default function AccountPage() {
       </div>
 
       {/* Content Section */}
-      <div className="bg-gray-50 rounded-xl">
+      <div className="bg-gray-50 rounded-xl p-6">
         {activeSection === 'profile' && renderProfileSection()}
         {activeSection === 'account' && renderAccountSection()}
+        {activeSection === 'data-rights' && <DataRightsSection />}
+        {activeSection === 'logs' && <DataAccessLogsSection />}
         {activeSection === 'notifications' && renderNotificationsSection()}
         {activeSection === 'subscription' &&
           showBilling &&

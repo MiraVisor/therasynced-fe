@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, Info, Shield } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, Shield } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { getDecodedToken } from '@/lib/utils';
 import {
   type HealthDataConsentRequest,
   getHealthDataConsent,
@@ -24,6 +25,11 @@ interface HealthDataConsentProps {
   showDisclaimer?: boolean;
   className?: string;
   initialConsentStatus?: { granted: boolean; grantedAt: string | null };
+  userId?: string; // To check another user's consent (for freelancers checking client consent)
+  description?: string; // Custom description text
+  compact?: boolean;
+  showTitle?: boolean; // Add this prop
+  disableApiCall?: boolean; // If true, never calls the API (for data rights page where data comes from status endpoint)
 }
 
 const CONSENT_TYPE_INFO: Record<
@@ -34,12 +40,17 @@ const CONSENT_TYPE_INFO: Record<
     title: 'Medical History Data Consent',
     description:
       'By consenting, you allow us to collect and process your medical history information for healthcare service delivery.',
-    dataTypes: ['Medical history forms', 'Health questionnaires', 'Pre-appointment information'],
+    dataTypes: [
+      'Medical history forms',
+      'ROM Assessment forms',
+      'Health questionnaires',
+      'Pre-appointment information',
+    ],
   },
   SOAP_NOTES: {
     title: 'SOAP Notes Data Consent',
     description:
-      'By consenting, you allow healthcare professionals to create and store SOAP (Subjective, Objective, Assessment, Plan) notes documenting your appointments.',
+      'By consenting, you allow healthcare professionals to create and store SOAP (Subjective, Objective, Assessment, Plan) notes documenting your appointments. This includes clinical documentation created by healthcare professionals during appointments.',
     dataTypes: ['Clinical notes', 'Treatment plans', 'Assessment documentation'],
   },
   COMPLAINTS: {
@@ -51,7 +62,7 @@ const CONSENT_TYPE_INFO: Record<
   FIRST_AID_CERTIFICATE: {
     title: 'First Aid Certificate Data Consent',
     description:
-      'By consenting, you allow us to store and process your first aid certificate for professional verification purposes.',
+      'By consenting, you allow us to store and process your first aid certificate for professional verification purposes. This consent is for healthcare professionals only.',
     dataTypes: ['First aid certificates', 'Professional qualifications', 'Verification documents'],
   },
 };
@@ -63,8 +74,15 @@ export function HealthDataConsent({
   showDisclaimer = true,
   className,
   initialConsentStatus,
+  userId,
+  description,
+  compact,
+  showTitle,
+  disableApiCall = false,
 }: HealthDataConsentProps) {
-  const [consentGranted, setConsentGranted] = useState(initialConsentStatus?.granted || false);
+  const [consentGranted, setConsentGranted] = useState<boolean | null>(
+    initialConsentStatus?.granted ?? null,
+  );
   const [isLoading, setIsLoading] = useState(!initialConsentStatus);
   const [isSaving, setIsSaving] = useState(false);
   const [consentTimestamp, setConsentTimestamp] = useState<string | null>(
@@ -78,26 +96,38 @@ export function HealthDataConsent({
   const lastConsentStatusRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Only run once on mount or when consentType changes
+    // Reset initialization when userId or consentType changes
+    if (hasInitializedRef.current && userId !== undefined && !disableApiCall) {
+      // If userId is provided and we've initialized, check consent again (only if API calls are enabled)
+      checkExistingConsent();
+      return;
+    }
+
+    // Only run once on mount or when consentType/userId changes
     if (hasInitializedRef.current) {
       return;
     }
 
-    // Only fetch if initialConsentStatus not provided
-    if (!initialConsentStatus) {
+    // Only fetch if initialConsentStatus not provided AND API calls are not disabled
+    if (!initialConsentStatus && !disableApiCall) {
       checkExistingConsent();
-    } else {
+    } else if (initialConsentStatus) {
       // Initialize from prop (only once)
       setConsentGranted(initialConsentStatus.granted);
       setConsentTimestamp(initialConsentStatus.grantedAt);
       setIsLoading(false);
       onConsentChange?.(initialConsentStatus.granted);
-      // Store a reference to prevent re-initialization
       lastConsentStatusRef.current = `${initialConsentStatus.granted}-${initialConsentStatus.grantedAt}`;
+    } else if (disableApiCall) {
+      // If API is disabled and no initial status, default to false
+      setConsentGranted(false);
+      setConsentTimestamp(null);
+      setIsLoading(false);
+      onConsentChange?.(false);
     }
     hasInitializedRef.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consentType]); // Only depend on consentType
+  }, [consentType, userId]); // Add userId to dependencies
 
   // Separate effect to sync when initialConsentStatus prop actually changes (value changes, not reference)
   useEffect(() => {
@@ -108,7 +138,7 @@ export function HealthDataConsent({
     const statusKey = `${initialConsentStatus.granted}-${initialConsentStatus.grantedAt}`;
     // Only update if the actual values changed (not just the object reference)
     if (lastConsentStatusRef.current !== statusKey) {
-      setConsentGranted(initialConsentStatus.granted);
+      setConsentGranted(initialConsentStatus.granted ?? null);
       setConsentTimestamp(initialConsentStatus.grantedAt);
       lastConsentStatusRef.current = statusKey;
     }
@@ -116,9 +146,31 @@ export function HealthDataConsent({
   }, [initialConsentStatus?.granted, initialConsentStatus?.grantedAt]); // Only depend on actual values, not the object
 
   const checkExistingConsent = async () => {
+    // Don't call API if disabled
+    if (disableApiCall) {
+      setIsLoading(false);
+      setConsentGranted(false);
+      onConsentChange?.(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const response = await getHealthDataConsent();
+      // Get current user ID if userId is not provided (for checking own consent)
+      let targetUserId = userId;
+      if (targetUserId === undefined) {
+        const decodedToken = getDecodedToken();
+        if (!decodedToken?.sub) {
+          console.error('Unable to get current user ID');
+          setConsentGranted(false);
+          onConsentChange?.(false);
+          setIsLoading(false);
+          return;
+        }
+        targetUserId = decodedToken.sub;
+      }
+
+      const response = await getHealthDataConsent(targetUserId);
       const consent = response.data.consents.find((c) => c.consentType === consentType);
       if (consent && consent.granted && !consent.withdrawnAt) {
         setConsentGranted(true);
@@ -177,116 +229,81 @@ export function HealthDataConsent({
     );
   }
 
-  return (
-    <div className={`space-y-4 ${className}`}>
-      <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
-        <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        <AlertTitle className="text-blue-900 dark:text-blue-100">{consentInfo.title}</AlertTitle>
-        <AlertDescription className="text-blue-800 dark:text-blue-200">
-          <p className="mb-2">{consentInfo.description}</p>
-          <div className="mt-3 space-y-1">
-            <p className="font-semibold">This consent covers:</p>
-            <ul className="list-disc list-inside space-y-1 ml-2">
-              {consentInfo.dataTypes.map((type, index) => (
-                <li key={index}>{type}</li>
-              ))}
-            </ul>
-          </div>
-        </AlertDescription>
-      </Alert>
-
-      {showDisclaimer && (
-        <Alert className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
-          <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <AlertTitle className="text-amber-900 dark:text-amber-100">
-            Platform Disclaimer
-          </AlertTitle>
-          <AlertDescription className="text-amber-800 dark:text-amber-200">
-            <p>
-              TheraSynced is a booking platform connecting you with healthcare professionals. We do
-              not provide medical services, advice, diagnosis, or treatment. All healthcare services
-              are provided by independent practitioners.
-            </p>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-4">
-        <div className="space-y-2">
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id={`consent-${consentType}`}
-              checked={consentGranted}
-              onCheckedChange={handleConsentChange}
-              disabled={isSaving}
-              aria-required={required}
-              className="mt-1"
-            />
-            <div className="flex-1 space-y-1">
-              <Label
-                htmlFor={`consent-${consentType}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                I explicitly consent to the processing of my health data as described above
-                {required && <span className="text-red-600 dark:text-red-400 ml-1">*</span>}
-              </Label>
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <p>
-                  <strong>Data Retention:</strong> Health data will be retained for 7 years as
-                  required by Irish law for medical records.
-                </p>
-                <p>
-                  <strong>Your Rights:</strong> You can withdraw this consent at any time through
-                  your{' '}
-                  <a
-                    href="/dashboard/data-rights"
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Data Rights
-                  </a>{' '}
-                  page or by contacting us at privacy@therasynced.com.
-                </p>
-                <p>
-                  <strong>Legal Basis:</strong> GDPR Article 9(2)(a) - Explicit Consent for Special
-                  Category Data (Health Data)
-                </p>
-                <p>
-                  For more information, see our{' '}
-                  <a
-                    href="/privacy"
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {consentGranted && consentTimestamp && (
-          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              <strong>Consent granted:</strong> {new Date(consentTimestamp).toLocaleString()}
-            </p>
-          </div>
-        )}
-
-        {!consentGranted && required && (
-          <Alert variant="destructive" className="mt-3">
+  // Simple banner view for freelancers checking client consent (userId provided)
+  if (userId) {
+    return (
+      <div className={className}>
+        {consentGranted ? (
+          <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
+            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <AlertTitle className="text-green-900 dark:text-green-100">Client Consent Granted</AlertTitle>
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              The client has granted consent for {consentType.replace(/_/g, ' ').toLowerCase()} data processing.
+              {consentTimestamp && (
+                <span className="block mt-1 text-xs">
+                  Granted on: {new Date(consentTimestamp).toLocaleString()}
+                </span>
+              )}
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Alert variant="destructive" role="alert">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Consent Required</AlertTitle>
+            <AlertTitle>Client Consent Required</AlertTitle>
             <AlertDescription>
-              You must grant explicit consent to proceed with this action involving health data.
+              The client must grant consent for {consentType.replace(/_/g, ' ').toLowerCase()} data processing before this form can be submitted. Please ask the client to grant consent in their account settings.
             </AlertDescription>
           </Alert>
         )}
       </div>
+    );
+  }
+
+  // Full consent UI for users managing their own consent (no userId)
+  return (
+    <div className={`${className}`}>
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
+          <input
+            type="radio"
+            id={`consent-allow-${consentType}`}
+            name={`consent-${consentType}`}
+            checked={consentGranted === true}
+            onChange={() => handleConsentChange(true)}
+            disabled={isSaving}
+            className="h-4 w-4 text-primary cursor-pointer"
+          />
+          <Label
+            htmlFor={`consent-allow-${consentType}`}
+            className="text-sm font-medium cursor-pointer"
+          >
+            I consent to data processing
+          </Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="radio"
+            id={`consent-deny-${consentType}`}
+            name={`consent-${consentType}`}
+            checked={consentGranted === false}
+            onChange={() => handleConsentChange(false)}
+            disabled={isSaving}
+            className="h-4 w-4 text-primary cursor-pointer"
+          />
+          <Label
+            htmlFor={`consent-deny-${consentType}`}
+            className="text-sm font-medium cursor-pointer"
+          >
+            I do not consent
+          </Label>
+        </div>
+        {isSaving && <LoadingSpinner size="sm" />}
+      </div>
+      {consentGranted && consentTimestamp && (
+        <p className="text-xs text-gray-500 mt-2">
+          Consent granted on {new Date(consentTimestamp).toLocaleDateString()}
+        </p>
+      )}
     </div>
   );
 }

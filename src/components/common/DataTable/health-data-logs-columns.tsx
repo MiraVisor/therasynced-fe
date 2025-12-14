@@ -1,5 +1,6 @@
 'use client';
 
+import { AlertTriangle, User } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
 
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +49,31 @@ export const getDataTypeLabel = (dataType: string) => {
   }
 };
 
+const getRoleBadgeVariant = (role?: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  switch (role) {
+    case 'FREELANCER':
+      return 'default'; // Blue
+    case 'ADMIN':
+      return 'destructive'; // Red/Orange
+    case 'PATIENT':
+    default:
+      return 'outline'; // Gray/Neutral
+  }
+};
+
+const getRoleLabel = (role?: string): string => {
+  switch (role) {
+    case 'FREELANCER':
+      return 'FREELANCER';
+    case 'ADMIN':
+      return 'ADMIN';
+    case 'PATIENT':
+      return 'PATIENT';
+    default:
+      return role || 'UNKNOWN';
+  }
+};
+
 // User view columns (without data owner column)
 export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
   {
@@ -80,16 +106,46 @@ export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
   {
     accessorKey: 'accessedByUser',
     header: 'Accessed By',
-    cell: ({ row }) => (
-      <div>
-        <div className="font-inter font-medium text-sm text-charcoal">
-          {row.original.accessedByUser.name}
+    cell: ({ row }) => {
+      const log = row.original;
+      const isSelfAccess = log.isSelfAccess ?? false;
+      const accessedBy = log.accessedByUser;
+      const role = accessedBy.role;
+      const isThirdParty = !isSelfAccess && (role === 'FREELANCER' || role === 'ADMIN');
+
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {isSelfAccess ? (
+              <User className="h-3 w-3 text-gray-500" />
+            ) : isThirdParty ? (
+              <AlertTriangle className="h-3 w-3 text-amber-600" />
+            ) : null}
+            <span
+              className={`font-inter font-medium text-sm ${
+                isThirdParty ? 'text-amber-700 dark:text-amber-400' : 'text-charcoal'
+              }`}
+            >
+              {isSelfAccess ? 'You (Self)' : accessedBy.name}
+            </span>
+            {isSelfAccess ? (
+              <Badge variant="outline" className="font-inter text-xs text-gray-500">
+                Self-Access
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="font-inter text-xs text-amber-700 dark:text-amber-400">
+                Third-Party Access
+              </Badge>
+            )}
+          </div>
+          {!isSelfAccess && (
+            <div className="font-inter text-xs text-muted-foreground">
+              {accessedBy.email}
+            </div>
+          )}
         </div>
-        <div className="font-inter text-xs text-muted-foreground">
-          {row.original.accessedByUser.email}
-        </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     accessorKey: 'purpose',
@@ -128,26 +184,72 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
   {
     accessorKey: 'user',
     header: 'Data Owner',
-    cell: ({ row }) => (
-      <div>
-        <div className="font-inter font-medium text-sm text-charcoal">{row.original.user.name}</div>
-        <div className="font-inter text-xs text-muted-foreground">{row.original.user.email}</div>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const user = row.original.user;
+      const role = user.role;
+
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-inter font-medium text-sm text-charcoal">{user.name}</span>
+            {role && (
+              <Badge
+                variant={getRoleBadgeVariant(role)}
+                className="font-inter text-xs"
+              >
+                {getRoleLabel(role)}
+              </Badge>
+            )}
+          </div>
+          <div className="font-inter text-xs text-muted-foreground">{user.email}</div>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'accessedByUser',
     header: 'Accessed By',
-    cell: ({ row }) => (
-      <div>
-        <div className="font-inter font-medium text-sm text-charcoal">
-          {row.original.accessedByUser.name}
+    cell: ({ row }) => {
+      const log = row.original;
+      const accessedBy = log.accessedByUser;
+      const role = accessedBy.role;
+      const isSelfAccess = log.isSelfAccess ?? false;
+
+      const isThirdParty = !isSelfAccess && (role === 'FREELANCER' || role === 'ADMIN');
+
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {isSelfAccess ? (
+              <User className="h-3 w-3 text-gray-500" />
+            ) : isThirdParty ? (
+              <AlertTriangle className="h-3 w-3 text-amber-600" />
+            ) : null}
+            <span
+              className={`font-inter font-medium text-sm ${
+                isThirdParty ? 'text-amber-700 dark:text-amber-400' : 'text-charcoal'
+              }`}
+            >
+              {isSelfAccess ? 'You (Self)' : accessedBy.name}
+            </span>
+            {isSelfAccess ? (
+              <Badge variant="outline" className="font-inter text-xs text-gray-500">
+                Self-Access
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="font-inter text-xs text-amber-700 dark:text-amber-400">
+                Third-Party Access
+              </Badge>
+            )}
+          </div>
+          {!isSelfAccess && (
+            <div className="font-inter text-xs text-muted-foreground">
+              {accessedBy.email}
+            </div>
+          )}
         </div>
-        <div className="font-inter text-xs text-muted-foreground">
-          {row.original.accessedByUser.email}
-        </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     accessorKey: 'dataType',

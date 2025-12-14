@@ -1,37 +1,17 @@
 'use client';
 
-import { AlertCircle, CheckCircle2, Download, Edit, FileText, Shield, Trash2 } from 'lucide-react';
-import { Info } from 'lucide-react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
-
-import { HealthDataConsent } from '@/components/common/HealthDataConsent';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import LoadingSpinner from '@/components/ui/loading-spinner';
-import {
-  deleteAccount,
-  exportDataPortable,
-  exportUserData,
-  getHealthDataConsent,
-} from '@/redux/api/dataRightsApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { type ConsentType, getConsentStatus } from '@/utils/healthDataConsent';
 
 export default function DataRightsPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to account settings with data-rights tab
+    router.replace('/dashboard/account?tab=data-rights');
+  }, [router]);
+
+  return null;
   const { logout } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -222,11 +202,11 @@ export default function DataRightsPage() {
           </p>
         </div>
 
-        <Alert className="mb-6">
+          <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Response Time</AlertTitle>
           <AlertDescription>
-            We will respond to your requests within 30 days as required by GDPR. Some requests may
+            We will respond to your requests within 30 days as required by GDPR Article 12(3). Some requests may
             be processed immediately, while others may require verification.
           </AlertDescription>
         </Alert>
@@ -390,7 +370,7 @@ export default function DataRightsPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             <strong>Medical History:</strong> Consent for processing medical history
-                            forms and health questionnaires.
+                            forms, ROM Assessment forms, and health questionnaires. Data will be retained for 7 years as required by Irish law for medical records.
                           </p>
                           <HealthDataConsent
                             consentType="MEDICAL_HISTORY"
@@ -403,7 +383,7 @@ export default function DataRightsPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             <strong>SOAP Notes:</strong> Consent for healthcare professionals to
-                            create and store clinical notes.
+                            create and store clinical notes during appointments. Data will be retained for 7 years as required by Irish law for medical records.
                           </p>
                           <HealthDataConsent
                             consentType="SOAP_NOTES"
@@ -416,7 +396,7 @@ export default function DataRightsPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             <strong>Health-Related Complaints:</strong> Consent for processing
-                            health-related information in complaints.
+                            health-related information in complaints for service quality and safety purposes. Data will be retained for 7 years as required by Irish law.
                           </p>
                           <HealthDataConsent
                             consentType="COMPLAINTS"
@@ -429,7 +409,7 @@ export default function DataRightsPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             <strong>First Aid Certificate:</strong> Consent for storing and
-                            processing first aid certificates for verification.
+                            processing first aid certificates for professional verification (healthcare professionals only). Data will be retained until account deletion + 7 years for professional verification records.
                           </p>
                           <HealthDataConsent
                             consentType="FIRST_AID_CERTIFICATE"

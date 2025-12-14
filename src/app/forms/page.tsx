@@ -32,6 +32,14 @@ const createMockSlot = (): Slot => ({
   formType: FormType.NONE,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  booking: {
+    id: 'mock-booking-id',
+    client: {
+      id: 'mock-client-id', // Add mock client ID for consent checking
+      name: 'Demo Client',
+      email: 'demo@example.com',
+    },
+  },
 });
 
 export default function FormsPage() {

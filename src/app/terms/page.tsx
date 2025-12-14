@@ -289,6 +289,44 @@ export default function TermsOfServicePage() {
               , which explains how we collect, use, and protect your personal data in compliance
               with GDPR and Irish data protection laws.
             </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              11.1 Health Data Confidentiality (Healthcare Professionals)
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Healthcare professionals using our platform acknowledge and agree to:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
+              <li>
+                Maintain strict confidentiality of all patient health data accessed through the
+                platform
+              </li>
+              <li>
+                Only access health data for patients with whom you have a legitimate therapeutic
+                relationship
+              </li>
+              <li>
+                Comply with GDPR Article 9 requirements for processing special category (health)
+                data
+              </li>
+              <li>
+                Verify that patients have granted explicit consent before accessing or creating
+                health records
+              </li>
+              <li>
+                Report any unauthorized access or data breaches immediately to privacy@therasynced.com
+              </li>
+              <li>
+                Comply with professional codes of conduct and data protection regulations applicable
+                to your profession
+              </li>
+            </ul>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              <strong>Important:</strong> Health data is classified as &quot;special category
+              data&quot; under GDPR Article 9. Processing requires explicit consent from the data
+              subject (patient). You must verify that consent has been granted before accessing or
+              creating any health records.
+            </p>
           </section>
 
           <section className="mb-8">

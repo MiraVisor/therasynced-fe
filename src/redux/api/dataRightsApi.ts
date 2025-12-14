@@ -1,3 +1,4 @@
+import { getDecodedToken } from '@/lib/utils';
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
 
@@ -78,6 +79,39 @@ export interface HealthDataConsentStatusResponse {
   };
 }
 
+export interface DataRightsStatusResponse {
+  success: boolean;
+  message: string;
+  data: {
+    userId: string;
+    email: string;
+    isAnonymized: boolean;
+    isDeleted: boolean;
+    deletedAt: string | null;
+    processingRestricted: boolean;
+    processingRestrictedCategories: string[];
+    objectedToProcessing: boolean;
+    objectedProcessingTypes: string[];
+    healthDataConsents: Array<{
+      consentType: string;
+      granted: boolean;
+      grantedAt: string | null;
+      withdrawnAt: string | null;
+    }>;
+    cookieConsent: {
+      essential: boolean;
+      analytics: boolean;
+      marketing: boolean;
+    } | null;
+    recentDataRightsRequests: Array<{
+      id: string;
+      requestType: string;
+      requestedAt: string;
+      status: string;
+    }>;
+  };
+}
+
 export interface RestrictProcessingRequest {
   reason: string;
   dataCategories: string[];
@@ -138,12 +172,15 @@ export interface HealthDataAccessLog {
     id: string;
     name: string;
     email: string;
+    role?: string; // Role of the data owner (PATIENT, FREELANCER, ADMIN)
   };
   accessedByUser: {
     id: string;
     name: string;
     email: string;
+    role?: string; // Role of the person who accessed (PATIENT, FREELANCER, ADMIN)
   };
+  isSelfAccess?: boolean; // Indicates if the patient accessed their own data
 }
 
 export interface HealthDataLogsFilters {
@@ -177,6 +214,16 @@ export interface HealthDataLogsResponse {
     path: string;
   };
 }
+
+/**
+ * Get current user's data rights status
+ * Use this endpoint for the data rights page to get the user's own status
+ * (including consents, restrictions, etc.)
+ */
+export const getDataRightsStatus = async (): Promise<DataRightsStatusResponse> => {
+  const response = await api.get<DataRightsStatusResponse>(ENDPOINTS.dataRights.status);
+  return response.data;
+};
 
 /**
  * Export all user data (Right of Access - GDPR Article 15)
@@ -248,9 +295,30 @@ export const updateHealthDataConsent = async (
 
 /**
  * Get health data consent status
+ * @param userId - Optional user ID to check consent for (for freelancers checking client consent)
+ *                  If not provided, uses the current authenticated user's ID
  */
-export const getHealthDataConsent = async (): Promise<HealthDataConsentStatusResponse> => {
-  const response = await api.get<HealthDataConsentStatusResponse>(ENDPOINTS.consent.healthData);
+export const getHealthDataConsent = async (
+  userId?: string,
+): Promise<HealthDataConsentStatusResponse> => {
+  // If userId is not provided, get current user ID from token
+  let targetUserId = userId;
+  if (!targetUserId) {
+    const decodedToken = getDecodedToken();
+    if (!decodedToken?.sub) {
+      throw new Error('Unable to get current user ID. Please ensure you are logged in.');
+    }
+    targetUserId = decodedToken.sub;
+  }
+
+  const response = await api.get<HealthDataConsentStatusResponse>(
+    ENDPOINTS.consent.healthData,
+    {
+      params: {
+        userId: targetUserId,
+      },
+    },
+  );
   return response.data;
 };
 
@@ -341,5 +409,183 @@ export const getAllHealthDataLogs = async (
     : ENDPOINTS.dataRights.healthDataLogs;
 
   const response = await api.get<HealthDataLogsResponse>(url);
+  return response.data;
+};
+
+// ==================== Data Breach Management ====================
+
+// Breach Enums
+export enum BreachStatus {
+  DETECTED = 'DETECTED',
+  INVESTIGATING = 'INVESTIGATING',
+  CONTAINED = 'CONTAINED',
+  RESOLVED = 'RESOLVED',
+}
+
+export enum BreachRiskLevel {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL',
+}
+
+// Breach Data Model
+export interface DataBreach {
+  id: string;
+  detectedAt: string; // ISO date string
+  description: string;
+  dataCategories: string[];
+  affectedUsers: number;
+  riskLevel: BreachRiskLevel;
+  status: BreachStatus;
+  reportedToDpc: boolean;
+  reportedAt: string | null; // ISO date string or null
+  notifiedUsers: boolean;
+  notifiedAt: string | null; // ISO date string or null
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+}
+
+// Request DTOs
+export interface CreateBreachDto {
+  description: string;
+  dataCategories: string[];
+  affectedUsers: number;
+  riskLevel: BreachRiskLevel;
+}
+
+export interface UpdateBreachStatusDto {
+  status: BreachStatus;
+  notes?: string;
+}
+
+export interface ReportDpcDto {
+  notes?: string;
+}
+
+export interface NotifyUsersDto {
+  notes?: string;
+}
+
+// Response Types
+export interface BreachListResponse {
+  success: boolean;
+  message: string;
+  data: DataBreach[];
+  pagination: {
+    skip: number;
+    take: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+export interface BreachDetailResponse {
+  success: boolean;
+  message: string;
+  data: DataBreach;
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+// Breach Filters
+export interface BreachFilters {
+  status?: BreachStatus;
+  riskLevel?: BreachRiskLevel;
+  skip?: number;
+  take?: number;
+}
+
+/**
+ * Create a new data breach (Admin only)
+ */
+export const createBreach = async (data: CreateBreachDto): Promise<BreachDetailResponse> => {
+  const response = await api.post<BreachDetailResponse>(ENDPOINTS.dataRights.breaches, data);
+  return response.data;
+};
+
+/**
+ * Get all data breaches with optional filters (Admin only)
+ */
+export const getBreaches = async (filters?: BreachFilters): Promise<BreachListResponse> => {
+  const params = new URLSearchParams();
+
+  if (filters?.status) {
+    params.append('status', filters.status);
+  }
+  if (filters?.riskLevel) {
+    params.append('riskLevel', filters.riskLevel);
+  }
+  if (filters?.skip !== undefined) {
+    params.append('skip', filters.skip.toString());
+  }
+  if (filters?.take !== undefined) {
+    params.append('take', filters.take.toString());
+  }
+
+  const queryString = params.toString();
+  const url = queryString
+    ? `${ENDPOINTS.dataRights.breaches}?${queryString}`
+    : ENDPOINTS.dataRights.breaches;
+
+  const response = await api.get<BreachListResponse>(url);
+  return response.data;
+};
+
+/**
+ * Get breach by ID (Admin only)
+ */
+export const getBreachById = async (id: string): Promise<BreachDetailResponse> => {
+  const response = await api.get<BreachDetailResponse>(`${ENDPOINTS.dataRights.breaches}/${id}`);
+  return response.data;
+};
+
+/**
+ * Update breach status (Admin only)
+ */
+export const updateBreachStatus = async (
+  id: string,
+  data: UpdateBreachStatusDto,
+): Promise<BreachDetailResponse> => {
+  const response = await api.patch<BreachDetailResponse>(
+    `${ENDPOINTS.dataRights.breaches}/${id}/status`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Mark breach as reported to DPC (Admin only)
+ */
+export const reportBreachToDpc = async (
+  id: string,
+  notes?: string,
+): Promise<BreachDetailResponse> => {
+  const response = await api.patch<BreachDetailResponse>(
+    `${ENDPOINTS.dataRights.breaches}/${id}/report-dpc`,
+    { notes },
+  );
+  return response.data;
+};
+
+/**
+ * Mark users as notified about breach (Admin only)
+ */
+export const notifyUsersAboutBreach = async (
+  id: string,
+  notes?: string,
+): Promise<BreachDetailResponse> => {
+  const response = await api.patch<BreachDetailResponse>(
+    `${ENDPOINTS.dataRights.breaches}/${id}/notify-users`,
+    { notes },
+  );
   return response.data;
 };

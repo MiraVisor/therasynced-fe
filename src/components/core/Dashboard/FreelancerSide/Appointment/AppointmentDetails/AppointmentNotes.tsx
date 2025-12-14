@@ -33,13 +33,14 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSavedNotesRef = useRef(appointment.notes || '');
   const saveToastRef = useRef<string | number | null>(null);
+  const clientId = appointment.client?.id; // Get client ID from appointment
 
   // Check consent on mount
   useEffect(() => {
     const checkConsent = async () => {
       setIsCheckingConsent(true);
       try {
-        const consent = await checkHealthDataConsent('SOAP_NOTES');
+        const consent = await checkHealthDataConsent('SOAP_NOTES', clientId);
         setHasConsent(consent);
       } catch (error) {
         console.error('Error checking consent:', error);
@@ -48,8 +49,13 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
         setIsCheckingConsent(false);
       }
     };
-    checkConsent();
-  }, []);
+    if (clientId) {
+      checkConsent();
+    } else {
+      setHasConsent(false);
+      setIsCheckingConsent(false);
+    }
+  }, [clientId]);
 
   // Update local state when appointment changes
   useEffect(() => {
@@ -164,12 +170,14 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
   return (
     <div className="space-y-4">
       {/* Health Data Consent */}
-      {appointment.status === 'PENDING' && (
+      {appointment.status === 'PENDING' && clientId && (
         <HealthDataConsent
           consentType="SOAP_NOTES"
+          description="The client must grant consent for TheraSynced to process these appointment notes (SOAP notes) as part of their health record. This consent is required before notes can be saved."
           onConsentChange={setHasConsent}
           required={true}
           showDisclaimer={true}
+          userId={clientId}
         />
       )}
 
@@ -204,7 +212,9 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
         {!hasConsent && appointment.status === 'PENDING' && (
           <Alert variant="destructive" className="mt-2" role="alert" id="notes-consent-required">
             <AlertDescription>
-              You must grant explicit consent for SOAP notes before you can add or edit notes.
+              {clientId 
+                ? `The client must grant consent for SOAP notes before you can add or edit notes. Please ask the client to grant consent in their account settings.`
+                : `You must grant explicit consent for SOAP notes before you can add or edit notes.`}
             </AlertDescription>
           </Alert>
         )}

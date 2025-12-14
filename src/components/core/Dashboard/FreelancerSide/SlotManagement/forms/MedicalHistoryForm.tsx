@@ -2,11 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { Save } from 'lucide-react';
-import { useEffect } from 'react';
+import { AlertCircle, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import { z } from 'zod';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -295,6 +297,8 @@ const defaultValues: MedicalHistoryFormData = {
 };
 
 export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHistoryFormProps) => {
+  const clientId = slot.booking?.client?.id; // Get client ID
+  
   const {
     register,
     handleSubmit,
@@ -1238,7 +1242,11 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <Button type="submit" disabled={isSubmitting} className="font-inter font-semibold">
+        <Button 
+          type="submit" 
+          disabled={isSubmitting || !clientId} 
+          className="font-inter font-semibold"
+        >
           {isSubmitting ? (
             <>
               <LoadingSpinner size="sm" className="mr-2" />

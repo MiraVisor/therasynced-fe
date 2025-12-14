@@ -1,33 +1,17 @@
 'use client';
 
-import { Calendar, Shield } from 'lucide-react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-
-import { DataTable } from '@/components/common/DataTable/data-table';
-import { userHealthDataLogsColumns } from '@/components/common/DataTable/health-data-logs-columns';
-import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  HealthDataAccessLog,
-  HealthDataLogsFilters,
-  getMyHealthDataLogs,
-} from '@/redux/api/dataRightsApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 
 export default function MyHealthDataLogsPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    // Redirect to account settings with logs tab
+    router.replace('/dashboard/account?tab=logs');
+  }, [router]);
+
+  return null;
   const [logs, setLogs] = useState<HealthDataAccessLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
