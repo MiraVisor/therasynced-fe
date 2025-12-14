@@ -33,7 +33,7 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSavedNotesRef = useRef(appointment.notes || '');
   const saveToastRef = useRef<string | number | null>(null);
-  const clientId = appointment.client?.id; // Get client ID from appointment
+  const clientId = appointment.clientId;
 
   // Check consent on mount
   useEffect(() => {

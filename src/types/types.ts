@@ -367,6 +367,7 @@ export interface Appointment {
   end: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   clientName: string;
+  clientId?: string;
   description?: string;
   location: LocationType;
   notes: string;
