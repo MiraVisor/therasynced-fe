@@ -1,0 +1,113 @@
+import api from './api';
+
+export interface FormDraftData {
+  formData: Record<string, any>;
+  formType?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface SlotNoteData {
+  content: string;
+}
+
+/**
+ * Booking Form Draft API
+ */
+export const bookingFormDraftService = {
+  /**
+   * Save or update booking form draft
+   */
+  async saveDraft(bookingId: string, data: FormDraftData): Promise<void> {
+    try {
+      await api.post(`/booking/${bookingId}/form-draft`, data);
+    } catch (error: any) {
+      console.error('Failed to save form draft:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get booking form draft
+   */
+  async getDraft(bookingId: string): Promise<FormDraftData | null> {
+    try {
+      const response = await api.get(`/booking/${bookingId}/form-draft`);
+      return response.data.data || null; // Returns null if no draft exists
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      console.error('Failed to get form draft:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete booking form draft
+   */
+  async deleteDraft(bookingId: string): Promise<void> {
+    try {
+      await api.delete(`/booking/${bookingId}/form-draft`);
+    } catch (error: any) {
+      console.error('Failed to delete form draft:', error);
+      throw error;
+    }
+  },
+};
+
+/**
+ * Slot Note API
+ */
+export const slotNoteService = {
+  /**
+   * Save or update slot note
+   */
+  async saveNote(slotId: string, data: SlotNoteData): Promise<void> {
+    try {
+      await api.post(`/slot/${slotId}/note`, data);
+    } catch (error: any) {
+      console.error('Failed to save slot note:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get slot note
+   */
+  async getNote(slotId: string): Promise<SlotNoteData | null> {
+    try {
+      const response = await api.get(`/slot/${slotId}/note`);
+      return response.data.data || null; // Returns null if no note exists
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      console.error('Failed to get slot note:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update slot note
+   */
+  async updateNote(slotId: string, data: SlotNoteData): Promise<void> {
+    try {
+      await api.patch(`/slot/${slotId}/note`, data);
+    } catch (error: any) {
+      console.error('Failed to update slot note:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete slot note
+   */
+  async deleteNote(slotId: string): Promise<void> {
+    try {
+      await api.delete(`/slot/${slotId}/note`);
+    } catch (error: any) {
+      console.error('Failed to delete slot note:', error);
+      throw error;
+    }
+  },
+};

@@ -1,10 +1,17 @@
 'use client';
 
-import { AlertCircle, CheckCircle2, Mail, Shield, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, Mail, Shield } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import {
+  formatBreachDate,
+  getRiskLevelBadgeVariant,
+  getRiskLevelLabel,
+  getStatusBadgeVariant,
+  getStatusLabel,
+} from '@/components/common/DataTable/breach-columns';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,13 +45,6 @@ import {
 } from '@/redux/api/dataRightsApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { ROLES } from '@/types/types';
-import {
-  getRiskLevelBadgeVariant,
-  getRiskLevelLabel,
-  getStatusBadgeVariant,
-  getStatusLabel,
-  formatBreachDate,
-} from '@/components/common/DataTable/breach-columns';
 
 const BreachDetailPage = () => {
   const router = useRouter();
@@ -178,9 +178,7 @@ const BreachDetailPage = () => {
   if (loading) {
     return (
       <DashboardPageWrapper
-        header={
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Breach Details</h1>
-        }
+        header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Breach Details</h1>}
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
@@ -195,9 +193,7 @@ const BreachDetailPage = () => {
   if (!breach) {
     return (
       <DashboardPageWrapper
-        header={
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Breach Details</h1>
-        }
+        header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Breach Details</h1>}
       >
         <Card className="p-6 text-center">
           <p className="font-open-sans text-base text-muted-foreground">Breach not found</p>
@@ -272,10 +268,7 @@ const BreachDetailPage = () => {
               </Button>
             )}
             {!breach.notifiedUsers && (
-              <Button
-                onClick={() => setIsNotifyUsersDialogOpen(true)}
-                className="font-inter"
-              >
+              <Button onClick={() => setIsNotifyUsersDialogOpen(true)} className="font-inter">
                 <Mail className="h-4 w-4 mr-2" />
                 Notify Users
               </Button>
@@ -405,7 +398,13 @@ const BreachDetailPage = () => {
 
         {/* Compliance Indicators */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className={breach.reportedToDpc ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800'}>
+          <Card
+            className={
+              breach.reportedToDpc
+                ? 'border-green-200 dark:border-green-800'
+                : 'border-red-200 dark:border-red-800'
+            }
+          >
             <CardHeader>
               <CardTitle className="font-poppins font-semibold flex items-center gap-2">
                 {breach.reportedToDpc ? (
@@ -437,7 +436,13 @@ const BreachDetailPage = () => {
             </CardContent>
           </Card>
 
-          <Card className={breach.notifiedUsers ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800'}>
+          <Card
+            className={
+              breach.notifiedUsers
+                ? 'border-green-200 dark:border-green-800'
+                : 'border-red-200 dark:border-red-800'
+            }
+          >
             <CardHeader>
               <CardTitle className="font-poppins font-semibold flex items-center gap-2">
                 {breach.notifiedUsers ? (
@@ -535,10 +540,7 @@ const BreachDetailPage = () => {
                 <Label htmlFor="status" className="font-inter font-medium">
                   New Status *
                 </Label>
-                <Select
-                  value={status}
-                  onValueChange={(value) => setStatus(value as BreachStatus)}
-                >
+                <Select value={status} onValueChange={(value) => setStatus(value as BreachStatus)}>
                   <SelectTrigger className="font-open-sans mt-2">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -687,4 +689,3 @@ const BreachDetailPage = () => {
 };
 
 export default BreachDetailPage;
-

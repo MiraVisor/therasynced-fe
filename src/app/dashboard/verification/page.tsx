@@ -658,7 +658,11 @@ export default function VerificationPage() {
                 </label>
                 {!hasCertificateConsent && (
                   <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                    <p className="text-xs text-amber-800 font-medium" role="alert" aria-live="polite">
+                    <p
+                      className="text-xs text-amber-800 font-medium"
+                      role="alert"
+                      aria-live="polite"
+                    >
                       <AlertCircle className="inline h-3 w-3 mr-1" />
                       Please grant consent in the section above to enable file upload.
                     </p>

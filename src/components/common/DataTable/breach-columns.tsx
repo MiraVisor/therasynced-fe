@@ -1,12 +1,12 @@
 'use client';
 
-import { AlertCircle, CheckCircle2, Eye } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
+import { AlertCircle, CheckCircle2, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DataBreach, BreachStatus, BreachRiskLevel } from '@/redux/api/dataRightsApi';
+import { BreachRiskLevel, BreachStatus, DataBreach } from '@/redux/api/dataRightsApi';
 
 export const formatBreachDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -109,10 +109,7 @@ export const breachColumns: ColumnDef<DataBreach>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => (
-      <Badge
-        variant={getStatusBadgeVariant(row.original.status)}
-        className="font-inter text-sm"
-      >
+      <Badge variant={getStatusBadgeVariant(row.original.status)} className="font-inter text-sm">
         {getStatusLabel(row.original.status)}
       </Badge>
     ),
@@ -208,4 +205,3 @@ export const breachColumns: ColumnDef<DataBreach>[] = [
     ),
   },
 ];
-

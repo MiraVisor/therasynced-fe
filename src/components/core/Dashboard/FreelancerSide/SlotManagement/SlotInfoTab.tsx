@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { slotNoteService } from '@/services/draftStorage.service';
 import { LocationType, Slot } from '@/types/types';
 
 interface SlotInfoTabProps {
@@ -23,22 +25,67 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(slot.notes || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingNote, setIsLoadingNote] = useState(true);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
+  // Load note from backend on mount
   useEffect(() => {
-    setNotes(slot.notes || '');
-  }, [slot.notes]);
+    async function loadNote() {
+      try {
+        setIsLoadingNote(true);
+        const noteData = await slotNoteService.getNote(slot.id);
+        if (noteData?.content) {
+          setNotes(noteData.content);
+        } else {
+          // Fallback to slot.notes if no backend note exists
+          setNotes(slot.notes || '');
+        }
+      } catch (error) {
+        console.error('Failed to load note:', error);
+        // Fallback to slot.notes on error
+        setNotes(slot.notes || '');
+      } finally {
+        setIsLoadingNote(false);
+      }
+    }
+
+    loadNote();
+  }, [slot.id, slot.notes]);
+
+  // Auto-save notes with debouncing
+  useAutoSave(notes, {
+    onSave: async () => {
+      if (!isEditingNotes || !notes.trim()) return;
+
+      setIsSaving(true);
+      try {
+        await slotNoteService.saveNote(slot.id, { content: notes });
+        setLastSaved(new Date());
+      } catch (error: any) {
+        if (error.response?.status === 429) {
+          // Rate limit - don't show error
+          console.warn('Rate limited - skipping auto-save');
+        } else {
+          console.error('Auto-save failed:', error);
+        }
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    debounceMs: 1500, // Save 1.5 seconds after user stops typing
+    enabled: isEditingNotes && notes.length > 0,
+  });
 
   const handleSaveNotes = async () => {
     setIsSaving(true);
     try {
-      // POC: Save to localStorage
-      const storageKey = `slot_notes_${slot.id}`;
-      localStorage.setItem(storageKey, notes);
+      await slotNoteService.saveNote(slot.id, { content: notes });
       setIsEditingNotes(false);
+      setLastSaved(new Date());
       toast.success('Notes saved successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save notes:', error);
-      toast.error('Failed to save notes');
+      toast.error('Failed to save notes. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -267,7 +314,11 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          {isEditingNotes ? (
+          {isLoadingNote ? (
+            <div className="flex items-center justify-center py-4">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : isEditingNotes ? (
             <div className="space-y-3">
               <Textarea
                 value={notes}
@@ -276,6 +327,14 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
                 rows={4}
                 className="font-open-sans text-sm"
               />
+              {/* Auto-save indicator */}
+              {isSaving ? (
+                <p className="text-xs font-inter text-muted-foreground">Saving...</p>
+              ) : lastSaved ? (
+                <p className="text-xs font-inter text-green-600 dark:text-green-400">
+                  Draft saved at {lastSaved.toLocaleTimeString()}
+                </p>
+              ) : null}
               <div className="flex items-center gap-2">
                 <Button
                   onClick={handleSaveNotes}
@@ -297,8 +356,14 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setNotes(slot.notes || '');
+                  onClick={async () => {
+                    // Reload note from backend on cancel
+                    try {
+                      const noteData = await slotNoteService.getNote(slot.id);
+                      setNotes(noteData?.content || slot.notes || '');
+                    } catch (error) {
+                      setNotes(slot.notes || '');
+                    }
                     setIsEditingNotes(false);
                   }}
                   size="sm"

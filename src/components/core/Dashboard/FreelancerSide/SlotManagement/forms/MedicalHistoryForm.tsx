@@ -298,7 +298,7 @@ const defaultValues: MedicalHistoryFormData = {
 
 export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHistoryFormProps) => {
   const clientId = slot.booking?.client?.id; // Get client ID
-  
+
   const {
     register,
     handleSubmit,
@@ -1242,9 +1242,9 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <Button 
-          type="submit" 
-          disabled={isSubmitting || !clientId} 
+        <Button
+          type="submit"
+          disabled={isSubmitting || !clientId}
           className="font-inter font-semibold"
         >
           {isSubmitting ? (

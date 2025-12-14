@@ -14,12 +14,7 @@ interface ActivityHeatmapProps {
   loading?: boolean;
 }
 
-export function ActivityHeatmap({
-  data,
-  title,
-  description,
-  loading,
-}: ActivityHeatmapProps) {
+export function ActivityHeatmap({ data, title, description, loading }: ActivityHeatmapProps) {
   if (loading) {
     return (
       <Card>

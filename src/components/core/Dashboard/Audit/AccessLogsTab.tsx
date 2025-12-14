@@ -17,14 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TimelineChart } from './components/charts/TimelineChart';
-import { DateRangePresets, DateRange } from './components/DateRangePresets';
-import { StatCard, StatsCardsGrid } from './components/StatsCards';
 import {
   AdminHealthDataLogsFilters,
-  getAllHealthDataLogs,
   HealthDataAccessLog,
+  getAllHealthDataLogs,
 } from '@/redux/api/dataRightsApi';
+
+import { DateRange, DateRangePresets } from './components/DateRangePresets';
+import { StatCard, StatsCardsGrid } from './components/StatsCards';
+import { TimelineChart } from './components/charts/TimelineChart';
 
 export function AccessLogsTab() {
   const [logs, setLogs] = useState<HealthDataAccessLog[]>([]);
@@ -103,8 +104,8 @@ export function AccessLogsTab() {
 
         if (ipAddressFilter.trim()) {
           const ipQuery = ipAddressFilter.toLowerCase();
-          filteredLogs = filteredLogs.filter(
-            (log) => log.ipAddress?.toLowerCase().includes(ipQuery),
+          filteredLogs = filteredLogs.filter((log) =>
+            log.ipAddress?.toLowerCase().includes(ipQuery),
           );
         }
 
@@ -160,11 +161,15 @@ export function AccessLogsTab() {
     }).length;
 
     // Most accessed data type
-    const dataTypeCounts = logs.reduce((acc, log) => {
-      acc[log.dataType] = (acc[log.dataType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    const mostAccessedType = Object.entries(dataTypeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+    const dataTypeCounts = logs.reduce(
+      (acc, log) => {
+        acc[log.dataType] = (acc[log.dataType] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    const mostAccessedType =
+      Object.entries(dataTypeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
     return {
       total,
@@ -178,11 +183,14 @@ export function AccessLogsTab() {
 
   // Prepare chart data
   const timelineData = useMemo(() => {
-    const grouped = logs.reduce((acc, log) => {
-      const date = new Date(log.accessedAt).toISOString().split('T')[0];
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = logs.reduce(
+      (acc, log) => {
+        const date = new Date(log.accessedAt).toISOString().split('T')[0];
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(grouped)
       .map(([date, value]) => ({ date, value }))
@@ -190,10 +198,13 @@ export function AccessLogsTab() {
   }, [logs]);
 
   const dataTypeDistribution = useMemo(() => {
-    const grouped = logs.reduce((acc, log) => {
-      acc[log.dataType] = (acc[log.dataType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = logs.reduce(
+      (acc, log) => {
+        acc[log.dataType] = (acc[log.dataType] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(grouped).map(([name, value]) => ({
       name: name.replace('-', ' '),
@@ -202,10 +213,13 @@ export function AccessLogsTab() {
   }, [logs]);
 
   const actionDistribution = useMemo(() => {
-    const grouped = logs.reduce((acc, log) => {
-      acc[log.action] = (acc[log.action] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = logs.reduce(
+      (acc, log) => {
+        acc[log.action] = (acc[log.action] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(grouped).map(([name, value]) => ({
       name,
@@ -290,11 +304,7 @@ export function AccessLogsTab() {
       </div>
 
       {/* Visualizations */}
-      <TimelineChart
-        data={timelineData}
-        title="Access Events Over Time"
-        loading={initialLoading}
-      />
+      <TimelineChart data={timelineData} title="Access Events Over Time" loading={initialLoading} />
 
       {/* Data Table */}
       <DataTable

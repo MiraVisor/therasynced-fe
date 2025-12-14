@@ -1,7 +1,7 @@
 'use client';
 
-import { AlertTriangle, User } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
+import { AlertTriangle, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { HealthDataAccessLog } from '@/redux/api/dataRightsApi';
@@ -49,7 +49,9 @@ export const getDataTypeLabel = (dataType: string) => {
   }
 };
 
-const getRoleBadgeVariant = (role?: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+const getRoleBadgeVariant = (
+  role?: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (role) {
     case 'FREELANCER':
       return 'default'; // Blue
@@ -133,15 +135,16 @@ export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
                 Self-Access
               </Badge>
             ) : (
-              <Badge variant="secondary" className="font-inter text-xs text-amber-700 dark:text-amber-400">
+              <Badge
+                variant="secondary"
+                className="font-inter text-xs text-amber-700 dark:text-amber-400"
+              >
                 Third-Party Access
               </Badge>
             )}
           </div>
           {!isSelfAccess && (
-            <div className="font-inter text-xs text-muted-foreground">
-              {accessedBy.email}
-            </div>
+            <div className="font-inter text-xs text-muted-foreground">{accessedBy.email}</div>
           )}
         </div>
       );
@@ -193,10 +196,7 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-inter font-medium text-sm text-charcoal">{user.name}</span>
             {role && (
-              <Badge
-                variant={getRoleBadgeVariant(role)}
-                className="font-inter text-xs"
-              >
+              <Badge variant={getRoleBadgeVariant(role)} className="font-inter text-xs">
                 {getRoleLabel(role)}
               </Badge>
             )}
@@ -237,15 +237,16 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
                 Self-Access
               </Badge>
             ) : (
-              <Badge variant="secondary" className="font-inter text-xs text-amber-700 dark:text-amber-400">
+              <Badge
+                variant="secondary"
+                className="font-inter text-xs text-amber-700 dark:text-amber-400"
+              >
                 Third-Party Access
               </Badge>
             )}
           </div>
           {!isSelfAccess && (
-            <div className="font-inter text-xs text-muted-foreground">
-              {accessedBy.email}
-            </div>
+            <div className="font-inter text-xs text-muted-foreground">{accessedBy.email}</div>
           )}
         </div>
       );

@@ -77,9 +77,5 @@ interface StatsCardsGridProps {
 }
 
 export function StatsCardsGrid({ children, className }: StatsCardsGridProps) {
-  return (
-    <div className={`flex gap-4 ${className || ''}`}>
-      {children}
-    </div>
-  );
+  return <div className={`flex gap-4 ${className || ''}`}>{children}</div>;
 }

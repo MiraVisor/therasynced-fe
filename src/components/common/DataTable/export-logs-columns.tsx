@@ -1,7 +1,7 @@
 'use client';
 
-import { Download, Lock, Unlock } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
+import { Download, Lock, Unlock } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,11 +35,7 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
       if (!date) {
         return <div className="font-inter text-sm text-muted-foreground">N/A</div>;
       }
-      return (
-        <div className="font-inter text-sm text-charcoal">
-          {formatLogDate(date)}
-        </div>
-      );
+      return <div className="font-inter text-sm text-charcoal">{formatLogDate(date)}</div>;
     },
   },
   {
@@ -52,8 +48,12 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
       }
       return (
         <div className="space-y-1">
-          <div className="font-inter font-medium text-sm text-charcoal">{exportedByUser.name || 'Unknown'}</div>
-          <div className="font-inter text-xs text-muted-foreground">{exportedByUser.email || 'N/A'}</div>
+          <div className="font-inter font-medium text-sm text-charcoal">
+            {exportedByUser.name || 'Unknown'}
+          </div>
+          <div className="font-inter text-xs text-muted-foreground">
+            {exportedByUser.email || 'N/A'}
+          </div>
           {exportedByUser.role && (
             <Badge variant="outline" className="font-inter text-xs mt-1">
               {exportedByUser.role}
@@ -73,8 +73,12 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
       }
       return (
         <div className="space-y-1">
-          <div className="font-inter font-medium text-sm text-charcoal">{exportedUser.name || 'Unknown'}</div>
-          <div className="font-inter text-xs text-muted-foreground">{exportedUser.email || 'N/A'}</div>
+          <div className="font-inter font-medium text-sm text-charcoal">
+            {exportedUser.name || 'Unknown'}
+          </div>
+          <div className="font-inter text-xs text-muted-foreground">
+            {exportedUser.email || 'N/A'}
+          </div>
           {exportedUser.role && (
             <Badge variant="outline" className="font-inter text-xs mt-1">
               {exportedUser.role}
@@ -90,17 +94,15 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
     cell: ({ row }) => {
       const exportType = row.original.exportType;
       // Map API export types to display names
-      const displayType = exportType === 'BULK_USER_DATA' 
-        ? 'BULK EXPORT' 
-        : exportType === 'USER_DATA' 
-        ? 'USER EXPORT'
-        : exportType;
+      const displayType =
+        exportType === 'BULK_USER_DATA'
+          ? 'BULK EXPORT'
+          : exportType === 'USER_DATA'
+            ? 'USER EXPORT'
+            : exportType;
       const isAdmin = exportType === 'ADMIN' || exportType === 'BULK_USER_DATA';
       return (
-        <Badge
-          variant={isAdmin ? 'destructive' : 'default'}
-          className="font-inter text-sm"
-        >
+        <Badge variant={isAdmin ? 'destructive' : 'default'} className="font-inter text-sm">
           {displayType}
         </Badge>
       );
@@ -123,9 +125,7 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
     header: 'Request Reference',
     cell: ({ row }) => (
       <div className="font-inter text-sm text-charcoal">
-        {row.original.requestReference || (
-          <span className="text-muted-foreground italic">N/A</span>
-        )}
+        {row.original.requestReference || <span className="text-muted-foreground italic">N/A</span>}
       </div>
     ),
   },
@@ -178,4 +178,3 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
     ),
   },
 ];
-

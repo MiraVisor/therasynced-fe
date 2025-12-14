@@ -113,12 +113,7 @@ export function TrendChart({
             }}
           >
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="period"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
+            <XAxis dataKey="period" tickLine={false} axisLine={false} tickMargin={8} />
             <YAxis tickLine={false} axisLine={false} tickMargin={8} />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Line

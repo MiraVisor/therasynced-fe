@@ -4,8 +4,8 @@ import { AlertTriangle, Plus, TrendingUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { DataTable } from '@/components/common/DataTable/data-table';
 import { breachColumns } from '@/components/common/DataTable/breach-columns';
+import { DataTable } from '@/components/common/DataTable/data-table';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,10 +25,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { DistributionChart } from './components/charts/DistributionChart';
-import { TimelineChart } from './components/charts/TimelineChart';
-import { DateRangePresets, DateRange } from './components/DateRangePresets';
-import { StatCard, StatsCardsGrid } from './components/StatsCards';
 import {
   BreachFilters,
   BreachRiskLevel,
@@ -37,6 +33,11 @@ import {
   createBreach,
   getBreaches,
 } from '@/redux/api/dataRightsApi';
+
+import { DateRange, DateRangePresets } from './components/DateRangePresets';
+import { StatCard, StatsCardsGrid } from './components/StatsCards';
+import { DistributionChart } from './components/charts/DistributionChart';
+import { TimelineChart } from './components/charts/TimelineChart';
 
 export function BreachesTab() {
   const [breaches, setBreaches] = useState<DataBreach[]>([]);
@@ -196,11 +197,14 @@ export function BreachesTab() {
 
   // Prepare chart data
   const timelineData = useMemo(() => {
-    const grouped = breaches.reduce((acc, breach) => {
-      const date = new Date(breach.detectedAt).toISOString().split('T')[0];
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = breaches.reduce(
+      (acc, breach) => {
+        const date = new Date(breach.detectedAt).toISOString().split('T')[0];
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(grouped)
       .map(([date, value]) => ({ date, value }))
@@ -208,10 +212,13 @@ export function BreachesTab() {
   }, [breaches]);
 
   const statusDistribution = useMemo(() => {
-    const grouped = breaches.reduce((acc, breach) => {
-      acc[breach.status] = (acc[breach.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = breaches.reduce(
+      (acc, breach) => {
+        acc[breach.status] = (acc[breach.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const statusColors: Record<string, string> = {
       DETECTED: '#ef4444', // Red
@@ -228,10 +235,13 @@ export function BreachesTab() {
   }, [breaches]);
 
   const riskDistribution = useMemo(() => {
-    const grouped = breaches.reduce((acc, breach) => {
-      acc[breach.riskLevel] = (acc[breach.riskLevel] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = breaches.reduce(
+      (acc, breach) => {
+        acc[breach.riskLevel] = (acc[breach.riskLevel] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(grouped).map(([name, value]) => ({
       name,
@@ -365,10 +375,7 @@ export function BreachesTab() {
               </SelectContent>
             </Select>
           </div>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            className="font-inter"
-          >
+          <Button onClick={() => setIsCreateDialogOpen(true)} className="font-inter">
             <Plus className="h-4 w-4 mr-2" />
             Create Breach
           </Button>
@@ -377,11 +384,7 @@ export function BreachesTab() {
 
       {/* Visualizations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TimelineChart
-          data={timelineData}
-          title="Breaches Over Time"
-          loading={initialLoading}
-        />
+        <TimelineChart data={timelineData} title="Breaches Over Time" loading={initialLoading} />
         <DistributionChart
           data={statusDistribution}
           title="Breaches by Status"
@@ -510,8 +513,8 @@ export function BreachesTab() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Select from common categories or type a custom one. Examples: Personal
-                Information, Health Data, Email Addresses, Payment Information
+                Select from common categories or type a custom one. Examples: Personal Information,
+                Health Data, Email Addresses, Payment Information
               </p>
             </div>
             <div>
@@ -535,7 +538,8 @@ export function BreachesTab() {
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Enter the number of users affected. If exact number is unknown, provide your best
-                estimate (e.g., "approximately 150 users" or "between 100-200 users").
+                estimate (e.g., &quot;approximately 150 users&quot; or &quot;between 100-200
+                users&quot;).
               </p>
             </div>
             <div>
@@ -559,7 +563,11 @@ export function BreachesTab() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
-                <strong>Low:</strong> Minimal impact, no sensitive data exposed. <strong>Medium:</strong> Some sensitive data, limited scope. <strong>High:</strong> Significant sensitive data exposed, requires DPC notification within 72 hours. <strong>Critical:</strong> Large-scale breach with highly sensitive data, immediate action required.
+                <strong>Low:</strong> Minimal impact, no sensitive data exposed.{' '}
+                <strong>Medium:</strong> Some sensitive data, limited scope. <strong>High:</strong>{' '}
+                Significant sensitive data exposed, requires DPC notification within 72 hours.{' '}
+                <strong>Critical:</strong> Large-scale breach with highly sensitive data, immediate
+                action required.
               </p>
             </div>
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">

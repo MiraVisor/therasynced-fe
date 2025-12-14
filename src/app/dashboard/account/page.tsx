@@ -6,6 +6,7 @@ import {
   Award,
   ChevronDown,
   ChevronUp,
+  ClipboardList,
   CreditCard,
   Eye,
   EyeOff,
@@ -16,7 +17,6 @@ import {
   Shield,
   Trash2,
   User,
-  ClipboardList,
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -24,9 +24,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
-import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { DataAccessLogsSection } from '@/components/core/Dashboard/Account/DataAccessLogsSection';
 import { DataRightsSection } from '@/components/core/Dashboard/Account/DataRightsSection';
+import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import SubscriptionManagement from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionManagement';
 import StampsManagement from '@/components/core/Dashboard/UserSide/Loyalty/StampsManagement';
 import {

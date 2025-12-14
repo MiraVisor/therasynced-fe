@@ -314,7 +314,8 @@ export default function TermsOfServicePage() {
                 health records
               </li>
               <li>
-                Report any unauthorized access or data breaches immediately to privacy@therasynced.com
+                Report any unauthorized access or data breaches immediately to
+                privacy@therasynced.com
               </li>
               <li>
                 Comply with professional codes of conduct and data protection regulations applicable

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useAppSelector } from '@/redux/hooks/useAppHooks';
 import { Appointment } from '@/types/types';
 
 import { InvoiceData, InvoicePDF } from './InvoicePDF';
@@ -39,14 +40,15 @@ export const InvoiceGenerationDialog = ({
   const [basePrice, setBasePrice] = useState(initialPrice?.toString() || '');
   const [services, setServices] = useState<ServiceItem[]>([]);
 
-  // Initialize business name from user data
+  // Get user profile from Redux instead of localStorage
+  const profile = useAppSelector((state) => state.profile.data);
+
+  // Initialize business name from user profile
   useEffect(() => {
-    const userString = localStorage.getItem('user');
-    const user = userString ? JSON.parse(userString) : null;
-    if (user?.name) {
-      setBusinessName(user.name);
+    if (profile?.name) {
+      setBusinessName(profile.name);
     }
-  }, []);
+  }, [profile]);
 
   // Update basePrice when initialPrice changes
   useEffect(() => {
@@ -111,17 +113,15 @@ export const InvoiceGenerationDialog = ({
     setIsGenerating(true);
 
     try {
-      // Get user data from localStorage
-      const userString = localStorage.getItem('user');
-      const user = userString ? JSON.parse(userString) : null;
-
+      // Use profile from Redux instead of localStorage
       const invoiceData: InvoiceData = {
         invoiceNumber: generateInvoiceNumber(),
         invoiceDate: new Date().toISOString(),
-        businessName: businessName.trim() || user?.name || 'Business Name',
-        freelancerName: user?.name || 'Freelancer Name',
-        freelancerEmail: user?.email || '',
-        freelancerAddress: appointment.freelancer?.clinicAddress || undefined,
+        businessName: businessName.trim() || profile?.name || 'Business Name',
+        freelancerName: profile?.name || 'Freelancer Name',
+        freelancerEmail: profile?.email || '',
+        freelancerAddress:
+          appointment.freelancer?.clinicAddress || profile?.clinicAddress || undefined,
         patientName: appointment.clientName,
         patientEmail: '', // Not available in appointment data
         appointmentDate: appointment.start,
@@ -139,7 +139,7 @@ export const InvoiceGenerationDialog = ({
         locationType: appointment.location,
         location:
           appointment.location === 'CLINIC'
-            ? appointment.freelancer?.clinicAddress || undefined
+            ? appointment.freelancer?.clinicAddress || profile?.clinicAddress || undefined
             : appointment.clientAddress || undefined,
       };
 

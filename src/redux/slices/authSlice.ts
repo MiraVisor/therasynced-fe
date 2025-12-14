@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { getCookie, getDecodedToken, removeCookie, setCookie } from '@/lib/utils';
 import { RoleType, registerUserTypes } from '@/types/types';
+import { clearLocalStorageDrafts } from '@/utils/clearLocalStorageDrafts';
 
 import { googleSignInApi, loginApi, signUpUserApi, verifyEmailLinkApi } from '../api/authApi';
 
@@ -88,6 +89,8 @@ const authSlice = createSlice({
       state.role = null;
       if (typeof window !== 'undefined') {
         removeCookie('token');
+        // Clear all localStorage drafts for GDPR compliance
+        clearLocalStorageDrafts();
       }
     },
     setRole: (state, action) => {

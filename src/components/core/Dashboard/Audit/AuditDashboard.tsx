@@ -4,6 +4,7 @@ import { FileText, Shield, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { AccessLogsTab } from './AccessLogsTab';
 import { BreachesTab } from './BreachesTab';
 import { ExportLogsTab } from './ExportLogsTab';

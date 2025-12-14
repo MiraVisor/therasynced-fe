@@ -181,11 +181,8 @@ export const adminExportUserData = async (
     // Extract filename from Content-Disposition header
     // Axios normalizes headers to lowercase
     const contentDisposition =
-      response.headers['content-disposition'] ||
-      response.headers['Content-Disposition'] ||
-      null;
-    const contentType =
-      response.headers['content-type'] || response.headers['Content-Type'] || '';
+      response.headers['content-disposition'] || response.headers['Content-Disposition'] || null;
+    const contentType = response.headers['content-type'] || response.headers['Content-Type'] || '';
     const filename = extractFilenameFromHeader(
       contentDisposition,
       data.format,
@@ -215,9 +212,7 @@ export const adminExportUserData = async (
 /**
  * Get export audit logs (Admin only)
  */
-export const getExportLogs = async (
-  filters?: ExportLogFilters,
-): Promise<ExportLogsResponse> => {
+export const getExportLogs = async (filters?: ExportLogFilters): Promise<ExportLogsResponse> => {
   const params = new URLSearchParams();
 
   if (filters?.exportedBy) {
@@ -258,9 +253,7 @@ export const getExportLogs = async (
  * Export export logs as CSV (Admin only)
  * Returns a CSV file directly from the backend
  */
-export const exportExportLogsToCSV = async (
-  filters?: ExportLogFilters,
-): Promise<Blob> => {
+export const exportExportLogsToCSV = async (filters?: ExportLogFilters): Promise<Blob> => {
   const params = new URLSearchParams();
 
   if (filters?.exportedBy) {
@@ -302,12 +295,10 @@ export const exportExportLogsToCSV = async (
 /**
  * Export user's own data (self-service with optional encryption)
  */
-export const exportMyData = async (
-  data: UserExportFormData,
-): Promise<ExportResponse> => {
+export const exportMyData = async (data: UserExportFormData): Promise<ExportResponse> => {
   const params = new URLSearchParams();
   params.append('format', data.format);
-  
+
   if (data.requestReference) {
     params.append('requestReference', data.requestReference);
   }
@@ -341,17 +332,19 @@ export const downloadFile = (blob: Blob, filename: string) => {
 /**
  * Check if downloaded file is encrypted by reading its content
  */
-export const checkIfEncrypted = async (blob: Blob): Promise<{
+export const checkIfEncrypted = async (
+  blob: Blob,
+): Promise<{
   isEncrypted: boolean;
   encryptedData?: EncryptedExportResponse['data'];
 }> => {
   try {
     // Read blob as text
     const text = await blob.text();
-    
+
     // Try to parse as JSON
     const parsed = JSON.parse(text);
-    
+
     // Check if it has the encrypted structure
     if (
       parsed &&
@@ -366,7 +359,7 @@ export const checkIfEncrypted = async (blob: Blob): Promise<{
         encryptedData: parsed as EncryptedExportResponse['data'],
       };
     }
-    
+
     return { isEncrypted: false };
   } catch {
     // If parsing fails, it's not encrypted JSON
@@ -422,7 +415,7 @@ export const decryptExportedFile = async (encryptedFileBlob: Blob): Promise<stri
   // Create new ArrayBuffer instances to avoid type issues
   const exportKeyBuffer: ArrayBuffer = new ArrayBuffer(exportKeyBytes.length);
   new Uint8Array(exportKeyBuffer).set(exportKeyBytes);
-  
+
   const ivBuffer: ArrayBuffer = new ArrayBuffer(ivBytes.length);
   new Uint8Array(ivBuffer).set(ivBytes);
 
@@ -432,7 +425,7 @@ export const decryptExportedFile = async (encryptedFileBlob: Blob): Promise<stri
     exportKeyBuffer as BufferSource,
     { name: 'AES-GCM' },
     false,
-    ['decrypt']
+    ['decrypt'],
   );
 
   // Combine encrypted data with auth tag for Web Crypto API
@@ -448,7 +441,7 @@ export const decryptExportedFile = async (encryptedFileBlob: Blob): Promise<stri
       tagLength: 128, // 16 bytes = 128 bits
     },
     key,
-    encryptedWithTag as BufferSource
+    encryptedWithTag as BufferSource,
   );
 
   // Convert to string
@@ -495,4 +488,3 @@ export const downloadUnencryptedExport = (
 
   downloadFile(blob, filename);
 };
-

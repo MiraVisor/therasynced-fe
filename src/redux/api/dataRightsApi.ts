@@ -311,14 +311,11 @@ export const getHealthDataConsent = async (
     targetUserId = decodedToken.sub;
   }
 
-  const response = await api.get<HealthDataConsentStatusResponse>(
-    ENDPOINTS.consent.healthData,
-    {
-      params: {
-        userId: targetUserId,
-      },
+  const response = await api.get<HealthDataConsentStatusResponse>(ENDPOINTS.consent.healthData, {
+    params: {
+      userId: targetUserId,
     },
-  );
+  });
   return response.data;
 };
 

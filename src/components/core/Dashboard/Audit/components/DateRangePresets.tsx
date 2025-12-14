@@ -1,5 +1,6 @@
 'use client';
 
+import { format } from 'date-fns';
 import { Calendar, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 
 export type DatePreset = 'today' | 'last7' | 'last30' | 'last90' | 'thisMonth' | 'lastMonth';
 
@@ -97,7 +97,7 @@ const presets: { label: string; value: DatePreset; getRange: () => DateRange }[]
 export function DateRangePresets({ value, onChange, className }: DateRangePresetsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handlePresetClick = (preset: typeof presets[0]) => {
+  const handlePresetClick = (preset: (typeof presets)[0]) => {
     const range = preset.getRange();
     onChange(range);
     setIsOpen(false);

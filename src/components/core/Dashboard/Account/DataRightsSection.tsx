@@ -1,6 +1,17 @@
 'use client';
 
-import { AlertCircle, AlertTriangle, CheckCircle2, Download, Edit, FileText, Info, Lock, Shield, Trash2 } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  Edit,
+  FileText,
+  Info,
+  Lock,
+  Shield,
+  Trash2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -87,7 +98,9 @@ export function DataRightsSection() {
   const handleDataPortability = async () => {
     setLoading('portability');
     try {
-      const { exportMyData, downloadEncryptedExport, downloadUnencryptedExport } = await import('@/services/exportService');
+      const { exportMyData, downloadEncryptedExport, downloadUnencryptedExport } = await import(
+        '@/services/exportService'
+      );
       const response = await exportMyData({
         format: exportFormat,
         encrypt: exportEncrypt,
@@ -101,15 +114,16 @@ export function DataRightsSection() {
           // Handle encrypted export
           const encryptedData = response.data as any;
           downloadEncryptedExport(encryptedData);
-          
+
           // Store encryption info to show in dialog
           setEncryptedExportInfo({
             exportKey: encryptedData.exportKey || '',
             keyId: encryptedData.keyId,
-            requestReference: encryptedData.metadata?.requestReference || exportRequestReference || 'N/A',
+            requestReference:
+              encryptedData.metadata?.requestReference || exportRequestReference || 'N/A',
           });
           setShowEncryptionInfo(true);
-          
+
           toast.success('Encrypted export downloaded successfully');
         } else {
           // Handle unencrypted export
@@ -365,124 +379,125 @@ export function DataRightsSection() {
             ) : (
               <>
                 <div>
-                    <h4 className="font-semibold mb-4 text-sm">Manage Consents</h4>
-                    {role === ROLES.FREELANCER && (
-                      <Alert className="mb-4">
-                        <Info className="h-4 w-4" />
-                        <AlertTitle>Note for Healthcare Professionals</AlertTitle>
-                        <AlertDescription>
-                          Medical History and SOAP Notes consents are for clients only. You only need to
-                          manage consents for your professional documents.
-                        </AlertDescription>
-                      </Alert>
+                  <h4 className="font-semibold mb-4 text-sm">Manage Consents</h4>
+                  {role === ROLES.FREELANCER && (
+                    <Alert className="mb-4">
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Note for Healthcare Professionals</AlertTitle>
+                      <AlertDescription>
+                        Medical History and SOAP Notes consents are for clients only. You only need
+                        to manage consents for your professional documents.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="space-y-4">
+                    {shouldShowConsent('MEDICAL_HISTORY') && (
+                      <div className="border rounded-lg p-4">
+                        <div className="mb-3">
+                          <h5 className="font-semibold text-sm mb-1">Medical History</h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Processing of medical history forms, ROM assessments, and health
+                            questionnaires. Retained for 7 years (Irish law).
+                          </p>
+                        </div>
+                        <HealthDataConsent
+                          consentType="MEDICAL_HISTORY"
+                          onConsentChange={handleConsentChange}
+                          required={false}
+                          showDisclaimer={false}
+                          initialConsentStatus={medicalHistoryStatus}
+                          compact={true}
+                          showTitle={false}
+                          disableApiCall={true}
+                        />
+                      </div>
                     )}
-                    <div className="space-y-4">
-                      {shouldShowConsent('MEDICAL_HISTORY') && (
-                        <div className="border rounded-lg p-4">
-                          <div className="mb-3">
-                            <h5 className="font-semibold text-sm mb-1">Medical History</h5>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Processing of medical history forms, ROM assessments, and health questionnaires. 
-                              Retained for 7 years (Irish law).
-                            </p>
-                          </div>
-                          <HealthDataConsent
-                            consentType="MEDICAL_HISTORY"
-                            onConsentChange={handleConsentChange}
-                            required={false}
-                            showDisclaimer={false}
-                            initialConsentStatus={medicalHistoryStatus}
-                            compact={true}
-                            showTitle={false}
-                            disableApiCall={true}
-                          />
-                        </div>
-                      )}
 
-                      {shouldShowConsent('SOAP_NOTES') && (
-                        <div className="border rounded-lg p-4">
-                          <div className="mb-3">
-                            <h5 className="font-semibold text-sm mb-1">SOAP Notes</h5>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Clinical notes created by healthcare professionals during appointments. 
-                              Retained for 7 years (Irish law).
-                            </p>
-                          </div>
-                          <HealthDataConsent
-                            consentType="SOAP_NOTES"
-                            onConsentChange={handleConsentChange}
-                            required={false}
-                            showDisclaimer={false}
-                            initialConsentStatus={soapNotesStatus}
-                            compact={true}
-                            showTitle={false}
-                            disableApiCall={true}
-                          />
+                    {shouldShowConsent('SOAP_NOTES') && (
+                      <div className="border rounded-lg p-4">
+                        <div className="mb-3">
+                          <h5 className="font-semibold text-sm mb-1">SOAP Notes</h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Clinical notes created by healthcare professionals during appointments.
+                            Retained for 7 years (Irish law).
+                          </p>
                         </div>
-                      )}
+                        <HealthDataConsent
+                          consentType="SOAP_NOTES"
+                          onConsentChange={handleConsentChange}
+                          required={false}
+                          showDisclaimer={false}
+                          initialConsentStatus={soapNotesStatus}
+                          compact={true}
+                          showTitle={false}
+                          disableApiCall={true}
+                        />
+                      </div>
+                    )}
 
-                      {shouldShowConsent('COMPLAINTS') && (
-                        <div className="border rounded-lg p-4">
-                          <div className="mb-3">
-                            <h5 className="font-semibold text-sm mb-1">Health-Related Complaints</h5>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Processing health information in complaints for service quality. 
-                              Retained for 7 years (Irish law).
-                            </p>
-                          </div>
-                          <HealthDataConsent
-                            consentType="COMPLAINTS"
-                            onConsentChange={handleConsentChange}
-                            required={false}
-                            showDisclaimer={false}
-                            initialConsentStatus={complaintsStatus}
-                            compact={true}
-                            showTitle={false}
-                            disableApiCall={true}
-                          />
+                    {shouldShowConsent('COMPLAINTS') && (
+                      <div className="border rounded-lg p-4">
+                        <div className="mb-3">
+                          <h5 className="font-semibold text-sm mb-1">Health-Related Complaints</h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Processing health information in complaints for service quality.
+                            Retained for 7 years (Irish law).
+                          </p>
                         </div>
-                      )}
+                        <HealthDataConsent
+                          consentType="COMPLAINTS"
+                          onConsentChange={handleConsentChange}
+                          required={false}
+                          showDisclaimer={false}
+                          initialConsentStatus={complaintsStatus}
+                          compact={true}
+                          showTitle={false}
+                          disableApiCall={true}
+                        />
+                      </div>
+                    )}
 
-                      {shouldShowConsent('FIRST_AID_CERTIFICATE') && (
-                        <div className="border rounded-lg p-4">
-                          <div className="mb-3">
-                            <h5 className="font-semibold text-sm mb-1">First Aid Certificate</h5>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Storage of first aid certificates for professional verification (healthcare professionals only). 
-                              Retained until account deletion + 7 years.
-                            </p>
-                          </div>
-                          <HealthDataConsent
-                            consentType="FIRST_AID_CERTIFICATE"
-                            onConsentChange={handleConsentChange}
-                            required={false}
-                            showDisclaimer={false}
-                            initialConsentStatus={firstAidStatus}
-                            compact={true}
-                            showTitle={false}
-                            disableApiCall={true}
-                          />
+                    {shouldShowConsent('FIRST_AID_CERTIFICATE') && (
+                      <div className="border rounded-lg p-4">
+                        <div className="mb-3">
+                          <h5 className="font-semibold text-sm mb-1">First Aid Certificate</h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Storage of first aid certificates for professional verification
+                            (healthcare professionals only). Retained until account deletion + 7
+                            years.
+                          </p>
                         </div>
-                      )}
-                    </div>
+                        <HealthDataConsent
+                          consentType="FIRST_AID_CERTIFICATE"
+                          onConsentChange={handleConsentChange}
+                          required={false}
+                          showDisclaimer={false}
+                          initialConsentStatus={firstAidStatus}
+                          compact={true}
+                          showTitle={false}
+                          disableApiCall={true}
+                        />
+                      </div>
+                    )}
                   </div>
+                </div>
 
-                  <Alert className="mt-4">
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Your Rights</AlertTitle>
-                    <AlertDescription className="text-xs">
-                      You can withdraw consent anytime. Data retained 7 years (Irish law).{' '}
-                      <a
-                        href="/privacy"
-                        className="text-primary hover:underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Privacy Policy
-                      </a>
-                    </AlertDescription>
-                  </Alert>
-                </>
+                <Alert className="mt-4">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Your Rights</AlertTitle>
+                  <AlertDescription className="text-xs">
+                    You can withdraw consent anytime. Data retained 7 years (Irish law).{' '}
+                    <a
+                      href="/privacy"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Privacy Policy
+                    </a>
+                  </AlertDescription>
+                </Alert>
+              </>
             )}
           </CardContent>
         </Card>
@@ -502,8 +517,8 @@ export function DataRightsSection() {
             <div>
               <h4 className="font-semibold mb-2">Right to Object (Article 21)</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                You can object to processing based on legitimate interests. Manage this through
-                your account settings or contact us.
+                You can object to processing based on legitimate interests. Manage this through your
+                account settings or contact us.
               </p>
             </div>
             <div>
@@ -607,11 +622,14 @@ export function DataRightsSection() {
           <DialogHeader>
             <DialogTitle>Export Your Data</DialogTitle>
             <DialogDescription>
-              Export your data in a portable format. You can choose the format and optionally encrypt the export.
+              Export your data in a portable format. You can choose the format and optionally
+              encrypt the export.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">The export will include:</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              The export will include:
+            </p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600 dark:text-gray-400 mb-6">
               <li>Profile information</li>
               <li>Booking history</li>
@@ -697,7 +715,8 @@ export function DataRightsSection() {
                   Encrypt Export (Optional)
                 </Label>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Encrypt the export file for additional security. Encrypted exports require a decryption key to access.
+                  Encrypt the export file for additional security. Encrypted exports require a
+                  decryption key to access.
                 </p>
               </div>
             </div>
@@ -740,7 +759,8 @@ export function DataRightsSection() {
                 Export Key <span className="text-destructive">*</span>
               </Label>
               <p className="text-xs text-muted-foreground mb-2">
-                This is the decryption key for this export. Keep this key safe - you'll need it to decrypt the file.
+                This is the decryption key for this export. Keep this key safe - you&apos;ll need it
+                to decrypt the file.
               </p>
               <div className="flex items-center gap-2">
                 <Input
@@ -762,7 +782,8 @@ export function DataRightsSection() {
                 </Button>
               </div>
               <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                ⚠️ Important: This key is unique to this export and is included in the downloaded file. Keep it secure.
+                ⚠️ Important: This key is unique to this export and is included in the downloaded
+                file. Keep it secure.
               </p>
             </div>
 
@@ -811,21 +832,20 @@ export function DataRightsSection() {
               </AlertTitle>
               <AlertDescription className="text-green-800 dark:text-green-200 space-y-2">
                 <p>
-                  The export key above is the decryption key for this specific export. It is included in the downloaded file.
+                  The export key above is the decryption key for this specific export. It is
+                  included in the downloaded file.
                 </p>
                 <ul className="list-disc pl-5 space-y-1 text-sm">
                   <li>
-                    The <strong>Export Key</strong> is stored in the downloaded JSON file under the <code>exportKey</code> field
+                    The <strong>Export Key</strong> is stored in the downloaded JSON file under the{' '}
+                    <code>exportKey</code> field
                   </li>
+                  <li>You can use this key to decrypt the file offline using decryption tools</li>
                   <li>
-                    You can use this key to decrypt the file offline using decryption tools
+                    Each export has its own unique key - this key only works for this specific
+                    export
                   </li>
-                  <li>
-                    Each export has its own unique key - this key only works for this specific export
-                  </li>
-                  <li>
-                    The key should be kept secure and not shared with unauthorized parties
-                  </li>
+                  <li>The key should be kept secure and not shared with unauthorized parties</li>
                 </ul>
               </AlertDescription>
             </Alert>
@@ -840,7 +860,8 @@ export function DataRightsSection() {
                   <code>iv</code> - Initialization vector used for encryption
                 </li>
                 <li>
-                  <code>exportKey</code> - <strong>Hex-encoded decryption key for this export</strong> (shown above)
+                  <code>exportKey</code> -{' '}
+                  <strong>Hex-encoded decryption key for this export</strong> (shown above)
                 </li>
                 <li>
                   <code>keyId</code> - Key identifier for reference
@@ -862,4 +883,3 @@ export function DataRightsSection() {
     </div>
   );
 }
-

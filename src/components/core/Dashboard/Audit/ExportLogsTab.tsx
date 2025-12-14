@@ -17,15 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TimelineChart } from './components/charts/TimelineChart';
-import { DateRangePresets, DateRange } from './components/DateRangePresets';
-import { StatCard, StatsCardsGrid } from './components/StatsCards';
 import {
-  getExportLogs,
-  exportExportLogsToCSV,
   type ExportLog,
   type ExportLogFilters,
+  exportExportLogsToCSV,
+  getExportLogs,
 } from '@/services/exportService';
+
+import { DateRange, DateRangePresets } from './components/DateRangePresets';
+import { StatCard, StatsCardsGrid } from './components/StatsCards';
+import { TimelineChart } from './components/charts/TimelineChart';
 
 export function ExportLogsTab() {
   const [logs, setLogs] = useState<ExportLog[]>([]);
@@ -106,9 +107,13 @@ export function ExportLogsTab() {
         }
 
         if (encryptionFilter === 'encrypted') {
-          filteredLogs = filteredLogs.filter((log) => log.isEncrypted === true || log.encrypted === true);
+          filteredLogs = filteredLogs.filter(
+            (log) => log.isEncrypted === true || log.encrypted === true,
+          );
         } else if (encryptionFilter === 'unencrypted') {
-          filteredLogs = filteredLogs.filter((log) => log.isEncrypted === false && log.encrypted !== true);
+          filteredLogs = filteredLogs.filter(
+            (log) => log.isEncrypted === false && log.encrypted !== true,
+          );
         }
 
         setLogs(filteredLogs);
@@ -138,7 +143,9 @@ export function ExportLogsTab() {
 
       // If it's a 404, the endpoint might not exist yet
       if (error?.status === 404) {
-        toast.error('Export logs endpoint not found. The backend may not have this feature implemented yet.');
+        toast.error(
+          'Export logs endpoint not found. The backend may not have this feature implemented yet.',
+        );
       } else if (error?.status === 403) {
         toast.error('Access denied. Admin privileges required.');
       } else {
@@ -195,10 +202,14 @@ export function ExportLogsTab() {
         return false;
       }
     }).length;
-    const encrypted = logs.filter((log) => log.isEncrypted === true || log.encrypted === true).length;
-    const unencrypted = logs.filter((log) => !(log.isEncrypted === true || log.encrypted === true)).length;
+    const encrypted = logs.filter(
+      (log) => log.isEncrypted === true || log.encrypted === true,
+    ).length;
+    const unencrypted = logs.filter(
+      (log) => !(log.isEncrypted === true || log.encrypted === true),
+    ).length;
     const totalSizeBytes = logs.reduce((sum, log) => sum + (log.fileSize || 0), 0);
-    
+
     // Format size intelligently based on magnitude
     let totalSizeFormatted: string;
     if (totalSizeBytes >= 1024 * 1024 * 1024) {
@@ -217,9 +228,13 @@ export function ExportLogsTab() {
       // < 1 KB, show in bytes
       totalSizeFormatted = `${totalSizeBytes} B`;
     }
-    
-    const adminExports = logs.filter((log) => log.exportType === 'ADMIN' || log.exportType === 'BULK_USER_DATA').length;
-    const userExports = logs.filter((log) => log.exportType === 'USER' || log.exportType === 'USER_DATA').length;
+
+    const adminExports = logs.filter(
+      (log) => log.exportType === 'ADMIN' || log.exportType === 'BULK_USER_DATA',
+    ).length;
+    const userExports = logs.filter(
+      (log) => log.exportType === 'USER' || log.exportType === 'USER_DATA',
+    ).length;
 
     return {
       total,
@@ -238,17 +253,20 @@ export function ExportLogsTab() {
       return [];
     }
 
-    const grouped = logs.reduce((acc, log) => {
-      const date = log.createdAt || log.exportedAt;
-      if (!date) return acc;
-      try {
-        const dateStr = new Date(date).toISOString().split('T')[0];
-        acc[dateStr] = (acc[dateStr] || 0) + 1;
-      } catch {
-        // Skip invalid dates
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const grouped = logs.reduce(
+      (acc, log) => {
+        const date = log.createdAt || log.exportedAt;
+        if (!date) return acc;
+        try {
+          const dateStr = new Date(date).toISOString().split('T')[0];
+          acc[dateStr] = (acc[dateStr] || 0) + 1;
+        } catch {
+          // Skip invalid dates
+        }
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(grouped)
       .map(([date, value]) => ({ date, value }))
@@ -256,8 +274,12 @@ export function ExportLogsTab() {
   }, [logs]);
 
   const typeDistribution = useMemo(() => {
-    const admin = logs.filter((log) => log.exportType === 'ADMIN' || log.exportType === 'BULK_USER_DATA').length;
-    const user = logs.filter((log) => log.exportType === 'USER' || log.exportType === 'USER_DATA').length;
+    const admin = logs.filter(
+      (log) => log.exportType === 'ADMIN' || log.exportType === 'BULK_USER_DATA',
+    ).length;
+    const user = logs.filter(
+      (log) => log.exportType === 'USER' || log.exportType === 'USER_DATA',
+    ).length;
     return [
       { name: 'Admin', value: admin },
       { name: 'User', value: user },
@@ -280,8 +302,12 @@ export function ExportLogsTab() {
   }, [logs]);
 
   const encryptionDistribution = useMemo(() => {
-    const encrypted = logs.filter((log) => log.isEncrypted === true || log.encrypted === true).length;
-    const unencrypted = logs.filter((log) => !(log.isEncrypted === true || log.encrypted === true)).length;
+    const encrypted = logs.filter(
+      (log) => log.isEncrypted === true || log.encrypted === true,
+    ).length;
+    const unencrypted = logs.filter(
+      (log) => !(log.isEncrypted === true || log.encrypted === true),
+    ).length;
     return [
       { name: 'Encrypted', value: encrypted },
       { name: 'Unencrypted', value: unencrypted },
@@ -411,11 +437,7 @@ export function ExportLogsTab() {
       </div>
 
       {/* Visualizations */}
-      <TimelineChart
-        data={timelineData}
-        title="Export Volume Over Time"
-        loading={initialLoading}
-      />
+      <TimelineChart data={timelineData} title="Export Volume Over Time" loading={initialLoading} />
 
       {/* Data Table */}
       <DataTable

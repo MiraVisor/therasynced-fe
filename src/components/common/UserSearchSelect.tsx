@@ -69,12 +69,16 @@ export function UserSearchSelect({
         if (response.data) {
           // Check if data is in response.data.data or response.data
           const usersData = response.data.data || response.data;
-          
+
           if (Array.isArray(usersData)) {
             // Map the response to our User interface
             const mappedUsers: User[] = usersData.map((user: any) => ({
               id: user.id || user.userId,
-              name: user.name || user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown',
+              name:
+                user.name ||
+                user.fullName ||
+                `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+                'Unknown',
               email: user.email || '',
               role: user.role || user.userRole,
             }));
@@ -97,12 +101,16 @@ export function UserSearchSelect({
                 limit: 20,
               },
             });
-            
+
             const usersData = altResponse.data?.data || altResponse.data;
             if (Array.isArray(usersData)) {
               const mappedUsers: User[] = usersData.map((user: any) => ({
                 id: user.id || user.userId,
-                name: user.name || user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown',
+                name:
+                  user.name ||
+                  user.fullName ||
+                  `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+                  'Unknown',
                 email: user.email || '',
                 role: user.role || user.userRole,
               }));
@@ -214,4 +222,3 @@ export function UserSearchSelect({
     </Popover>
   );
 }
-

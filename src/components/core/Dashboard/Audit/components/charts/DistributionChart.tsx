@@ -111,12 +111,7 @@ export function DistributionChart({
             >
               {data.map((entry, index) => {
                 const color = entry.color || colors[index % colors.length];
-                return (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={color}
-                  />
-                );
+                return <Cell key={`cell-${index}`} fill={color} />;
               })}
             </Pie>
             <ChartTooltip content={<ChartTooltipContent />} />

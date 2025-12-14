@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { checkHealthDataConsent } from '@/utils/healthDataConsent';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { bookingFormDraftService } from '@/services/draftStorage.service';
 import {
   FORM_TYPE_LABELS,
   FormType,
@@ -24,6 +25,7 @@ import {
   type SOAPNoteFormData,
 } from '@/types/formTypes';
 import { Slot } from '@/types/types';
+import { checkHealthDataConsent } from '@/utils/healthDataConsent';
 
 import { MedicalHistoryForm } from './forms/MedicalHistoryForm';
 import { ROMAssessmentForm } from './forms/ROMAssessmentForm';
@@ -42,7 +44,11 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
   >(null);
   const [hasHealthDataConsent, setHasHealthDataConsent] = useState(false);
   const [isCheckingConsent, setIsCheckingConsent] = useState(true);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const clientId = slot.booking?.client?.id;
+  const bookingId = slot.booking?.id || slot.id;
 
   // Map form types to their required consent types
   const getConsentTypeForForm = (formType: FormType): 'MEDICAL_HISTORY' | 'SOAP_NOTES' | null => {
@@ -68,7 +74,7 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
       }
 
       const requiredConsentType = getConsentTypeForForm(selectedFormType);
-      
+
       // If no form selected or form doesn't require consent, allow selection
       if (!requiredConsentType || selectedFormType === FormType.NONE) {
         setIsCheckingConsent(false);
@@ -91,27 +97,36 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
     checkConsent();
   }, [clientId, selectedFormType]); // Re-check when form type changes
 
-  // Load form data from localStorage on mount
+  // Load form data from backend API on mount
   useEffect(() => {
-    const bookingId = slot.booking?.id || slot.id;
-    const storageKey = `formData_${bookingId}`;
-    const storedData = localStorage.getItem(storageKey);
+    async function loadDraft() {
+      if (!bookingId) {
+        setIsLoadingDraft(false);
+        return;
+      }
 
-    if (storedData) {
       try {
-        const parsed = JSON.parse(storedData);
-        setFormData(parsed);
-        // If stored data exists, use the form type from storage or slot
-        if (parsed.formType) {
-          setSelectedFormType(parsed.formType);
+        setIsLoadingDraft(true);
+        const draft = await bookingFormDraftService.getDraft(bookingId);
+        if (draft?.formData) {
+          setFormData(draft.formData as any);
+          // If stored data exists, use the form type from storage or slot
+          if (draft.formType) {
+            setSelectedFormType(draft.formType as FormType);
+          }
         }
       } catch (error) {
-        console.error('Failed to parse stored form data:', error);
+        console.error('Failed to load draft:', error);
+        // Silently fail - user can still fill out the form
+      } finally {
+        setIsLoadingDraft(false);
       }
     }
-  }, [slot.id, slot.booking?.id]);
 
-  const handleFormTypeChange = (newType: FormType) => {
+    loadDraft();
+  }, [bookingId]);
+
+  const handleFormTypeChange = async (newType: FormType) => {
     if (newType !== selectedFormType && formData) {
       const confirmChange = window.confirm(
         'Changing the form type will clear existing form data. Are you sure?',
@@ -120,27 +135,73 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
         return;
       }
       setFormData(null);
-      const bookingId = slot.booking?.id || slot.id;
-      const storageKey = `formData_${bookingId}`;
-      localStorage.removeItem(storageKey);
+      // Delete draft from backend
+      try {
+        await bookingFormDraftService.deleteDraft(bookingId);
+      } catch (error) {
+        console.error('Failed to delete draft:', error);
+        // Continue anyway - draft will be overwritten on next save
+      }
     }
     setSelectedFormType(newType);
   };
 
-  const handleFormSubmit = (
+  // Auto-save form data with debouncing
+  const { saveNow } = useAutoSave(
+    formData
+      ? {
+          ...formData,
+          formType: selectedFormType,
+        }
+      : null,
+    {
+      onSave: async () => {
+        if (!formData || !bookingId) return;
+
+        setIsSaving(true);
+        try {
+          await bookingFormDraftService.saveDraft(bookingId, {
+            formData: formData as any,
+            formType: selectedFormType,
+            metadata: {
+              savedAt: new Date().toISOString(),
+              formVersion: '1.0',
+            },
+          });
+          setLastSaved(new Date());
+        } catch (error: any) {
+          if (error.response?.status === 429) {
+            // Rate limit - don't show error, just skip this save
+            console.warn('Rate limited - skipping auto-save');
+          } else {
+            console.error('Auto-save failed:', error);
+            // Don't show toast for auto-save failures to avoid annoying user
+          }
+        } finally {
+          setIsSaving(false);
+        }
+      },
+      debounceMs: 2000, // Save 2 seconds after user stops typing
+      enabled: !!formData && selectedFormType !== FormType.NONE,
+    },
+  );
+
+  const handleFormSubmit = async (
     data: SOAPNoteFormData | MedicalHistoryFormData | ROMAssessmentFormData,
   ) => {
     try {
-      const bookingId = slot.booking?.id || slot.id;
-      const storageKey = `formData_${bookingId}`;
-      const dataToStore = {
-        ...data,
-        formType: selectedFormType,
-        savedAt: new Date().toISOString(),
-      };
-      localStorage.setItem(storageKey, JSON.stringify(dataToStore));
       setFormData(data);
+      // Save immediately on submit
+      await saveNow();
       toast.success('Form data saved successfully');
+
+      // Clear draft after successful submission (form is now submitted)
+      try {
+        await bookingFormDraftService.deleteDraft(bookingId);
+      } catch (error) {
+        // Ignore errors when clearing draft
+        console.warn('Failed to clear draft after submission:', error);
+      }
     } catch (error) {
       console.error('Failed to save form data:', error);
       toast.error('Failed to save form data');
@@ -190,13 +251,15 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
     }
   };
 
-  // Show consent banner if checking or if no consent
-  if (isCheckingConsent) {
+  // Show loading state while checking consent or loading draft
+  if (isCheckingConsent || isLoadingDraft) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center min-h-[200px]">
           <div className="text-center">
-            <p className="text-sm font-inter text-muted-foreground">Checking client consent...</p>
+            <p className="text-sm font-inter text-muted-foreground">
+              {isCheckingConsent ? 'Checking client consent...' : 'Loading form draft...'}
+            </p>
           </div>
         </div>
       </div>
@@ -267,6 +330,18 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
                 Default form type for this slot: {FORM_TYPE_LABELS[slot.formType as FormType]}
               </p>
             )}
+            {/* Auto-save indicator */}
+            {formData && (
+              <div className="mt-2">
+                {isSaving ? (
+                  <p className="text-xs font-inter text-muted-foreground">Saving draft...</p>
+                ) : lastSaved ? (
+                  <p className="text-xs font-inter text-green-600 dark:text-green-400">
+                    Draft saved at {lastSaved.toLocaleTimeString()}
+                  </p>
+                ) : null}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -283,7 +358,7 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
       )}
 
       {/* Dynamic Form Rendering - Only show if consent is granted or form doesn't require consent */}
-      {(!requiredConsentType || hasHealthDataConsent || selectedFormType === FormType.NONE) ? (
+      {!requiredConsentType || hasHealthDataConsent || selectedFormType === FormType.NONE ? (
         renderForm()
       ) : (
         <Card>
@@ -291,7 +366,8 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
             <div className="text-center">
               <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="font-inter text-muted-foreground">
-                Client consent is required before you can fill out this form. Please ask the client to grant consent in their account settings.
+                Client consent is required before you can fill out this form. Please ask the client
+                to grant consent in their account settings.
               </p>
             </div>
           </CardContent>

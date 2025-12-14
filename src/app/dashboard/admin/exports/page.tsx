@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { UserSearchSelect } from '@/components/common/UserSearchSelect';
+import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,14 +23,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/redux/hooks/useAppHooks';
 import {
+  type AdminExportFormData,
+  type EncryptedExportResponse,
   adminExportUserData,
   checkIfEncrypted,
   downloadFile,
-  type AdminExportFormData,
-  type EncryptedExportResponse,
 } from '@/services/exportService';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 import { ROLES } from '@/types/types';
 
 export default function AdminExportsPage() {
@@ -75,7 +75,9 @@ export default function AdminExportsPage() {
 
     // Validation - at least one identifier must be provided (or exportAll checked)
     if (!formData.exportAll && !formData.userId && !formData.email?.trim()) {
-      toast.error('Please provide either a User ID, Email, or check "Export All Users". The system can also find users from previous exports using the Request Reference.');
+      toast.error(
+        'Please provide either a User ID, Email, or check "Export All Users". The system can also find users from previous exports using the Request Reference.',
+      );
       return;
     }
 
@@ -103,7 +105,7 @@ export default function AdminExportsPage() {
       if (encryptionCheck.isEncrypted && encryptionCheck.encryptedData) {
         // Handle encrypted export
         const encryptedData = encryptionCheck.encryptedData;
-        
+
         // Store encryption info to show in dialog
         setEncryptedExportInfo({
           exportKey: encryptedData.exportKey || '',
@@ -111,7 +113,7 @@ export default function AdminExportsPage() {
           requestReference: encryptedData.metadata.requestReference,
         });
         setShowEncryptionInfo(true);
-        
+
         toast.success('Encrypted export downloaded successfully');
       } else {
         // Handle unencrypted export
@@ -152,9 +154,8 @@ export default function AdminExportsPage() {
           <CardContent>
             <p className="text-sm text-amber-800 dark:text-amber-200">
               This feature allows you to export user data for DPC (Data Protection Commission)
-              requests. All exports are logged for audit purposes. Encrypted exports are
-              recommended for sensitive data. Ensure you have proper authorization before
-              exporting.
+              requests. All exports are logged for audit purposes. Encrypted exports are recommended
+              for sensitive data. Ensure you have proper authorization before exporting.
             </p>
           </CardContent>
         </Card>
@@ -179,7 +180,8 @@ export default function AdminExportsPage() {
                     User Identification <span className="text-muted-foreground">(Optional)</span>
                   </Label>
                   <p className="text-xs text-muted-foreground mb-4">
-                    Provide either User ID, Email, or check Export All. For DPC requests, the system can also find users from previous exports using the Request Reference.
+                    Provide either User ID, Email, or check Export All. For DPC requests, the system
+                    can also find users from previous exports using the Request Reference.
                   </p>
                 </div>
 
@@ -397,7 +399,8 @@ export default function AdminExportsPage() {
                 Export Key <span className="text-destructive">*</span>
               </Label>
               <p className="text-xs text-muted-foreground mb-2">
-                This is the decryption key for this export. Share this key with DPC to allow them to decrypt the file.
+                This is the decryption key for this export. Share this key with DPC to allow them to
+                decrypt the file.
               </p>
               <div className="flex items-center gap-2">
                 <Input
@@ -419,7 +422,8 @@ export default function AdminExportsPage() {
                 </Button>
               </div>
               <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                ⚠️ Important: This key is unique to this export and is included in the downloaded file. Share it securely with DPC.
+                ⚠️ Important: This key is unique to this export and is included in the downloaded
+                file. Share it securely with DPC.
               </p>
             </div>
 
@@ -468,20 +472,22 @@ export default function AdminExportsPage() {
               </AlertTitle>
               <AlertDescription className="text-green-800 dark:text-amber-200 space-y-2">
                 <p>
-                  The export key above is the decryption key for this specific export. It is included in the downloaded file.
+                  The export key above is the decryption key for this specific export. It is
+                  included in the downloaded file.
                 </p>
                 <ul className="list-disc pl-5 space-y-1 text-sm">
                   <li>
-                    The <strong>Export Key</strong> is stored in the downloaded JSON file under the <code>exportKey</code> field
+                    The <strong>Export Key</strong> is stored in the downloaded JSON file under the{' '}
+                    <code>exportKey</code> field
+                  </li>
+                  <li>Share the Export Key with DPC to allow them to decrypt the file offline</li>
+                  <li>
+                    Each export has its own unique key - this key only works for this specific
+                    export
                   </li>
                   <li>
-                    Share the Export Key with DPC to allow them to decrypt the file offline
-                  </li>
-                  <li>
-                    Each export has its own unique key - this key only works for this specific export
-                  </li>
-                  <li>
-                    The key should be kept secure and only shared with authorized personnel (e.g., DPC)
+                    The key should be kept secure and only shared with authorized personnel (e.g.,
+                    DPC)
                   </li>
                 </ul>
               </AlertDescription>
@@ -497,7 +503,8 @@ export default function AdminExportsPage() {
                   <code>iv</code> - Initialization vector used for encryption
                 </li>
                 <li>
-                  <code>exportKey</code> - <strong>Hex-encoded decryption key for this export</strong> (shown above)
+                  <code>exportKey</code> -{' '}
+                  <strong>Hex-encoded decryption key for this export</strong> (shown above)
                 </li>
                 <li>
                   <code>keyId</code> - Key identifier for reference
@@ -519,4 +526,3 @@ export default function AdminExportsPage() {
     </DashboardPageWrapper>
   );
 }
-

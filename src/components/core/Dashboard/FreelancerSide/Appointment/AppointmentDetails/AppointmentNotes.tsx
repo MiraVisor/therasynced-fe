@@ -212,7 +212,7 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
         {!hasConsent && appointment.status === 'PENDING' && (
           <Alert variant="destructive" className="mt-2" role="alert" id="notes-consent-required">
             <AlertDescription>
-              {clientId 
+              {clientId
                 ? `The client must grant consent for SOAP notes before you can add or edit notes. Please ask the client to grant consent in their account settings.`
                 : `You must grant explicit consent for SOAP notes before you can add or edit notes.`}
             </AlertDescription>

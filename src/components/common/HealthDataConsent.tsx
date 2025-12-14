@@ -236,9 +236,12 @@ export function HealthDataConsent({
         {consentGranted ? (
           <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
             <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-            <AlertTitle className="text-green-900 dark:text-green-100">Client Consent Granted</AlertTitle>
+            <AlertTitle className="text-green-900 dark:text-green-100">
+              Client Consent Granted
+            </AlertTitle>
             <AlertDescription className="text-green-800 dark:text-green-200">
-              The client has granted consent for {consentType.replace(/_/g, ' ').toLowerCase()} data processing.
+              The client has granted consent for {consentType.replace(/_/g, ' ').toLowerCase()} data
+              processing.
               {consentTimestamp && (
                 <span className="block mt-1 text-xs">
                   Granted on: {new Date(consentTimestamp).toLocaleString()}
@@ -251,7 +254,9 @@ export function HealthDataConsent({
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Client Consent Required</AlertTitle>
             <AlertDescription>
-              The client must grant consent for {consentType.replace(/_/g, ' ').toLowerCase()} data processing before this form can be submitted. Please ask the client to grant consent in their account settings.
+              The client must grant consent for {consentType.replace(/_/g, ' ').toLowerCase()} data
+              processing before this form can be submitted. Please ask the client to grant consent
+              in their account settings.
             </AlertDescription>
           </Alert>
         )}
