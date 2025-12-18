@@ -2,9 +2,11 @@
 
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const Footer = () => {
   useTheme();
+  const router = useRouter();
 
   return (
     <footer className="w-full flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-100 dark:bg-neutral-900/50 backdrop-blur-sm transition-colors duration-300">
@@ -29,6 +31,12 @@ const Footer = () => {
               <li>
                 <Link
                   href="#about"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('about');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else router.push('/#about');
+                  }}
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
                   About
@@ -37,6 +45,12 @@ const Footer = () => {
               <li>
                 <Link
                   href="#services"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('services');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else router.push('/#services');
+                  }}
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
                   Services
@@ -45,6 +59,12 @@ const Footer = () => {
               <li>
                 <Link
                   href="#features"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('features');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else router.push('/#features');
+                  }}
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
                   Features
@@ -53,6 +73,12 @@ const Footer = () => {
               <li>
                 <Link
                   href="#freelancers"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('freelancers');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else router.push('/#freelancers');
+                  }}
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
                   Experts
@@ -61,6 +87,12 @@ const Footer = () => {
               <li>
                 <Link
                   href="#pricing"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('pricing');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else router.push('/#pricing');
+                  }}
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
                   Pricing
