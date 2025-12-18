@@ -183,11 +183,10 @@ const Features = () => {
             >
               <div className="flex items-center gap-2">
                 {value.title}
-                {value.comingSoon && (
-                  <Badge variant="secondary" className="text-xs">
-                    Coming Soon
-                  </Badge>
-                )}
+
+                <Badge variant="secondary" className="text-xs">
+                  Coming Soon
+                </Badge>
               </div>
             </button>
           ))}
