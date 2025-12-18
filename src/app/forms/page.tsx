@@ -130,3 +130,15 @@
 //     </div>
 //   );
 // }
+export default function FormsPage() {
+  return (
+    <div className="min-h-screen bg-background py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-poppins font-bold text-charcoal">Medical Forms</h1>
+          <p className="text-lg font-inter text-muted-foreground">Forms page coming soon</p>
+        </div>
+      </div>
+    </div>
+  );
+}
