@@ -12,7 +12,7 @@ import {
   Mail,
   MapPin,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
@@ -125,6 +125,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
   const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
   const [isLoadingJobTitles, setIsLoadingJobTitles] = useState(false);
+  const prevStepRef = useRef(1);
 
   const {
     register,
@@ -160,6 +161,14 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       loadJobTitles();
     }
   }, [selectedRole]);
+
+  // Reset authMethod when navigating back to step 2 from step 3 to show selection screen
+  useEffect(() => {
+    if (currentStep === 2 && prevStepRef.current === 3 && authMethod !== null) {
+      setAuthMethod(null);
+    }
+    prevStepRef.current = currentStep;
+  }, [currentStep]);
 
   const loadJobTitles = async () => {
     try {
@@ -318,7 +327,18 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      // If on step 2 and authMethod is set, reset authMethod to show selection screen (stay on step 2)
+      if (currentStep === 2 && authMethod !== null) {
+        setAuthMethod(null);
+        return; // Stay on step 2, just reset the auth method
+      }
+      // Otherwise, go to previous step normally
+      const newStep = currentStep - 1;
+      // If going back from step 3 to step 2, reset authMethod to show selection screen
+      if (currentStep === 3 && newStep === 2) {
+        setAuthMethod(null);
+      }
+      setCurrentStep(newStep);
     }
   };
 
