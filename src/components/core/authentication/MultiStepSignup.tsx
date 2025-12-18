@@ -382,13 +382,28 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
           setLocationPermissionGranted(true);
           toast.success(`Location found: ${data.city}`);
         } else {
-          toast.error('Could not determine your city from location');
+          toast.warn('Could not determine your city from location. Please select manually.');
         }
       } catch (error) {
-        toast.error('Failed to get city name from location');
+        console.error('Geocoding error:', error);
+        toast.warn('Failed to get city name from location. Please select manually.');
       }
-    } catch (error) {
-      toast.error('Location access denied or unavailable. Please select your city manually.');
+    } catch (error: any) {
+      // Handle different geolocation error types
+      const errorCode = error?.code;
+      if (errorCode === 1) {
+        // PERMISSION_DENIED
+        toast.info('Location access was denied. Please select your city manually.');
+      } else if (errorCode === 2) {
+        // POSITION_UNAVAILABLE
+        toast.warn('Location unavailable. Please select your city manually.');
+      } else if (errorCode === 3) {
+        // TIMEOUT
+        toast.warn('Location request timed out. Please select your city manually.');
+      } else {
+        // Unknown error
+        toast.warn('Unable to get your location. Please select your city manually.');
+      }
     } finally {
       setIsRequestingLocation(false);
     }

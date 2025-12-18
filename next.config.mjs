@@ -63,7 +63,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
           },
           {
             key: 'Strict-Transport-Security',
@@ -79,7 +79,7 @@ const nextConfig = {
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                     "font-src 'self' https://fonts.gstatic.com data:",
                     "img-src 'self' data: https: blob:",
-                    "connect-src 'self' http://localhost:* https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com ws://localhost:* wss://backend.mehadnadeem.com",
+                    "connect-src 'self' http://localhost:* https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com https://api.bigdatacloud.net ws://localhost:* wss://backend.mehadnadeem.com",
                     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
                     "object-src 'none'",
                     "base-uri 'self'",
@@ -92,7 +92,7 @@ const nextConfig = {
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                     "font-src 'self' https://fonts.gstatic.com data:",
                     "img-src 'self' data: https: blob:",
-                    "connect-src 'self' https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com wss://backend.mehadnadeem.com",
+                    "connect-src 'self' https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com https://api.bigdatacloud.net wss://backend.mehadnadeem.com",
                     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
                     "object-src 'none'",
                     "base-uri 'self'",
