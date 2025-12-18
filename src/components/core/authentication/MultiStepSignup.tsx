@@ -83,6 +83,15 @@ const signupSchema = z
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
     mainJobTitleId: z.string().optional(),
+    termsAccepted: z.boolean().refine((val) => val === true, {
+      message: 'You must accept the Terms of Service to continue',
+    }),
+    privacyAccepted: z.boolean().refine((val) => val === true, {
+      message: 'You must accept the Privacy Policy to continue',
+    }),
+    dataProcessingConsent: z.boolean().refine((val) => val === true, {
+      message: 'You must consent to data processing to continue',
+    }),
   })
   .refine(
     (data) => {
@@ -184,6 +193,9 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       role: '',
       clinicAddress: '',
       mainJobTitleId: '',
+      termsAccepted: false,
+      privacyAccepted: false,
+      dataProcessingConsent: false,
     },
     mode: 'onChange',
   });
@@ -192,6 +204,9 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const selectedDob = watch('dob');
   const selectedJobTitleId = watch('mainJobTitleId');
   const selectedGender = watch('gender');
+  const termsAccepted = watch('termsAccepted');
+  const privacyAccepted = watch('privacyAccepted');
+  const dataProcessingConsent = watch('dataProcessingConsent');
 
   // Load job titles when role is freelancer
   useEffect(() => {
@@ -242,12 +257,14 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       return [
         { id: 1, title: 'Role' },
         { id: 2, title: 'Account & Details' },
+        { id: 3, title: 'Consent & Agreements' },
       ];
     } else if (selectedRole === 'freelancer') {
       return [
         { id: 1, title: 'Role' },
         { id: 2, title: 'Account & Details' },
         { id: 3, title: 'Professional Info' },
+        { id: 4, title: 'Consent & Agreements' },
       ];
     }
     return [{ id: 1, title: 'Role' }];
@@ -276,9 +293,17 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         // For OAuth, validate name, email, and dob
         return await trigger(['name', 'email', 'dob', 'gender', 'genderOther']);
       case 3:
-        // Professional info for freelancer
+        // Professional info for freelancer, or consent for patient
         if (selectedRole === 'freelancer') {
           return await trigger('mainJobTitleId');
+        } else if (selectedRole === 'patient') {
+          return await trigger(['termsAccepted', 'privacyAccepted', 'dataProcessingConsent']);
+        }
+        return true;
+      case 4:
+        // Consent step for freelancer
+        if (selectedRole === 'freelancer') {
+          return await trigger(['termsAccepted', 'privacyAccepted', 'dataProcessingConsent']);
         }
         return true;
       default:
@@ -302,12 +327,12 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     }
 
     // Handle completion
-    if (selectedRole === 'patient' && currentStep === 2) {
+    if (selectedRole === 'patient' && currentStep === 3) {
       handleSubmit();
       return;
     }
 
-    if (selectedRole === 'freelancer' && currentStep === 3) {
+    if (selectedRole === 'freelancer' && currentStep === 4) {
       handleSubmit();
       return;
     }
@@ -410,6 +435,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,
       mainJobTitleId:
         selectedRole === 'freelancer' ? formValues.mainJobTitleId || undefined : undefined,
+      // Note: Consent fields (termsAccepted, privacyAccepted, dataProcessingConsent)
+      // are validated on frontend but not sent to backend as they're not in the API schema
     };
 
     // Remove undefined values
@@ -443,7 +470,31 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
         return hasValidName && hasValidEmail && hasValidPassword && hasValidDob && hasValidGender;
       case 3:
-        return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
+        if (selectedRole === 'freelancer') {
+          return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
+        } else if (selectedRole === 'patient') {
+          return (
+            termsAccepted === true &&
+            privacyAccepted === true &&
+            dataProcessingConsent === true &&
+            !errors.termsAccepted &&
+            !errors.privacyAccepted &&
+            !errors.dataProcessingConsent
+          );
+        }
+        return true;
+      case 4:
+        if (selectedRole === 'freelancer') {
+          return (
+            termsAccepted === true &&
+            privacyAccepted === true &&
+            dataProcessingConsent === true &&
+            !errors.termsAccepted &&
+            !errors.privacyAccepted &&
+            !errors.dataProcessingConsent
+          );
+        }
+        return true;
       default:
         return true;
     }
@@ -1106,6 +1157,118 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         );
 
       case 3:
+        // Professional Info (Freelancer only) OR Consent (Patient)
+        if (selectedRole === 'patient') {
+          // Consent step for patients
+          return (
+            <div className="w-full space-y-6 animate-in fade-in duration-300">
+              <div className="text-center space-y-2 mb-6">
+                <h2 className="text-2xl font-poppins font-bold text-charcoal">
+                  Consent & Agreements
+                </h2>
+                <p className="text-sm font-inter text-gray-600">
+                  Please review and accept the following to complete your registration
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                {/* Terms of Service */}
+                <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      {...register('termsAccepted', {
+                        onChange: () => trigger('termsAccepted'),
+                      })}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-inter font-semibold text-charcoal">
+                        I accept the{' '}
+                        <a
+                          href="/terms"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Terms of Service
+                        </a>
+                      </span>
+                      {errors.termsAccepted && (
+                        <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                          {errors.termsAccepted.message}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                </div>
+
+                {/* Privacy Policy */}
+                <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      {...register('privacyAccepted', {
+                        onChange: () => trigger('privacyAccepted'),
+                      })}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-inter font-semibold text-charcoal">
+                        I accept the{' '}
+                        <a
+                          href="/privacy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Privacy Policy
+                        </a>
+                      </span>
+                      {errors.privacyAccepted && (
+                        <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                          {errors.privacyAccepted.message}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                </div>
+
+                {/* Data Processing Consent */}
+                <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      {...register('dataProcessingConsent', {
+                        onChange: () => trigger('dataProcessingConsent'),
+                      })}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-inter font-semibold text-charcoal">
+                        I consent to the processing of my personal data
+                      </span>
+                      <p className="text-xs font-inter text-gray-600 mt-1">
+                        By checking this box, you consent to TheraSynced processing your personal
+                        data in accordance with our Privacy Policy. This includes data necessary for
+                        account management, booking services, and healthcare service delivery. You
+                        can withdraw your consent at any time.
+                      </p>
+                      {errors.dataProcessingConsent && (
+                        <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                          {errors.dataProcessingConsent.message}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
         // Professional Info (Freelancer only) - Combined Job Title + Clinic Address
         return (
           <div className="w-full space-y-6 animate-in fade-in duration-300">
@@ -1228,13 +1391,115 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
           </div>
         );
 
+      case 4:
+        // Consent step for freelancers
+        return (
+          <div className="w-full space-y-6 animate-in fade-in duration-300">
+            <div className="text-center space-y-2 mb-6">
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">
+                Consent & Agreements
+              </h2>
+              <p className="text-sm font-inter text-gray-600">
+                Please review and accept the following to complete your registration
+              </p>
+            </div>
+
+            <div className="space-y-5">
+              {/* Terms of Service */}
+              <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    {...register('termsAccepted')}
+                    className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-inter font-semibold text-charcoal">
+                      I accept the{' '}
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Terms of Service
+                      </a>
+                    </span>
+                    {errors.termsAccepted && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.termsAccepted.message}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              </div>
+
+              {/* Privacy Policy */}
+              <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    {...register('privacyAccepted')}
+                    className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-inter font-semibold text-charcoal">
+                      I accept the{' '}
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Privacy Policy
+                      </a>
+                    </span>
+                    {errors.privacyAccepted && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.privacyAccepted.message}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              </div>
+
+              {/* Data Processing Consent */}
+              <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    {...register('dataProcessingConsent')}
+                    className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-inter font-semibold text-charcoal">
+                      I consent to the processing of my personal data
+                    </span>
+                    <p className="text-xs font-inter text-gray-600 mt-1">
+                      By checking this box, you consent to TheraSynced processing your personal data
+                      in accordance with our Privacy Policy. This includes data necessary for
+                      account management, booking services, and healthcare service delivery. You can
+                      withdraw your consent at any time.
+                    </p>
+                    {errors.dataProcessingConsent && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.dataProcessingConsent.message}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
   };
 
   // Calculate progress
-  const totalSteps = selectedRole === 'patient' ? 2 : selectedRole === 'freelancer' ? 3 : 1;
+  const totalSteps = selectedRole === 'patient' ? 3 : selectedRole === 'freelancer' ? 4 : 1;
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
