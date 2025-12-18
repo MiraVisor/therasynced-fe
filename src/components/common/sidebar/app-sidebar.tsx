@@ -276,7 +276,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
               <Button
                 onClick={() => {
                   logout();
-                  window.location.href = '/';
+                  router.replace('/');
                 }}
                 variant="ghost"
                 className="w-full gap-2"
