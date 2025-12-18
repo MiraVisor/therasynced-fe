@@ -416,7 +416,7 @@ export default function AccountPage() {
   const handleSignOut = () => {
     setShowSignOutModal(false);
     logout();
-    window.location.href = '/authentication/sign-in';
+    window.location.href = '/';
   };
 
   // Show billing only for freelancers and admins

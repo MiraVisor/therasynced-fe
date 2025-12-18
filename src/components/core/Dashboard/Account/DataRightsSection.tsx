@@ -164,7 +164,7 @@ export function DataRightsSection() {
 
       setTimeout(() => {
         logout();
-        router.push('/authentication/sign-in');
+        router.push('/');
       }, 2000);
     } catch (error: any) {
       toast.error(error?.message || 'Failed to delete account. Please contact support.');
