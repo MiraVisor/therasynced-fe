@@ -2,7 +2,7 @@
 
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -126,6 +126,9 @@ export default function MyBookingsPage() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [bookingToRate, setBookingToRate] = useState<Booking | null>(null);
 
+  const searchParams = useSearchParams();
+  const isFromBooking = searchParams.get('fromBooking') === 'true';
+
   const fetchBookingStats = useCallback(async () => {
     setIsLoadingStats(true);
     try {
@@ -145,7 +148,7 @@ export default function MyBookingsPage() {
   }, []);
 
   const fetchBookingsForWeek = useCallback(
-    async (weekStartDate: Date, resetBookings = false) => {
+    async (weekStartDate: Date, resetBookings = false, fetchAll = false) => {
       // Calculate week range (Monday 00:00 to Sunday 23:59:59)
       const weekStart = new Date(weekStartDate);
       weekStart.setHours(0, 0, 0, 0);
@@ -157,17 +160,31 @@ export default function MyBookingsPage() {
       const hasBookings = bookings.length > 0;
 
       try {
-        // Fetch with pagination and sorting using the week start date
-        await dispatch(
-          fetchUserBookings({
-            page: 1,
-            limit: 1000,
-            sortBy: 'slot.startTime',
-            sortOrder: 'asc',
-            silent: hasBookings && !resetBookings,
-            date: weekStart.toISOString().split('T')[0], // Format: YYYY-MM-DD
-          }) as any,
-        ).unwrap();
+        // If fetchAll is true or resetBookings is true, fetch all upcoming bookings first
+        if (fetchAll || resetBookings) {
+          await dispatch(
+            fetchUserBookings({
+              page: 1,
+              limit: 1000,
+              sortBy: 'slot.startTime',
+              sortOrder: 'asc',
+              silent: false, // Force refresh
+              // No date filter - get all upcoming bookings
+            }) as any,
+          ).unwrap();
+        } else {
+          // Fetch with pagination and sorting using the week start date
+          await dispatch(
+            fetchUserBookings({
+              page: 1,
+              limit: 1000,
+              sortBy: 'slot.startTime',
+              sortOrder: 'asc',
+              silent: hasBookings,
+              date: weekStart.toISOString().split('T')[0], // Format: YYYY-MM-DD
+            }) as any,
+          ).unwrap();
+        }
       } catch (error) {
         console.error('Failed to fetch bookings:', error);
         toast.error('Failed to load bookings for this week');
@@ -176,10 +193,25 @@ export default function MyBookingsPage() {
     [dispatch, bookings.length],
   );
 
+  // Handle navigation from booking creation
+  useEffect(() => {
+    if (isFromBooking) {
+      // Fetch all bookings (not just current week) to ensure new booking shows
+      fetchBookingsForWeek(currentWeekStart, true, true);
+
+      // Remove the query parameter from URL
+      router.replace('/dashboard/my-bookings', { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFromBooking]);
+
   // Fetch bookings for the week
   useEffect(() => {
-    fetchBookingsForWeek(currentWeekStart, true);
-  }, [fetchBookingsForWeek, currentWeekStart]);
+    // Only fetch if not coming from booking creation (that's handled above)
+    if (!isFromBooking) {
+      fetchBookingsForWeek(currentWeekStart, true, false);
+    }
+  }, [fetchBookingsForWeek, currentWeekStart, isFromBooking]);
 
   // Handler functions for booking actions
   const handleMessage = (booking: Booking) => {

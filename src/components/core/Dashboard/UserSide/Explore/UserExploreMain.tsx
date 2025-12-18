@@ -1,8 +1,8 @@
 'use client';
 
 import { ArrowRight, Calendar, Heart, MessageCircle, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
@@ -120,6 +120,7 @@ const getUpcomingAppointments = (bookings: any[]) => {
 
 const UserExploreMain = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
   const { favorites, loading, bookings, bookingsLoading } = useSelector(
@@ -131,23 +132,132 @@ const UserExploreMain = () => {
   const [selectedFreelancer, setSelectedFreelancer] = useState<Expert | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  // Fetch all-time bookings for stats
+  // Track if this is the initial mount
+  const isInitialMount = useRef(true);
+  const lastRefreshTime = useRef(0);
+  const prevPathnameRef = useRef(pathname);
+  const REFRESH_THROTTLE = 30000; // 30 seconds
+
+  // Use refs to track current values without causing re-renders
+  const bookingsRef = useRef(bookings);
+  const favoritesRef = useRef(favorites);
+  const expertsRef = useRef(allExperts);
+
+  // Update refs when values change
+  useEffect(() => {
+    bookingsRef.current = bookings;
+    favoritesRef.current = favorites;
+    expertsRef.current = allExperts;
+  }, [bookings, favorites, allExperts]);
+
+  // Initial fetch - only if no data exists
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const hasBookings = bookings && bookings.length > 0;
-    dispatch(fetchExplorePatientBookings({ silent: hasBookings }) as any);
-  }, [dispatch, isAuthenticated, bookings?.length]);
+    // Only fetch on initial mount if no data exists
+    if (isInitialMount.current) {
+      const hasBookings = bookings && bookings.length > 0;
+      const hasFavorites = favorites && favorites.length > 0;
+      const hasExperts = allExperts && allExperts.length > 0;
 
-  // Fetch favorites and experts
+      // Fetch only what's missing
+      if (!hasBookings) {
+        dispatch(fetchExplorePatientBookings({ silent: false }) as any);
+      }
+      if (!hasFavorites) {
+        dispatch(fetchAllFavoriteFreelancers({ silent: false }) as any);
+      }
+      if (!hasExperts) {
+        dispatch(fetchFreelancers({ silent: false }) as any);
+      }
+
+      isInitialMount.current = false;
+    }
+  }, [dispatch, isAuthenticated]);
+
+  // Background refresh when page becomes visible or user navigates back
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const hasFavorites = favorites && favorites.length > 0;
-    const hasExperts = allExperts && allExperts.length > 0;
-    dispatch(fetchAllFavoriteFreelancers({ silent: hasFavorites }) as any);
-    dispatch(fetchFreelancers({ silent: hasExperts }) as any);
-  }, [dispatch, isAuthenticated, favorites?.length, allExperts?.length]);
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        const now = Date.now();
+        // Throttle refreshing to prevent excessive API calls
+        if (now - lastRefreshTime.current < REFRESH_THROTTLE) {
+          return;
+        }
+
+        lastRefreshTime.current = now;
+
+        // Get current state from refs (don't use dependencies)
+        const currentBookings = bookingsRef.current && bookingsRef.current.length > 0;
+        const currentFavorites = favoritesRef.current && favoritesRef.current.length > 0;
+        const currentExperts = expertsRef.current && expertsRef.current.length > 0;
+
+        // Only refresh if data exists (silent background refresh)
+        if (currentBookings) {
+          dispatch(fetchExplorePatientBookings({ silent: true }) as any);
+        }
+        if (currentFavorites) {
+          dispatch(fetchAllFavoriteFreelancers({ silent: true }) as any);
+        }
+        if (currentExperts) {
+          dispatch(fetchFreelancers({ silent: true }) as any);
+        }
+      }
+    };
+
+    // Listen for visibility changes and focus events
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
+    // Remove array length dependencies - only depend on dispatch and isAuthenticated
+  }, [dispatch, isAuthenticated]);
+
+  // Background refresh when navigating back to this page (dashboard home)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Track pathname changes
+    const pathnameChanged = prevPathnameRef.current !== pathname;
+    prevPathnameRef.current = pathname;
+
+    if (isInitialMount.current) {
+      return; // Skip on initial mount
+    }
+
+    // Only refresh when pathname actually changes TO /dashboard
+    if (pathnameChanged && pathname === '/dashboard') {
+      const now = Date.now();
+      // Throttle refreshing
+      if (now - lastRefreshTime.current < REFRESH_THROTTLE) {
+        return;
+      }
+
+      lastRefreshTime.current = now;
+
+      // Get current state from refs (don't use dependencies)
+      const currentBookings = bookingsRef.current && bookingsRef.current.length > 0;
+      const currentFavorites = favoritesRef.current && favoritesRef.current.length > 0;
+      const currentExperts = expertsRef.current && expertsRef.current.length > 0;
+
+      // Only refresh if data exists (silent background refresh)
+      if (currentBookings) {
+        dispatch(fetchExplorePatientBookings({ silent: true }) as any);
+      }
+      if (currentFavorites) {
+        dispatch(fetchAllFavoriteFreelancers({ silent: true }) as any);
+      }
+      if (currentExperts) {
+        dispatch(fetchFreelancers({ silent: true }) as any);
+      }
+    }
+    // Only depend on pathname and dispatch - not on data arrays
+  }, [pathname, dispatch, isAuthenticated]);
 
   // Process data - map favorites through the same function as experts
   const favoritesList = favorites?.map((favorite: any) => mapFreelancerToExpert(favorite)) || [];

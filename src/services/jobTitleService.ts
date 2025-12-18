@@ -11,11 +11,16 @@ export const jobTitleService = {
       // Handle the actual response structure
       const responseData = response.data;
 
-      console.log('Job titles API response:', responseData);
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Job titles API response:', responseData);
+      }
 
       // Check if response is directly an array
       if (Array.isArray(responseData)) {
-        console.log(`Found ${responseData.length} job titles (direct array)`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Found ${responseData.length} job titles (direct array)`);
+        }
         return {
           success: true,
           data: responseData,
@@ -24,7 +29,9 @@ export const jobTitleService = {
 
       // Check if response has success and data fields
       if (responseData.success && Array.isArray(responseData.data)) {
-        console.log(`Found ${responseData.data.length} job titles (success.data)`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Found ${responseData.data.length} job titles (success.data)`);
+        }
         return {
           success: true,
           data: responseData.data,
@@ -33,14 +40,18 @@ export const jobTitleService = {
 
       // Check if response has data field that's an array
       if (Array.isArray(responseData.data)) {
-        console.log(`Found ${responseData.data.length} job titles (data field)`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Found ${responseData.data.length} job titles (data field)`);
+        }
         return {
           success: true,
           data: responseData.data,
         };
       }
 
-      console.warn('Unexpected job titles response structure:', responseData);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Unexpected job titles response structure:', responseData);
+      }
       // If no job titles exist, return empty array
       return {
         success: true,

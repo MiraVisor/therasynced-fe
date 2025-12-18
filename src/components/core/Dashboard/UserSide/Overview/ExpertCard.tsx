@@ -192,6 +192,42 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         </CardHeader>
 
         <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
+          {/* Therapist Context - Specialty, Job Title, Services */}
+          {(specialty || jobTitle?.name || (services && services.length > 0)) && (
+            <div className="mb-4 space-y-2">
+              {jobTitle?.name && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-poppins font-semibold text-primary">
+                    {jobTitle.name}
+                  </span>
+                </div>
+              )}
+              {specialty && (
+                <p className="text-sm font-inter text-gray-700 dark:text-gray-300 line-clamp-2">
+                  {specialty}
+                </p>
+              )}
+              {services && services.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {services.slice(0, 3).map((service: any, index: number) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="text-xs px-2 py-0.5 bg-primary/10 text-primary border border-primary/20"
+                    >
+                      {service.name || service}
+                    </Badge>
+                  ))}
+                  {services.length > 3 && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      +{services.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Expert Details */}
           <div className="mb-4 space-y-2 bg-gradient-to-br from-mint/10 to-transparent rounded-lg p-3">
             {cardInfo?.totalRatings && (

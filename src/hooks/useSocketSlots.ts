@@ -191,7 +191,14 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleSlotReservationFailed = (event: CustomEvent) => {
       console.error('Slot reservation failed:', event.detail);
-      // Optionally show a toast notification
+      const errorDetail = event.detail;
+      const errorMessage =
+        errorDetail?.error || 'This slot is currently unavailable. Please select another time.';
+
+      toast.error(errorMessage, {
+        position: 'top-right',
+        autoClose: 5000,
+      });
     };
 
     // Add event listeners
@@ -240,7 +247,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     // Leave room when freelancerId changes or component unmounts
     return () => {
-      if (freelancerId) {
+      if (freelancerId && socketService.isSocketConnected()) {
         socketService.leaveFreelancerSlots(freelancerId);
       }
     };
