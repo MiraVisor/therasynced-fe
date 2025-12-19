@@ -114,6 +114,11 @@ const navigationLinks = {
       icon: BarChart,
     },
     {
+      name: 'Form Templates',
+      url: '/dashboard/form-templates',
+      icon: FileText,
+    },
+    {
       name: 'Account',
       url: '/dashboard/account',
       icon: Settings,
@@ -159,6 +164,11 @@ const navigationLinks = {
       name: 'Service Categories',
       url: '/dashboard/admin/service-categories',
       icon: Tag,
+    },
+    {
+      name: 'Form Templates',
+      url: '/dashboard/admin/form-templates',
+      icon: FileText,
     },
     {
       name: 'Bookings',
