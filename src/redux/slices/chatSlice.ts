@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import chatService, { ChatMessage } from '@/services/chatService';
+import chatService, { ChatMessage, ConversationContext, MessageType } from '@/services/chatService';
 
 // Types for the enhanced chat state
 export interface ChatContactState {
@@ -19,8 +19,13 @@ export interface ChatContactState {
   lastAppointment?: {
     id: string;
     status: string;
+    completedAt?: string;
   };
   isOnline?: boolean;
+  context?: ConversationContext;
+  allowPreBookingMessages?: boolean;
+  isArchived?: boolean;
+  postCareDaysRemaining?: number;
 }
 
 interface ConnectionInfo {
@@ -53,8 +58,10 @@ interface PaginationInfo {
 interface ChatState {
   // Core data
   contacts: ChatContactState[];
+  archivedContacts: ChatContactState[];
   conversations: { [conversationId: string]: ChatMessage[] };
   activeConversationId: string | null;
+  conversationContexts: { [conversationId: string]: ConversationContext };
 
   // Connection state
   isConnected: boolean;
@@ -83,8 +90,10 @@ interface ChatState {
 
 const initialState: ChatState = {
   contacts: [],
+  archivedContacts: [],
   conversations: {},
   activeConversationId: null,
+  conversationContexts: {},
   isConnected: false,
   connectionInfo: {},
   unreadCounts: {},
@@ -125,12 +134,32 @@ export const fetchContacts = createAsyncThunk(
 
 export const sendMessage = createAsyncThunk(
   'chat/sendMessage',
-  async (data: { recipientId: string; content: string }, { rejectWithValue }) => {
+  async (
+    data: { recipientId: string; content: string; bookingId?: string; messageType?: string },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await chatService.sendMessage(data);
+      const response = await chatService.sendMessage({
+        recipientId: data.recipientId,
+        content: data.content,
+        bookingId: data.bookingId,
+        messageType: data.messageType as MessageType,
+      });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to send message');
+    }
+  },
+);
+
+export const archiveConversationThunk = createAsyncThunk(
+  'chat/archiveConversation',
+  async (conversationId: string, { rejectWithValue }) => {
+    try {
+      await chatService.archiveConversation(conversationId);
+      return conversationId;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to archive conversation');
     }
   },
 );
@@ -165,6 +194,8 @@ export interface GetMessagesData {
 export interface SendMessageData {
   recipientId: string;
   content: string;
+  bookingId?: string;
+  messageType?: string;
 }
 
 export interface Message extends ChatMessage {}
@@ -381,6 +412,46 @@ const chatSlice = createSlice({
         contact.unreadCount = 0;
       }
     },
+
+    archiveConversation: (state, action) => {
+      const conversationId = action.payload;
+      const contact = state.contacts.find((c) => c.conversationId === conversationId);
+      if (contact) {
+        contact.isArchived = true;
+        state.archivedContacts.push(contact);
+        state.contacts = state.contacts.filter((c) => c.conversationId !== conversationId);
+      }
+    },
+
+    unarchiveConversation: (state, action) => {
+      const conversationId = action.payload;
+      const contact = state.archivedContacts.find((c) => c.conversationId === conversationId);
+      if (contact) {
+        contact.isArchived = false;
+        state.contacts.push(contact);
+        state.archivedContacts = state.archivedContacts.filter(
+          (c) => c.conversationId !== conversationId,
+        );
+      }
+    },
+
+    updateConversationContext: (state, action) => {
+      const { conversationId, context } = action.payload;
+      state.conversationContexts[conversationId] = context;
+
+      // Update contact context
+      const contact = state.contacts.find((c) => c.conversationId === conversationId);
+      if (contact) {
+        contact.context = context;
+      }
+
+      const archivedContact = state.archivedContacts.find(
+        (c) => c.conversationId === conversationId,
+      );
+      if (archivedContact) {
+        archivedContact.context = context;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -394,7 +465,18 @@ const chatSlice = createSlice({
       })
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.loading.contacts = false;
-        state.contacts = action.payload;
+        // Separate archived and active contacts
+        const allContacts = action.payload;
+        state.contacts = allContacts.filter((contact) => !contact.isArchived);
+        state.archivedContacts = allContacts.filter((contact) => contact.isArchived);
+
+        // Update conversation contexts
+        allContacts.forEach((contact) => {
+          if (contact.context && contact.conversationId) {
+            state.conversationContexts[contact.conversationId] = contact.context;
+          }
+        });
+
         // Legacy compatibility
         state.isLoadingContacts = false;
       })
@@ -458,6 +540,24 @@ const chatSlice = createSlice({
       .addCase(sendMessage.rejected, (state, action) => {
         state.loading.sending = false;
         state.errorState.sending = action.payload as string;
+      })
+
+      // Archive conversation
+      .addCase(archiveConversationThunk.pending, (state) => {
+        // No loading state needed for archiving
+      })
+      .addCase(archiveConversationThunk.fulfilled, (state, action) => {
+        const conversationId = action.payload;
+        const contact = state.contacts.find((c) => c.conversationId === conversationId);
+        if (contact) {
+          contact.isArchived = true;
+          state.archivedContacts.push(contact);
+          state.contacts = state.contacts.filter((c) => c.conversationId !== conversationId);
+        }
+      })
+      .addCase(archiveConversationThunk.rejected, (state, action) => {
+        // Handle error if needed
+        console.error('Failed to archive conversation:', action.payload);
       })
 
       // Fetch messages
@@ -532,6 +632,9 @@ export const {
   setRefreshing,
   updateTypingIndicator,
   clearError,
+  archiveConversation,
+  unarchiveConversation,
+  updateConversationContext,
   // Legacy actions
   setSelectedContact,
   addMessage,

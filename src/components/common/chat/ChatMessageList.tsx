@@ -1,10 +1,11 @@
 'use client';
 
 import { format, isToday, isYesterday } from 'date-fns';
-import { Check, CheckCheck, Clock } from 'lucide-react';
+import { Calendar, Check, CheckCheck, Clock } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -195,6 +196,22 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
                     )}
 
                     <div className="max-w-xs lg:max-w-md">
+                      {message.bookingId && (
+                        <div
+                          className={cn(
+                            'mb-1',
+                            isOwnMessage ? 'flex justify-end' : 'flex justify-start',
+                          )}
+                        >
+                          <Badge
+                            variant="outline"
+                            className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Linked to booking
+                          </Badge>
+                        </div>
+                      )}
                       <div
                         className={cn(
                           'px-4 py-2 rounded-lg',

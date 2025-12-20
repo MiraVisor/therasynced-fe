@@ -183,6 +183,8 @@ export default function MyBookingsPage() {
 
   // Handler functions for booking actions
   const handleMessage = (booking: Booking) => {
+    const freelancerId = booking.slot.freelancer.id;
+    router.push(`/dashboard/messages?freelancerId=${freelancerId}&bookingId=${booking.id}`);
     // Navigate to messages page with the freelancer
     router.push(`/dashboard/messages?freelancerId=${booking.slot.freelancer.id}`);
   };

@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns';
 import { Check, CheckCheck, ChevronLeft, Search, Send, User } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -45,8 +45,11 @@ const MessagesPage = () => {
   const currentUser = getDecodedToken();
   const currentUserId = currentUser?.sub;
   const { role } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const targetUserId = searchParams.get('userId') || searchParams.get('freelancerId');
+  const bookingId = searchParams.get('bookingId');
+  const directChat = searchParams.get('direct') === 'true';
 
   const {
     contacts,
@@ -110,7 +113,8 @@ const MessagesPage = () => {
       if (contact) {
         // Contact exists, select the conversation
         selectConversation(contact.conversationId);
-        if (isMobile) {
+        // If direct navigation, open chat view immediately (hide contact list)
+        if (directChat || isMobile) {
           setShowChat(true);
         }
         // Mark as read if there are unread messages
@@ -144,6 +148,7 @@ const MessagesPage = () => {
     sendMessage,
     isMobile,
     markConversationAsRead,
+    directChat,
   ]);
 
   // Handle new contact appearing after sending message (when conversation is created)
@@ -154,13 +159,14 @@ const MessagesPage = () => {
         // Contact appeared (either existed or was just created), select it if not already selected
         if (activeConversationId !== contact.conversationId) {
           selectConversation(contact.conversationId);
-          if (isMobile) {
+          // If direct navigation, open chat view immediately (hide contact list)
+          if (directChat || isMobile) {
             setShowChat(true);
           }
         }
       }
     }
-  }, [contacts, targetUserId, activeConversationId, selectConversation, isMobile]);
+  }, [contacts, targetUserId, activeConversationId, selectConversation, isMobile, directChat]);
 
   // Mark messages as read when viewing a conversation with unread messages
   useEffect(() => {
@@ -251,12 +257,35 @@ const MessagesPage = () => {
     if (!newMessage.trim() || !selectedContact) return;
 
     try {
-      await sendMessage(selectedContact.id, newMessage.trim());
+      await sendMessage(selectedContact.id, newMessage.trim(), bookingId || undefined);
       setNewMessage('');
       // Scroll to bottom after sending message
       setTimeout(scrollToBottom, 100);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send message');
+      // Handle 403 errors with user-friendly messages
+      const errorMessage =
+        error?.message || error?.response?.data?.message || 'Failed to send message';
+      const statusCode = error?.response?.status || error?.statusCode;
+
+      if (
+        statusCode === 403 ||
+        errorMessage.toLowerCase().includes('pre-booking messages are disabled')
+      ) {
+        toast.error(
+          'This provider only accepts messages from patients with existing bookings. Please book an appointment first.',
+          {
+            autoClose: 7000,
+          },
+        );
+      } else if (errorMessage.toLowerCase().includes('messaging not allowed')) {
+        toast.error('You do not have permission to send messages to this provider.', {
+          autoClose: 5000,
+        });
+      } else {
+        toast.error(errorMessage, {
+          autoClose: 5000,
+        });
+      }
     }
   };
 
@@ -327,7 +356,7 @@ const MessagesPage = () => {
         <div className="flex flex-1 min-h-0">
           {/* Contacts Sidebar */}
           <div
-            className={`${showChat ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 border-r `}
+            className={`${showChat && (isMobile || directChat) ? 'hidden' : 'flex'} flex-col w-full md:w-80 border-r `}
           >
             {/* Search */}
             <div className="p-4 border-b">
@@ -400,12 +429,28 @@ const MessagesPage = () => {
                 {/* Chat Header */}
                 <div className="p-4 border-b  flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    {isMobile && (
+                    {(isMobile || directChat) && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleBackToContacts}
-                        className="md:hidden"
+                        onClick={() => {
+                          if (directChat && !isMobile) {
+                            // In direct mode on desktop, remove direct parameter and show contact list
+                            const params = new URLSearchParams(searchParams.toString());
+                            params.delete('direct');
+                            params.delete('freelancerId'); // Optionally remove freelancerId too
+                            router.push(`/dashboard/messages?${params.toString()}`);
+                            setShowChat(false);
+                          } else if (isMobile) {
+                            // On mobile, go back to contact list
+                            setShowChat(false);
+                            selectConversation('');
+                          } else {
+                            // Fallback: show contact list
+                            setShowChat(false);
+                          }
+                        }}
+                        className={isMobile ? 'md:hidden' : ''}
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>

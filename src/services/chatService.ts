@@ -4,6 +4,21 @@ import { getCookie } from '@/lib/utils';
 
 import api from './api';
 
+// Enums for chat functionality
+export enum MessageType {
+  INQUIRY = 'INQUIRY',
+  APPOINTMENT_RELATED = 'APPOINTMENT_RELATED',
+  FOLLOW_UP = 'FOLLOW_UP',
+  GENERAL = 'GENERAL',
+}
+
+export enum ConversationContext {
+  PRE_BOOKING = 'PRE_BOOKING',
+  ACTIVE_BOOKING = 'ACTIVE_BOOKING',
+  POST_CARE = 'POST_CARE',
+  ONGOING = 'ONGOING',
+}
+
 // Types for chat functionality
 export interface ChatContact {
   id: string;
@@ -21,6 +36,7 @@ export interface ChatContact {
   lastAppointment?: {
     id: string;
     status: string;
+    completedAt?: string;
   };
   isOnline?: boolean;
   verificationStatus?:
@@ -32,6 +48,10 @@ export interface ChatContact {
     | 'PENDING'
     | 'REJECTED'
     | 'UNVERIFIED';
+  context?: ConversationContext;
+  allowPreBookingMessages?: boolean;
+  isArchived?: boolean;
+  postCareDaysRemaining?: number;
 }
 
 export interface ChatMessage {
@@ -45,11 +65,15 @@ export interface ChatMessage {
     profilePicture: string;
   };
   conversationId: string;
+  messageType?: MessageType;
+  bookingId?: string;
 }
 
 export interface SendMessageData {
   recipientId: string;
   content: string;
+  bookingId?: string;
+  messageType?: MessageType;
 }
 
 export interface SendMessageResponse {
@@ -205,6 +229,26 @@ class ChatService {
       console.log('ChatService: Left conversation:', data);
       window.dispatchEvent(new CustomEvent('chat:conversation_left', { detail: data }));
     });
+
+    // Listen for conversation context changes
+    this.socket.on(
+      'conversation_context_changed',
+      (data: { conversationId: string; context: ConversationContext }) => {
+        console.log('ChatService: Conversation context changed:', data);
+        window.dispatchEvent(
+          new CustomEvent('chat:conversation_context_changed', { detail: data }),
+        );
+      },
+    );
+
+    // Listen for conversation archiving
+    this.socket.on(
+      'conversation_archived',
+      (data: { conversationId: string; isArchived: boolean }) => {
+        console.log('ChatService: Conversation archived:', data);
+        window.dispatchEvent(new CustomEvent('chat:conversation_archived', { detail: data }));
+      },
+    );
   }
 
   private attemptReconnect() {
@@ -318,11 +362,14 @@ class ChatService {
     conversationId: string,
     page: number = 1,
     limit: number = 50,
+    context?: ConversationContext,
   ): Promise<GetMessagesResponse> {
     try {
-      const response = await api.get(
-        `/chat/messages?conversationId=${conversationId}&page=${page}&limit=${limit}`,
-      );
+      let url = `/chat/messages?conversationId=${conversationId}&page=${page}&limit=${limit}`;
+      if (context) {
+        url += `&context=${context}`;
+      }
+      const response = await api.get(url);
       return response.data;
     } catch (error) {
       console.error('ChatService: Error fetching messages:', error);
@@ -335,6 +382,27 @@ class ChatService {
       await api.post(`/chat/messages/${messageId}/read`);
     } catch (error) {
       console.error('ChatService: Error marking message as read:', error);
+      throw error;
+    }
+  }
+
+  public async archiveConversation(conversationId: string): Promise<void> {
+    try {
+      await api.post(`/chat/archive/${conversationId}`);
+    } catch (error) {
+      console.error('ChatService: Error archiving conversation:', error);
+      throw error;
+    }
+  }
+
+  public async getConversationContext(
+    conversationId: string,
+  ): Promise<{ context: ConversationContext; metadata?: any }> {
+    try {
+      const response = await api.get(`/chat/context/${conversationId}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('ChatService: Error fetching conversation context:', error);
       throw error;
     }
   }
@@ -368,6 +436,23 @@ class ChatService {
     const handler = (event: CustomEvent) => callback(event.detail);
     window.addEventListener('chat:conversation_left', handler as EventListener);
     return () => window.removeEventListener('chat:conversation_left', handler as EventListener);
+  }
+
+  public onConversationContextChanged(
+    callback: (data: { conversationId: string; context: ConversationContext }) => void,
+  ) {
+    const handler = (event: CustomEvent) => callback(event.detail);
+    window.addEventListener('chat:conversation_context_changed', handler as EventListener);
+    return () =>
+      window.removeEventListener('chat:conversation_context_changed', handler as EventListener);
+  }
+
+  public onConversationArchived(
+    callback: (data: { conversationId: string; isArchived: boolean }) => void,
+  ) {
+    const handler = (event: CustomEvent) => callback(event.detail);
+    window.addEventListener('chat:conversation_archived', handler as EventListener);
+    return () => window.removeEventListener('chat:conversation_archived', handler as EventListener);
   }
 
   // Utility Methods

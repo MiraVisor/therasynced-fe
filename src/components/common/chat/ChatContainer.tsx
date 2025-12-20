@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import useChat from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
+import { canUserMessage, getMessageForUser } from '@/utils/chatUtils';
 
 import ChatContactList from './ChatContactList';
 import ChatHeader from './ChatHeader';
@@ -23,6 +24,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
 
   const {
     contacts,
+    archivedContacts,
     activeConversationId,
     activeConversation,
     isConnected,
@@ -37,6 +39,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
     sendTypingIndicator,
     getContactByConversationId,
     canLoadMoreMessages,
+    archiveConversation,
     forceReconnect,
     dismissReconnectMessage,
   } = useChat(currentUserId);
@@ -44,6 +47,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
   const activeContact = activeConversationId
     ? getContactByConversationId(activeConversationId)
     : null;
+
+  // Check if messaging is allowed for the active contact
+  const canMessage = activeContact ? canUserMessage(activeContact) : false;
+  const messagingStatusMessage = activeContact ? getMessageForUser(activeContact) : '';
 
   const handleContactSelect = (contact: any) => {
     console.log('Contact selected:', contact);
@@ -71,15 +78,53 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
     selectConversation('');
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, bookingId?: string, messageType?: any) => {
     if (!activeContact) return;
 
     try {
-      await sendMessage(activeContact.id, content);
-    } catch (error) {
+      await sendMessage(activeContact.id, content, bookingId, messageType);
+    } catch (error: any) {
       console.error('Failed to send message:', error);
-      // Could show a toast notification here
+      // Error will be handled by error state
+      throw error;
     }
+  };
+
+  const handleArchive = async () => {
+    if (!activeConversationId) return;
+    try {
+      await archiveConversation(activeConversationId);
+      selectConversation('');
+      if (isMobile) {
+        setShowChat(false);
+      }
+    } catch (error) {
+      console.error('Failed to archive conversation:', error);
+    }
+  };
+
+  const getErrorMessage = () => {
+    if (error.sending) {
+      const errorMsg = error.sending.toLowerCase();
+      if (errorMsg.includes('messaging not allowed')) {
+        return 'Messaging not allowed';
+      }
+      if (errorMsg.includes('pre-booking') && errorMsg.includes('disabled')) {
+        return 'No active booking and pre-booking messages are disabled';
+      }
+      if (errorMsg.includes('patient and freelancer')) {
+        return 'Can only message between patient and freelancer';
+      }
+      // Check for 403 errors
+      if (errorMsg.includes('403') || errorMsg.includes('forbidden')) {
+        if (errorMsg.includes('pre-booking')) {
+          return 'No active booking and pre-booking messages are disabled';
+        }
+        return 'You do not have permission to send messages';
+      }
+      return error.sending;
+    }
+    return undefined;
   };
 
   const handleLoadMoreMessages = () => {
@@ -108,6 +153,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
       >
         <ChatContactList
           contacts={contacts}
+          archivedContacts={archivedContacts}
           activeConversationId={activeConversationId}
           onContactSelect={handleContactSelect}
           loading={loading.contacts}
@@ -124,6 +170,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
               isConnected={isConnected}
               typingUsers={typingUsers}
               onBack={handleBackToContacts}
+              onArchive={handleArchive}
               showBackButton={isMobile}
             />
 
@@ -142,9 +189,18 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
               onSendMessage={handleSendMessage}
               onTypingStart={() => sendTypingIndicator(true)}
               onTypingStop={() => sendTypingIndicator(false)}
-              disabled={!isConnected}
+              disabled={!isConnected || !canMessage}
               loading={loading.sending}
-              placeholder={!isConnected ? 'Connecting...' : `Message ${activeContact.name}...`}
+              placeholder={
+                !isConnected
+                  ? 'Connecting...'
+                  : !canMessage
+                    ? messagingStatusMessage
+                    : `Message ${activeContact.name}...`
+              }
+              errorMessage={!canMessage ? messagingStatusMessage : getErrorMessage()}
+              context={activeContact.context}
+              freelancerId={activeContact.id}
             />
           </>
         ) : (

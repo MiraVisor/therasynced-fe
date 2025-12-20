@@ -77,6 +77,12 @@ export const ENDPOINTS = {
     tierSilver: '/freelancer/tier/silver',
     tierGold: '/freelancer/tier/gold',
     search: '/freelancer/search',
+    // Form templates
+    formTemplates: {
+      getVisible: '/freelancer/forms',
+      getDownloadUrl: (id: string) => `/freelancer/forms/${id}/download`,
+    },
+    updateMessagingPreferences: '/freelancer/messaging-preferences',
   },
   // Dashboard endpoints
   dashboard: {
@@ -88,6 +94,8 @@ export const ENDPOINTS = {
     send: '/chat/send',
     messages: '/chat/messages',
     markRead: (messageId: string) => `/chat/messages/${messageId}/read`,
+    archive: (conversationId: string) => `/chat/archive/${conversationId}`,
+    context: (conversationId: string) => `/chat/context/${conversationId}`,
   },
   // Service categories endpoints
   serviceCategories: {
@@ -247,6 +255,15 @@ export const ENDPOINTS = {
     users: {
       search: '/admin/users/search',
       getAll: '/admin/users',
+    },
+    // Form template management
+    formTemplates: {
+      upload: '/form',
+      getAll: '/form',
+      getById: (id: string) => `/form/${id}`,
+      update: (id: string) => `/form/${id}`,
+      delete: (id: string) => `/form/${id}`,
+      download: (id: string) => `/form/${id}/download`,
     },
   },
   // Data Rights endpoints (GDPR compliance)
