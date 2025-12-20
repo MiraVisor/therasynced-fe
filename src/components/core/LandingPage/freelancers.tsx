@@ -179,7 +179,7 @@ const Freelancers = () => {
         </div>
 
         {/* Professional Healthcare Section - Softer green background that cards overlap into */}
-        <div className="w-full bg-primary -mt-12 lg:-mt-20 relative z-0 pt-12 lg:pt-20 pb-12 lg:pb-24">
+        <div className="w-full  bg-[#007745]/80  -mt-12 lg:-mt-20 relative z-0 pt-12 lg:pt-20 pb-12 lg:pb-24">
           <div className="max-w-6xl mx-auto py-6 md:py-12 lg:py-20 lg:min-h-[500px] grid grid-cols-1 lg:grid-cols-2 gap-10 items-start relative overflow-visible mt-10">
             {/* Left Column - FAQ Section */}
             <div
