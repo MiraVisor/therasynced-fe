@@ -6,19 +6,17 @@ import {
   AlertCircle,
   ArrowLeft,
   Building,
-  Calendar,
+  Calendar as CalendarIcon,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
   FileText,
-  Gift,
   Home,
-  Sparkles,
   Star,
   Video,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -26,6 +24,7 @@ import { z } from 'zod';
 
 import SocketDebugger from '@/components/debug/SocketDebugger';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +33,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { rescheduleBooking } from '@/redux/api/exploreApi';
 import { getStampDetail } from '@/redux/api/loyaltyApi';
+import { fetchUserBookings } from '@/redux/slices/bookingSlice';
+import { fetchExplorePatientBookings } from '@/redux/slices/exploreSlice';
 import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
 import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
@@ -70,7 +71,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   const freelancerId = Array.isArray(params?.freelancerId)
     ? params?.freelancerId[0]
     : params?.freelancerId;
-  const { slots } = useSelector((state: RootState) => state.overview);
+  const {
+    slots,
+    loading: slotsLoading,
+    initialLoading: slotsInitialLoading,
+  } = useSelector((state: RootState) => state.overview);
   const { stampDetail, isLoadingDetail, selectedTherapistId } = useSelector(
     (state: RootState) => state.stamps,
   );
@@ -165,9 +170,16 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     }
   }, [selectedTime, fetchSlotDetails, serviceForm]);
 
-  // Load more slots when needed
+  // Load more slots when needed - with WebSocket connection check
   const loadMoreSlots = async () => {
     if (!freelancerId || loadingMoreSlots) return;
+
+    // Check WebSocket connection before loading
+    if (!isConnected) {
+      toast.warning('Connection issue detected. Loading dates via standard method...', {
+        autoClose: 3000,
+      });
+    }
 
     setLoadingMoreSlots(true);
     try {
@@ -181,18 +193,30 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         }) as any,
       );
       setDatePage(datePage + 1);
-    } catch (error) {
-      // Failed to load more slots
+    } catch (error: any) {
+      console.error('Failed to load more slots:', error);
+      toast.error('Failed to load more dates. Please try again.', {
+        autoClose: 3000,
+      });
     } finally {
       setLoadingMoreSlots(false);
     }
   };
 
+  // Track if component is mounted to prevent cleanup during re-renders
+  const isMountedRef = useRef(true);
+  const selectedTimeRef = useRef(selectedTime);
+
   // Handle slot selection with reservation
   const handleSlotSelection = (slotId: string) => {
-    // Release previously selected slot if any
+    // Release previously selected slot if any (and it's different)
     if (selectedTime && selectedTime !== slotId) {
-      releaseSlot(selectedTime);
+      // Add a small delay to ensure previous reservation is processed
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          releaseSlot(selectedTime);
+        }
+      }, 100);
     }
 
     // Reserve the new slot
@@ -204,18 +228,42 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     setSelectedTime(slotId);
   };
 
-  // Cleanup reservations on unmount - use useCallback to prevent infinite loops
-  const cleanupReservations = useCallback(() => {
-    if (selectedTime) {
-      releaseSlot(selectedTime);
-    }
-  }, [selectedTime, releaseSlot]);
-
+  // Handle reservation failures - clear selection if the failed slot is currently selected
   useEffect(() => {
-    return () => {
-      cleanupReservations();
+    const handleReservationFailed = (event: CustomEvent) => {
+      const errorDetail = event.detail;
+      // Clear the selection if reservation failed for the currently selected slot
+      if (errorDetail?.slotId === selectedTime) {
+        setSelectedTime('');
+      }
     };
-  }, [cleanupReservations]);
+
+    window.addEventListener('slot-reservation-failed', handleReservationFailed as EventListener);
+    return () => {
+      window.removeEventListener(
+        'slot-reservation-failed',
+        handleReservationFailed as EventListener,
+      );
+    };
+  }, [selectedTime]);
+
+  // Update ref when selectedTime changes
+  useEffect(() => {
+    selectedTimeRef.current = selectedTime;
+  }, [selectedTime]);
+
+  // Cleanup reservations only on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      // Only cleanup if component is actually unmounting
+      if (selectedTimeRef.current) {
+        releaseSlot(selectedTimeRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
 
   // Extract freelancer info from props or API data
   const firstSlot = slots && slots.length > 0 ? slots[0] : null;
@@ -318,7 +366,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   }, [dispatch, therapist?.id, isLoadingDetail, stampDetail?.therapist.id, selectedTherapistId]);
 
   // Helper function to format date safely without timezone issues
-  const formatDateForAPI = (date: Date): string => {
+  const formatDateForAPI = useCallback((date: Date): string => {
     return (
       date.getFullYear() +
       '-' +
@@ -326,30 +374,70 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       '-' +
       String(date.getDate()).padStart(2, '0')
     );
+  }, []);
+
+  // Group slots by date - filter out past dates
+  const slotsByDate = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = formatDateForAPI(today);
+
+    const grouped: { [date: string]: any[] } = {};
+    slots?.forEach((slot: any) => {
+      const slotDate = new Date(slot.startTime);
+      const date = formatDateForAPI(slotDate);
+      // Only include future dates (today and later)
+      if (date >= todayStr) {
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push(slot);
+      }
+    });
+    return grouped;
+  }, [slots]);
+
+  const availableDates = useMemo(() => {
+    return Object.keys(slotsByDate).sort();
+  }, [slotsByDate]);
+
+  // Convert available dates to Date objects for calendar
+  const availableDatesAsDates = useMemo(() => {
+    return availableDates.map((dateStr) => new Date(dateStr + 'T00:00:00'));
+  }, [availableDates]);
+
+  // Get selected date as Date object for calendar
+  const selectedDateObj = useMemo(() => {
+    if (!selectedDate) return undefined;
+    return new Date(selectedDate + 'T00:00:00');
+  }, [selectedDate]);
+
+  // Get slot counts per date for calendar indicators
+  const dateSlotCounts = useMemo(() => {
+    const counts: { [date: string]: number } = {};
+    availableDates.forEach((date) => {
+      counts[date] = slotsByDate[date]?.length || 0;
+    });
+    return counts;
+  }, [availableDates, slotsByDate]);
+
+  // Handle calendar date selection
+  const handleCalendarDateSelect = (date: Date | undefined) => {
+    if (date) {
+      const dateStr = formatDateForAPI(date);
+      if (availableDates.includes(dateStr)) {
+        setSelectedDate(dateStr);
+        setSelectedTime(''); // Reset time when date changes
+      }
+    }
   };
 
-  // Group slots by date - show all slots with different visual indicators
-  const slotsByDate: { [date: string]: any[] } = {};
-  slots?.forEach((slot: any) => {
-    // Show all slots (available, reserved, booked) with different visual indicators
-    const date = formatDateForAPI(new Date(slot.startTime));
-    if (!slotsByDate[date]) slotsByDate[date] = [];
-    slotsByDate[date].push(slot);
-  });
-
-  const availableDates = Object.keys(slotsByDate).sort();
-  const datesPerPage = 6;
-  const totalDatePages = Math.ceil(availableDates.length / datesPerPage);
-  const currentDatePage = Math.min(datePage, totalDatePages - 1);
-  const displayedDates = availableDates.slice(
-    currentDatePage * datesPerPage,
-    (currentDatePage + 1) * datesPerPage,
-  );
-
   const steps = [
-    { id: 1, title: 'Schedule', icon: Calendar, description: 'Pick your date & time' },
-    { id: 2, title: 'Details', icon: FileText, description: 'Add session details' },
-    { id: 3, title: 'Confirm', icon: CheckCircle, description: 'Review & book' },
+    {
+      id: 1,
+      title: 'Select Date & Time',
+      icon: CalendarIcon,
+      description: 'Choose your appointment',
+    },
+    { id: 2, title: 'Confirm', icon: CheckCircle, description: 'Review & book' },
   ];
 
   const isStepValid = () => {
@@ -357,9 +445,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       case 1:
         return selectedDate && selectedTime;
       case 2:
-        return true; // Details are optional
-      case 3:
-        return true;
+        return true; // Confirmation step
       default:
         return false;
     }
@@ -378,9 +464,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         }
         break;
       case 2:
-        isValid = await detailsForm.trigger();
-        break;
-      case 3:
         isValid = true;
         break;
       default:
@@ -429,7 +512,22 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           toast.success(responseMessage, {
             autoClose: 5000, // Show for 5 seconds to read the stamp message
           });
-          router.push('/dashboard/my-bookings');
+
+          // Refresh bookings in both slices before navigating
+          await Promise.all([
+            dispatch(
+              fetchUserBookings({
+                page: 1,
+                limit: 1000,
+                sortBy: 'slot.startTime',
+                sortOrder: 'asc',
+                silent: false, // Force refresh
+              }) as any,
+            ),
+            dispatch(fetchExplorePatientBookings({ silent: false }) as any),
+          ]);
+
+          router.push('/dashboard/my-bookings?fromBooking=true');
         } else {
           // Handle error payload (could be string or object with status)
           const errorPayload = result.payload;
@@ -465,653 +563,405 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Header */}
-            <div className="space-y-2">
-              <h1 className="text-3xl font-poppins font-bold text-charcoal">
+            <div className="text-center space-y-2">
+              <h1 className="text-2xl font-poppins font-bold text-charcoal">
                 Select a date & time
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
-                Choose when you&apos;d like to meet with {therapist?.name}
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-inter">
+                Choose when you&apos;d like to meet
               </p>
             </div>
 
-            {/* Stamps Information Card */}
-            <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
-              <CardContent className="p-5">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-full">
-                    <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2 flex items-center gap-2">
-                      <Gift className="h-4 w-4" />
-                      Earn Stamps with Every Booking
-                    </h3>
-                    <p className="text-sm text-purple-800 dark:text-purple-200 mb-3">
-                      Book appointments to earn stamps and unlock discounts on future sessions with
-                      this therapist!
-                    </p>
-                    <ul className="text-xs text-purple-700 dark:text-purple-300 space-y-1 list-disc list-inside">
-                      <li>
-                        Earn 1 stamp for each completed appointment (stamps are awarded after your
-                        therapist marks the appointment as completed)
-                      </li>
-                      <li>Reach 5 stamps to unlock a 15% discount reward</li>
-                      <li>
-                        Discounts are automatically applied to your next booking with the same
-                        therapist
-                      </li>
-                      <li>Stamps are grouped separately for each therapist</li>
-                    </ul>
-                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-3 font-medium">
-                      View your stamp progress in Account Settings → Stamps
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Loading State for Initial Load */}
+            {slotsInitialLoading && (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                <LoadingSpinner size="lg" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Loading available dates...
+                </p>
+              </div>
+            )}
 
-            {/* Date and Time Selection */}
-            <div className="space-y-8">
-              {/* Date Selection */}
-              <div className="space-y-4">
+            {/* WebSocket Connection Status - Only show if disconnected after initial load */}
+            {!slotsInitialLoading && !isConnected && availableDates.length > 0 && (
+              <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <AlertCircle className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Real-time updates unavailable. Slots are still available for booking.
+                </p>
+              </div>
+            )}
+
+            {/* Date Selection - Full Calendar View */}
+            {!slotsInitialLoading && (
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-poppins font-semibold text-charcoal">Select Date</h3>
-                  {totalDatePages > 1 && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDatePage(Math.max(0, datePage - 1))}
-                        disabled={datePage === 0}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </Button>
-                      <span className="text-sm text-gray-500 min-w-[80px] text-center">
-                        {currentDatePage + 1} / {totalDatePages}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDatePage(Math.min(totalDatePages - 1, datePage + 1))}
-                        disabled={datePage >= totalDatePages - 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </div>
+                  <h3 className="text-base font-poppins font-semibold text-charcoal">
+                    Select Date
+                  </h3>
+                  {availableDates.length === 0 && !slotsLoading && (
+                    <p className="text-sm text-gray-500">No available dates</p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                  {displayedDates?.map((date) => {
-                    const dateObj = new Date(date);
-                    const isToday = date === formatDateForAPI(new Date());
-                    const isSelected = selectedDate === date;
-                    const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                    const dayNumber = dateObj.getDate();
-                    const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                {/* Full Calendar Component */}
+                <div className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDateObj}
+                    onSelect={handleCalendarDateSelect}
+                    disabled={(date) => {
+                      const dateStr = formatDateForAPI(date);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const todayStr = formatDateForAPI(today);
+                      // Disable past dates and dates without slots
+                      return date < today || !availableDates.includes(dateStr);
+                    }}
+                    modifiers={{
+                      available: availableDatesAsDates,
+                    }}
+                    modifiersClassNames={{
+                      available: 'relative',
+                    }}
+                    className="rounded-lg border p-4 bg-white dark:bg-gray-800"
+                    classNames={{
+                      day: 'relative',
+                      day_selected: 'bg-primary text-white hover:bg-primary hover:text-white',
+                      day_disabled: 'opacity-30 cursor-not-allowed',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Time Selection - Clean Grid */}
+            {selectedDate && (
+              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="text-base font-poppins font-semibold text-charcoal">
+                  Available Times
+                </h3>
+                <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto pr-2">
+                  {slotsByDate[selectedDate]?.map((slot) => {
+                    const time = new Date(slot.startTime).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true,
+                    });
+                    const isSelected = selectedTime === slot.id;
+                    const isReserved = isSlotReserved(slot.id);
+                    const isReservedByOthers =
+                      (slot.statusInfo?.isReserved && !isReserved) ||
+                      (slot.status === 'RESERVED' && !isReserved);
+                    const isBooked =
+                      slot.statusInfo?.isBooked || slot.status === 'BOOKED' || slot.isBooked;
 
                     return (
                       <button
-                        key={date}
-                        className={`relative p-3 rounded-xl border ${
+                        key={slot.id}
+                        className={`relative p-3 rounded-lg border-2 font-medium text-sm transition-all ${
                           isSelected
-                            ? 'border-primary bg-primary text-white shadow-md'
-                            : 'border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700'
+                            ? 'border-primary bg-primary text-white shadow-lg scale-105'
+                            : isBooked
+                              ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+                              : isReservedByOthers
+                                ? 'border-yellow-200 bg-yellow-50 text-yellow-600 cursor-not-allowed opacity-60'
+                                : 'border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white hover:border-primary/50 hover:shadow-md'
                         }`}
-                        onClick={() => setSelectedDate(date)}
+                        onClick={() => {
+                          if (!isReservedByOthers && !isBooked) {
+                            handleSlotSelection(slot.id);
+                          }
+                        }}
+                        disabled={isReservedByOthers || isBooked}
                       >
-                        <div className="text-center space-y-1">
-                          <div
-                            className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-500'}`}
-                          >
-                            {dayOfWeek}
-                          </div>
-                          <div
-                            className={`text-lg font-poppins font-semibold ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}
-                          >
-                            {dayNumber}
-                          </div>
-                          <div
-                            className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-500'}`}
-                          >
-                            {month}
-                          </div>
+                        <div className="text-center">
+                          <div className="font-semibold">{time}</div>
                         </div>
-                        {isToday && (
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div
-                              className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-primary'}`}
-                            ></div>
-                          </div>
-                        )}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* Load more dates */}
-                {availableDates.length > (currentDatePage + 1) * datesPerPage && (
-                  <div className="text-center">
-                    <Button
-                      variant="outline"
-                      onClick={loadMoreSlots}
-                      disabled={loadingMoreSlots}
-                      className="px-8"
-                    >
-                      {loadingMoreSlots ? (
-                        <>
-                          <LoadingSpinner size="sm" className="mr-2" />
-                          Loading...
-                        </>
-                      ) : (
-                        'Load More Dates'
-                      )}
-                    </Button>
+                {selectedTime && (
+                  <div className="mt-4 p-4 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                            Selected
+                          </div>
+                          <div className="text-base font-semibold text-charcoal">
+                            {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) && (
+                              <>
+                                {new Date(
+                                  slotsByDate[selectedDate]!.find(
+                                    (s) => s.id === selectedTime,
+                                  )!.startTime,
+                                ).toLocaleDateString('en-US', {
+                                  weekday: 'short',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}{' '}
+                                at{' '}
+                                {new Date(
+                                  slotsByDate[selectedDate]!.find(
+                                    (s) => s.id === selectedTime,
+                                  )!.startTime,
+                                ).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true,
+                                })}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-lg font-bold text-primary">
+                        EUR{' '}
+                        {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)?.basePrice ||
+                          0}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Time Selection */}
-              {selectedDate && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-poppins font-semibold text-charcoal">
-                    Available Times
-                  </h3>
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto">
-                    {slotsByDate[selectedDate]?.map((slot) => {
-                      const time = new Date(slot.startTime).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      });
-                      const isSelected = selectedTime === slot.id;
-                      const isReserved = isSlotReserved(slot.id);
-                      const isReservedByOthers =
-                        (slot.statusInfo?.isReserved && !isReserved) ||
-                        (slot.status === 'RESERVED' && !isReserved);
-                      const isBooked =
-                        slot.statusInfo?.isBooked || slot.status === 'BOOKED' || slot.isBooked;
-
-                      return (
-                        <button
-                          key={slot.id}
-                          className={`relative p-3 rounded-lg border-2 font-medium text-sm ${
-                            isSelected
-                              ? 'border-primary bg-primary text-white shadow-lg'
-                              : isBooked
-                                ? 'border-red-200 bg-red-50 text-red-400 cursor-not-allowed opacity-60'
-                                : isReservedByOthers
-                                  ? 'border-yellow-200 bg-yellow-50 text-yellow-600 cursor-not-allowed opacity-60'
-                                  : 'border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white'
-                          }`}
-                          onClick={() => {
-                            if (!isReservedByOthers && !isBooked) {
-                              handleSlotSelection(slot.id);
-                            }
-                          }}
-                          disabled={isReservedByOthers || isBooked}
-                        >
-                          <div className="text-center">
-                            <div>{time}</div>
-                            {isSelected && <div className="text-xs mt-1 opacity-90">Selected</div>}
-                            {isBooked && <div className="text-xs mt-1">Booked</div>}
-                            {isReservedByOthers && <div className="text-xs mt-1">Reserved</div>}
-                          </div>
-                          {selectedTime === slot.id && (
-                            <div className="absolute inset-0 rounded-lg border-2 border-primary animate-pulse"></div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {selectedTime && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <div>
-                          <div className="font-medium text-green-900 dark:text-green-100">
-                            Time Selected
-                          </div>
-                          <div className="text-sm text-green-700 dark:text-green-300">
-                            {new Date(
-                              slotsByDate[selectedDate].find(
-                                (s) => s.id === selectedTime,
-                              )?.startTime,
-                            ).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              month: 'long',
-                              day: 'numeric',
-                            })}{' '}
-                            at{' '}
-                            {new Date(
-                              slotsByDate[selectedDate].find(
-                                (s) => s.id === selectedTime,
-                              )?.startTime,
-                            ).toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit',
-                              hour12: true,
-                            })}
-                          </div>
-                        </div>
-                        <div className="ml-auto font-bold text-green-900 dark:text-green-100">
-                          EUR{' '}
-                          {slotsByDate[selectedDate].find((s) => s.id === selectedTime)?.basePrice}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         );
 
       case 2:
         return (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Header */}
-            <div className="text-center space-y-3">
-              <h2 className="text-2xl font-poppins font-bold text-charcoal">
-                Tell us about your session
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
-                Help {therapist?.name} prepare for your appointment (optional)
+            <div className="text-center space-y-2">
+              <h1 className="text-2xl font-poppins font-bold text-charcoal">
+                Confirm Your Appointment
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-inter">
+                Review your booking details and add any optional information
               </p>
             </div>
 
-            {/* Session Details Form */}
-            <div className="max-w-2xl mx-auto space-y-6">
-              {/* Services Selection */}
-              {availableServices && availableServices.length > 0 ? (
-                <div className="space-y-4">
-                  <Label className="text-lg font-poppins font-semibold text-charcoal">
-                    Available Services for This Slot
-                  </Label>
-                  <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
-                    Select from services available for your selected time slot
-                  </p>
-                  <div className="grid gap-3">
-                    {availableServices.map((service: any) => (
-                      <div key={service.id} className="relative">
-                        <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                            checked={
-                              serviceForm.watch('serviceCategoryIds')?.includes(service.id) || false
-                            }
-                            onChange={(e) => {
-                              const currentServiceIds =
-                                serviceForm.watch('serviceCategoryIds') || [];
-                              if (e.target.checked) {
-                                serviceForm.setValue('serviceCategoryIds', [
-                                  ...currentServiceIds,
-                                  service.id,
-                                ]);
-                              } else {
-                                serviceForm.setValue(
-                                  'serviceCategoryIds',
-                                  currentServiceIds.filter((id) => id !== service.id),
-                                );
-                              }
-                            }}
-                          />
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {service.name}
-                            </div>
-                            {service.description && (
-                              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {service.description}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 mt-2">
-                              {service.locationTypes?.map((type: string, idx: number) => (
-                                <span
-                                  key={idx}
-                                  className="inline-flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full"
-                                >
-                                  {type === 'VIRTUAL' ? (
-                                    <Video className="w-3 h-3" />
-                                  ) : type === 'OFFICE' ? (
-                                    <Building className="w-3 h-3" />
-                                  ) : (
-                                    <Home className="w-3 h-3" />
-                                  )}
-                                  {type === 'VIRTUAL'
-                                    ? 'Online'
-                                    : type === 'OFFICE'
-                                      ? 'Office'
-                                      : 'Home'}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : selectedTime ? (
-                <div className="space-y-4">
-                  <Label className="text-lg font-poppins font-semibold text-charcoal">
-                    Services
-                  </Label>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    No specific services are configured for this time slot. You can discuss your
-                    needs directly with the therapist during your session.
-                  </div>
-                </div>
-              ) : null}
-
-              {/* Additional Notes */}
-              <div className="space-y-4">
-                <Label htmlFor="notes" className="text-lg font-poppins font-semibold text-charcoal">
-                  Additional Notes (Optional)
-                </Label>
-                <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
-                  Share any specific concerns, goals, or preferences for your session
-                </p>
-                <Textarea
-                  id="notes"
-                  placeholder="e.g., I'd like to focus on anxiety management techniques..."
-                  className="min-h-[120px] resize-none"
-                  {...detailsForm.register('notes')}
-                />
-              </div>
-
-              {/* Address for Home Sessions */}
-              {serviceForm.watch('serviceCategoryIds')?.some((id) => {
-                const service = availableServices?.find((s: any) => s.id === id);
-                return service?.locationTypes?.includes('HOME');
-              }) && (
-                <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Home className="w-5 h-5 text-blue-600" />
-                    <Label
-                      htmlFor="clientAddress"
-                      className="text-lg font-poppins font-semibold text-blue-900 dark:text-blue-100"
-                    >
-                      Home Address
-                    </Label>
-                  </div>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Please provide your address for home visit sessions
-                  </p>
-                  <Input
-                    id="clientAddress"
-                    placeholder="Enter your full address"
-                    className="bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-700"
-                    {...detailsForm.register('clientAddress')}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-8">
-            {/* Header */}
-            <div className="text-center space-y-3">
-              <h2 className="text-2xl font-poppins font-bold text-charcoal">
-                Confirm your booking
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
-                Review your appointment details and complete your booking
-              </p>
-            </div>
-
-            <div className="max-w-3xl mx-auto space-y-6">
-              {/* Appointment Summary Card */}
-              <Card className="border-2 border-primary bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/10">
-                <CardContent className="p-8">
-                  {/* Therapist Info */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <Avatar className="w-16 h-16 border-3 border-primary">
-                      <AvatarImage src={therapist?.avatar} />
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                        {therapist?.name?.charAt(0) || 'T'}
-                      </div>
-                    </Avatar>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-poppins font-bold text-charcoal">
-                        {therapist?.name}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 font-inter font-medium">
-                        {therapist?.specialty}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${i < (therapist?.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-600">
-                          {therapist?.rating?.toFixed(1)} ({therapist?.reviews} reviews)
+            {/* Appointment Summary Card */}
+            <Card className="border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-6">
+                {/* Therapist Info */}
+                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                  <Avatar className="w-14 h-14">
+                    <AvatarImage src={therapist?.avatar} />
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+                      {therapist?.name?.charAt(0) || 'T'}
+                    </div>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-poppins font-bold text-charcoal">
+                      {therapist?.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {therapist?.specialty}
+                    </p>
+                    {therapist?.rating && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium">
+                          {therapist.rating.toFixed(1)} ({therapist.reviews} reviews)
                         </span>
                       </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Date & Time Summary */}
+                {selectedDate && selectedTime && (
+                  <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CalendarIcon className="w-5 h-5 text-primary" />
+                      <h4 className="font-poppins font-semibold text-charcoal">Appointment Time</h4>
+                    </div>
+                    <div className="pl-7 space-y-1">
+                      <p className="font-medium text-lg text-gray-900 dark:text-white">
+                        {new Date(selectedDate).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                      <p className="text-primary font-semibold text-lg">
+                        {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
+                          new Date(
+                            slotsByDate[selectedDate]!.find(
+                              (s) => s.id === selectedTime,
+                            )!.startTime,
+                          ).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true,
+                          })}
+                      </p>
                     </div>
                   </div>
+                )}
 
-                  {/* Appointment Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Date & Time */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-primary" />
-                        <h4 className="font-poppins font-semibold text-charcoal">Date & Time</h4>
-                      </div>
-                      <div className="pl-7">
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {selectedDate &&
-                            new Date(selectedDate).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                        </p>
-                        <p className="text-primary font-semibold">
-                          {selectedTime &&
-                            slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
-                            new Date(
-                              slotsByDate[selectedDate].find(
-                                (s) => s.id === selectedTime,
-                              )!.startTime,
-                            ).toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit',
-                              hour12: true,
-                            })}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Services */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-primary" />
-                        <h4 className="font-poppins font-semibold text-charcoal">Services</h4>
-                      </div>
-                      <div className="pl-7">
-                        {(serviceForm?.watch('serviceCategoryIds')?.length ?? 0) > 0 ? (
-                          <div className="space-y-1">
-                            {serviceForm.watch('serviceCategoryIds')?.map((id: string) => {
-                              const service = therapist?.services?.find((s: any) => s.id === id);
-                              return (
-                                <p key={id} className="text-gray-900 dark:text-white font-medium">
-                                  {service?.name || 'Unknown Service'}
-                                </p>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-gray-600 dark:text-gray-400">
-                            General therapy session
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Details */}
-                  {(detailsForm.watch('notes') || detailsForm.watch('clientAddress')) && (
-                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <h4 className="font-poppins font-semibold text-charcoal mb-3">
-                        Additional Details
-                      </h4>
-                      <div className="space-y-3">
-                        {detailsForm.watch('notes') && (
-                          <div>
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                              Notes:
-                            </span>
-                            <p className="text-gray-900 dark:text-white mt-1">
-                              {detailsForm.watch('notes')}
-                            </p>
-                          </div>
-                        )}
-                        {detailsForm.watch('clientAddress') && (
-                          <div>
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                              Address:
-                            </span>
-                            <p className="text-gray-900 dark:text-white mt-1">
-                              {detailsForm.watch('clientAddress')}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Stamp Discount Badge */}
-                  {therapist?.id && (
-                    <div className="mt-6">
-                      <StampDiscountBadge therapistId={therapist.id} />
-                    </div>
-                  )}
-
-                  {/* Price Breakdown */}
-                  {selectedTime &&
-                    (() => {
-                      const selectedSlot = slotsByDate[selectedDate]?.find(
-                        (s) => s.id === selectedTime,
-                      );
-                      const basePrice = selectedSlot?.basePrice || 0;
-                      const hasDiscount =
-                        stampDetail?.rewardReady &&
-                        !stampDetail?.rewardReserved &&
-                        stampDetail?.therapist?.id === therapist?.id;
-                      const discountPercentage = hasDiscount
-                        ? stampDetail?.discountPercentage || 0
-                        : 0;
-                      const discountAmount = hasDiscount
-                        ? (basePrice * discountPercentage) / 100
-                        : 0;
-                      const finalPrice = basePrice - discountAmount;
-
-                      return (
-                        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400 font-inter">
-                                Base Price:
-                              </span>
-                              <span className="font-poppins font-semibold text-primary">
-                                EUR {basePrice.toFixed(2)}
-                              </span>
-                            </div>
-                            {hasDiscount && (
-                              <>
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="text-green-600 dark:text-green-400 font-medium">
-                                    Stamp Discount ({discountPercentage}%):
-                                  </span>
-                                  <span className="text-green-600 dark:text-green-400 font-medium">
-                                    -EUR {discountAmount.toFixed(2)}
-                                  </span>
+                {/* Optional Details Form */}
+                <div className="space-y-6">
+                  {/* Services Selection */}
+                  {availableServices && availableServices.length > 0 ? (
+                    <div className="space-y-4">
+                      <Label className="text-lg font-poppins font-semibold text-charcoal">
+                        Available Services for This Slot
+                      </Label>
+                      <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                        Select from services available for your selected time slot
+                      </p>
+                      <div className="grid gap-3">
+                        {availableServices.map((service: any) => (
+                          <div key={service.id} className="relative">
+                            <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                checked={
+                                  serviceForm.watch('serviceCategoryIds')?.includes(service.id) ||
+                                  false
+                                }
+                                onChange={(e) => {
+                                  const currentServiceIds =
+                                    serviceForm.watch('serviceCategoryIds') || [];
+                                  if (e.target.checked) {
+                                    serviceForm.setValue('serviceCategoryIds', [
+                                      ...currentServiceIds,
+                                      service.id,
+                                    ]);
+                                  } else {
+                                    serviceForm.setValue(
+                                      'serviceCategoryIds',
+                                      currentServiceIds.filter((id) => id !== service.id),
+                                    );
+                                  }
+                                }}
+                              />
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900 dark:text-white">
+                                  {service.name}
                                 </div>
-                                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-lg font-poppins font-semibold text-charcoal">
-                                      Total Price:
-                                    </span>
-                                    <div className="flex flex-col items-end">
-                                      <span className="text-2xl font-poppins font-bold text-green-600 dark:text-green-400">
-                                        EUR {finalPrice.toFixed(2)}
-                                      </span>
-                                      <span className="text-xs font-inter text-gray-500 line-through">
-                                        EUR {basePrice.toFixed(2)}
-                                      </span>
-                                    </div>
+                                {service.description && (
+                                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    {service.description}
                                   </div>
+                                )}
+                                <div className="flex items-center gap-2 mt-2">
+                                  {service.locationTypes?.map((type: string, idx: number) => (
+                                    <span
+                                      key={idx}
+                                      className="inline-flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full"
+                                    >
+                                      {type === 'VIRTUAL' ? (
+                                        <Video className="w-3 h-3" />
+                                      ) : type === 'OFFICE' ? (
+                                        <Building className="w-3 h-3" />
+                                      ) : (
+                                        <Home className="w-3 h-3" />
+                                      )}
+                                      {type === 'VIRTUAL'
+                                        ? 'Online'
+                                        : type === 'OFFICE'
+                                          ? 'Office'
+                                          : 'Home'}
+                                    </span>
+                                  ))}
                                 </div>
-                              </>
-                            )}
-                            {!hasDiscount && (
-                              <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <span className="text-lg font-poppins font-semibold text-charcoal">
-                                  Total Price:
-                                </span>
-                                <span className="text-2xl font-poppins font-bold text-primary">
-                                  EUR {basePrice.toFixed(2)}
-                                </span>
                               </div>
-                            )}
+                            </label>
                           </div>
-                          {hasDiscount && (
-                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                              <p className="text-xs text-green-700 dark:text-green-300 font-medium">
-                                ✓ Your {discountPercentage}% stamp discount has been applied
-                                automatically!
-                              </p>
-                            </div>
-                          )}
-                          {!hasDiscount && (
-                            <p className="text-xs text-gray-500 mt-2">
-                              *Any available stamp discounts will be applied automatically
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })()}
-                </CardContent>
-              </Card>
-
-              {/* Important Information */}
-              <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                        Important Information
-                      </h4>
-                      <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                        <li>
-                          • Your slot is reserved for 5 minutes. Complete your booking to confirm.
-                        </li>
-                        <li>• You&apos;ll receive a confirmation email with session details.</li>
-                        <li>• Cancellation is free up to 24 hours before your appointment.</li>
-                        <li>• Please arrive 5 minutes early for your session.</li>
-                      </ul>
+                        ))}
+                      </div>
                     </div>
+                  ) : selectedTime ? (
+                    <div className="space-y-4">
+                      <Label className="text-lg font-poppins font-semibold text-charcoal">
+                        Services
+                      </Label>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        No specific services are configured for this time slot. You can discuss your
+                        needs directly with the therapist during your session.
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Additional Notes */}
+                  <div className="space-y-4">
+                    <Label
+                      htmlFor="notes"
+                      className="text-lg font-poppins font-semibold text-charcoal"
+                    >
+                      Additional Notes (Optional)
+                    </Label>
+                    <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                      Share any specific concerns, goals, or preferences for your session
+                    </p>
+                    <Textarea
+                      id="notes"
+                      placeholder="e.g., I'd like to focus on anxiety management techniques..."
+                      className="min-h-[120px] resize-none"
+                      {...detailsForm.register('notes')}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+
+                  {/* Address for Home Sessions */}
+                  {serviceForm.watch('serviceCategoryIds')?.some((id) => {
+                    const service = availableServices?.find((s: any) => s.id === id);
+                    return service?.locationTypes?.includes('HOME');
+                  }) && (
+                    <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Home className="w-5 h-5 text-blue-600" />
+                        <Label
+                          htmlFor="clientAddress"
+                          className="text-lg font-poppins font-semibold text-blue-900 dark:text-blue-100"
+                        >
+                          Home Address
+                        </Label>
+                      </div>
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        Please provide your address for home visit sessions
+                      </p>
+                      <Input
+                        id="clientAddress"
+                        placeholder="Enter your full address"
+                        className="bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-700"
+                        {...detailsForm.register('clientAddress')}
+                      />
+                    </div>
+                  )}
+
+                  {/* Price Summary */}
+                  {selectedTime && (
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                          Session Price
+                        </span>
+                        <span className="text-2xl font-bold text-primary">
+                          EUR{' '}
+                          {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)?.basePrice}
+                        </span>
+                      </div>
+                      {therapist?.id && (
+                        <div className="mt-4">
+                          <StampDiscountBadge therapistId={therapist.id} />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
 
@@ -1129,286 +979,113 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Header with Progress */}
-      <div className="">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Back Button */}
-            {currentStep > 1 && (
-              <Button
-                variant="ghost"
-                onClick={prevStep}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-3"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back
-              </Button>
-            )}
-
-            {/* Simple Progress Indicator */}
-            <div className="flex-1 max-w-md mx-auto px-8">
-              <div className="flex items-center justify-between text-sm">
-                {steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                        currentStep >= step.id
-                          ? 'bg-primary text-white'
-                          : 'bg-gray-200 text-gray-500'
-                      }`}
-                    >
-                      {step.id}
-                    </div>
-                    {index < steps.length - 1 && (
-                      <div
-                        className={`w-12 h-0.5 mx-2 ${
-                          currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
-                        }`}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-2">
-                {steps.map((step) => (
-                  <div key={step.id} className="text-xs text-gray-500 text-center">
-                    {step.title}
-                  </div>
-                ))}
-              </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Cal.com/Calendly Style - Centered Single Column */}
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        {/* Compact Therapist Header */}
+        <div className="mb-6 flex items-center gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
+          {currentStep > 1 && (
+            <Button
+              variant="ghost"
+              onClick={prevStep}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 -ml-2"
+              size="sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          )}
+          <Avatar className="w-12 h-12 border-2 border-gray-200 dark:border-gray-700">
+            <AvatarImage src={therapist?.avatar} />
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+              {therapist?.name?.charAt(0) || 'T'}
             </div>
-
-            {/* Continue Button */}
-            <div className="w-24 flex justify-end">
-              {currentStep < steps.length ? (
-                <Button
-                  onClick={nextStep}
-                  disabled={!isStepValid()}
-                  className="bg-primary hover:bg-primary/90 disabled:opacity-50 px-6"
-                >
-                  Continue
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content - Airbnb layout */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-              {renderStepContent()}
-            </div>
-          </div>
-
-          {/* Right Column - Booking Summary (Airbnb-style sidebar) */}
-          <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              {currentStep !== steps.length && (
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-poppins font-bold text-charcoal truncate">
+              {therapist?.name}
+            </h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                {therapist?.specialty}
+              </p>
+              {therapist?.rating && (
                 <>
-                  {/* Therapist Info */}
-                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                    <Avatar className="w-16 h-16 border-2 border-gray-200">
-                      <AvatarImage src={therapist?.avatar} />
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                        {therapist?.name?.charAt(0) || 'T'}
-                      </div>
-                    </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-poppins font-bold text-lg text-charcoal">
-                        {therapist?.name}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400">{therapist?.specialty}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{therapist?.rating?.toFixed(1)}</span>
-                        <span className="text-sm text-gray-500">
-                          ({therapist?.reviews} reviews)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Booking Details */}
-                  <div className="space-y-4">
-                    <h4 className="font-poppins font-semibold text-charcoal">Your booking</h4>
-
-                    {/* Date & Time */}
-                    {selectedDate && selectedTime && (
-                      <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-3">
-                          <Calendar className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {new Date(selectedDate).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
-                                new Date(
-                                  slotsByDate[selectedDate].find(
-                                    (s) => s.id === selectedTime,
-                                  )!.startTime,
-                                ).toLocaleTimeString('en-US', {
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                  hour12: true,
-                                })}
-                            </div>
-                          </div>
-                        </div>
-                        {currentStep === 1 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-primary hover:bg-primary/5"
-                          >
-                            Edit
-                          </Button>
-                        )}
-                      </div>
+                  <span className="text-gray-400">•</span>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium">{therapist?.rating?.toFixed(1)}</span>
+                    {therapist?.reviews > 0 && (
+                      <span className="text-xs text-gray-500">({therapist?.reviews})</span>
                     )}
-
-                    {/* Services */}
-                    {(serviceForm?.watch('serviceCategoryIds')?.length ?? 0) > 0 && (
-                      <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              Services
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {serviceForm
-                                .watch('serviceCategoryIds')
-                                ?.map((id: string) => {
-                                  const service = therapist?.services?.find(
-                                    (s: any) => s.id === id,
-                                  );
-                                  return service?.name;
-                                })
-                                .join(', ')}
-                            </div>
-                          </div>
-                        </div>
-                        {currentStep === 2 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-primary hover:bg-primary/5"
-                          >
-                            Edit
-                          </Button>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Price Breakdown */}
-                    {selectedTime &&
-                      (() => {
-                        const selectedSlot = slotsByDate[selectedDate]?.find(
-                          (s) => s.id === selectedTime,
-                        );
-                        const basePrice = selectedSlot?.basePrice || 0;
-                        const hasDiscount =
-                          stampDetail?.rewardReady &&
-                          !stampDetail?.rewardReserved &&
-                          stampDetail?.therapist?.id === therapist?.id;
-                        const discountPercentage = hasDiscount
-                          ? stampDetail?.discountPercentage || 0
-                          : 0;
-                        const discountAmount = hasDiscount
-                          ? (basePrice * discountPercentage) / 100
-                          : 0;
-                        const finalPrice = basePrice - discountAmount;
-
-                        return (
-                          <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-                            <div className="space-y-2">
-                              {hasDiscount && (
-                                <>
-                                  <div className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-600 dark:text-gray-400 font-inter">
-                                      Base Price:
-                                    </span>
-                                    <span className="font-poppins font-semibold text-primary">
-                                      EUR {basePrice.toFixed(2)}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between text-sm">
-                                    <span className="text-green-600 dark:text-green-400 font-medium">
-                                      Stamp Discount ({discountPercentage}%):
-                                    </span>
-                                    <span className="text-green-600 dark:text-green-400 font-medium">
-                                      -EUR {discountAmount.toFixed(2)}
-                                    </span>
-                                  </div>
-                                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-lg font-poppins font-semibold text-charcoal">
-                                        Total
-                                      </span>
-                                      <div className="flex flex-col items-end">
-                                        <span className="text-2xl font-poppins font-bold text-green-600 dark:text-green-400">
-                                          EUR {finalPrice.toFixed(2)}
-                                        </span>
-                                        <span className="text-xs font-inter text-gray-500 line-through">
-                                          EUR {basePrice.toFixed(2)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                    <p className="text-xs text-green-700 dark:text-green-300 font-medium">
-                                      ✓ {discountPercentage}% stamp discount applied
-                                    </p>
-                                  </div>
-                                </>
-                              )}
-                              {!hasDiscount && (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-lg font-poppins font-semibold text-charcoal">
-                                    Total
-                                  </span>
-                                  <span className="text-2xl font-poppins font-bold text-primary">
-                                    EUR {basePrice.toFixed(2)}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })()}
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        </div>
 
-              {/* Complete Booking Button */}
-              {currentStep === steps.length && (
-                <Button
-                  onClick={handleCompleteBooking}
-                  disabled={bookingLoading}
-                  className="w-full mt-6 bg-primary hover:bg-primary/90 disabled:opacity-50 py-3 text-base font-semibold rounded-lg text-white"
+        {/* Minimal Step Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center gap-2">
+            {steps.map((step, index) => (
+              <Fragment key={step.id}>
+                <div
+                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+                    currentStep >= step.id
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                  }`}
                 >
-                  {bookingLoading ? <>Confirming...</> : 'Confirm and book'}
-                </Button>
-              )}
-
-              {/* Policy Info */}
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-xs text-gray-500 space-y-2">
-                  <p>• Free cancellation up to 24 hours before</p>
-                  <p>• You&apos;ll receive confirmation details via email</p>
-                  <p>• This therapist typically responds within an hour</p>
+                  {step.id}
                 </div>
-              </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`w-8 h-0.5 ${
+                      currentStep > step.id ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                  />
+                )}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 mb-6">
+          {renderStepContent()}
+        </div>
+
+        {/* Sticky Action Button at Bottom */}
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 -mx-4 px-4 py-4 -mb-8 mt-8 rounded-t-xl shadow-lg">
+          <div className="max-w-3xl mx-auto">
+            {currentStep < steps.length ? (
+              <Button
+                onClick={nextStep}
+                disabled={!isStepValid()}
+                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-12 text-base font-semibold"
+                size="lg"
+              >
+                Continue
+              </Button>
+            ) : (
+              <Button
+                onClick={handleCompleteBooking}
+                disabled={bookingLoading}
+                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 text-base font-semibold"
+                size="lg"
+              >
+                {bookingLoading ? (
+                  <>
+                    <LoadingSpinner size="sm" className="mr-2" />
+                    Confirming...
+                  </>
+                ) : (
+                  'Confirm and book'
+                )}
+              </Button>
+            )}
+            <div className="mt-3 text-center">
+              <p className="text-xs text-gray-500">Free cancellation up to 24 hours before</p>
             </div>
           </div>
         </div>

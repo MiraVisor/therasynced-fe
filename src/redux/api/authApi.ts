@@ -23,7 +23,10 @@ export const resetPasswordApi = async (token: string, data: { newPassword: strin
 };
 
 export const verifyEmailLinkApi = async (data: { token: string }) => {
-  const response = await api.post(ENDPOINTS.auth.verifyEmailLink, data);
+  // Use GET endpoint with query parameter (recommended)
+  const response = await api.get(
+    `${ENDPOINTS.auth.verifyEmail}?token=${encodeURIComponent(data.token)}`,
+  );
   return response.data;
 };
 

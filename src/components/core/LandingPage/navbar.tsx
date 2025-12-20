@@ -12,9 +12,8 @@ import { isTokenValid } from '@/lib/utils';
 
 const navLinks = [
   { href: '#services', label: 'Our Services' },
-  { href: '#features', label: 'Why Us' },
-  { href: '#freelancers', label: 'Experts' },
-  { href: '#pricing', label: 'Pricing' },
+  { href: '#features', label: 'Features' },
+  { href: '#how-it-works', label: 'How It Works' },
 ];
 
 const Navbar = () => {

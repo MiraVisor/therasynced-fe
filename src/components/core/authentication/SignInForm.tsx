@@ -47,10 +47,9 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
     try {
       const res = await dispatch(loginUser(data)).unwrap();
       toast.success(res?.message || 'Login Successful');
-      // Wait a bit for Redux state to update before redirecting
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 100);
+      // Navigate immediately - Redux state updates synchronously
+      // Use replace to prevent back navigation to login page
+      router.replace('/dashboard');
     } catch (err) {
       const error = err as { message?: string };
       toast.error(error.message || 'Login Failed');

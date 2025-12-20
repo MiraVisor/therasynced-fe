@@ -18,7 +18,7 @@ import {
   Trash2,
   User,
 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -84,6 +84,7 @@ interface UserProfile {
 }
 
 export default function AccountPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
@@ -416,7 +417,7 @@ export default function AccountPage() {
   const handleSignOut = () => {
     setShowSignOutModal(false);
     logout();
-    window.location.href = '/authentication/sign-in';
+    router.replace('/');
   };
 
   // Show billing only for freelancers and admins

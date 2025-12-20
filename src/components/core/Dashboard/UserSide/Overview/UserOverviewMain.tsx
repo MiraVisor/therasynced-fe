@@ -20,6 +20,9 @@ import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import { ExpertList } from './ExpertSection';
 import { FilterChips } from './FilterChips';
 
+// Cache job titles in a module-level variable to persist across mounts
+let cachedJobTitles: Array<{ id: string; name: string }> | null = null;
+
 const mapFreelancerToExpert = (freelancer: any): Expert => {
   // Extract services and their location types
   const services = freelancer.services || [];
@@ -148,16 +151,24 @@ const UserOverview = () => {
   // Filter options data
   const [jobTitles, setJobTitles] = useState<Array<{ id: string; name: string }>>([]);
 
-  // Fetch job titles on mount
+  // Fetch job titles on mount - use cache if available
   useEffect(() => {
+    // If we have cached data, use it immediately
+    if (cachedJobTitles && cachedJobTitles.length > 0) {
+      setJobTitles(cachedJobTitles);
+      return; // Don't fetch if we have cached data
+    }
+
     const fetchJobTitles = async () => {
       const response = await jobTitleService.getActiveJobTitles();
       if (response.success) {
-        setJobTitles(response.data.map((jt) => ({ id: jt.id, name: jt.name })));
+        const titles = response.data.map((jt) => ({ id: jt.id, name: jt.name }));
+        cachedJobTitles = titles; // Cache the result
+        setJobTitles(titles);
       }
     };
     fetchJobTitles();
-  }, []);
+  }, []); // Empty deps - only run once
 
   // Fetch freelancers with current filters and sort
   const fetchFreelancers = useCallback(

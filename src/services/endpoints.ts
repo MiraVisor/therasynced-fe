@@ -5,7 +5,8 @@ export const ENDPOINTS = {
     signup: '/auth/signup',
     forgotPassword: '/auth/forgot-password',
     resetPassword: (token: string) => `/auth/reset-password/${token}`,
-    verifyEmailLink: '/auth/verify-email-link',
+    verifyEmailLink: '/auth/verify-email-link', // POST endpoint (legacy, still supported)
+    verifyEmail: '/auth/verify-email', // GET endpoint (recommended)
     googleSignIn: '/auth/google-signin',
     sendVerificationEmail: '/auth/send-verification-email',
   },

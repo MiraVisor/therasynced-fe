@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import {
-  CheckCircle,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
   Chrome,
@@ -11,8 +11,9 @@ import {
   EyeOff,
   Mail,
   MapPin,
+  User,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
@@ -20,7 +21,6 @@ import { z } from 'zod';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -44,11 +44,21 @@ const genderOptions = [
 ];
 
 const roleOptions = [
-  { value: 'patient', label: 'Patient' },
-  { value: 'freelancer', label: 'Freelancer' },
+  {
+    value: 'patient',
+    label: 'Patient',
+    description: 'Book appointments and manage your health records',
+    icon: User,
+  },
+  {
+    value: 'freelancer',
+    label: 'Freelancer',
+    description: 'Provide services and manage your practice',
+    icon: Briefcase,
+  },
 ];
 
-// Updated Zod schema for form validation
+// Updated Zod schema with genderOther field
 const signupSchema = z
   .object({
     name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
@@ -68,10 +78,20 @@ const signupSchema = z
         { message: 'You must be at least 18 years old' },
       ),
     gender: z.string().optional(),
+    genderOther: z.string().optional(), // Free text for "Other" gender
     city: z.string().optional(),
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
     mainJobTitleId: z.string().optional(),
+    termsAccepted: z.boolean().refine((val) => val === true, {
+      message: 'You must accept the Terms of Service to continue',
+    }),
+    privacyAccepted: z.boolean().refine((val) => val === true, {
+      message: 'You must accept the Privacy Policy to continue',
+    }),
+    dataProcessingConsent: z.boolean().refine((val) => val === true, {
+      message: 'You must consent to data processing to continue',
+    }),
   })
   .refine(
     (data) => {
@@ -95,6 +115,19 @@ const signupSchema = z
   }, 'Password is required')
   .refine(
     (data) => {
+      // Password must be at least 8 characters (consistent with login)
+      if (data.password && data.password.length < 8) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Password must be at least 8 characters',
+      path: ['password'],
+    },
+  )
+  .refine(
+    (data) => {
       if (data.password && data.password !== data.confirmPassword) {
         return false;
       }
@@ -103,6 +136,19 @@ const signupSchema = z
     {
       message: "Passwords don't match",
       path: ['confirmPassword'],
+    },
+  )
+  .refine(
+    (data) => {
+      // If gender is "other", genderOther should be provided
+      if (data.gender === 'other' && (!data.genderOther || data.genderOther.trim().length === 0)) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Please specify your gender identity',
+      path: ['genderOther'],
     },
   );
 
@@ -142,10 +188,14 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       confirmPassword: '',
       dob: undefined,
       gender: '',
+      genderOther: '',
       city: '',
       role: '',
       clinicAddress: '',
       mainJobTitleId: '',
+      termsAccepted: false,
+      privacyAccepted: false,
+      dataProcessingConsent: false,
     },
     mode: 'onChange',
   });
@@ -153,6 +203,10 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const selectedRole = watch('role');
   const selectedDob = watch('dob');
   const selectedJobTitleId = watch('mainJobTitleId');
+  const selectedGender = watch('gender');
+  const termsAccepted = watch('termsAccepted');
+  const privacyAccepted = watch('privacyAccepted');
+  const dataProcessingConsent = watch('dataProcessingConsent');
 
   // Load job titles when role is freelancer
   useEffect(() => {
@@ -161,20 +215,22 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     }
   }, [selectedRole]);
 
+  // Reset genderOther when gender changes away from "other"
+  useEffect(() => {
+    if (selectedGender !== 'other') {
+      setValue('genderOther', '');
+    }
+  }, [selectedGender, setValue]);
+
   const loadJobTitles = async () => {
     try {
       setIsLoadingJobTitles(true);
       const response = await dispatch(getActiveJobTitles() as any);
 
-      // Handle both fulfilled and rejected responses
       if (response.type?.endsWith('/fulfilled')) {
         if (Array.isArray(response.payload)) {
           setJobTitles(response.payload);
-          if (response.payload.length === 0) {
-            console.warn('No job titles returned from API');
-          }
         } else {
-          console.error('Invalid job titles response format:', response.payload);
           setJobTitles([]);
         }
       } else if (response.type?.endsWith('/rejected')) {
@@ -182,10 +238,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         toast.error('Failed to load job titles');
         setJobTitles([]);
       } else if (response.payload && Array.isArray(response.payload)) {
-        // Fallback for direct payload
         setJobTitles(response.payload);
       } else {
-        console.error('Unexpected response format:', response);
         setJobTitles([]);
       }
     } catch (error) {
@@ -197,66 +251,26 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     }
   };
 
-  // Determine steps based on role
+  // Simplified steps - combined for minimal flow
   const getSteps = () => {
     if (selectedRole === 'patient') {
       return [
-        { id: 1, title: 'Role', description: "How you'll use the platform" },
-        { id: 2, title: 'Account Setup', description: 'Create your account' },
-        { id: 3, title: 'Personal Details', description: 'Additional information' },
+        { id: 1, title: 'Role' },
+        { id: 2, title: 'Account & Details' },
+        { id: 3, title: 'Consent & Agreements' },
       ];
     } else if (selectedRole === 'freelancer') {
       return [
-        { id: 1, title: 'Role', description: "How you'll use the platform" },
-        { id: 2, title: 'Account Setup', description: 'Create your account' },
-        { id: 3, title: 'Personal Details', description: 'Additional information' },
-        { id: 4, title: 'Job Title', description: 'Select your profession' },
-        { id: 5, title: 'Clinic Address', description: 'Add your clinic address' },
+        { id: 1, title: 'Role' },
+        { id: 2, title: 'Account & Details' },
+        { id: 3, title: 'Professional Info' },
+        { id: 4, title: 'Consent & Agreements' },
       ];
     }
-    return [{ id: 1, title: 'Role', description: "How you'll use the platform" }];
+    return [{ id: 1, title: 'Role' }];
   };
 
   const steps = getSteps();
-
-  // Request location permission on mount
-  useEffect(() => {
-    const requestLocation = async () => {
-      if (!('geolocation' in navigator)) {
-        return;
-      }
-
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: false,
-            timeout: 5000,
-            maximumAge: 60000,
-          });
-        });
-
-        // Reverse geocode to get city name
-        try {
-          const response = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
-          );
-          const data = await response.json();
-          if (data.city) {
-            setValue('city', data.city);
-            setLocationPermissionGranted(true);
-            toast.success(`Location found: ${data.city}`);
-          }
-        } catch (error) {
-          console.error('Geocoding error:', error);
-        }
-      } catch (error) {
-        // User denied or error occurred
-        console.log('Location permission denied or unavailable');
-      }
-    };
-
-    // Don't auto-request location - user will click button to request
-  }, [setValue]);
 
   // Validate current step
   const validateCurrentStep = async (): Promise<boolean> => {
@@ -264,24 +278,33 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       case 1:
         return await trigger('role');
       case 2:
-        // Account setup: name, email, password
-        return await trigger(['name', 'email', 'password', 'confirmPassword']);
-      case 3:
-        // Personal details: DOB, gender, city
+        // Combined account + personal details
         if (authMethod === 'email') {
-          return await trigger(['dob', 'gender', 'city']);
+          return await trigger([
+            'name',
+            'email',
+            'password',
+            'confirmPassword',
+            'dob',
+            'gender',
+            'genderOther',
+          ]);
         }
-        // For OAuth, only validate name and email were filled
-        return await trigger(['name', 'email']);
-      case 4:
-        // Job title for freelancer
+        // For OAuth, validate name, email, and dob
+        return await trigger(['name', 'email', 'dob', 'gender', 'genderOther']);
+      case 3:
+        // Professional info for freelancer, or consent for patient
         if (selectedRole === 'freelancer') {
           return await trigger('mainJobTitleId');
+        } else if (selectedRole === 'patient') {
+          return await trigger(['termsAccepted', 'privacyAccepted', 'dataProcessingConsent']);
         }
         return true;
-      case 5:
-        // Clinic address for freelancer (optional)
-        // No validation needed since it's optional
+      case 4:
+        // Consent step for freelancer
+        if (selectedRole === 'freelancer') {
+          return await trigger(['termsAccepted', 'privacyAccepted', 'dataProcessingConsent']);
+        }
         return true;
       default:
         return true;
@@ -292,21 +315,24 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     const isValid = await validateCurrentStep();
     if (!isValid) return;
 
-    // Handle OAuth - on step 2 (account setup)
+    // When moving from step 1 to step 2, reset authMethod
+    if (currentStep === 1) {
+      setAuthMethod(null);
+    }
+
+    // Handle OAuth - on step 2
     if (currentStep === 2 && authMethod === 'oauth') {
       handleGoogleSignUp();
       return;
     }
 
-    // Special handling for completion
+    // Handle completion
     if (selectedRole === 'patient' && currentStep === 3) {
-      // Patient completes after personal details
       handleSubmit();
       return;
     }
 
-    if (selectedRole === 'freelancer' && currentStep === 5) {
-      // Freelancer completes after clinic address
+    if (selectedRole === 'freelancer' && currentStep === 4) {
       handleSubmit();
       return;
     }
@@ -318,6 +344,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const prevStep = () => {
     if (currentStep > 1) {
+      // If on step 2 and authMethod is set, reset authMethod
+      if (currentStep === 2 && authMethod !== null) {
+        setAuthMethod(null);
+        return;
+      }
       setCurrentStep(currentStep - 1);
     }
   };
@@ -351,7 +382,6 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         });
       });
 
-      // Reverse geocode to get city
       try {
         const response = await fetch(
           `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
@@ -362,13 +392,23 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
           setLocationPermissionGranted(true);
           toast.success(`Location found: ${data.city}`);
         } else {
-          toast.error('Could not determine your city from location');
+          toast.warn('Could not determine your city. Please select manually.');
         }
       } catch (error) {
-        toast.error('Failed to get city name from location');
+        console.error('Geocoding error:', error);
+        toast.warn('Failed to get city name. Please select manually.');
       }
-    } catch (error) {
-      toast.error('Location access denied or unavailable. Please select your city manually.');
+    } catch (error: any) {
+      const errorCode = error?.code;
+      if (errorCode === 1) {
+        toast.info('Location access denied. Please select your city manually.');
+      } else if (errorCode === 2) {
+        toast.warn('Location unavailable. Please select manually.');
+      } else if (errorCode === 3) {
+        toast.warn('Location request timed out. Please select manually.');
+      } else {
+        toast.warn('Unable to get location. Please select manually.');
+      }
     } finally {
       setIsRequestingLocation(false);
     }
@@ -376,18 +416,27 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const handleSubmit = () => {
     const formValues = getValues();
+
+    // Handle gender - use genderOther if gender is "other"
+    const finalGender =
+      formValues.gender === 'other' && formValues.genderOther
+        ? formValues.genderOther.trim()
+        : formValues.gender || undefined;
+
     const transformedData = {
       name: formValues.name,
       email: formValues.email,
       password: formValues.password || undefined,
       role: formValues.role.toUpperCase(),
       dob: formValues.dob ? format(formValues.dob, 'yyyy-MM-dd') : undefined,
-      gender: formValues.gender || undefined,
+      gender: finalGender,
       city: formValues.city || undefined,
       clinicAddress:
         selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,
       mainJobTitleId:
         selectedRole === 'freelancer' ? formValues.mainJobTitleId || undefined : undefined,
+      // Note: Consent fields (termsAccepted, privacyAccepted, dataProcessingConsent)
+      // are validated on frontend but not sent to backend as they're not in the API schema
     };
 
     // Remove undefined values
@@ -405,29 +454,46 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       case 1:
         return !!getValues('role') && !errors.role;
       case 2:
-        // Account setup: name, email, password
         const name = getValues('name');
         const email = getValues('email');
         const password = getValues('password');
-        return (
-          !!name &&
-          name.length >= 2 &&
-          !errors.name &&
-          !!email &&
-          email.includes('@') &&
-          !errors.email &&
-          (authMethod === 'oauth' || (!!password && !errors.password))
-        );
-      case 3:
-        // Personal details: DOB required, gender and city optional
         const dob = getValues('dob');
-        return !!dob && !errors.dob;
+        const gender = getValues('gender');
+        const genderOther = getValues('genderOther');
+
+        const hasValidName = !!name && name.length >= 2 && !errors.name;
+        const hasValidEmail = !!email && email.includes('@') && !errors.email;
+        const hasValidPassword = authMethod === 'oauth' || (!!password && !errors.password);
+        const hasValidDob = !!dob && !errors.dob;
+        const hasValidGender =
+          gender !== 'other' || (!!genderOther && genderOther.trim().length > 0);
+
+        return hasValidName && hasValidEmail && hasValidPassword && hasValidDob && hasValidGender;
+      case 3:
+        if (selectedRole === 'freelancer') {
+          return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
+        } else if (selectedRole === 'patient') {
+          return (
+            termsAccepted === true &&
+            privacyAccepted === true &&
+            dataProcessingConsent === true &&
+            !errors.termsAccepted &&
+            !errors.privacyAccepted &&
+            !errors.dataProcessingConsent
+          );
+        }
+        return true;
       case 4:
-        // Job title for freelancer (required)
-        return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
-      case 5:
-        // Clinic address for freelancer (optional)
-        // Always allow proceeding from this step since clinic address is optional
+        if (selectedRole === 'freelancer') {
+          return (
+            termsAccepted === true &&
+            privacyAccepted === true &&
+            dataProcessingConsent === true &&
+            !errors.termsAccepted &&
+            !errors.privacyAccepted &&
+            !errors.dataProcessingConsent
+          );
+        }
         return true;
       default:
         return true;
@@ -439,98 +505,124 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       case 1:
         // Role Selection
         return (
-          <div className="w-full space-y-2">
-            <div className="text-center space-y-1 mb-4">
-              <h3 className="text-xl font-poppins font-bold text-charcoal">Choose Your Role</h3>
-              <p className="text-xs font-inter text-gray-600">
-                Select how you&apos;ll use the platform
+          <div className="w-full space-y-6 animate-in fade-in duration-300">
+            <div className="text-center space-y-2 mb-6">
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">Get Started</h2>
+              <p className="text-sm font-inter text-gray-600">
+                Choose how you&apos;ll use TheraSynced
               </p>
             </div>
 
-            <div className="space-y-2">
-              {roleOptions.map((option) => (
-                <label
-                  key={option.value}
-                  className={cn(
-                    'flex items-center gap-3 p-2.5 border rounded-lg cursor-pointer transition-all duration-200',
-                    selectedRole === option.value
-                      ? 'border-primary bg-primary/5'
-                      : 'border-gray-300 hover:border-gray-400',
-                  )}
-                >
-                  <input
-                    type="radio"
-                    {...register('role')}
-                    value={option.value}
-                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                  />
-                  <div className="flex-1">
-                    <div className="font-inter font-semibold text-charcoal text-sm">
-                      {option.label}
+            <div className="space-y-3">
+              {roleOptions.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <label
+                    key={option.value}
+                    className={cn(
+                      'flex items-start gap-4 p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 group',
+                      selectedRole === option.value
+                        ? 'border-primary bg-primary/5 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 hover:shadow-sm bg-white',
+                    )}
+                  >
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
+                          selectedRole === option.value
+                            ? 'border-primary bg-primary'
+                            : 'border-gray-300 group-hover:border-gray-400',
+                        )}
+                      >
+                        {selectedRole === option.value && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xs font-inter text-gray-600 mt-0.5">
-                      {option.value === 'patient'
-                        ? 'Book appointments and manage your health records'
-                        : 'Provide services and manage your practice'}
+                    <input
+                      type="radio"
+                      {...register('role')}
+                      value={option.value}
+                      className="sr-only"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <Icon
+                          className={cn(
+                            'h-5 w-5',
+                            selectedRole === option.value ? 'text-primary' : 'text-gray-400',
+                          )}
+                        />
+                        <div className="font-inter font-semibold text-charcoal text-base">
+                          {option.label}
+                        </div>
+                      </div>
+                      <div className="text-sm font-inter text-gray-600 ml-8">
+                        {option.description}
+                      </div>
                     </div>
-                  </div>
-                </label>
-              ))}
+                  </label>
+                );
+              })}
             </div>
             {errors.role && (
-              <p className="text-red-500 text-xs font-inter mt-1">{errors.role.message}</p>
+              <p className="text-red-500 text-sm font-inter mt-2 text-center" role="alert">
+                {errors.role.message}
+              </p>
             )}
           </div>
         );
 
       case 2:
-        // Account Setup: Authentication method + Basic info (name, email, password)
+        // Combined Account Setup + Personal Details
         return (
-          <div className="w-full space-y-2">
+          <div className="w-full space-y-6 animate-in fade-in duration-300">
             {/* Header */}
-            <div className="text-center space-y-1 mb-4">
-              <h3 className="text-xl font-poppins font-bold text-charcoal">
+            <div className="text-center space-y-2 mb-6">
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">
                 {authMethod === 'email' ? 'Create Your Account' : 'Choose Signup Method'}
-              </h3>
-              <p className="text-xs font-inter text-gray-600">
+              </h2>
+              <p className="text-sm font-inter text-gray-600">
                 {authMethod === 'email'
-                  ? 'Enter your name, email, and create a password'
-                  : 'Continue with Google or use email'}
+                  ? 'Enter your details to get started'
+                  : 'Select how you&apos;d like to sign up'}
               </p>
             </div>
 
-            {/* OAuth Option */}
+            {/* Method Selection */}
             {!authMethod && (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Button
                   variant="outline"
-                  onClick={() => setAuthMethod('oauth')}
+                  onClick={() => {
+                    setAuthMethod('oauth');
+                    handleGoogleSignUp();
+                  }}
                   disabled={isGoogleLoading}
                   className={cn(
-                    'w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg border transition-all duration-200 text-sm font-inter font-medium',
-                    authMethod === 'oauth'
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-gray-300 hover:bg-gray-50',
+                    'w-full h-14 flex items-center justify-center gap-3 px-6 rounded-xl border-2 transition-all duration-200 text-base font-inter font-medium shadow-sm',
+                    'border-gray-200 hover:border-gray-300 hover:shadow-md bg-white',
                     isGoogleLoading && 'opacity-50 cursor-not-allowed',
                   )}
                 >
                   {isGoogleLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-                      <span>Signing up...</span>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                      <span>Connecting to Google...</span>
                     </div>
                   ) : (
                     <>
-                      <Chrome className="h-4 w-4" />
-                      Continue with Google
+                      <Chrome className="h-5 w-5" />
+                      <span>Continue with Google</span>
                     </>
                   )}
                 </Button>
 
-                <div className="relative py-1">
+                <div className="relative py-2">
                   <div className="flex items-center">
                     <div className="flex-1 border-t border-gray-200"></div>
-                    <span className="px-2 text-xs text-gray-500 font-inter">or</span>
+                    <span className="px-4 text-sm text-gray-500 font-inter bg-white">or</span>
                     <div className="flex-1 border-t border-gray-200"></div>
                   </div>
                 </div>
@@ -539,165 +631,525 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
                   variant="outline"
                   onClick={() => setAuthMethod('email')}
                   className={cn(
-                    'w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg border transition-all duration-200 text-sm font-inter font-medium',
-                    authMethod === 'email'
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-gray-300 hover:bg-gray-50',
+                    'w-full h-14 flex items-center justify-center gap-3 px-6 rounded-xl border-2 transition-all duration-200 text-base font-inter font-medium shadow-sm',
+                    'border-gray-200 hover:border-gray-300 hover:shadow-md bg-white',
                   )}
                 >
-                  <Mail className="h-4 w-4" />
-                  Continue with Email
+                  <Mail className="h-5 w-5" />
+                  <span>Continue with Email</span>
                 </Button>
               </div>
             )}
 
-            {/* Email Entry Form */}
+            {/* Email Entry Form + Personal Details Combined */}
             {authMethod === 'email' && (
-              <div className="space-y-2">
-                {/* Name Field */}
-                <div className="space-y-1">
-                  <label htmlFor="name" className="text-xs font-inter font-medium text-gray-700">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    {...register('name')}
-                    id="name"
-                    aria-label="Full name"
-                    aria-invalid={!!errors.name}
-                    aria-describedby={errors.name ? 'name-error' : undefined}
-                    className={cn(
-                      'w-full h-10 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
-                      errors.name
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-300 focus:border-primary',
-                    )}
-                    placeholder="Enter your full name"
-                    autoFocus
-                  />
-                  {errors.name && (
-                    <p
-                      id="name-error"
-                      className="text-red-500 text-xs font-inter mt-0.5"
-                      role="alert"
-                    >
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-5">
+                {/* Account Section */}
+                <div className="space-y-4 pb-4 border-b border-gray-100">
+                  <h3 className="text-sm font-inter font-semibold text-gray-700 uppercase tracking-wide">
+                    Account Information
+                  </h3>
 
-                {/* Email Field */}
-                <div className="space-y-1">
-                  <label htmlFor="email" className="text-xs font-inter font-medium text-gray-700">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    {...register('email')}
-                    id="email"
-                    aria-label="Email address"
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                    className={cn(
-                      'w-full h-10 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
-                      errors.email
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-300 focus:border-primary',
-                    )}
-                    placeholder="Enter your email address"
-                  />
-                  {errors.email && (
-                    <p
-                      id="email-error"
-                      className="text-red-500 text-xs font-inter mt-0.5"
-                      role="alert"
+                  {/* Name Field */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="name"
+                      className="text-sm font-inter font-semibold text-gray-700"
                     >
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Password Field */}
-                <div className="space-y-1">
-                  <label className="text-xs font-inter font-medium text-gray-700">Password</label>
-                  <div className="relative">
+                      Full Name
+                    </label>
                     <input
-                      type={showPassword ? 'text' : 'password'}
-                      {...register('password')}
+                      type="text"
+                      {...register('name')}
+                      id="name"
                       className={cn(
-                        'w-full h-10 px-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
-                        errors.password
+                        'w-full h-12 px-4 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                        errors.name
                           ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                          : 'border-gray-300 focus:border-primary',
+                          : 'border-gray-200 focus:border-primary',
                       )}
-                      placeholder="Create a password"
+                      placeholder="Enter your full name"
+                      autoFocus
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                    {errors.name && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.name.message}
+                      </p>
+                    )}
                   </div>
-                  {errors.password && (
-                    <p className="text-red-500 text-xs font-inter mt-0.5">
-                      {errors.password.message}
-                    </p>
-                  )}
+
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="email"
+                      className="text-sm font-inter font-semibold text-gray-700"
+                    >
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      {...register('email')}
+                      id="email"
+                      className={cn(
+                        'w-full h-12 px-4 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                        errors.email
+                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                          : 'border-gray-200 focus:border-primary',
+                      )}
+                      placeholder="Enter your email address"
+                    />
+                    {errors.email && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-inter font-semibold text-gray-700">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        {...register('password')}
+                        className={cn(
+                          'w-full h-12 px-4 pr-12 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                          errors.password
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                            : 'border-gray-200 focus:border-primary',
+                        )}
+                        placeholder="Create a password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="text-red-500 text-sm font-inter mt-1">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Confirm Password Field */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-inter font-semibold text-gray-700">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        {...register('confirmPassword')}
+                        className={cn(
+                          'w-full h-12 px-4 pr-12 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                          errors.confirmPassword
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                            : 'border-gray-200 focus:border-primary',
+                        )}
+                        placeholder="Confirm your password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-sm font-inter mt-1">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Confirm Password Field */}
-                <div className="space-y-1">
-                  <label className="text-xs font-inter font-medium text-gray-700">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      {...register('confirmPassword')}
-                      className={cn(
-                        'w-full h-10 px-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
-                        errors.confirmPassword
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                          : 'border-gray-300 focus:border-primary',
-                      )}
-                      placeholder="Confirm password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
+                {/* Personal Details Section */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-inter font-semibold text-gray-700 uppercase tracking-wide">
+                    Personal Details
+                  </h3>
+
+                  {/* Date of Birth */}
+                  <div className="space-y-2">
+                    <label htmlFor="dob" className="text-sm font-inter font-semibold text-gray-700">
+                      Date of Birth
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            'w-full h-12 justify-start text-left font-normal border-2',
+                            !selectedDob && 'text-gray-400',
+                            selectedDob && 'text-charcoal',
+                            errors.dob
+                              ? 'border-red-500 focus:border-red-500'
+                              : 'border-gray-200 focus:border-primary',
+                          )}
+                          id="dob"
+                        >
+                          {selectedDob ? (
+                            format(selectedDob, 'PPP')
+                          ) : (
+                            <span>Select your date of birth</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDob}
+                          onSelect={(date) => {
+                            if (date) {
+                              const today = new Date();
+                              const minAge = new Date(
+                                today.getFullYear() - 18,
+                                today.getMonth(),
+                                today.getDate(),
+                              );
+                              if (date > minAge) {
+                                toast.error('You must be at least 18 years old');
+                                return;
+                              }
+                              setValue('dob', date, { shouldValidate: true });
+                            } else {
+                              setValue('dob', undefined, { shouldValidate: true });
+                            }
+                          }}
+                          disabled={(date) => {
+                            const today = new Date();
+                            const minAge = new Date(
+                              today.getFullYear() - 18,
+                              today.getMonth(),
+                              today.getDate(),
+                            );
+                            return date > minAge || date > today;
+                          }}
+                          captionLayout="dropdown"
+                          fromYear={1900}
+                          toYear={new Date().getFullYear()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {errors.dob && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.dob.message}
+                      </p>
+                    )}
                   </div>
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-xs font-inter mt-0.5">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
+
+                  {/* Gender Field with "Other" text input */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="gender"
+                      className="text-sm font-inter font-semibold text-gray-700"
+                    >
+                      Gender
+                    </label>
+                    <Select
+                      value={watch('gender') || ''}
+                      onValueChange={(value) => {
+                        setValue('gender', value);
+                        if (value !== 'other') {
+                          setValue('genderOther', '');
+                        }
+                        trigger('gender');
+                      }}
+                    >
+                      <SelectTrigger
+                        id="gender"
+                        className={cn(
+                          'w-full h-12 font-inter text-sm border-2',
+                          errors.gender
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-gray-200 focus:border-primary',
+                        )}
+                      >
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {genderOptions.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className="font-inter"
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Show text input when "Other" is selected */}
+                    {selectedGender === 'other' && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          {...register('genderOther')}
+                          className={cn(
+                            'w-full h-12 px-4 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                            errors.genderOther
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                              : 'border-gray-200 focus:border-primary',
+                          )}
+                          placeholder="Please specify your gender identity"
+                          autoFocus
+                        />
+                        {errors.genderOther && (
+                          <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                            {errors.genderOther.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {errors.gender && selectedGender !== 'other' && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.gender.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* City Field */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-inter font-semibold text-gray-700">City</label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <LocationDropdown
+                          value={watch('city') || ''}
+                          onValueChange={(value) => setValue('city', value)}
+                          placeholder="Select your city"
+                          searchPlaceholder="Search locations..."
+                          emptyMessage="No location found."
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleLocationPermission}
+                        disabled={isRequestingLocation || locationPermissionGranted}
+                        className="h-12 px-4 border-2 border-gray-200 hover:border-gray-300"
+                        title="Get location automatically"
+                      >
+                        {isRequestingLocation ? (
+                          <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                        ) : (
+                          <MapPin className="h-5 w-5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* OAuth Pre-filled Info */}
             {authMethod === 'oauth' && watch('name') && (
-              <div className="space-y-2 p-3 border border-gray-200 rounded-lg bg-gray-50">
-                <p className="text-xs font-inter text-gray-600">
-                  We&apos;ll use the following information from your Google account:
-                </p>
-                <div className="space-y-1">
-                  <p className="text-sm font-inter font-medium text-charcoal">
-                    Name: {watch('name')}
+              <div className="space-y-4">
+                <div className="space-y-3 p-4 border-2 border-gray-200 rounded-xl bg-gray-50">
+                  <p className="text-sm font-inter text-gray-700 font-medium">
+                    We&apos;ll use the following information from your Google account:
                   </p>
-                  <p className="text-sm font-inter font-medium text-charcoal">
-                    Email: {watch('email')}
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-base font-inter font-semibold text-charcoal">
+                      Name: {watch('name')}
+                    </p>
+                    <p className="text-base font-inter font-semibold text-charcoal">
+                      Email: {watch('email')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Personal Details for OAuth */}
+                <div className="space-y-4 pt-4 border-t border-gray-100">
+                  <h3 className="text-sm font-inter font-semibold text-gray-700 uppercase tracking-wide">
+                    Personal Details
+                  </h3>
+
+                  {/* Date of Birth */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="dob-oauth"
+                      className="text-sm font-inter font-semibold text-gray-700"
+                    >
+                      Date of Birth
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            'w-full h-12 justify-start text-left font-normal border-2',
+                            !selectedDob && 'text-gray-400',
+                            selectedDob && 'text-charcoal',
+                            errors.dob
+                              ? 'border-red-500 focus:border-red-500'
+                              : 'border-gray-200 focus:border-primary',
+                          )}
+                          id="dob-oauth"
+                        >
+                          {selectedDob ? (
+                            format(selectedDob, 'PPP')
+                          ) : (
+                            <span>Select your date of birth</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDob}
+                          onSelect={(date) => {
+                            if (date) {
+                              const today = new Date();
+                              const minAge = new Date(
+                                today.getFullYear() - 18,
+                                today.getMonth(),
+                                today.getDate(),
+                              );
+                              if (date > minAge) {
+                                toast.error('You must be at least 18 years old');
+                                return;
+                              }
+                              setValue('dob', date, { shouldValidate: true });
+                            } else {
+                              setValue('dob', undefined, { shouldValidate: true });
+                            }
+                          }}
+                          disabled={(date) => {
+                            const today = new Date();
+                            const minAge = new Date(
+                              today.getFullYear() - 18,
+                              today.getMonth(),
+                              today.getDate(),
+                            );
+                            return date > minAge || date > today;
+                          }}
+                          captionLayout="dropdown"
+                          fromYear={1900}
+                          toYear={new Date().getFullYear()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {errors.dob && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.dob.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Gender Field with "Other" text input */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="gender-oauth"
+                      className="text-sm font-inter font-semibold text-gray-700"
+                    >
+                      Gender
+                    </label>
+                    <Select
+                      value={watch('gender') || ''}
+                      onValueChange={(value) => {
+                        setValue('gender', value);
+                        if (value !== 'other') {
+                          setValue('genderOther', '');
+                        }
+                        trigger('gender');
+                      }}
+                    >
+                      <SelectTrigger
+                        id="gender-oauth"
+                        className={cn(
+                          'w-full h-12 font-inter text-sm border-2',
+                          errors.gender
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-gray-200 focus:border-primary',
+                        )}
+                      >
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {genderOptions.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className="font-inter"
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Show text input when "Other" is selected */}
+                    {selectedGender === 'other' && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          {...register('genderOther')}
+                          className={cn(
+                            'w-full h-12 px-4 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter',
+                            errors.genderOther
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                              : 'border-gray-200 focus:border-primary',
+                          )}
+                          placeholder="Please specify your gender identity"
+                          autoFocus
+                        />
+                        {errors.genderOther && (
+                          <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                            {errors.genderOther.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* City Field */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-inter font-semibold text-gray-700">City</label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <LocationDropdown
+                          value={watch('city') || ''}
+                          onValueChange={(value) => setValue('city', value)}
+                          placeholder="Select your city"
+                          searchPlaceholder="Search locations..."
+                          emptyMessage="No location found."
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleLocationPermission}
+                        disabled={isRequestingLocation || locationPermissionGranted}
+                        className="h-12 px-4 border-2 border-gray-200 hover:border-gray-300"
+                        title="Get location automatically"
+                      >
+                        {isRequestingLocation ? (
+                          <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                        ) : (
+                          <MapPin className="h-5 w-5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -705,155 +1157,234 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         );
 
       case 3:
-        // Personal Details: DOB, Gender, City
+        // Professional Info (Freelancer only) OR Consent (Patient)
+        if (selectedRole === 'patient') {
+          // Consent step for patients
+          return (
+            <div className="w-full space-y-6 animate-in fade-in duration-300">
+              <div className="text-center space-y-2 mb-6">
+                <h2 className="text-2xl font-poppins font-bold text-charcoal">
+                  Consent & Agreements
+                </h2>
+                <p className="text-sm font-inter text-gray-600">
+                  Please review and accept the following to complete your registration
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                {/* Terms of Service */}
+                <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      {...register('termsAccepted', {
+                        onChange: () => trigger('termsAccepted'),
+                      })}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-inter font-semibold text-charcoal">
+                        I accept the{' '}
+                        <a
+                          href="/terms"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Terms of Service
+                        </a>
+                      </span>
+                      {errors.termsAccepted && (
+                        <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                          {errors.termsAccepted.message}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                </div>
+
+                {/* Privacy Policy */}
+                <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      {...register('privacyAccepted', {
+                        onChange: () => trigger('privacyAccepted'),
+                      })}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-inter font-semibold text-charcoal">
+                        I accept the{' '}
+                        <a
+                          href="/privacy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Privacy Policy
+                        </a>
+                      </span>
+                      {errors.privacyAccepted && (
+                        <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                          {errors.privacyAccepted.message}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                </div>
+
+                {/* Data Processing Consent */}
+                <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      {...register('dataProcessingConsent', {
+                        onChange: () => trigger('dataProcessingConsent'),
+                      })}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-inter font-semibold text-charcoal">
+                        I consent to the processing of my personal data
+                      </span>
+                      <p className="text-xs font-inter text-gray-600 mt-1">
+                        By checking this box, you consent to TheraSynced processing your personal
+                        data in accordance with our Privacy Policy. This includes data necessary for
+                        account management, booking services, and healthcare service delivery. You
+                        can withdraw your consent at any time.
+                      </p>
+                      {errors.dataProcessingConsent && (
+                        <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                          {errors.dataProcessingConsent.message}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Professional Info (Freelancer only) - Combined Job Title + Clinic Address
         return (
-          <div className="w-full space-y-2">
-            {/* Header */}
-            <div className="text-center space-y-1 mb-4">
-              <h3 className="text-xl font-poppins font-bold text-charcoal">Personal Details</h3>
-              <p className="text-xs font-inter text-gray-600">
-                Share some additional information about yourself
-              </p>
+          <div className="w-full space-y-6 animate-in fade-in duration-300">
+            <div className="text-center space-y-2 mb-6">
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">
+                Professional Information
+              </h2>
+              <p className="text-sm font-inter text-gray-600">Tell us about your profession</p>
             </div>
 
-            <div className="space-y-2">
-              {/* Date of Birth Field */}
-              <div className="space-y-1">
-                <label htmlFor="dob" className="text-xs font-inter font-medium text-gray-700">
-                  Date of Birth
-                </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        'w-full h-10 justify-start text-left font-normal',
-                        !selectedDob && 'text-muted-foreground',
-                        selectedDob && 'text-charcoal',
-                        errors.dob && 'border-red-500 focus:border-red-500',
-                      )}
-                      id="dob"
-                      aria-label="Date of birth"
-                      aria-invalid={!!errors.dob}
-                      aria-describedby={errors.dob ? 'dob-error' : undefined}
-                    >
-                      {selectedDob ? format(selectedDob, 'PPP') : <span>DD/MM/YYYY</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDob}
-                      onSelect={(date) => {
-                        if (date) {
-                          // Validate age (must be 18+)
-                          const today = new Date();
-                          const minAge = new Date(
-                            today.getFullYear() - 18,
-                            today.getMonth(),
-                            today.getDate(),
-                          );
-                          if (date > minAge) {
-                            toast.error('You must be at least 18 years old');
-                            return;
-                          }
-                          setValue('dob', date, { shouldValidate: true });
-                        } else {
-                          setValue('dob', undefined, { shouldValidate: true });
-                        }
-                      }}
-                      disabled={(date) => {
-                        const today = new Date();
-                        const minAge = new Date(
-                          today.getFullYear() - 18,
-                          today.getMonth(),
-                          today.getDate(),
-                        );
-                        return date > minAge || date > today;
-                      }}
-                      captionLayout="dropdown"
-                      fromYear={1900}
-                      toYear={new Date().getFullYear()}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                {errors.dob && (
-                  <p id="dob-error" className="text-red-500 text-xs font-inter mt-0.5" role="alert">
-                    {errors.dob.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Gender Field */}
-              <div className="space-y-1">
-                <label htmlFor="gender" className="text-xs font-inter font-medium text-gray-700">
-                  Gender
+            <div className="space-y-5">
+              {/* Job Title */}
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-inter font-semibold text-gray-700"
+                  htmlFor="mainJobTitleId"
+                >
+                  Job Title
                 </label>
                 <Select
-                  value={watch('gender') || ''}
+                  value={selectedJobTitleId || ''}
                   onValueChange={(value) => {
-                    setValue('gender', value);
-                    trigger('gender');
+                    setValue('mainJobTitleId', value, { shouldValidate: true });
+                    trigger('mainJobTitleId');
                   }}
+                  disabled={isLoadingJobTitles}
                 >
                   <SelectTrigger
-                    id="gender"
-                    aria-label="Gender"
-                    aria-invalid={!!errors.gender}
-                    aria-describedby={errors.gender ? 'gender-error' : undefined}
+                    id="mainJobTitleId"
                     className={cn(
-                      'w-full h-10 font-inter text-sm',
-                      errors.gender && 'border-red-500 focus:border-red-500',
+                      'w-full h-12 font-inter text-sm border-2',
+                      errors.mainJobTitleId
+                        ? 'border-red-500 focus:border-red-500'
+                        : 'border-gray-200 focus:border-primary',
                     )}
                   >
-                    <SelectValue placeholder="Select gender" />
+                    <SelectValue
+                      placeholder={
+                        isLoadingJobTitles
+                          ? 'Loading job titles...'
+                          : jobTitles.length === 0
+                            ? 'No job titles available'
+                            : 'Select your job title'
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {genderOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="font-inter">
-                        {option.label}
+                    {jobTitles.length === 0 ? (
+                      <SelectItem value="" disabled>
+                        {isLoadingJobTitles ? 'Loading...' : 'No job titles available'}
                       </SelectItem>
-                    ))}
+                    ) : (
+                      jobTitles.map((jobTitle) => (
+                        <SelectItem key={jobTitle.id} value={jobTitle.id} className="font-inter">
+                          <div>
+                            <span className="text-sm font-medium">{jobTitle.name}</span>
+                            {jobTitle.description && (
+                              <span className="text-xs text-gray-500 block">
+                                {jobTitle.description}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
-                {errors.gender && (
+                {errors.mainJobTitleId && (
                   <p
-                    id="gender-error"
-                    className="text-red-500 text-xs font-inter mt-0.5"
+                    id="jobTitle-error"
+                    className="text-red-500 text-sm font-inter mt-1"
                     role="alert"
                   >
-                    {errors.gender.message}
+                    {errors.mainJobTitleId.message}
                   </p>
                 )}
               </div>
 
-              {/* City Field */}
-              <div className="space-y-1">
-                <label className="text-xs font-inter font-medium text-gray-700">City</label>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <LocationDropdown
-                      value={watch('city') || ''}
-                      onValueChange={(value) => setValue('city', value)}
-                      placeholder="Select your city"
-                      searchPlaceholder="Search locations..."
-                      emptyMessage="No location found."
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleLocationPermission}
-                    disabled={isRequestingLocation || locationPermissionGranted}
-                    className="h-10 px-3 border-gray-300"
-                    title="Get location"
+              {/* Clinic Address */}
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-inter font-semibold text-gray-700"
+                  htmlFor="clinicAddress"
+                >
+                  Clinic Address <span className="text-gray-500 font-normal">(Optional)</span>
+                </label>
+                <textarea
+                  {...register('clinicAddress', {
+                    validate: (value) => {
+                      if (!value || value.trim().length === 0) {
+                        return true;
+                      }
+                      if (value.trim().length < 5) {
+                        return 'Address must be at least 5 characters';
+                      }
+                      return true;
+                    },
+                  })}
+                  id="clinicAddress"
+                  rows={4}
+                  className={cn(
+                    'w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter resize-none',
+                    errors.clinicAddress
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                      : 'border-gray-200 focus:border-primary',
+                  )}
+                  placeholder="Enter your clinic address (optional)"
+                />
+                {errors.clinicAddress && (
+                  <p
+                    id="clinicAddress-error"
+                    className="text-red-500 text-sm font-inter mt-1"
+                    role="alert"
                   >
-                    <MapPin className="h-4 w-4" />
-                  </Button>
-                </div>
-                {errors.city && (
-                  <p className="text-red-500 text-xs font-inter mt-0.5">{errors.city.message}</p>
+                    {errors.clinicAddress.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -861,138 +1392,103 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         );
 
       case 4:
-        // Job Title (Freelancer only)
+        // Consent step for freelancers
         return (
-          <div className="w-full space-y-2">
-            <div className="text-center space-y-1 mb-4">
-              <h3 className="text-xl font-poppins font-bold text-charcoal">Job Title</h3>
-              <p className="text-xs font-inter text-gray-600">
-                Select your profession or specialty
+          <div className="w-full space-y-6 animate-in fade-in duration-300">
+            <div className="text-center space-y-2 mb-6">
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">
+                Consent & Agreements
+              </h2>
+              <p className="text-sm font-inter text-gray-600">
+                Please review and accept the following to complete your registration
               </p>
             </div>
 
-            <div className="space-y-1">
-              <label
-                className="text-xs font-inter font-medium text-gray-700"
-                htmlFor="mainJobTitleId"
-              >
-                Job Title
-              </label>
-              <Select
-                value={selectedJobTitleId || ''}
-                onValueChange={(value) => {
-                  setValue('mainJobTitleId', value, { shouldValidate: true });
-                  trigger('mainJobTitleId');
-                }}
-                disabled={isLoadingJobTitles}
-              >
-                <SelectTrigger
-                  id="mainJobTitleId"
-                  aria-label="Job title"
-                  aria-invalid={!!errors.mainJobTitleId}
-                  aria-describedby={errors.mainJobTitleId ? 'jobTitle-error' : undefined}
-                  className={cn(
-                    'w-full h-10 font-inter text-sm',
-                    errors.mainJobTitleId && 'border-red-500 focus:border-red-500',
-                  )}
-                >
-                  <SelectValue
-                    placeholder={
-                      isLoadingJobTitles
-                        ? 'Loading job titles...'
-                        : jobTitles.length === 0
-                          ? 'No job titles available'
-                          : 'Select your job title'
-                    }
+            <div className="space-y-5">
+              {/* Terms of Service */}
+              <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    {...register('termsAccepted')}
+                    className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
                   />
-                </SelectTrigger>
-                <SelectContent>
-                  {jobTitles.length === 0 ? (
-                    <SelectItem value="" disabled>
-                      {isLoadingJobTitles ? 'Loading...' : 'No job titles available'}
-                    </SelectItem>
-                  ) : (
-                    jobTitles.map((jobTitle) => (
-                      <SelectItem key={jobTitle.id} value={jobTitle.id} className="font-inter">
-                        <div>
-                          <span className="text-sm font-medium">{jobTitle.name}</span>
-                          {jobTitle.description && (
-                            <span className="text-xs text-gray-500 block">
-                              {jobTitle.description}
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              {errors.mainJobTitleId && (
-                <p
-                  id="jobTitle-error"
-                  className="text-red-500 text-xs font-inter mt-0.5"
-                  role="alert"
-                >
-                  {errors.mainJobTitleId.message}
-                </p>
-              )}
-            </div>
-          </div>
-        );
+                  <div className="flex-1">
+                    <span className="text-sm font-inter font-semibold text-charcoal">
+                      I accept the{' '}
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Terms of Service
+                      </a>
+                    </span>
+                    {errors.termsAccepted && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.termsAccepted.message}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              </div>
 
-      case 5:
-        // Clinic Address (Freelancer only)
-        return (
-          <div className="w-full space-y-2">
-            <div className="text-center space-y-1 mb-4">
-              <h3 className="text-xl font-poppins font-bold text-charcoal">Clinic Address</h3>
-              <p className="text-xs font-inter text-gray-600">
-                Enter your clinic address (optional)
-              </p>
-            </div>
+              {/* Privacy Policy */}
+              <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    {...register('privacyAccepted')}
+                    className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-inter font-semibold text-charcoal">
+                      I accept the{' '}
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Privacy Policy
+                      </a>
+                    </span>
+                    {errors.privacyAccepted && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.privacyAccepted.message}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              </div>
 
-            <div className="space-y-1">
-              <label
-                className="text-xs font-inter font-medium text-gray-700"
-                htmlFor="clinicAddress"
-              >
-                Clinic Address <span className="text-gray-500 font-normal">(optional)</span>
-              </label>
-              <textarea
-                {...register('clinicAddress', {
-                  // Clinic address is optional, but if provided, it should be at least 5 characters
-                  validate: (value) => {
-                    if (!value || value.trim().length === 0) {
-                      return true; // Empty is allowed
-                    }
-                    if (value.trim().length < 5) {
-                      return 'Address must be at least 5 characters';
-                    }
-                    return true;
-                  },
-                })}
-                id="clinicAddress"
-                rows={3}
-                aria-label="Clinic address"
-                aria-invalid={!!errors.clinicAddress}
-                aria-describedby={errors.clinicAddress ? 'clinicAddress-error' : undefined}
-                className={cn(
-                  'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-sm font-inter resize-none',
-                  errors.clinicAddress
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                    : 'border-gray-300 focus:border-primary',
-                )}
-                placeholder="Enter your clinic address"
-              />
-              {errors.clinicAddress && (
-                <p
-                  id="clinicAddress-error"
-                  className="text-red-500 text-xs font-inter mt-0.5"
-                  role="alert"
-                >
-                  {errors.clinicAddress.message}
-                </p>
-              )}
+              {/* Data Processing Consent */}
+              <div className="space-y-3 p-5 border-2 border-gray-200 rounded-xl bg-white">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    {...register('dataProcessingConsent')}
+                    className="mt-1 w-5 h-5 rounded border-2 border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-inter font-semibold text-charcoal">
+                      I consent to the processing of my personal data
+                    </span>
+                    <p className="text-xs font-inter text-gray-600 mt-1">
+                      By checking this box, you consent to TheraSynced processing your personal data
+                      in accordance with our Privacy Policy. This includes data necessary for
+                      account management, booking services, and healthcare service delivery. You can
+                      withdraw your consent at any time.
+                    </p>
+                    {errors.dataProcessingConsent && (
+                      <p className="text-red-500 text-sm font-inter mt-1" role="alert">
+                        {errors.dataProcessingConsent.message}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
         );
@@ -1002,93 +1498,79 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     }
   };
 
-  // Only show step indicator after role selection (step 1)
-  const showStepIndicator = currentStep > 1;
-  const displayStep = currentStep - 1; // Step number to display (starts from 1 after role selection)
-  const totalSteps = selectedRole === 'patient' ? 2 : selectedRole === 'freelancer' ? 4 : 2; // Total steps after role selection (account setup + personal details + job title + clinic address for freelancer)
-  const stepsToShow = steps.filter((step) => step.id > 1); // Steps to show in progress bar (exclude role selection)
+  // Calculate progress
+  const totalSteps = selectedRole === 'patient' ? 3 : selectedRole === 'freelancer' ? 4 : 1;
+  const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
-    <div className="w-full flex flex-col space-y-6">
-      {/* Progress Bar - Only show after role selection */}
-      {showStepIndicator && (
-        <div className="flex-shrink-0">
-          <div className="flex justify-center items-center mb-2">
-            <div className="flex items-center space-x-2">
-              {stepsToShow.map((step, index) => {
-                const stepNumber = step.id - 1;
-                const isActive = currentStep === step.id;
-                const isCompleted = currentStep > step.id;
-                return (
-                  <div key={step.id} className="flex items-center">
-                    <div
-                      className={cn(
-                        'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 font-inter',
-                        isCompleted
-                          ? 'bg-primary text-white'
-                          : isActive
-                            ? 'bg-primary text-white'
-                            : 'bg-gray-200 text-gray-500',
-                      )}
-                    >
-                      {isCompleted ? <CheckCircle className="h-4 w-4" /> : stepNumber}
-                    </div>
-                    {index < stepsToShow.length - 1 && (
-                      <div
-                        className={cn(
-                          'w-8 h-0.5 mx-1 transition-all duration-200',
-                          isCompleted ? 'bg-primary' : 'bg-gray-200',
-                        )}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+    <div className="w-full flex flex-col h-full">
+      {/* Minimal Progress Bar - Only show after role selection */}
+      {selectedRole && currentStep > 1 && (
+        <div className="flex-shrink-0 mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-inter font-medium text-gray-500 uppercase tracking-wide">
+              {steps.find((s) => s.id === currentStep)?.title}
+            </span>
+            <span className="text-xs font-inter font-medium text-gray-500">
+              {currentStep} / {totalSteps}
+            </span>
           </div>
-          <div className="text-center">
-            <p className="text-xs font-inter text-gray-600 font-medium">
-              Step {displayStep} of {totalSteps}
-            </p>
+          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-500 ease-out rounded-full"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
       )}
 
       {/* Step Content */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-full">{renderStepContent()}</div>
+      <div className="flex-1 flex items-center justify-center min-h-[400px] pb-6">
+        <div className="w-full max-w-md">{renderStepContent()}</div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex-shrink-0 flex justify-between gap-3 pt-4 border-t border-gray-200">
-        <Button
-          variant="outline"
-          onClick={currentStep === 1 ? onBack : prevStep}
-          className="h-10 px-4 rounded-lg transition-all duration-200 font-inter font-medium text-sm border-gray-300 hover:bg-gray-50"
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0 pt-6 border-t border-gray-100">
+        <div
+          className={cn(
+            'flex gap-3',
+            currentStep === 2 && authMethod === null ? 'justify-start' : 'justify-between',
+          )}
         >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          <span>{currentStep === 1 ? 'Back to Login' : 'Previous'}</span>
-        </Button>
+          <Button
+            variant="ghost"
+            onClick={currentStep === 1 ? onBack : prevStep}
+            className="h-11 px-5 rounded-lg transition-all duration-200 font-inter font-medium text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1.5" />
+            <span>{currentStep === 1 ? 'Back' : 'Previous'}</span>
+          </Button>
 
-        {currentStep < steps.length ? (
-          <Button
-            onClick={nextStep}
-            disabled={!isStepValid()}
-            className="h-10 px-6 rounded-lg font-inter font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 text-sm"
-          >
-            <span>Continue</span>
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            onClick={handleSubmit}
-            disabled={!isStepValid() || isLoading}
-            className="h-10 px-6 rounded-lg font-inter font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 text-sm"
-            isLoading={isLoading}
-          >
-            Complete Signup
-          </Button>
-        )}
+          {/* Hide Continue button on step 2 when method selection is shown */}
+          {!(currentStep === 2 && authMethod === null) && (
+            <>
+              {currentStep < steps.length ? (
+                <Button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className="h-11 px-6 rounded-lg font-inter font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-sm ml-auto"
+                >
+                  <span>Next Step</span>
+                  <ChevronRight className="h-4 w-4 ml-1.5" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!isStepValid() || isLoading}
+                  className="h-11 px-6 rounded-lg font-inter font-semibold transition-all duration-200 bg-primary text-white hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-sm ml-auto"
+                  isLoading={isLoading}
+                >
+                  {isLoading ? 'Creating Account...' : 'Complete Signup'}
+                </Button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
