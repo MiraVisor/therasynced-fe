@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
+import { Textarea } from '@/components/ui/textarea';
 import { useJobTitles } from '@/hooks/queries/useJobTitles';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/useProfile';
 import { useAuth } from '@/hooks/useAuthZustand';
@@ -34,6 +35,7 @@ interface UserProfile {
   gender: string;
   dob: string;
   city: string;
+  description?: string; // Bio/description field
   isEmailVerified?: boolean;
   isActive?: boolean;
   role?: string;
@@ -56,6 +58,7 @@ export function ProfileSection() {
     city: '',
     gender: '',
     dob: '',
+    description: '',
     mainJobTitle: undefined,
     mainJobTitleId: undefined,
     clinicAddress: '',
@@ -71,6 +74,7 @@ export function ProfileSection() {
         gender: profileData.gender || '',
         dob: profileData.dob || '',
         city: profileData.city || '',
+        description: profileData.description || '',
         isEmailVerified: profileData.isEmailVerified,
         isActive: true,
         role: profileData.role || '',
@@ -143,19 +147,34 @@ export function ProfileSection() {
         dobToSend = formData.dob;
       }
 
-      updateProfile(
-        {
-          name: formData.name.trim(),
-          ...(formData.city && { city: formData.city.trim() }),
-          ...(formData.gender && { gender: formData.gender }),
-          ...(formData.dob && { dob: dobToSend }),
+      const updateData: {
+        name: string;
+        city?: string;
+        gender?: string;
+        dob?: string;
+        description?: string;
+      } = {
+        name: formData.name.trim(),
+      };
+
+      if (formData.city?.trim()) {
+        updateData.city = formData.city.trim();
+      }
+      if (formData.gender) {
+        updateData.gender = formData.gender;
+      }
+      if (formData.dob) {
+        updateData.dob = dobToSend;
+      }
+      if (formData.description?.trim()) {
+        updateData.description = formData.description.trim();
+      }
+
+      updateProfile(updateData, {
+        onSuccess: () => {
+          // Toast is already shown in the hook
         },
-        {
-          onSuccess: () => {
-            // Toast is already shown in the hook
-          },
-        },
-      );
+      });
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
       toast.error(errorMessage);
@@ -165,17 +184,28 @@ export function ProfileSection() {
   };
 
   const handleProfessionalInfoUpdate = () => {
-    updateProfile(
-      {
-        ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
-        ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
+    const updateData: {
+      mainJobTitleId?: string | null;
+      clinicAddress?: string;
+    } = {};
+
+    // Handle job title: send ID if selected, null if cleared
+    if (formData.mainJobTitle) {
+      updateData.mainJobTitleId = formData.mainJobTitle.id;
+    } else if (formData.mainJobTitleId !== undefined) {
+      // If it was previously set but now cleared, send null
+      updateData.mainJobTitleId = null;
+    }
+
+    if (formData.clinicAddress?.trim()) {
+      updateData.clinicAddress = formData.clinicAddress.trim();
+    }
+
+    updateProfile(updateData, {
+      onSuccess: () => {
+        // Toast is already shown in the hook
       },
-      {
-        onSuccess: () => {
-          // Toast is already shown in the hook
-        },
-      },
-    );
+    });
   };
 
   if ((initialLoading || loading) && !profileData) {
@@ -289,6 +319,23 @@ export function ProfileSection() {
             </Select>
           </div>
 
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+              Description (Bio)
+            </Label>
+            <Textarea
+              id="description"
+              placeholder="Tell us about yourself..."
+              value={formData.description || ''}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              className="min-h-[100px] text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal resize-none"
+              disabled={((initialLoading || loading) && !profileData) || isPersonalInfoLoading}
+            />
+            <p className="text-xs text-gray-500">
+              Optional: Add a brief description about yourself
+            </p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="dob" className="text-sm font-medium text-gray-700">
               Date of Birth
@@ -393,9 +440,18 @@ export function ProfileSection() {
               <Select
                 value={formData.mainJobTitle?.id || ''}
                 onValueChange={(value) => {
-                  const selectedJobTitle = jobTitles.find((jt) => jt.id === value);
-                  if (selectedJobTitle) {
-                    handleJobTitleChange(selectedJobTitle);
+                  if (value === 'clear') {
+                    // Clear selection
+                    setFormData((prev) => ({
+                      ...prev,
+                      mainJobTitle: undefined,
+                      mainJobTitleId: undefined,
+                    }));
+                  } else {
+                    const selectedJobTitle = jobTitles.find((jt) => jt.id === value);
+                    if (selectedJobTitle) {
+                      handleJobTitleChange(selectedJobTitle);
+                    }
                   }
                 }}
                 disabled={((initialLoading || loading) && !profileData) || isLoadingJobTitles}
@@ -417,22 +473,29 @@ export function ProfileSection() {
                       No job titles available
                     </div>
                   ) : (
-                    jobTitles.map((jobTitle) => (
-                      <SelectItem
-                        key={jobTitle.id}
-                        value={jobTitle.id}
-                        className="text-sm font-inter"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium font-inter">{jobTitle.name}</span>
-                          {jobTitle.description && (
-                            <span className="text-xs text-gray-500 font-inter">
-                              - {jobTitle.description}
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))
+                    <>
+                      {formData.mainJobTitle && (
+                        <SelectItem value="clear" className="text-sm font-inter text-gray-500">
+                          Clear selection
+                        </SelectItem>
+                      )}
+                      {jobTitles.map((jobTitle) => (
+                        <SelectItem
+                          key={jobTitle.id}
+                          value={jobTitle.id}
+                          className="text-sm font-inter"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium font-inter">{jobTitle.name}</span>
+                            {jobTitle.description && (
+                              <span className="text-xs text-gray-500 font-inter">
+                                - {jobTitle.description}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </>
                   )}
                 </SelectContent>
               </Select>

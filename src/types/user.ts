@@ -7,8 +7,9 @@ export interface UpdateProfileDto {
   city?: string;
   gender?: string;
   dob?: string;
+  description?: string; // Bio/description field
   // New fields for freelancers
   // Updated to match backend DTO
-  mainJobTitleId?: string;
+  mainJobTitleId?: string | null; // Allow null to clear selection
   clinicAddress?: string;
 }

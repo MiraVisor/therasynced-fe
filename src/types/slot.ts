@@ -3,7 +3,6 @@
  */
 import type { ServiceCategory } from './common';
 import type { LocationType } from './enums';
-import type { FormType } from './formTypes';
 import type { BookingRating } from './rating';
 import type { Service } from './service';
 import type { SubscriptionInfo } from './subscription';
@@ -30,7 +29,6 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
-  formType?: FormType;
   availableServices?: Service[]; // Legacy: Services available for this slot
   availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
   booking?: {
@@ -87,7 +85,6 @@ export interface CreateSlotDto {
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
-  formType?: FormType;
 }
 
 // Backend DTOs matching the controller structure

@@ -7,6 +7,7 @@ import {
   Calendar,
   CreditCard,
   FileDown,
+  FileText,
   Heart,
   Home,
   LogOut,
@@ -112,6 +113,11 @@ const navigationLinks = {
       icon: BarChart,
     },
     {
+      name: 'Forms',
+      url: '/dashboard/forms',
+      icon: FileText,
+    },
+    {
       name: 'Account',
       url: '/dashboard/account',
       icon: Settings,
@@ -157,6 +163,11 @@ const navigationLinks = {
       name: 'Service Categories',
       url: '/dashboard/admin/service-categories',
       icon: Tag,
+    },
+    {
+      name: 'Form Templates',
+      url: '/dashboard/admin/forms',
+      icon: FileText,
     },
     {
       name: 'Bookings',

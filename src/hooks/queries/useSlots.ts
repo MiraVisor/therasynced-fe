@@ -41,6 +41,9 @@ export const useSlotStats = () => {
     queryKey: ['slots', 'stats'],
     queryFn: () => slotApi.getMySlotsStats(),
     select: (data) => data.data,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: false, // Don't refetch on mount if data exists
   });
 };
 

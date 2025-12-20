@@ -93,7 +93,7 @@ class ChatService {
     if (this.isInitialized) return;
 
     const token = getCookie('token');
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
 
     if (!backendUrl) {
       console.error('ChatService: NEXT_PUBLIC_BACKEND_URL is not defined');
@@ -108,7 +108,7 @@ class ChatService {
     // Extract the base domain from the API URL
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }

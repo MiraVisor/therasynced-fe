@@ -1,4 +1,4 @@
-import { Heart } from 'lucide-react';
+import { CheckCircle2, Gift, Heart, Stamp } from 'lucide-react';
 import { useState } from 'react';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
@@ -6,6 +6,7 @@ import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/Rati
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useFavoriteFreelancer } from '@/hooks/queries/useFreelancers';
@@ -52,6 +53,15 @@ interface ExpertProfileDialogProps {
     firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
     onBookNow: () => void;
     hasAvailableSlots: boolean;
+    stampInfo?: {
+      currentStampCount: number;
+      stampTarget: number;
+      stampsRemaining: number;
+      rewardReady: boolean;
+      rewardReserved: boolean;
+      discountPercentage: number;
+      customConfigApplied: boolean;
+    };
   };
 }
 
@@ -73,6 +83,8 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
     isFavorite = false,
     onBookNow,
     hasAvailableSlots,
+    description,
+    stampInfo,
   } = expert;
 
   const freelancerName = name || cardInfo?.name;
@@ -135,8 +147,21 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
 
             {/* Content */}
             <div className="p-6 space-y-6">
+              {/* Bio/Description */}
+              {description && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full" />
+                    About
+                  </h4>
+                  <p className="text-sm font-inter text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {description}
+                  </p>
+                </div>
+              )}
+
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {availableSlots || 0}
@@ -154,65 +179,90 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                     Total Reviews
                   </div>
                 </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                  <div className="text-2xl font-poppins font-bold text-primary mb-1">
-                    {services.length}
-                  </div>
-                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
-                    Services
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                  <div className="text-2xl font-poppins font-bold text-primary mb-1">
-                    {sessionTypes.length}
-                  </div>
-                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
-                    Session Types
-                  </div>
-                </div>
               </div>
 
-              {/* Services Section */}
-              {services.length > 0 && (
+              {/* Stamps Section */}
+              {stampInfo && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full" />
-                    Services Offered
+                    Your Stamps Progress
                   </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {services.map((service, index: number) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="px-3 py-2 text-sm font-medium bg-primary/10 text-primary border border-primary/20"
-                      >
-                        {service.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Session Types */}
-              {sessionTypes && sessionTypes.length > 0 && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full" />
-                    Session Types Available
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {sessionTypes.map((type: string, index: number) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="px-3 py-2 text-sm font-medium capitalize border-primary/30 text-primary hover:bg-primary/5"
-                      >
-                        {type} Session
-                      </Badge>
-                    ))}
+                  {/* Stamp Visual Display */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      {(() => {
+                        const target = stampInfo.stampTarget ?? 5;
+                        const currentCount = Number(stampInfo.currentStampCount ?? 0);
+                        const maxCount = Math.min(currentCount, target);
+                        return Array.from({ length: target }, (_, index) => {
+                          const isFilled = index < maxCount;
+                          return (
+                            <div
+                              key={index}
+                              className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                                isFilled
+                                  ? 'bg-primary border-primary text-white'
+                                  : 'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700 dark:border-gray-600'
+                              }`}
+                            >
+                              {isFilled ? (
+                                <CheckCircle2 className="h-5 w-5" />
+                              ) : (
+                                <Stamp className="h-5 w-5" />
+                              )}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <Progress
+                        value={(stampInfo.currentStampCount / stampInfo.stampTarget) * 100}
+                        className="h-3"
+                      />
+                      <div className="flex justify-between text-sm font-inter text-gray-600 dark:text-gray-400">
+                        <span>
+                          {stampInfo.currentStampCount} of {stampInfo.stampTarget} stamps
+                        </span>
+                        <span>{stampInfo.stampsRemaining} stamps to reward</span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Reward Status */}
+                  {stampInfo.rewardReady && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      {stampInfo.rewardReserved ? (
+                        <Badge
+                          variant="secondary"
+                          className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 px-3 py-2 text-sm font-medium"
+                        >
+                          <Gift className="h-4 w-4 mr-2 inline" />
+                          Reward Reserved
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="default"
+                          className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 px-3 py-2 text-sm font-medium"
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-2 inline" />
+                          {stampInfo.discountPercentage}% Discount Available!
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {stampInfo.customConfigApplied && (
+                    <div className="mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        Custom Configuration Applied
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -258,48 +308,36 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                 </div>
               )}
 
-              {/* Certifications */}
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full" />
-                  Certifications & Verification
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant="outline"
-                    className={`px-3 py-2 text-sm font-medium ${
-                      verificationStatus === 'APPROVED' || verificationStatus === 'verified'
-                        ? 'border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400'
-                        : 'border-gray-300 text-gray-600 bg-gray-50'
-                    }`}
-                  >
-                    {verificationStatus === 'APPROVED' || verificationStatus === 'verified'
-                      ? '✓ Verified Professional'
-                      : 'Verification Pending'}
-                  </Badge>
+              {/* Certifications - Only show approved verifications */}
+              {(verificationStatus === 'APPROVED' ||
+                verificationStatus === 'verified' ||
+                firstAidCertificateStatus === 'APPROVED') && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full" />
+                    Certifications & Verification
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {(verificationStatus === 'APPROVED' || verificationStatus === 'verified') && (
+                      <Badge
+                        variant="outline"
+                        className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400"
+                      >
+                        ✓ Verified Professional
+                      </Badge>
+                    )}
 
-                  {(firstAidCertificateStatus === 'APPROVED' ||
-                    firstAidCertificateStatus === 'PENDING' ||
-                    firstAidCertificateStatus === 'REJECTED') && (
-                    <Badge
-                      variant="outline"
-                      className={`px-3 py-2 text-sm font-medium ${
-                        firstAidCertificateStatus === 'APPROVED'
-                          ? 'border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400'
-                          : firstAidCertificateStatus === 'PENDING'
-                            ? 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400'
-                            : 'border-gray-300 text-gray-600 bg-gray-50'
-                      }`}
-                    >
-                      {firstAidCertificateStatus === 'APPROVED'
-                        ? '✓ First Aid Certified'
-                        : firstAidCertificateStatus === 'PENDING'
-                          ? '⏳ First Aid Certificate Pending'
-                          : 'First Aid Certificate'}
-                    </Badge>
-                  )}
+                    {firstAidCertificateStatus === 'APPROVED' && (
+                      <Badge
+                        variant="outline"
+                        className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400"
+                      >
+                        ✓ First Aid Certified
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Action Buttons */}
               <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">

@@ -11,6 +11,7 @@ export * from './chat';
 export * from './common';
 export * from './complaint';
 export * from './enums';
+export * from './formTemplate';
 export * from './freelancer';
 export * from './location';
 export * from './loyalty';
@@ -201,8 +202,9 @@ export interface UpdateProfileDto {
   city?: string;
   gender?: string;
   dob?: string;
+  description?: string; // Bio/description field
   // New fields for freelancers
-  mainJobTitleId?: string; // Updated to match backend DTO
+  mainJobTitleId?: string | null; // Allow null to clear selection
   clinicAddress?: string;
 }
 
@@ -477,7 +479,6 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
-  formType?: import('./formTypes').FormType;
   availableServices?: Service[]; // Legacy: Services available for this slot
   availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
   booking?: {
@@ -546,7 +547,6 @@ export interface CreateSlotDto {
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
-  formType?: import('./formTypes').FormType;
 }
 
 export interface CreateServiceDto {

@@ -1,62 +1,8 @@
 import api from './api';
 
-export interface FormDraftData {
-  formData: Record<string, unknown>;
-  formType?: string;
-  metadata?: Record<string, unknown>;
-}
-
 export interface SlotNoteData {
   content: string;
 }
-
-/**
- * Booking Form Draft API
- */
-export const bookingFormDraftService = {
-  /**
-   * Save or update booking form draft
-   */
-  async saveDraft(bookingId: string, data: FormDraftData): Promise<void> {
-    try {
-      await api.post(`/booking/${bookingId}/form-draft`, data);
-    } catch (error: unknown) {
-      console.error('Failed to save form draft:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Get booking form draft
-   */
-  async getDraft(bookingId: string): Promise<FormDraftData | null> {
-    try {
-      const response = await api.get(`/booking/${bookingId}/form-draft`);
-      return response.data.data || null; // Returns null if no draft exists
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'response' in error) {
-        const apiError = error as { response?: { status?: number } };
-        if (apiError.response?.status === 404) {
-          return null;
-        }
-      }
-      console.error('Failed to get form draft:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Delete booking form draft
-   */
-  async deleteDraft(bookingId: string): Promise<void> {
-    try {
-      await api.delete(`/booking/${bookingId}/form-draft`);
-    } catch (error: unknown) {
-      console.error('Failed to delete form draft:', error);
-      throw error;
-    }
-  },
-};
 
 /**
  * Slot Note API

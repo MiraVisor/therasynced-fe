@@ -22,6 +22,7 @@ export interface UserProfileData {
   role: string;
   dob: string;
   city: string;
+  description?: string; // Bio/description field
   isEmailVerified: boolean;
   authProvider: string;
   createdAt: string;

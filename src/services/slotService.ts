@@ -30,7 +30,7 @@ export const deleteSlot = async (id: string): Promise<ApiResponse<void>> => {
 };
 
 export const getSlot = async (id: string): Promise<ApiResponse<Slot>> => {
-  const response = await api.get(`/slot/get/${id}`);
+  const response = await api.post('/slot/get', { id });
   return response.data;
 };
 
@@ -53,7 +53,7 @@ export const getMySlots = async (
 };
 
 export const getMySlotsStats = async (): Promise<ApiResponse<SlotStats>> => {
-  const response = await api.get('/slot/my-slots/stats');
+  const response = await api.get('/slot/stats/my-slots');
   return response.data;
 };
 

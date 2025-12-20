@@ -4,7 +4,7 @@ import { getCookie, removeCookie } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL: process.env['NEXT_PUBLIC_BACKEND_URL'],
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true',

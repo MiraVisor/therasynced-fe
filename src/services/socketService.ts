@@ -18,7 +18,7 @@ class SocketService {
     if (this.isInitialized) return;
 
     const token = getCookie('token');
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
 
     // Check if we have the required configuration
     if (!backendUrl) {
@@ -34,7 +34,7 @@ class SocketService {
     // Convert https://backend.mehadnadeem.com/api/v1 to https://backend.mehadnadeem.com
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }
@@ -271,14 +271,14 @@ class SocketService {
 
   // Debug methods
   public getConnectionStatus() {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     let socketUrl = '';
 
     if (backendUrl) {
       // Extract the base domain from the API URL
       let baseUrl: string;
       if (backendUrl.includes('/api/v1')) {
-        baseUrl = backendUrl.split('/api/v1')[0];
+        baseUrl = backendUrl.split('/api/v1')[0] || '';
       } else {
         baseUrl = backendUrl;
       }
@@ -301,7 +301,7 @@ class SocketService {
       socketId: this.socket?.id,
       reconnectAttempts: this.reconnectAttempts,
       isInitialized: this.isInitialized,
-      backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+      backendUrl: process.env['NEXT_PUBLIC_BACKEND_URL'],
       socketUrl: socketUrl,
       hasToken: !!getCookie('token'),
     };
@@ -329,7 +329,7 @@ class SocketService {
   public testDifferentEndpoints() {
     console.log('SocketService: Testing different WebSocket endpoints...');
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -338,7 +338,7 @@ class SocketService {
     // Extract the base domain from the API URL
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }
@@ -382,7 +382,7 @@ class SocketService {
   public testNamespace(namespace: string) {
     console.log(`SocketService: Testing namespace: ${namespace}`);
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -431,7 +431,7 @@ class SocketService {
   public testBasicConnection() {
     console.log('SocketService: Testing basic WebSocket connectivity...');
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -440,7 +440,7 @@ class SocketService {
     // Extract the base domain from the API URL
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }

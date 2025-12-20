@@ -90,6 +90,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           firstAidCertificateStatus,
           onBookNow: handleBookNow,
           hasAvailableSlots,
+          stampInfo: stampInfo || undefined,
         }}
       />
     </>

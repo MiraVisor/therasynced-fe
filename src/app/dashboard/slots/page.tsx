@@ -50,11 +50,7 @@ const SlotsPage = () => {
   const weekDate = currentWeekStart.toISOString().split('T')[0];
 
   // Use React Query hooks
-  const {
-    data: slots = [],
-    isLoading,
-    isFetching: initialLoadingStats,
-  } = useMySlots({
+  const { data: slots = [], isLoading } = useMySlots({
     page: 1,
     limit: 1000,
     sortBy: 'startTime',
@@ -165,29 +161,25 @@ const SlotsPage = () => {
     });
   };
 
-  // Use API stats when available, fallback to calculated stats
+  // Use API stats - these are global stats, not week-specific
   const displayStats = useMemo(() => {
     if (slotStats) {
       return {
-        total: slotStats.totalSlots,
-        booked: slotStats.bookedSlots,
-        available: slotStats.availableSlots,
-        revenue: slotStats.revenue,
+        total: slotStats.totalSlots || 0,
+        booked: slotStats.bookedSlots || 0,
+        available: slotStats.availableSlots || 0,
+        revenue: slotStats.revenue || 0,
       };
     }
 
-    // Fallback calculation
-    const bookedSlots = slots.filter((s) => s.status === 'BOOKED');
-    const availableSlots = slots.filter((s) => s.status === 'AVAILABLE');
-    const totalRevenue = bookedSlots.reduce((sum, slot) => sum + slot.basePrice, 0);
-
+    // Return zeros while loading - don't use week-specific slots for global stats
     return {
-      total: slots.length,
-      booked: bookedSlots.length,
-      available: availableSlots.length,
-      revenue: totalRevenue,
+      total: 0,
+      booked: 0,
+      available: 0,
+      revenue: 0,
     };
-  }, [slotStats, slots]);
+  }, [slotStats]);
 
   const weekDays = getWeekDays();
 
@@ -405,7 +397,7 @@ const SlotsPage = () => {
             icon={CalendarIcon}
             iconColor="text-info"
             iconBg="bg-info/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Booked"
@@ -413,7 +405,7 @@ const SlotsPage = () => {
             icon={Clock}
             iconColor="text-success"
             iconBg="bg-success/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Available"
@@ -421,7 +413,7 @@ const SlotsPage = () => {
             icon={TrendingUp}
             iconColor="text-primary"
             iconBg="bg-primary/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Revenue"
@@ -429,7 +421,7 @@ const SlotsPage = () => {
             icon={DollarSign}
             iconColor="text-warning"
             iconBg="bg-warning/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
         </div>
 
