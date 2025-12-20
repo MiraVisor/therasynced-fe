@@ -45,7 +45,7 @@ const WhoItsFor = () => {
       data-aos="fade-up"
       data-aos-once="false"
       data-aos-mirror="true"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
+      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16  transition-all duration-500"
     >
       <div className="max-w-screen-xl mx-auto relative">
         {/* Decorative star shapes */}

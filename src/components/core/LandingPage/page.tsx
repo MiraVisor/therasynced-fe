@@ -45,16 +45,13 @@ const LandingPage = () => {
       <div className="transition-all duration-300 bg-white dark:bg-black">
         <Navbar />
         <Hero />
-        <div className="space-y-24 sm:space-y-32 lg:space-y-40">
-          <WhoItsFor />
-
-          <Services />
-          <Features />
-          <Freelancers />
-          <Pricing />
-          <Feedback />
-          <Footer />
-        </div>
+        <WhoItsFor />
+        <Services />
+        <Features />
+        <Freelancers />
+        <Pricing />
+        <Feedback />
+        <Footer />
 
         {/* Back to Top Button */}
         <button

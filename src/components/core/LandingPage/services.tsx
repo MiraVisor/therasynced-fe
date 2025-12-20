@@ -32,7 +32,7 @@ const Services = () => {
   return (
     <section
       id="services"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500 bg-gray-100"
+      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 mt-32 transition-all duration-500 bg-gray-100"
       data-aos="zoom-in"
       data-aos-once="false"
       data-aos-mirror="true"

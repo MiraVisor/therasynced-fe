@@ -98,7 +98,7 @@ const Freelancers = () => {
   return (
     <section
       id="freelancers"
-      className="w-full pt-6 sm:pt-10 lg:pt-16 transition-all duration-500 bg-gray-50"
+      className="w-full pt-6 sm:pt-10 lg:pt-16 transition-all duration-500 bg-gray-50 mt-16"
     >
       <div className="flex flex-col items-center gap-8 sm:gap-6 lg:gap-8">
         {/* Header */}

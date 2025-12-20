@@ -71,7 +71,7 @@ const Pricing = () => {
   return (
     <section
       id="pricing"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
+      className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-18 lg:py-32 transition-all duration-500 bg-gray-100"
     >
       <div className="max-w-screen-xl mx-auto flex flex-col items-center gap-8 sm:gap-12 lg:gap-16">
         {/* Header */}
@@ -87,7 +87,7 @@ const Pricing = () => {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 w-full max-w-xl lg:max-w-none mx-auto">
-          {pricingPlans.map((plan) => (
+          {pricingPlans.map((plan, idx) => (
             <div
               key={plan.id}
               className={`flex flex-col rounded-2xl p-5 sm:p-6 lg:p-8 gap-4 sm:gap-6 
@@ -98,6 +98,10 @@ const Pricing = () => {
                 shadow-lg shadow-primary/5 dark:shadow-primary/10
                 hover:shadow-xl hover:shadow-neutral-900/80 dark:hover:shadow-white/20
                 h-full`}
+              data-aos="fade-up"
+              data-aos-delay={idx * 150}
+              data-aos-once="false"
+              data-aos-mirror="true"
             >
               {/* Plan Title & Description */}
               <div className="flex flex-col gap-2 sm:gap-3">
@@ -136,6 +140,10 @@ const Pricing = () => {
                   bg-primary hover:bg-primary/90 text-white
                   hover:shadow-lg hover:shadow-neutral-900/80 dark:hover:shadow-white/20
                   hover:scale-[1.02]`}
+                data-aos="fade-up"
+                data-aos-once="false"
+                data-aos-mirror="true"
+                data-aos-delay={idx * 150 + 300}
               >
                 <Link href={plan.button.href}>{plan.button.text}</Link>
               </Button>
