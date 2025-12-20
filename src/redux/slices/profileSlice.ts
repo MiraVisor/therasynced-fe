@@ -17,6 +17,8 @@ interface UserProfile {
   mainJobTitle?: JobTitle;
   mainJobTitleId?: string;
   clinicAddress?: string;
+  allowPreBookingMessages?: boolean;
+  description?: string; // Bio/Description for freelancers
 }
 
 interface ProfileState {
@@ -86,6 +88,8 @@ export const fetchProfile = createAsyncThunk(
         mainJobTitleId: userData.mainJobTitle?.id,
         mainJobTitle: userData.mainJobTitle,
         clinicAddress: userData.clinicAddress || '',
+        allowPreBookingMessages: userData.allowPreBookingMessages,
+        description: userData.description || '',
       };
 
       return { data: profileData, silent: options.silent };

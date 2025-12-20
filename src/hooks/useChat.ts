@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import {
   addNewMessage,
+  archiveConversation,
+  archiveConversationThunk,
   clearError,
   fetchContacts,
   fetchMessages,
@@ -14,10 +16,12 @@ import {
   setConnectionInfo,
   setConnectionStatus,
   setRefreshing,
+  unarchiveConversation,
+  updateConversationContext,
   updateTypingIndicator,
 } from '@/redux/slices/chatSlice';
 import { AppDispatch, RootState } from '@/redux/store';
-import chatService, { ChatMessage } from '@/services/chatService';
+import chatService, { ChatMessage, ConversationContext, MessageType } from '@/services/chatService';
 
 export const useChat = (currentUserId?: string) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,6 +29,7 @@ export const useChat = (currentUserId?: string) => {
 
   const {
     contacts,
+    archivedContacts,
     conversations,
     activeConversationId,
     isConnected,
@@ -64,6 +69,22 @@ export const useChat = (currentUserId?: string) => {
     const unsubscribeMessageRead = chatService.onMessageRead(({ messageId }) => {
       dispatch(markAsRead(messageId));
     });
+
+    const unsubscribeContextChanged = chatService.onConversationContextChanged(
+      ({ conversationId, context }) => {
+        dispatch(updateConversationContext({ conversationId, context }));
+      },
+    );
+
+    const unsubscribeArchived = chatService.onConversationArchived(
+      ({ conversationId, isArchived }) => {
+        if (isArchived) {
+          dispatch(archiveConversation(conversationId));
+        } else {
+          dispatch(unarchiveConversation(conversationId));
+        }
+      },
+    );
 
     // Connection event handlers
     const handleConnectionRestored = () => {
@@ -122,6 +143,8 @@ export const useChat = (currentUserId?: string) => {
       unsubscribeNewMessage();
       unsubscribeTypingIndicator();
       unsubscribeMessageRead();
+      unsubscribeContextChanged();
+      unsubscribeArchived();
       window.removeEventListener('chat:connection_restored', handleConnectionRestored);
       window.removeEventListener('chat:disconnected', handleDisconnected as EventListener);
       window.removeEventListener('chat:max_reconnect_attempts_reached', handleMaxReconnectAttempts);
@@ -204,15 +227,23 @@ export const useChat = (currentUserId?: string) => {
   );
 
   const sendChatMessage = useCallback(
-    async (recipientId: string, content: string) => {
+    async (recipientId: string, content: string, bookingId?: string, messageType?: MessageType) => {
       if (!content.trim()) return;
 
       try {
-        await dispatch(sendMessage({ recipientId, content })).unwrap();
+        await dispatch(
+          sendMessage({ recipientId, content, bookingId, messageType: messageType as string }),
+        ).unwrap();
         // Message will be added to the conversation through the fulfilled action
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to send message:', error);
-        throw error;
+        // Enhance error with status code if available
+        const enhancedError = {
+          ...error,
+          statusCode: error?.response?.status || error?.statusCode,
+          message: error?.message || error?.response?.data?.message || 'Failed to send message',
+        };
+        throw enhancedError;
       }
     },
     [dispatch],
@@ -276,6 +307,25 @@ export const useChat = (currentUserId?: string) => {
     [dispatch],
   );
 
+  const archiveConversationAction = useCallback(
+    async (conversationId: string) => {
+      try {
+        await dispatch(archiveConversationThunk(conversationId)).unwrap();
+      } catch (error) {
+        console.error('Failed to archive conversation:', error);
+        throw error;
+      }
+    },
+    [dispatch],
+  );
+
+  const unarchiveConversationAction = useCallback(
+    (conversationId: string) => {
+      dispatch(unarchiveConversation(conversationId));
+    },
+    [dispatch],
+  );
+
   // Helper functions
   const getActiveConversation = useCallback(() => {
     if (!activeConversationId) return null;
@@ -316,6 +366,7 @@ export const useChat = (currentUserId?: string) => {
   return {
     // State
     contacts,
+    archivedContacts,
     activeConversationId,
     activeConversation: getActiveConversation(),
     isConnected,
@@ -335,6 +386,8 @@ export const useChat = (currentUserId?: string) => {
     refreshContacts,
     clearError: clearChatError,
     markConversationAsRead,
+    archiveConversation: archiveConversationAction,
+    unarchiveConversation: unarchiveConversationAction,
     forceReconnect,
     dismissReconnectMessage,
 

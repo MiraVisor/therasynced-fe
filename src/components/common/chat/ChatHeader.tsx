@@ -1,11 +1,20 @@
 'use client';
 
-import { ArrowLeft, Phone, Video } from 'lucide-react';
+import { Archive, ArrowLeft, Calendar, MoreVertical, Phone, Video } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { cn } from '@/lib/utils';
-import { ChatContact } from '@/services/chatService';
+import { ChatContact, ConversationContext } from '@/services/chatService';
+import { getContextBadgeColor, getContextLabel } from '@/utils/chatUtils';
 
 interface ChatHeaderProps {
   contact: ChatContact | null;
@@ -16,6 +25,8 @@ interface ChatHeaderProps {
   onVideoCall?: () => void;
   onArchive?: () => void;
   onDelete?: () => void;
+  onBookAgain?: () => void;
+  onBookNow?: () => void;
   showBackButton?: boolean;
   className?: string;
 }
@@ -27,9 +38,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   onBack,
   onCall,
   onVideoCall,
+  onArchive,
+  onBookAgain,
+  onBookNow,
   showBackButton = false,
   className,
 }) => {
+  const router = useRouter();
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -97,8 +112,27 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           </div>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-semibold text-gray-900 truncate">{contact.name}</h2>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-900 truncate">{contact.name}</h2>
+              {contact.context && (
+                <Badge
+                  variant="outline"
+                  className={cn('text-xs', getContextBadgeColor(contact.context))}
+                >
+                  {getContextLabel(contact.context)}
+                </Badge>
+              )}
+              {contact.context === ConversationContext.POST_CARE &&
+                contact.postCareDaysRemaining !== undefined && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                  >
+                    {contact.postCareDaysRemaining}d left
+                  </Badge>
+                )}
+            </div>
+            <div className="flex items-center space-x-2 mt-1">
               <p
                 className={cn(
                   'text-sm truncate',
@@ -114,6 +148,28 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 </div>
               )}
             </div>
+            {/* Context-specific CTAs */}
+            {/* PRE_BOOKING context removed - messaging only available after booking */}
+            {contact.context === ConversationContext.POST_CARE && onBookAgain && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 h-7 text-xs border-green-300 text-green-700 hover:bg-green-50"
+                onClick={onBookAgain}
+              >
+                <Calendar className="h-3 w-3 mr-1" />
+                Book Again
+              </Button>
+            )}
+            {contact.context === ConversationContext.ACTIVE_BOOKING && contact.lastAppointment && (
+              <div className="mt-2 text-xs text-gray-600">
+                <Calendar className="h-3 w-3 inline mr-1" />
+                Active booking: {contact.lastAppointment.status}
+              </div>
+            )}
+            {contact.context === ConversationContext.ONGOING && (
+              <div className="mt-2 text-xs text-gray-600">Ongoing relationship</div>
+            )}
           </div>
         </div>
 
@@ -142,6 +198,27 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
               <Video className="h-4 w-4" />
             </Button>
           )}
+
+          {/* More Options Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-green-50 hover:text-green-600"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onArchive && (
+                <DropdownMenuItem onClick={onArchive}>
+                  <Archive className="h-4 w-4 mr-2" />
+                  {contact?.isArchived ? 'Unarchive' : 'Archive'} Conversation
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

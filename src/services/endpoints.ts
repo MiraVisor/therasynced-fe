@@ -82,6 +82,7 @@ export const ENDPOINTS = {
       getVisible: '/freelancer/forms',
       getDownloadUrl: (id: string) => `/freelancer/forms/${id}/download`,
     },
+    updateMessagingPreferences: '/freelancer/messaging-preferences',
   },
   // Dashboard endpoints
   dashboard: {
@@ -93,6 +94,8 @@ export const ENDPOINTS = {
     send: '/chat/send',
     messages: '/chat/messages',
     markRead: (messageId: string) => `/chat/messages/${messageId}/read`,
+    archive: (conversationId: string) => `/chat/archive/${conversationId}`,
+    context: (conversationId: string) => `/chat/context/${conversationId}`,
   },
   // Service categories endpoints
   serviceCategories: {

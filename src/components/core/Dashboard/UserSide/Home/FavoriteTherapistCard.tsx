@@ -1,6 +1,7 @@
 'use client';
 
-import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
+import { CheckCircle2, Heart, Loader2, MessageCircle, Stamp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -23,10 +24,15 @@ interface FavoriteFreelancerCardProps {
 }
 
 const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelancer, onBook }) => {
+  const router = useRouter();
   const dispatch = useDispatch();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+
+  const handleMessage = () => {
+    router.push(`/dashboard/messages?freelancerId=${freelancer.id}`);
+  };
 
   // Get stamp information from freelancer object (stampInfo is included in API response)
   const stampInfo = freelancer.stampInfo || null;
@@ -244,6 +250,8 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
               >
                 View Profile
               </Button>
+              {/* Message button removed - messaging only available after booking */}
+              {/* Users should book first, then they can message from the booking or messages page */}
               {hasAvailableSlots ? (
                 <Button
                   className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"

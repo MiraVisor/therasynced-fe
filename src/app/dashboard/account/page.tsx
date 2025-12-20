@@ -58,12 +58,15 @@ import {
 } from '@/components/ui/skeletons/AccountSectionSkeleton';
 import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkeleton';
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
 import { changeEmail, changePassword, updateProfile } from '@/redux/api/profileApi';
 import { useAuth } from '@/redux/hooks/useAppHooks';
 import { fetchProfile, updateMainJobTitle, updateProfileData } from '@/redux/slices/profileSlice';
 import { RootState } from '@/redux/store';
+import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
 import { JobTitle, ROLES } from '@/types/types';
 
 interface UserProfile {
@@ -81,6 +84,7 @@ interface UserProfile {
   mainJobTitle?: JobTitle;
   mainJobTitleId?: string; // Add this to store the ID from API
   clinicAddress?: string;
+  description?: string; // Bio/Description for freelancers
 }
 
 export default function AccountPage() {
@@ -116,6 +120,7 @@ export default function AccountPage() {
     mainJobTitle: undefined,
     mainJobTitleId: undefined,
     clinicAddress: '',
+    description: '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -145,25 +150,56 @@ export default function AccountPage() {
   // Sync Redux profile data to local form state
   useEffect(() => {
     if (profileData) {
-      setFormData({
-        id: profileData.id,
-        name: profileData.name || '',
-        email: profileData.email || '',
-        profilePicture: profileData.profilePicture,
-        gender: profileData.gender || '',
-        dob: profileData.dob || '',
-        city: profileData.city || '',
-        isEmailVerified: profileData.isEmailVerified,
-        isActive: profileData.isActive,
-        role: profileData.role || '',
-        mainJobTitleId: profileData.mainJobTitleId,
-        mainJobTitle: profileData.mainJobTitle,
-        clinicAddress: profileData.clinicAddress || '',
+      setFormData((prev) => {
+        // Only update if profile data actually changed to prevent unnecessary re-renders
+        const hasChanged =
+          prev.id !== profileData.id ||
+          prev.name !== (profileData.name || '') ||
+          prev.email !== profileData.email ||
+          prev.mainJobTitleId !== profileData.mainJobTitleId ||
+          prev.clinicAddress !== (profileData.clinicAddress || '') ||
+          prev.description !== (profileData.description || '');
+
+        if (!hasChanged && prev.mainJobTitle?.id === profileData.mainJobTitleId) {
+          return prev;
+        }
+
+        // If we have mainJobTitleId but no mainJobTitle object, try to find it from jobTitles
+        let mainJobTitle = profileData.mainJobTitle;
+        if (profileData.mainJobTitleId) {
+          if (!mainJobTitle && jobTitles.length > 0) {
+            // Try to find from jobTitles array
+            mainJobTitle = jobTitles.find((jt) => jt.id === profileData.mainJobTitleId);
+          } else if (mainJobTitle && mainJobTitle.id !== profileData.mainJobTitleId) {
+            // If mainJobTitle exists but ID doesn't match, try to find correct one
+            mainJobTitle =
+              jobTitles.find((jt) => jt.id === profileData.mainJobTitleId) || mainJobTitle;
+          }
+        }
+
+        return {
+          id: profileData.id,
+          name: profileData.name || '',
+          email: profileData.email || '',
+          profilePicture: profileData.profilePicture,
+          gender: profileData.gender || '',
+          dob: profileData.dob || '',
+          city: profileData.city || '',
+          isEmailVerified: profileData.isEmailVerified,
+          isActive: profileData.isActive,
+          role: profileData.role || '',
+          mainJobTitleId: profileData.mainJobTitleId,
+          mainJobTitle: mainJobTitle,
+          clinicAddress: profileData.clinicAddress || '',
+          description: profileData.description || '',
+        };
       });
     }
-  }, [profileData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileData, jobTitles]);
 
   // Update job title when job titles are loaded and we have a mainJobTitleId
+  // This handles the case where job titles load after profile data
   useEffect(() => {
     if (jobTitles.length > 0 && formData.mainJobTitleId && !formData.mainJobTitle) {
       const jobTitle = jobTitles.find((jt) => jt.id === formData.mainJobTitleId);
@@ -174,7 +210,21 @@ export default function AccountPage() {
         }));
       }
     }
-  }, [jobTitles, formData.mainJobTitleId, formData.mainJobTitle]);
+    // Also handle case where mainJobTitle exists but ID doesn't match
+    if (jobTitles.length > 0 && formData.mainJobTitleId && formData.mainJobTitle) {
+      if (formData.mainJobTitle.id !== formData.mainJobTitleId) {
+        const jobTitle = jobTitles.find((jt) => jt.id === formData.mainJobTitleId);
+        if (jobTitle) {
+          setFormData((prev) => ({
+            ...prev,
+            mainJobTitle: jobTitle,
+          }));
+        }
+      }
+    }
+    // Only depend on jobTitles and mainJobTitleId, not formData.mainJobTitle to avoid loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobTitles, formData.mainJobTitleId]);
 
   const loadJobTitles = async () => {
     const hasData = jobTitles.length > 0;
@@ -206,7 +256,7 @@ export default function AccountPage() {
     try {
       // If we have profile data, fetch silently in background
       // If no data exists, show loading state
-      await dispatch(fetchProfile({ silent: !!profileData, jobTitles }) as any);
+      await dispatch(fetchProfile({ silent: !!profileData }) as any);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load user profile';
       // Only show error toast if we don't have existing data
@@ -223,10 +273,11 @@ export default function AccountPage() {
     }));
   };
 
-  const handleJobTitleChange = (jobTitle: JobTitle) => {
+  const handleJobTitleChange = (jobTitle: JobTitle | null) => {
     setFormData((prev: UserProfile) => ({
       ...prev,
-      mainJobTitle: jobTitle,
+      mainJobTitle: jobTitle || undefined,
+      mainJobTitleId: jobTitle?.id || undefined,
     }));
   };
 
@@ -315,35 +366,60 @@ export default function AccountPage() {
     try {
       setIsProfessionalInfoLoading(true);
 
-      const response = await updateProfile({
-        ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
-        ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
-      });
+      // Prepare update data - use mainJobTitleId from formData
+      const updateData: { mainJobTitleId?: string; clinicAddress?: string; description?: string } =
+        {};
+
+      if (formData.mainJobTitleId) {
+        updateData.mainJobTitleId = formData.mainJobTitleId;
+      }
+
+      if (formData.clinicAddress) {
+        updateData.clinicAddress = formData.clinicAddress;
+      }
+
+      if (formData.description !== undefined) {
+        updateData.description = formData.description.trim();
+      }
+
+      // PATCH /api/v1/profile with { mainJobTitleId, clinicAddress }
+      const response = await updateProfile(updateData);
 
       if (response.success) {
         toast.success('Professional information updated successfully');
         setProfileUpdated(true);
+
         // Update Redux state
-        dispatch(
-          updateProfileData({
-            ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
-            ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
-          }) as any,
-        );
+        dispatch(updateProfileData(updateData) as any);
+
+        // Update mainJobTitle in Redux if we have the full object
         if (formData.mainJobTitle) {
           dispatch(updateMainJobTitle(formData.mainJobTitle) as any);
         }
+
+        // Refresh profile data to get updated information
+        await dispatch(fetchProfile({ silent: true }) as any);
 
         setTimeout(() => setProfileUpdated(false), 3000);
       } else {
         toast.error(response.message || 'Failed to update professional information');
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update professional information');
+      // Handle 400 errors for invalid job title ID
+      if (error?.response?.status === 400) {
+        toast.error(
+          error?.response?.data?.message ||
+            'Invalid job title selected. Please choose a valid job title.',
+        );
+      } else {
+        toast.error(error?.message || 'Failed to update professional information');
+      }
     } finally {
       setIsProfessionalInfoLoading(false);
     }
   };
+
+  // Messaging preferences handler removed - pre-booking messaging no longer available
 
   const handlePasswordUpdate = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -390,7 +466,7 @@ export default function AccountPage() {
       if (response.success) {
         toast.success('Email change initiated. Please check your new email for verification.');
         // Reload profile silently to get updated email status
-        await dispatch(fetchProfile({ silent: true, jobTitles }) as any);
+        await dispatch(fetchProfile({ silent: true }) as any);
       } else {
         toast.error(response.message || 'Failed to initiate email change');
       }
@@ -659,11 +735,23 @@ export default function AccountPage() {
                   Job Title
                 </Label>
                 <Select
-                  value={formData.mainJobTitle?.id || ''}
+                  value={
+                    formData.mainJobTitle?.id ||
+                    (formData.mainJobTitleId &&
+                      jobTitles.length > 0 &&
+                      jobTitles.some((jt) => jt.id === formData.mainJobTitleId))
+                      ? formData.mainJobTitleId
+                      : undefined
+                  }
                   onValueChange={(value) => {
-                    const selectedJobTitle = jobTitles.find((jt) => jt.id === value);
-                    if (selectedJobTitle) {
-                      handleJobTitleChange(selectedJobTitle);
+                    if (value === '__clear__') {
+                      // Clear selection
+                      handleJobTitleChange(null);
+                    } else {
+                      const selectedJobTitle = jobTitles.find((jt) => jt.id === value);
+                      if (selectedJobTitle) {
+                        handleJobTitleChange(selectedJobTitle);
+                      }
                     }
                   }}
                   disabled={
@@ -689,22 +777,29 @@ export default function AccountPage() {
                         No job titles available
                       </div>
                     ) : (
-                      jobTitles.map((jobTitle) => (
-                        <SelectItem
-                          key={jobTitle.id}
-                          value={jobTitle.id}
-                          className="text-sm font-inter"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium font-inter">{jobTitle.name}</span>
-                            {jobTitle.description && (
-                              <span className="text-xs text-gray-500 font-inter">
-                                - {jobTitle.description}
-                              </span>
-                            )}
-                          </div>
+                      <>
+                        <SelectItem value="__clear__" className="text-sm font-inter text-gray-500">
+                          <span>None (Clear selection)</span>
                         </SelectItem>
-                      ))
+                        {jobTitles.map((jobTitle) => (
+                          <SelectItem
+                            key={jobTitle.id}
+                            value={jobTitle.id}
+                            className="text-sm font-inter"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium font-inter">
+                                {jobTitle.name}
+                              </span>
+                              {jobTitle.description && (
+                                <span className="text-xs text-gray-500 font-inter">
+                                  - {jobTitle.description}
+                                </span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </>
                     )}
                   </SelectContent>
                 </Select>
@@ -728,6 +823,27 @@ export default function AccountPage() {
               </div>
             </div>
 
+            {/* Bio/Description */}
+            <div className="space-y-2 mt-6">
+              <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                Bio
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Tell patients about yourself, your experience, and your approach to therapy..."
+                value={formData.description || ''}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                className="min-h-[120px] text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal resize-y"
+                disabled={
+                  ((initialLoading || loading) && !profileData) || isProfessionalInfoLoading
+                }
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This bio will be displayed on your profile card to help patients learn more about
+                you.
+              </p>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3 pt-6">
               <Button
                 className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
@@ -748,6 +864,9 @@ export default function AccountPage() {
             </div>
           </div>
         )}
+
+        {/* Messaging Preferences Section Removed */}
+        {/* Pre-booking messaging is no longer available. Messaging is only allowed after booking an appointment. */}
       </div>
     );
   };

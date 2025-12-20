@@ -1,4 +1,4 @@
-import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
+import { CheckCircle2, Heart, Loader2, MessageCircle, Stamp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -60,6 +60,11 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+
+  const handleMessage = () => {
+    router.push(`/dashboard/messages?freelancerId=${id}&direct=true`);
+  };
+
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
     const freelancerData = {
@@ -154,7 +159,10 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                   <h4 className="text-base font-poppins font-semibold text-gray-900 dark:text-white truncate">
                     {freelancerName}
                   </h4>
-                  <VerificationBadge status={verificationStatus} size="sm" />
+                  {/* Only show verification badge if approved or verified */}
+                  {(verificationStatus === 'APPROVED' || verificationStatus === 'verified') && (
+                    <VerificationBadge status={verificationStatus} size="sm" />
+                  )}
                 </div>
 
                 {/* Row 2: Tier Badge */}
@@ -251,6 +259,8 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
               >
                 View Profile
               </Button>
+              {/* Message button removed - messaging only available after booking */}
+              {/* Users should book first, then they can message from the booking or messages page */}
               {hasAvailableSlots ? (
                 <Button
                   className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
@@ -305,7 +315,10 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                       <DialogTitle className="text-2xl lg:text-3xl font-poppins font-bold text-gray-900 dark:text-white truncate">
                         {freelancerName}
                       </DialogTitle>
-                      <VerificationBadge status={verificationStatus} size="md" />
+                      {/* Only show verification badge if approved or verified */}
+                      {(verificationStatus === 'APPROVED' || verificationStatus === 'verified') && (
+                        <VerificationBadge status={verificationStatus} size="md" />
+                      )}
                     </div>
 
                     {jobTitle?.name && (
@@ -390,23 +403,14 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 </div>
               )}
 
-              {/* Session Types */}
-              {sessionTypes && sessionTypes.length > 0 && (
+              {/* Bio/Description */}
+              {description && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
                   <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    Session Types Available
+                    Bio
                   </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {sessionTypes.map((type: string, index: number) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="px-3 py-2 text-sm font-medium capitalize border-primary/30 text-primary hover:bg-primary/5"
-                      >
-                        {type} Session
-                      </Badge>
-                    ))}
+                  <div className="text-sm font-inter text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {description}
                   </div>
                 </div>
               )}
@@ -453,48 +457,46 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
                 </div>
               )}
 
-              {/* Certifications */}
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  Certifications & Verification
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant="outline"
-                    className={`px-3 py-2 text-sm font-medium ${
-                      verificationStatus === 'APPROVED' || verificationStatus === 'verified'
-                        ? 'border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400'
-                        : 'border-gray-300 text-gray-600 bg-gray-50'
-                    }`}
-                  >
-                    {verificationStatus === 'APPROVED' || verificationStatus === 'verified'
-                      ? '✓ Verified Professional'
-                      : 'Verification Pending'}
-                  </Badge>
+              {/* Certifications - Only show if there's something approved or pending */}
+              {(verificationStatus === 'APPROVED' ||
+                verificationStatus === 'verified' ||
+                firstAidCertificateStatus === 'APPROVED' ||
+                firstAidCertificateStatus === 'PENDING') && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    Certifications & Verification
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Only show verification badge if approved or verified */}
+                    {(verificationStatus === 'APPROVED' || verificationStatus === 'verified') && (
+                      <Badge
+                        variant="outline"
+                        className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400"
+                      >
+                        ✓ Verified Professional
+                      </Badge>
+                    )}
 
-                  {(firstAidCertificateStatus === 'APPROVED' ||
-                    firstAidCertificateStatus === 'PENDING' ||
-                    firstAidCertificateStatus === 'REJECTED') && (
-                    <Badge
-                      variant="outline"
-                      className={`px-3 py-2 text-sm font-medium ${
-                        firstAidCertificateStatus === 'APPROVED'
-                          ? 'border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400'
-                          : firstAidCertificateStatus === 'PENDING'
-                            ? 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400'
-                            : 'border-gray-300 text-gray-600 bg-gray-50'
-                      }`}
-                    >
-                      {firstAidCertificateStatus === 'APPROVED'
-                        ? '✓ First Aid Certified'
-                        : firstAidCertificateStatus === 'PENDING'
-                          ? '⏳ First Aid Certificate Pending'
-                          : 'First Aid Certificate'}
-                    </Badge>
-                  )}
+                    {/* Only show first aid certificate if approved or pending */}
+                    {(firstAidCertificateStatus === 'APPROVED' ||
+                      firstAidCertificateStatus === 'PENDING') && (
+                      <Badge
+                        variant="outline"
+                        className={`px-3 py-2 text-sm font-medium ${
+                          firstAidCertificateStatus === 'APPROVED'
+                            ? 'border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400'
+                            : 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400'
+                        }`}
+                      >
+                        {firstAidCertificateStatus === 'APPROVED'
+                          ? '✓ First Aid Certified'
+                          : '⏳ First Aid Certificate Pending'}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Action Buttons */}
               <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">

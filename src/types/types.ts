@@ -181,6 +181,7 @@ export interface UpdateProfileDto {
   // New fields for freelancers
   mainJobTitleId?: string; // Updated to match backend DTO
   clinicAddress?: string;
+  description?: string; // Bio/Description for freelancers
 }
 
 // Backend response types
@@ -224,6 +225,7 @@ export interface BackendProfileResponse {
       firstAidCertificateApprovedAt?: Date | null;
       firstAidCertificateRejectedAt?: Date | null;
       firstAidCertificateRejectionReason?: string | null;
+      allowPreBookingMessages?: boolean;
     };
     freelancerData?: any;
   };
@@ -334,6 +336,8 @@ export interface Expert {
     discountPercentage: number;
     customConfigApplied: boolean;
   } | null;
+  // Messaging preferences
+  allowPreBookingMessages?: boolean;
 }
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 
@@ -976,6 +980,7 @@ export interface Freelancer {
     type: string;
   }>;
   planFeatures?: PlanFeatures | null;
+  allowPreBookingMessages?: boolean;
   createdAt: string;
   updatedAt: string;
 }

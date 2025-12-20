@@ -13,6 +13,7 @@ import {
   FileText,
   Gift,
   Home,
+  MessageCircle,
   Sparkles,
   Star,
   Video,
@@ -1211,25 +1212,36 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
               {currentStep !== steps.length && (
                 <>
                   {/* Therapist Info */}
-                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                    <Avatar className="w-16 h-16 border-2 border-gray-200">
-                      <AvatarImage src={therapist?.avatar} />
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                        {therapist?.name?.charAt(0) || 'T'}
+                  <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-4 mb-4">
+                      <Avatar className="w-16 h-16 border-2 border-gray-200">
+                        <AvatarImage src={therapist?.avatar} />
+                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+                          {therapist?.name?.charAt(0) || 'T'}
+                        </div>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="font-poppins font-bold text-lg text-charcoal">
+                          {therapist?.name}
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400">{therapist?.specialty}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm font-medium">
+                            {therapist?.rating?.toFixed(1)}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            ({therapist?.reviews} reviews)
+                          </span>
+                        </div>
                       </div>
-                    </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-poppins font-bold text-lg text-charcoal">
-                        {therapist?.name}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400">{therapist?.specialty}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{therapist?.rating?.toFixed(1)}</span>
-                        <span className="text-sm text-gray-500">
-                          ({therapist?.reviews} reviews)
-                        </span>
-                      </div>
+                    </div>
+                    {/* Message Button - Only show after booking */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-blue-800 text-center">
+                        Messaging is available after booking an appointment. Complete your booking
+                        to start messaging.
+                      </p>
                     </div>
                   </div>
 
