@@ -1,28 +1,19 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import {
-  addNewMessage,
-  clearError,
-  fetchContacts,
-  fetchMessages,
-  hideReconnectMessage,
-  markAsRead,
-  markMessagesAsRead,
-  sendMessage,
-  setActiveConversation,
-  setConnectionInfo,
-  setConnectionStatus,
-  setRefreshing,
-  updateTypingIndicator,
-} from '@/redux/slices/chatSlice';
-import { AppDispatch, RootState } from '@/redux/store';
+  useChatConnection,
+  useChatContacts,
+  useChatMessages,
+  useMarkMessagesAsRead,
+  useSendMessage,
+} from '@/hooks/queries/useChat';
 import chatService, { ChatMessage } from '@/services/chatService';
+import { useChatStore } from '@/stores/chatStore';
 
 export const useChat = (currentUserId?: string) => {
-  const dispatch = useDispatch<AppDispatch>();
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Get state from Zustand store
   const {
     contacts,
     conversations,
@@ -30,107 +21,103 @@ export const useChat = (currentUserId?: string) => {
     isConnected,
     unreadCounts,
     typingUsers,
-    loading,
-    errorState,
-    pagination,
     connectionInfo,
-  } = useSelector((state: RootState) => state.chat);
+    setActiveConversation,
+    addMessage,
+    updateContact,
+    incrementUnreadCount,
+    setTypingUsers,
+    removeTypingUser,
+    updateMessage,
+  } = useChatStore();
 
-  // Initialize chat connection only once
+  // Use React Query hooks
+  const {
+    data: contactsData,
+    isLoading: isLoadingContacts,
+    refetch: refetchContacts,
+  } = useChatContacts();
+  const {
+    data: messagesData,
+    isLoading: isLoadingMessages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useChatMessages(activeConversationId, 1);
+  const { mutate: sendMessageMutation, isPending: isSending } = useSendMessage();
+  const { mutate: markAsReadMutation } = useMarkMessagesAsRead();
+  const { isConnected: connectionStatus } = useChatConnection();
+
+  // Set up WebSocket listeners
   useEffect(() => {
-    chatService.connect();
-
     // Set up event listeners
     const unsubscribeNewMessage = chatService.onNewMessage((message: ChatMessage) => {
       console.log('Received new message via WebSocket:', message);
       console.log('Current user ID:', currentUserId);
-      dispatch(addNewMessage({ ...message, currentUserId }));
+
+      if (message.conversationId) {
+        addMessage(message.conversationId, message);
+
+        // Update contact's last message
+        const contact = useChatStore
+          .getState()
+          .contacts.find((c) => c.conversationId === message.conversationId);
+        if (contact) {
+          updateContact(contact.id, {
+            lastMessage: {
+              content: message.content,
+              createdAt: message.createdAt,
+              isFromMe: message.senderId === currentUserId,
+              isRead: false,
+            },
+          });
+
+          // Increment unread if not active conversation
+          if (activeConversationId !== message.conversationId) {
+            incrementUnreadCount(message.conversationId);
+          }
+        }
+      }
     });
 
     const unsubscribeTypingIndicator = chatService.onTypingIndicator(({ userId, isTyping }) => {
-      // Get the current active conversation from the callback to avoid stale closure
       const currentActiveConversationId = chatService.getCurrentConversationId();
       if (currentActiveConversationId) {
-        dispatch(
-          updateTypingIndicator({
-            conversationId: currentActiveConversationId,
-            userId,
-            isTyping,
-          }),
-        );
+        if (isTyping) {
+          const currentUsers = typingUsers[currentActiveConversationId] || [];
+          if (!currentUsers.includes(userId)) {
+            setTypingUsers(currentActiveConversationId, [...currentUsers, userId]);
+          }
+        } else {
+          removeTypingUser(currentActiveConversationId, userId);
+        }
       }
     });
 
     const unsubscribeMessageRead = chatService.onMessageRead(({ messageId }) => {
-      dispatch(markAsRead(messageId));
+      if (activeConversationId) {
+        updateMessage(activeConversationId, messageId, { isRead: true });
+      }
     });
-
-    // Connection event handlers
-    const handleConnectionRestored = () => {
-      dispatch(setConnectionStatus(true));
-      dispatch(setConnectionInfo({ isReconnecting: false, showReconnectMessage: false }));
-    };
-
-    const handleDisconnected = (event: CustomEvent) => {
-      dispatch(setConnectionStatus(false));
-      const reason = event.detail?.reason;
-      dispatch(
-        setConnectionInfo({
-          lastDisconnectReason: reason,
-          showReconnectMessage: reason === 'io server disconnect' || reason === 'ping timeout',
-        }),
-      );
-    };
-
-    const handleMaxReconnectAttempts = () => {
-      dispatch(
-        setConnectionInfo({
-          isReconnecting: false,
-          showReconnectMessage: true,
-        }),
-      );
-    };
-
-    // Add connection event listeners
-    window.addEventListener('chat:connection_restored', handleConnectionRestored);
-    window.addEventListener('chat:disconnected', handleDisconnected as EventListener);
-    window.addEventListener('chat:max_reconnect_attempts_reached', handleMaxReconnectAttempts);
-
-    // Update connection status
-    const checkConnection = () => {
-      const connected = chatService.isSocketConnected();
-      const reconnectStatus = chatService.getReconnectionStatus();
-
-      dispatch(setConnectionStatus(connected));
-      dispatch(
-        setConnectionInfo({
-          isReconnecting: reconnectStatus.isReconnecting,
-          reconnectAttempts: reconnectStatus.attempts,
-        }),
-      );
-    };
-
-    const interval = setInterval(checkConnection, 5000); // Check every 5 seconds
-    checkConnection(); // Check immediately
-
-    // Load contacts on initial mount (only if not already loading/loaded)
-    if (contacts.length === 0 && !loading.contacts) {
-      dispatch(fetchContacts());
-    }
 
     return () => {
       unsubscribeNewMessage();
       unsubscribeTypingIndicator();
       unsubscribeMessageRead();
-      window.removeEventListener('chat:connection_restored', handleConnectionRestored);
-      window.removeEventListener('chat:disconnected', handleDisconnected as EventListener);
-      window.removeEventListener('chat:max_reconnect_attempts_reached', handleMaxReconnectAttempts);
-      clearInterval(interval);
-      chatService.disconnect();
     };
-  }, [dispatch, currentUserId]); // Removed activeConversationId dependency
+  }, [
+    currentUserId,
+    activeConversationId,
+    addMessage,
+    updateContact,
+    incrementUnreadCount,
+    setTypingUsers,
+    removeTypingUser,
+    updateMessage,
+    typingUsers,
+  ]);
 
-  // Refresh data when page comes back into focus (but with throttling to prevent spam)
+  // Refresh data when page comes back into focus
   useEffect(() => {
     let lastRefreshTime = 0;
     const REFRESH_THROTTLE = 30000; // 30 seconds
@@ -139,30 +126,23 @@ export const useChat = (currentUserId?: string) => {
       if (!document.hidden) {
         const now = Date.now();
 
-        // Throttle refreshing to prevent excessive API calls
         if (now - lastRefreshTime < REFRESH_THROTTLE) {
           console.log('Skipping refresh - too soon since last refresh');
           return;
         }
 
-        // Page is now visible, refresh data and attempt reconnection if needed
         console.log('Page focused - refreshing chat data and checking connection');
-        dispatch(setRefreshing(true));
         lastRefreshTime = now;
 
         try {
-          // If not connected, try to reconnect
           if (!isConnected) {
             console.log('Not connected on focus - attempting to reconnect');
             chatService.forceReconnect();
           }
 
-          // Only refresh contacts, not all data
-          await dispatch(fetchContacts()).unwrap();
+          await refetchContacts();
         } catch (error) {
           console.error('Failed to refresh chat data on focus:', error);
-        } finally {
-          dispatch(setRefreshing(false));
         }
       }
     };
@@ -174,15 +154,13 @@ export const useChat = (currentUserId?: string) => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleVisibilityChange);
     };
-  }, [dispatch, isConnected]); // Removed activeConversationId dependency
+  }, [isConnected, refetchContacts]);
 
   // Join/leave conversations when active conversation changes
   useEffect(() => {
     if (activeConversationId) {
-      console.log('useChat: Joining conversation and fetching messages for:', activeConversationId);
+      console.log('useChat: Joining conversation:', activeConversationId);
       chatService.joinConversation(activeConversationId);
-      // Load messages for the active conversation
-      dispatch(fetchMessages({ conversationId: activeConversationId, page: 1 }));
     }
 
     return () => {
@@ -191,42 +169,44 @@ export const useChat = (currentUserId?: string) => {
         chatService.leaveConversation(activeConversationId);
       }
     };
-  }, [activeConversationId, dispatch]);
+  }, [activeConversationId]);
 
   // Actions
   const selectConversation = useCallback(
     (conversationId: string) => {
       console.log('useChat: selectConversation called with:', conversationId);
-      console.log('useChat: Current active conversation:', activeConversationId);
-      dispatch(setActiveConversation(conversationId));
+      setActiveConversation(conversationId);
     },
-    [dispatch, activeConversationId],
+    [setActiveConversation],
   );
 
   const sendChatMessage = useCallback(
     async (recipientId: string, content: string) => {
       if (!content.trim()) return;
 
-      try {
-        await dispatch(sendMessage({ recipientId, content })).unwrap();
-        // Message will be added to the conversation through the fulfilled action
-      } catch (error) {
-        console.error('Failed to send message:', error);
-        throw error;
-      }
+      return new Promise<void>((resolve, reject) => {
+        sendMessageMutation(
+          { recipientId, content },
+          {
+            onSuccess: () => resolve(),
+            onError: (error) => {
+              console.error('Failed to send message:', error);
+              reject(error);
+            },
+          },
+        );
+      });
     },
-    [dispatch],
+    [sendMessageMutation],
   );
 
   const loadMoreMessages = useCallback(
     (conversationId: string) => {
-      const currentPagination = pagination[conversationId];
-      if (!currentPagination?.hasNext || currentPagination.loading) return;
-
-      const nextPage = currentPagination.page + 1;
-      dispatch(fetchMessages({ conversationId, page: nextPage }));
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
     },
-    [dispatch, pagination],
+    [hasNextPage, isFetchingNextPage, fetchNextPage],
   );
 
   const sendTypingIndicator = useCallback(
@@ -235,7 +215,6 @@ export const useChat = (currentUserId?: string) => {
 
       chatService.sendTypingIndicator(activeConversationId, isTyping);
 
-      // Auto-stop typing indicator after 3 seconds
       if (isTyping) {
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
@@ -249,31 +228,28 @@ export const useChat = (currentUserId?: string) => {
   );
 
   const refreshContacts = useCallback(() => {
-    dispatch(fetchContacts());
-  }, [dispatch]);
+    refetchContacts();
+  }, [refetchContacts]);
 
-  const clearChatError = useCallback(
-    (errorType: 'contacts' | 'messages' | 'sending') => {
-      dispatch(clearError(errorType));
-    },
-    [dispatch],
-  );
+  const clearChatError = useCallback(() => {
+    // Error handling is done by React Query
+  }, []);
 
   const forceReconnect = useCallback(() => {
     chatService.forceReconnect();
-    dispatch(hideReconnectMessage());
-  }, [dispatch]);
+    useChatStore.getState().setConnectionInfo({ showReconnectMessage: false });
+  }, []);
 
   const dismissReconnectMessage = useCallback(() => {
-    dispatch(hideReconnectMessage());
-  }, [dispatch]);
+    useChatStore.getState().setConnectionInfo({ showReconnectMessage: false });
+  }, []);
 
   const markConversationAsRead = useCallback(
     (conversationId: string) => {
       console.log('markConversationAsRead called for:', conversationId);
-      dispatch(markMessagesAsRead({ conversationId }));
+      markAsReadMutation(conversationId);
     },
-    [dispatch],
+    [markAsReadMutation],
   );
 
   // Helper functions
@@ -307,10 +283,9 @@ export const useChat = (currentUserId?: string) => {
 
   const canLoadMoreMessages = useCallback(
     (conversationId: string) => {
-      const paginationInfo = pagination[conversationId];
-      return paginationInfo?.hasNext && !paginationInfo.loading;
+      return hasNextPage && !isFetchingNextPage;
     },
-    [pagination],
+    [hasNextPage, isFetchingNextPage],
   );
 
   return {
@@ -318,13 +293,18 @@ export const useChat = (currentUserId?: string) => {
     contacts,
     activeConversationId,
     activeConversation: getActiveConversation(),
-    isConnected,
+    isConnected: connectionStatus || isConnected,
     unreadCounts,
-    loading,
-    error: errorState,
+    loading: {
+      contacts: isLoadingContacts,
+      messages: isLoadingMessages,
+      sending: isSending,
+      refreshing: false,
+    },
+    error: null, // React Query handles errors
     totalUnreadCount: getTotalUnreadCount(),
     typingUsers: getTypingUsersForActiveConversation(),
-    isRefreshing: loading.refreshing,
+    isRefreshing: false,
     connectionInfo,
 
     // Actions

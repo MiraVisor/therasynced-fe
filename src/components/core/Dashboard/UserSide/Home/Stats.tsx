@@ -1,4 +1,4 @@
-import { Calendar, Heart, MessageCircle, Star } from 'lucide-react';
+import { Calendar, Heart, Star } from 'lucide-react';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 

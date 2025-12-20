@@ -4,12 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, AlertTriangle, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 import { HealthDataConsent } from '@/components/common/HealthDataConsent';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -29,7 +27,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { createComplaint } from '@/redux/api/complaintApi';
 import { ComplaintCategory } from '@/types/types';
 
 const complaintSchema = z.object({
@@ -92,31 +89,22 @@ export const ReportFreelancerDialog = ({
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const result = await dispatch(
-        createComplaint({
-          reportedUserId: freelancerId,
-          category: data.category as ComplaintCategory,
-          reason: data.reason,
-          description: data.description,
-          evidence: [],
-        }) as any,
-      );
-
-      if (createComplaint.fulfilled.match(result)) {
-        toast.success('Complaint submitted successfully');
-        reset();
-        setHasConsent(false);
-        onClose();
-      } else {
-        toast.error('Failed to submit complaint');
-      }
-    } catch (error) {
-      toast.error('Failed to submit complaint');
-    } finally {
-      setIsSubmitting(false);
-    }
+    createComplaintMutation(
+      {
+        reportedUserId: freelancerId,
+        category: data.category as ComplaintCategory,
+        reason: data.reason,
+        description: data.description,
+        evidence: [],
+      },
+      {
+        onSuccess: () => {
+          reset();
+          setHasConsent(false);
+          onClose();
+        },
+      },
+    );
   };
 
   const selectedCategory = watch('category');

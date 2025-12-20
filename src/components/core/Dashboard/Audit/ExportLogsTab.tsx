@@ -1,14 +1,12 @@
 'use client';
 
-import { Download, FileDown, Lock, TrendingUp, Unlock } from 'lucide-react';
+import { Download, FileDown, TrendingUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { exportLogsColumns } from '@/components/common/DataTable/export-logs-columns';
-import { UserSearchSelect } from '@/components/common/UserSearchSelect';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,

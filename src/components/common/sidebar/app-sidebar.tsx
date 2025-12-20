@@ -7,7 +7,6 @@ import {
   Calendar,
   CreditCard,
   FileDown,
-  FileText,
   Heart,
   Home,
   LogOut,
@@ -22,7 +21,6 @@ import {
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,9 +38,9 @@ import {
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuthZustand';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { selectTotalUnreadCount } from '@/redux/slices/chatSlice';
+import { useChatStore } from '@/stores/chatStore';
 import { RoleType } from '@/types/types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -192,7 +190,8 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const { state } = useSidebar();
   // Role is guaranteed to be provided when component renders
   const links = userRole ? navigationLinks[userRole] : [];
-  const totalUnreadCount = useSelector(selectTotalUnreadCount);
+  const unreadCounts = useChatStore((state) => state.unreadCounts);
+  const totalUnreadCount = Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
 
   const handleNavigation = (url: string) => {
     router.push(url);

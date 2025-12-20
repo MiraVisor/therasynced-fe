@@ -1,13 +1,10 @@
 'use client';
 
-import { Elements } from '@stripe/react-stripe-js';
-import { StripeElementsOptions, loadStripe } from '@stripe/stripe-js';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -16,8 +13,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { getStripe } from '@/lib/stripe';
-import { createSubscription } from '@/redux/api/subscriptionApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { PlanType } from '@/types/types';
 
 interface PaymentFormProps {

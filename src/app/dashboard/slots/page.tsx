@@ -12,8 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -33,90 +32,51 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getDecodedToken } from '@/lib/utils';
-import { getSubscriptionPlans } from '@/redux/api/subscriptionApi';
-import { useAppDispatch, useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
-import { deleteSlot, fetchMySlots, fetchMySlotsStats } from '@/redux/slices/slotSlice';
-import { RootState } from '@/redux/store';
+import { useDeleteSlot, useMySlots, useSlotStats } from '@/hooks/queries/useSlots';
+import { useMySubscription, useSubscriptionPlans } from '@/hooks/queries/useSubscription';
+import { useAuth } from '@/hooks/useAuthZustand';
 import { Slot } from '@/types/types';
 
 const SlotsPage = () => {
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const { role } = useAuth();
-  const { slots, isLoading, isCreating, slotStats, isLoadingStats, initialLoadingStats } =
-    useSelector((state: RootState) => state.slot);
-  const { currentSubscription, plans } = useAppSelector((state) => state.subscription);
+
+  // Calculate week date for query
+  const [currentWeekStart, setCurrentWeekStart] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 1 }),
+  );
+  const weekDate = currentWeekStart.toISOString().split('T')[0];
+
+  // Use React Query hooks
+  const {
+    data: slots = [],
+    isLoading,
+    isFetching: initialLoadingStats,
+  } = useMySlots({
+    page: 1,
+    limit: 1000,
+    sortBy: 'startTime',
+    sortOrder: 'asc',
+    weekStart: weekDate,
+  });
+  const { data: slotStats, isLoading: isLoadingStats } = useSlotStats();
+  const { mutate: deleteSlotMutation } = useDeleteSlot();
+  const { data: plans = [] } = useSubscriptionPlans();
+  const { data: currentSubscription } = useMySubscription();
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [currentWeekStart, setCurrentWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 }),
-  );
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
 
-  const fetchSlotsForWeek = async (weekStartDate: Date, resetSlots = false) => {
-    const decodedToken = getDecodedToken();
-    const freelancerId = decodedToken?.sub;
-
-    if (!freelancerId) return;
-
-    // Calculate week range (Monday 00:00 to Sunday 23:59:59)
-    const weekStart = new Date(weekStartDate);
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekEnd = new Date(weekStartDate);
-    weekEnd.setDate(weekStartDate.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
-    try {
-      const response = await dispatch(
-        fetchMySlots({
-          page: 1,
-          limit: 1000,
-          freelancerId,
-          weekStart: weekStart.toISOString(),
-          weekEnd: weekEnd.toISOString(),
-        }) as any,
-      ).unwrap();
-
-      if (resetSlots) {
-        // Replace slots on week change
-        dispatch({ type: 'slot/setSlots', payload: response.data });
-      } else {
-        // Append slots when loading more weeks
-        dispatch({ type: 'slot/appendSlots', payload: response.data });
-      }
-    } catch (error) {
-      console.error('Failed to fetch slots:', error);
-      toast.error('Failed to load slots for this week');
-    }
-  };
-
-  // Fetch subscription and stats on mount
-  useEffect(() => {
-    const hasStats = slotStats !== null;
-    const hasPlans = plans.length > 0;
-    dispatch(fetchMySlotsStats({ silent: hasStats }) as any);
-    dispatch(getSubscriptionPlans({ silent: hasPlans }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchSlotsForWeek(currentWeekStart, true);
-  }, [dispatch, currentWeekStart]);
-
   const handleSlotCreateSuccess = () => {
     setShowCreateSlotForm(false);
-    fetchSlotsForWeek(currentWeekStart, true);
-    dispatch(fetchMySlotsStats({ silent: true }) as any);
     // Scroll to top to see the new slots
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // React Query will automatically refetch slots
   };
 
   const handleCreateSlotClick = () => {
@@ -147,62 +107,45 @@ const SlotsPage = () => {
     router.push(`/dashboard/slots/${slot.id}`);
   };
 
-  const handleDeleteFromDialog = async (slotId: string) => {
+  const handleDeleteFromDialog = (slotId: string) => {
     setShowDetailsDialog(false);
     setSelectedSlot(null);
-    try {
-      await dispatch(deleteSlot(slotId) as any).unwrap();
-      toast.success('Slot deleted successfully');
-      // Update stats after successful deletion
-      dispatch(fetchMySlotsStats({ silent: true }) as any);
-      // Note: The slot is already removed from UI via optimistic update in the reducer
-      // We don't refresh the slots list here to avoid race conditions where the server
-      // might not have processed the delete yet and would restore the slot
-      // The optimistic update ensures immediate UI feedback
-    } catch (error: any) {
-      const errorMessage = error?.error || error?.message || 'Failed to delete slot';
-      toast.error(errorMessage);
-      // Refresh to restore the slot if deletion failed (optimistic update will be overwritten)
-      fetchSlotsForWeek(currentWeekStart, true);
-    }
+    deleteSlotMutation(slotId, {
+      onSuccess: () => {
+        // React Query will automatically refetch slots and stats
+      },
+    });
   };
 
-  const handleDeleteSlot = async () => {
+  const handleDeleteSlot = () => {
     if (!selectedSlot) return;
     setShowDeleteDialog(false);
-    setSelectedSlot(null);
-    try {
-      await dispatch(deleteSlot(selectedSlot.id) as any).unwrap();
-      toast.success('Slot deleted successfully');
-      dispatch(fetchMySlotsStats({ silent: true }) as any);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete slot');
-      fetchSlotsForWeek(currentWeekStart, true);
-    }
+    deleteSlotMutation(selectedSlot.id, {
+      onSuccess: () => {
+        setSelectedSlot(null);
+        // React Query will automatically refetch slots and stats
+      },
+    });
   };
 
-  const navigateWeek = async (direction: 'prev' | 'next') => {
+  const navigateWeek = (direction: 'prev' | 'next') => {
     setIsNavigatingWeek(true);
-    try {
-      if (direction === 'prev') {
-        const newWeekStart = addDays(currentWeekStart, -7);
-        setCurrentWeekStart(newWeekStart);
-        fetchSlotsForWeek(newWeekStart, true);
-      } else {
-        const newWeekStart = addDays(currentWeekStart, 7);
-        setCurrentWeekStart(newWeekStart);
-        fetchSlotsForWeek(newWeekStart, true);
-      }
-    } finally {
-      setIsNavigatingWeek(false);
+    if (direction === 'prev') {
+      const newWeekStart = addDays(currentWeekStart, -7);
+      setCurrentWeekStart(newWeekStart);
+    } else {
+      const newWeekStart = addDays(currentWeekStart, 7);
+      setCurrentWeekStart(newWeekStart);
     }
+    // React Query will automatically refetch when currentWeekStart changes
+    setTimeout(() => setIsNavigatingWeek(false), 500);
   };
 
   const handleDatePickerChange = (date: Date | undefined) => {
     if (date) {
       const newWeekStart = startOfWeek(date, { weekStartsOn: 1 });
       setCurrentWeekStart(newWeekStart);
-      fetchSlotsForWeek(newWeekStart, true);
+      // React Query will automatically refetch
     }
   };
 
@@ -287,18 +230,9 @@ const SlotsPage = () => {
               </p>
             </div>
             {!isSlotLimitReached ? (
-              <Button onClick={handleCreateSlotClick} disabled={isCreating} className="h-11 px-6">
-                {isCreating ? (
-                  <>
-                    <LoadingSpinner size="sm" className="mr-2" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Availability
-                  </>
-                )}
+              <Button onClick={handleCreateSlotClick} className="h-11 px-6">
+                <Plus className="h-5 w-5 mr-2" />
+                Add Availability
               </Button>
             ) : (
               <Tooltip>
@@ -592,9 +526,7 @@ const SlotsPage = () => {
           }}
           onDelete={handleDeleteFromDialog}
           onComplete={() => {
-            // Refresh slots after completion
-            fetchSlotsForWeek(currentWeekStart, true);
-            fetchMySlotsStats({ silent: true });
+            // React Query will automatically refetch slots and stats
           }}
         />
       )}

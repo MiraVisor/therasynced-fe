@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import {
@@ -7,9 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { updateAppointment } from '@/redux/slices/appointmentSlice';
-import { closeEventDialog } from '@/redux/slices/calendarSlice';
+import api from '@/services/api';
+import { useCalendarStore } from '@/stores/calendarStore';
 import { Appointment } from '@/types/types';
 
 interface StatusUpdateProps {
@@ -38,11 +38,12 @@ const getStatusLabel = (status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELL
 };
 
 export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
-  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  const { closeEventDialog } = useCalendarStore();
   const isCancelled = appointment.status === 'CANCELLED';
   const isCompleted = appointment.status === 'COMPLETED';
 
-  const handleStatusChange = (newStatus: 'PENDING' | 'CONFIRMED' | 'COMPLETED') => {
+  const handleStatusChange = async (newStatus: 'PENDING' | 'CONFIRMED' | 'COMPLETED') => {
     if (isCancelled) {
       toast.error('Cannot update a cancelled appointment', {
         position: 'top-right',
@@ -55,32 +56,21 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
       return;
     }
 
-    const previousStatus = appointment.status;
-    dispatch(updateAppointment({ bookingId: appointment.id, status: newStatus }));
-    dispatch(closeEventDialog());
-
-    toast.success(
-      <div className="flex flex-col gap-2">
-        <span>Appointment status updated to {newStatus.toLowerCase()}</span>
-        <button
-          onClick={() => {
-            dispatch(updateAppointment({ bookingId: appointment.id, status: previousStatus }));
-            toast.dismiss();
-          }}
-          className="text-sm text-primary hover:text-primary/80 font-medium"
-        >
-          Undo
-        </button>
-      </div>,
-      {
+    try {
+      await api.patch(`/booking/${appointment.id}/status`, { status: newStatus });
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      closeEventDialog();
+      toast.success(`Appointment status updated to ${newStatus.toLowerCase()}`, {
         position: 'top-right',
         autoClose: 5000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-      },
-    );
+      });
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to update status');
+    }
   };
 
   if (isCancelled || isCompleted) {

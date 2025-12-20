@@ -1,9 +1,7 @@
 'use client';
 
-import { Plus, Save, Settings, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { Save, Settings, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
@@ -22,26 +20,18 @@ import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Switch } from '@/components/ui/switch';
 import {
-  bulkUpdateStampConfigs,
-  createOrUpdateStampConfig,
-  deleteStampConfig,
-  getAllStampConfigs,
-  updateStampConfig,
-} from '@/redux/api/loyaltyApi';
-import { RootState } from '@/redux/store';
-import {
+  useBulkUpdateStampConfigs,
+  useDeleteStampConfig,
+  useStampConfigs,
+  useUpdateStampConfig,
+} from '@/hooks/queries/useAdmin';
+import type {
   BulkTherapistStampConfigDto,
-  CreateTherapistStampConfigDto,
   TherapistStampConfig,
   UpdateTherapistStampConfigDto,
 } from '@/types/types';
 
 const StampConfigPage = () => {
-  const dispatch = useDispatch();
-  const { configs, isLoadingConfigs, isUpdatingConfig, configError } = useSelector(
-    (state: RootState) => state.stamps,
-  );
-
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<TherapistStampConfig | null>(null);
@@ -56,27 +46,23 @@ const StampConfigPage = () => {
     isActive: true,
   });
 
-  useEffect(() => {
-    dispatch(getAllStampConfigs() as any);
-  }, [dispatch]);
+  const { data: configsResponse, isLoading: isLoadingConfigs } = useStampConfigs();
+  const configs = configsResponse?.data || [];
+
+  const bulkUpdateMutation = useBulkUpdateStampConfigs();
+  const updateMutation = useUpdateStampConfig();
+  const deleteMutation = useDeleteStampConfig();
 
   const handleBulkUpdate = async () => {
     if (bulkForm.stampTarget <= 0 || bulkForm.discountPercentage <= 0) {
-      toast.error('Stamp target and discount percentage must be greater than 0');
       return;
     }
 
     try {
-      const result = await dispatch(bulkUpdateStampConfigs(bulkForm) as any);
-      if (bulkUpdateStampConfigs.fulfilled.match(result)) {
-        toast.success(
-          `Successfully updated ${result.payload.updatedCount} therapist configurations`,
-        );
-        setIsBulkDialogOpen(false);
-        dispatch(getAllStampConfigs() as any);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to bulk update configurations');
+      await bulkUpdateMutation.mutateAsync(bulkForm);
+      setIsBulkDialogOpen(false);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -94,29 +80,21 @@ const StampConfigPage = () => {
     if (!selectedConfig) return;
 
     if (editForm.stampTarget && editForm.stampTarget <= 0) {
-      toast.error('Stamp target must be greater than 0');
       return;
     }
 
     if (editForm.discountPercentage && editForm.discountPercentage <= 0) {
-      toast.error('Discount percentage must be greater than 0');
       return;
     }
 
     try {
-      const result = await dispatch(
-        updateStampConfig({
-          therapistId: selectedConfig.therapistId,
-          dto: editForm,
-        }) as any,
-      );
-      if (updateStampConfig.fulfilled.match(result)) {
-        toast.success('Configuration updated successfully');
-        setIsEditDialogOpen(false);
-        dispatch(getAllStampConfigs() as any);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update configuration');
+      await updateMutation.mutateAsync({
+        therapistId: selectedConfig.therapistId,
+        dto: editForm,
+      });
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -126,13 +104,9 @@ const StampConfigPage = () => {
     }
 
     try {
-      const result = await dispatch(deleteStampConfig(therapistId) as any);
-      if (deleteStampConfig.fulfilled.match(result)) {
-        toast.success('Configuration deleted successfully');
-        dispatch(getAllStampConfigs() as any);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete configuration');
+      await deleteMutation.mutateAsync(therapistId);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -293,8 +267,8 @@ const StampConfigPage = () => {
               <Button variant="outline" onClick={() => setIsBulkDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleBulkUpdate} disabled={isUpdatingConfig}>
-                {isUpdatingConfig ? (
+              <Button onClick={handleBulkUpdate} disabled={bulkUpdateMutation.isPending}>
+                {bulkUpdateMutation.isPending ? (
                   <>
                     <LoadingSpinner size="sm" className="mr-2" />
                     Updating...
@@ -364,8 +338,8 @@ const StampConfigPage = () => {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdate} disabled={isUpdatingConfig}>
-                {isUpdatingConfig ? (
+              <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? (
                   <>
                     <LoadingSpinner size="sm" className="mr-2" />
                     Updating...

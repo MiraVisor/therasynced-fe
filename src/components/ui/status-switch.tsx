@@ -4,7 +4,7 @@ import * as SwitchPrimitives from '@radix-ui/react-switch';
 import { Check, X } from 'lucide-react';
 import * as React from 'react';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const StatusSwitch = React.forwardRef<

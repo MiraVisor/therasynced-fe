@@ -1,17 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import {
-  AlertCircle,
-  Award,
-  CheckCircle,
-  Clock,
-  Download,
-  FileText,
-  MapPin,
-  User,
-  XCircle,
-} from 'lucide-react';
+import { AlertCircle, Award, CheckCircle, Clock, MapPin, XCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -27,18 +17,9 @@ import {
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import adminVerificationService, {
   type VerificationDetailsResponse,

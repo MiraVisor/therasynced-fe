@@ -2,8 +2,6 @@
 
 import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
@@ -14,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { TierBadge } from '@/components/ui/tier-badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
+import { useFavoriteFreelancer } from '@/hooks/queries/useFreelancers';
 import { Expert } from '@/types/types';
 
 interface FavoriteFreelancerCardProps {
@@ -23,10 +21,9 @@ interface FavoriteFreelancerCardProps {
 }
 
 const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelancer, onBook }) => {
-  const dispatch = useDispatch();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
-  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
 
   // Get stamp information from freelancer object (stampInfo is included in API response)
   const stampInfo = freelancer.stampInfo || null;
@@ -35,23 +32,10 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
     setShowProfileDialog(true);
   };
 
-  const handleFavorite = async (e: React.MouseEvent) => {
+  const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isFavoriteLoading) return;
-
-    setIsFavoriteLoading(true);
-    try {
-      const result = await dispatch(favoriteFreelancer(freelancer.id) as any).unwrap();
-      if (result && typeof result === 'object' && 'favorited' in result) {
-        toast.success(result.favorited ? 'Added to favorites' : 'Removed from favorites');
-      } else {
-        toast.success(!freelancer.isFavorite ? 'Added to favorites' : 'Removed from favorites');
-      }
-    } catch (err: any) {
-      toast.error('Failed to update favorite');
-    } finally {
-      setIsFavoriteLoading(false);
-    }
+    toggleFavorite(freelancer.id);
   };
 
   const handleBookNow = () => {

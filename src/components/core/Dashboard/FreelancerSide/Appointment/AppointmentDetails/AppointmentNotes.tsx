@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { HealthDataConsent } from '@/components/common/HealthDataConsent';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
-import { updateAppointment } from '@/redux/slices/appointmentSlice';
 import { Appointment } from '@/types/types';
 import { checkHealthDataConsent } from '@/utils/healthDataConsent';
 
@@ -25,7 +23,6 @@ interface AppointmentNotesProps {
 }
 
 export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNotesProps) => {
-  const dispatch = useDispatch();
   const [notes, setNotes] = useState(appointment.notes || '');
   const [, setIsEditing] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
@@ -96,10 +93,7 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
     });
 
     try {
-      // Update Redux state first
-      dispatch(updateAppointment({ ...appointment, notes }));
-
-      // Then save to server
+      // Save to server
       await updateNotesOnServer(appointment.id, notes);
       lastSavedNotesRef.current = notes;
 
@@ -114,8 +108,8 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
         saveToastRef.current = null;
       }
     } catch (error) {
-      // Revert Redux state on error
-      dispatch(updateAppointment({ ...appointment, notes: lastSavedNotesRef.current }));
+      // Revert notes on error
+      setNotes(lastSavedNotesRef.current);
 
       if (saveToastRef.current) {
         toast.update(saveToastRef.current, {
@@ -128,7 +122,7 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
         saveToastRef.current = null;
       }
     }
-  }, [appointment, dispatch, notes, hasConsent]);
+  }, [appointment, notes, hasConsent]);
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newNotes = e.target.value;

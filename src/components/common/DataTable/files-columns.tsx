@@ -6,7 +6,7 @@ import { Award, Eye, File, FileText, Image as ImageIcon, Shield, Trash2, User } 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FreelancerFile, FreelancerFileType } from '@/types/types';
-import { formatFileSize, getFileTypeIcon, isImageFile, isPdfFile } from '@/utils/fileUpload';
+import { formatFileSize } from '@/utils/fileUpload';
 
 // Get file type icon
 const getFileTypeIconComponent = (fileType: FreelancerFileType) => {

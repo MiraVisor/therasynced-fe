@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useAppSelector } from '@/redux/hooks/useAppHooks';
+import { useProfile } from '@/hooks/queries/useProfile';
 import { Appointment } from '@/types/types';
 
 import { InvoiceData, InvoicePDF } from './InvoicePDF';
@@ -40,8 +40,8 @@ export const InvoiceGenerationDialog = ({
   const [basePrice, setBasePrice] = useState(initialPrice?.toString() || '');
   const [services, setServices] = useState<ServiceItem[]>([]);
 
-  // Get user profile from Redux instead of localStorage
-  const profile = useAppSelector((state) => state.profile.data);
+  // Get user profile from React Query
+  const { data: profile } = useProfile();
 
   // Initialize business name from user profile
   useEffect(() => {

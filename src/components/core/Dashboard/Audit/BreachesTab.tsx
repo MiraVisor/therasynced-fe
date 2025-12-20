@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Plus, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -25,14 +25,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  BreachFilters,
-  BreachRiskLevel,
-  BreachStatus,
-  DataBreach,
-  createBreach,
-  getBreaches,
-} from '@/redux/api/dataRightsApi';
+import { useBreaches, useCreateBreach } from '@/hooks/queries/useDataRights';
+import { BreachRiskLevel, BreachStatus } from '@/types/dataRights';
+import type { BreachFilters } from '@/types/dataRights';
 
 import { DateRange, DateRangePresets } from './components/DateRangePresets';
 import { StatCard, StatsCardsGrid } from './components/StatsCards';
@@ -40,29 +35,17 @@ import { DistributionChart } from './components/charts/DistributionChart';
 import { TimelineChart } from './components/charts/TimelineChart';
 
 export function BreachesTab() {
-  const [breaches, setBreaches] = useState<DataBreach[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
-  const [pagination, setPagination] = useState<{
-    skip: number;
-    take: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  } | null>(null);
 
   // Filters
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [riskLevelFilter, setRiskLevelFilter] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Create breach dialog
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     description: '',
     dataCategories: [] as string[],
@@ -87,78 +70,53 @@ export function BreachesTab() {
     'Date of Birth',
   ];
 
-  const fetchBreaches = async () => {
-    try {
-      if (initialLoading) {
-        setInitialLoading(true);
-      } else {
-        setLoading(true);
-      }
-
-      const filters: BreachFilters = {
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      };
-
-      if (statusFilter && statusFilter !== 'all') {
-        filters.status = statusFilter as BreachStatus;
-      }
-
-      if (riskLevelFilter && riskLevelFilter !== 'all') {
-        filters.riskLevel = riskLevelFilter as BreachRiskLevel;
-      }
-
-      const response = await getBreaches(filters);
-
-      if (response.success) {
-        let filteredBreaches = response.data;
-
-        // Apply date range filter
-        if (dateRange.from || dateRange.to) {
-          filteredBreaches = filteredBreaches.filter((breach) => {
-            const detectedDate = new Date(breach.detectedAt);
-            if (dateRange.from && detectedDate < dateRange.from) return false;
-            if (dateRange.to && detectedDate > dateRange.to) return false;
-            return true;
-          });
-        }
-
-        // Apply search filter
-        if (searchQuery.trim()) {
-          const query = searchQuery.toLowerCase();
-          filteredBreaches = filteredBreaches.filter(
-            (breach) =>
-              breach.description.toLowerCase().includes(query) ||
-              breach.dataCategories.some((cat) => cat.toLowerCase().includes(query)),
-          );
-        }
-
-        setBreaches(filteredBreaches);
-        setPagination(response.pagination);
-      }
-    } catch (error: any) {
-      console.error('Failed to fetch breaches:', error);
-      toast.error(error?.message || 'Failed to load breaches. Please try again.');
-    } finally {
-      setLoading(false);
-      setInitialLoading(false);
-    }
+  const filters: BreachFilters = {
+    skip: (page - 1) * pageSize,
+    take: pageSize,
   };
 
-  useEffect(() => {
-    fetchBreaches();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize]);
+  if (statusFilter && statusFilter !== 'all') {
+    filters.status = statusFilter as BreachStatus;
+  }
+
+  if (riskLevelFilter && riskLevelFilter !== 'all') {
+    filters.riskLevel = riskLevelFilter as BreachRiskLevel;
+  }
+
+  const { data: breachesResponse, isLoading: loading, isFetching } = useBreaches(filters);
+  const allBreaches = breachesResponse?.data || [];
+  const pagination = breachesResponse?.pagination || null;
+  const initialLoading = loading && !breachesResponse;
+
+  const createBreachMutation = useCreateBreach();
+
+  // Apply client-side filters
+  const breaches = allBreaches.filter((breach) => {
+    // Apply date range filter
+    if (dateRange.from || dateRange.to) {
+      const detectedDate = new Date(breach.detectedAt);
+      if (dateRange.from && detectedDate < dateRange.from) return false;
+      if (dateRange.to && detectedDate > dateRange.to) return false;
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      if (
+        !breach.description.toLowerCase().includes(query) &&
+        !breach.dataCategories.some((cat) => cat.toLowerCase().includes(query))
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   useEffect(() => {
     if (dateRange.from || dateRange.to || statusFilter || riskLevelFilter || searchQuery) {
-      const timer = setTimeout(() => {
-        setPage(1);
-        fetchBreaches();
-      }, 500);
-      return () => clearTimeout(timer);
+      setPage(1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, statusFilter, riskLevelFilter, searchQuery]);
 
   // Calculate statistics
@@ -281,24 +239,17 @@ export function BreachesTab() {
     }
 
     try {
-      setIsSubmitting(true);
-      const response = await createBreach(formData);
-      if (response.success) {
-        toast.success('Breach created successfully');
-        setIsCreateDialogOpen(false);
-        setFormData({
-          description: '',
-          dataCategories: [],
-          affectedUsers: 0,
-          riskLevel: BreachRiskLevel.MEDIUM,
-        });
-        setCategoryInput('');
-        fetchBreaches();
-      }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to create breach. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      await createBreachMutation.mutateAsync(formData);
+      setIsCreateDialogOpen(false);
+      setFormData({
+        description: '',
+        dataCategories: [],
+        affectedUsers: 0,
+        riskLevel: BreachRiskLevel.MEDIUM,
+      });
+      setCategoryInput('');
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -597,12 +548,12 @@ export function BreachesTab() {
                 });
                 setCategoryInput('');
               }}
-              disabled={isSubmitting}
+              disabled={createBreachMutation.isPending}
             >
               Cancel
             </Button>
-            <Button onClick={handleCreateBreach} disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Breach'}
+            <Button onClick={handleCreateBreach} disabled={createBreachMutation.isPending}>
+              {createBreachMutation.isPending ? 'Creating...' : 'Create Breach'}
             </Button>
           </DialogFooter>
         </DialogContent>

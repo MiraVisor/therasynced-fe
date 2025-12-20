@@ -5,7 +5,8 @@ import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { HeroSection } from '@/components/ui/hero-section';
-import { useAuth, useFreelancerDashboard } from '@/redux/hooks/useAppHooks';
+import { useFreelancerDashboard } from '@/hooks/queries/useFreelancers';
+import { useAuth } from '@/hooks/useAuthZustand';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import TrialBanner from '../Subscription/TrialBanner';
@@ -14,28 +15,12 @@ import Stats from './Stats';
 
 const FreelancerHome = () => {
   const { role } = useAuth();
-  const { data: dashboardData, loading, error, fetchDashboard } = useFreelancerDashboard();
+  const { data: dashboardData, isLoading: loading, error } = useFreelancerDashboard();
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        // If data exists, fetch silently in background
-        // If no data exists, show loading state
-        await fetchDashboard({ silent: !!dashboardData });
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
-        toast.error(`Error loading dashboard data: ${errorMessage}`);
-      }
-    };
-
-    loadDashboard();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show error toast only on error (not during silent refresh)
+  // Show error toast only on error
   useEffect(() => {
     if (error && !dashboardData) {
-      toast.error(error);
+      toast.error((error as any)?.message || 'Failed to load dashboard data');
     }
   }, [error, dashboardData]);
 

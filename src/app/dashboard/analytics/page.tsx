@@ -1,55 +1,28 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { CheckCircle, Clock, Star, TrendingDown, TrendingUp, Users } from 'lucide-react';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import CategoryBreakdownChart from '@/components/core/Dashboard/FreelancerSide/Analytics/CategoryBreakdownChart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { fetchFreelancerAnalytics } from '@/redux/slices/analyticsSlice';
-import { RootState } from '@/redux/store';
+import api from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 
 const AnalyticsPage = () => {
-  const { role } = useAuth();
-  const dispatch = useDispatch();
+  const { role } = useAuthStore();
+
   const {
     data: analyticsData,
-    loading,
-    initialLoading,
+    isLoading,
     error,
-  } = useSelector((state: RootState) => state.analytics);
-
-  // Fetch analytics data
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      try {
-        // If data exists, fetch silently in background
-        // If no data exists, show loading state
-        await dispatch(fetchFreelancerAnalytics({ silent: !!analyticsData }) as any);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load analytics data';
-        if (!analyticsData) {
-          toast.error(`Failed to load analytics: ${errorMessage}`);
-        }
-      }
-    };
-
-    loadAnalytics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]);
-
-  // Show error toast only on error (not during silent refresh)
-  useEffect(() => {
-    if (error && !analyticsData) {
-      toast.error(error);
-    }
-  }, [error, analyticsData]);
-
-  // Only show loader if no data exists (preserve state during refresh)
-  const isLoading = initialLoading || (loading && !analyticsData);
+  } = useQuery({
+    queryKey: ['freelancerAnalytics'],
+    queryFn: async () => {
+      const response = await api.get('/freelancer/analytics');
+      return response.data.data;
+    },
+  });
 
   // Format currency
   const formatCurrency = (amount: number): string => {

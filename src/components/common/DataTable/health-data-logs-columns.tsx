@@ -4,7 +4,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { HealthDataAccessLog } from '@/redux/api/dataRightsApi';
+import type { HealthDataAccessLog } from '@/types/dataRights';
 
 export const formatLogDate = (dateString: string) => {
   const date = new Date(dateString);

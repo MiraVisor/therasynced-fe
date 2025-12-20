@@ -2,13 +2,11 @@
 
 import { Calendar, Clock, MapPin, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getPatientBookingHistory } from '@/redux/api/bookingApi';
+import { usePatientBookingHistory } from '@/hooks/queries/useBookings';
 
 interface RecentBookingActivityProps {
   className?: string;
@@ -30,53 +28,19 @@ interface Booking {
 
 const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
   const router = useRouter();
-  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: bookingsData = [],
+    isLoading: loading,
+    isFetching,
+  } = usePatientBookingHistory({
+    page: 1,
+    limit: 5,
+    sortBy: 'slot.startTime',
+    sortOrder: 'desc',
+  });
 
-  useEffect(() => {
-    const fetchRecentBookings = async () => {
-      const hasData = recentBookings.length > 0;
-      try {
-        if (!hasData) {
-          setInitialLoading(true);
-        } else {
-          setLoading(true);
-        }
-        const response = await getPatientBookingHistory({
-          page: 1,
-          limit: 5,
-          sortBy: 'slot.startTime',
-          sortOrder: 'desc',
-        });
-
-        if (response.success && Array.isArray(response.data)) {
-          setRecentBookings(response.data.slice(0, 5));
-        }
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load recent bookings';
-        setError(errorMessage);
-        // Don't clear data on error if we have existing data
-        if (!hasData) {
-          setRecentBookings([]);
-        }
-      } finally {
-        setLoading(false);
-        setInitialLoading(false);
-      }
-    };
-
-    fetchRecentBookings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show toast error only on initial load
-  useEffect(() => {
-    if (error && initialLoading) {
-      toast.error(`Failed to load recent bookings: ${error}`);
-    }
-  }, [error, initialLoading]);
+  const recentBookings = bookingsData.slice(0, 5) as Booking[];
+  const initialLoading = loading && recentBookings.length === 0;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

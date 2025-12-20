@@ -13,9 +13,8 @@ import {
   Star,
   User,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -24,25 +23,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { clearSelectedBooking } from '@/redux/slices/bookingSlice';
-import { RootState } from '@/redux/store';
+import { useBooking } from '@/hooks/queries/useBookings';
 
 export default function BookingDetailsPage() {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { selectedBooking } = useSelector((state: RootState) => state.booking);
+  const params = useParams();
+  const bookingId = params?.bookingId as string;
+  const { data: booking, error, isLoading } = useBooking(bookingId);
 
   useEffect(() => {
-    return () => {
-      dispatch(clearSelectedBooking());
-    };
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (selectedBooking?.error) {
-      toast.error(selectedBooking.error);
+    if (error) {
+      toast.error('Failed to load booking details');
     }
-  }, [selectedBooking?.error]);
+  }, [error]);
 
   const handleBack = () => {
     router.push('/dashboard/my-bookings');
@@ -107,10 +100,27 @@ export default function BookingDetailsPage() {
     );
   };
 
-  const booking = selectedBooking;
+  if (isLoading) {
+    return (
+      <DashboardPageWrapper>
+        <div className="flex items-center justify-center h-96">
+          <div>Loading...</div>
+        </div>
+      </DashboardPageWrapper>
+    );
+  }
 
   if (!booking) {
-    return <div>Loading...</div>;
+    return (
+      <DashboardPageWrapper>
+        <div className="text-center py-16">
+          <p>Booking not found</p>
+          <Button onClick={() => router.push('/dashboard/my-bookings')} className="mt-4">
+            Back to Bookings
+          </Button>
+        </div>
+      </DashboardPageWrapper>
+    );
   }
 
   // Debug: Display the selectedBooking object as JSON

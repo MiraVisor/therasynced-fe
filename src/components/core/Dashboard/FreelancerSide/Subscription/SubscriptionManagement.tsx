@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, CreditCard, Crown, ExternalLink, Info } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -10,61 +10,51 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getDecodedToken } from '@/lib/utils';
 import {
-  cancelSubscription,
-  createCheckoutSession,
-  getBillingPortal,
-  getMySubscription,
-  getSubscriptionPlans,
-  resumeSubscription,
-  updateSubscription,
-} from '@/redux/api/subscriptionApi';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks/useAppHooks';
+  useBillingPortal,
+  useCancelSubscription,
+  useCreateCheckoutSession,
+  useMySubscription,
+  useResumeSubscription,
+  useSubscriptionPlans,
+  useUpdateSubscription,
+} from '@/hooks/queries/useSubscription';
+import { getDecodedToken } from '@/lib/utils';
 import { PlanType } from '@/types/types';
 
 import { EmbeddedCheckout } from './EmbeddedCheckout';
 import { PlanCard } from './PlanCard';
 
 export default function SubscriptionManagement() {
-  const dispatch = useAppDispatch();
-
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
   const [isRedirectingToCheckout, setIsRedirectingToCheckout] = useState(false);
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
+  // Use React Query hooks
   const {
-    plans,
-    currentSubscription,
-    isLoading,
-    initialLoading,
-    isSubscribing,
-    isUpdating,
-    isCanceling,
-    error,
-  } = useAppSelector((state) => state.subscription);
+    data: plans = [],
+    isLoading: isLoadingPlansData,
+    isFetching: initialLoading,
+  } = useSubscriptionPlans();
+  const {
+    data: currentSubscription,
+    isLoading: isLoadingSubscription,
+    isFetching: isLoading,
+  } = useMySubscription();
+  const { mutate: createCheckout, isPending: isSubscribing } = useCreateCheckoutSession();
+  const { mutate: updateSubscriptionMutation, isPending: isUpdating } = useUpdateSubscription();
+  const { mutate: cancelSubscriptionMutation, isPending: isCanceling } = useCancelSubscription();
+  const { mutate: resumeSubscriptionMutation } = useResumeSubscription();
+
+  // For billing portal, we need to use query with enabled: false and refetch
+  const { data: billingPortalUrl, refetch: refetchBillingPortal } = useBillingPortal();
 
   // Combine loading states - only show loader if no data exists
   const isLoadingPlans =
     initialLoading ||
     (isLoading && plans.length === 0 && !currentSubscription) ||
     isRedirectingToCheckout;
-
-  useEffect(() => {
-    // Load plans and subscription on mount - use silent refresh if data exists
-    const hasPlans = plans.length > 0;
-    const hasSubscription = currentSubscription !== null;
-    dispatch(getSubscriptionPlans({ silent: hasPlans }));
-    dispatch(getMySubscription({ silent: hasSubscription }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]); // Only run once on mount, not when plans/subscription change
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
 
   const decodedToken = getDecodedToken();
   const subscriptionStatus = decodedToken?.subscriptionStatus;
@@ -102,107 +92,102 @@ export default function SubscriptionManagement() {
         (statusFromState === 'ACTIVE' || statusFromState === 'TRIALING' || isCanceledButActive);
 
       if (shouldUseUpdate) {
-        const result = await dispatch(updateSubscription({ planType }));
-        if (updateSubscription.fulfilled.match(result)) {
-          toast.success('Subscription updated successfully!');
-          // Refresh subscription data silently
-          dispatch(getMySubscription({ silent: true }));
-          return; // Exit early on success
-        } else if (updateSubscription.rejected.match(result)) {
-          const errorMessage = (result.payload as string) || 'Failed to update subscription';
-          // If update fails with "No active subscription", try checkout instead
-          if (
-            errorMessage.includes('No active subscription') ||
-            errorMessage.includes('not found') ||
-            errorMessage.includes('does not exist')
-          ) {
-            toast.info('Creating new subscription...');
-            // Fall through to checkout flow
-          } else {
-            toast.error(errorMessage);
-            return;
-          }
-        } else {
-          return; // Update succeeded, exit early
-        }
+        updateSubscriptionMutation(
+          { planType },
+          {
+            onSuccess: () => {
+              // React Query will automatically refetch subscription
+            },
+            onError: (error: any) => {
+              const errorMessage =
+                error?.response?.data?.message || 'Failed to update subscription';
+              // If update fails with "No active subscription", try checkout instead
+              if (
+                errorMessage.includes('No active subscription') ||
+                errorMessage.includes('not found') ||
+                errorMessage.includes('does not exist')
+              ) {
+                toast.info('Creating new subscription...');
+                // Fall through to checkout flow
+                handleCheckout(planType);
+              } else {
+                toast.error(errorMessage);
+              }
+            },
+          },
+        );
+        return;
       }
 
-      // No active subscription or update failed - use checkout endpoint
-      setIsRedirectingToCheckout(true);
-      const result = await dispatch(createCheckoutSession(planType));
-      if (createCheckoutSession.fulfilled.match(result)) {
-        // Open embedded checkout with client secret
-        const checkoutData = result.payload as {
-          sessionUrl: string;
-          sessionId: string;
-          clientSecret?: string;
-        };
-        // Use clientSecret if available for embedded checkout
-        // Note: Backend needs to return clientSecret for embedded checkout to work
-        // If not available, fall back to redirect mode
-        if (checkoutData.clientSecret) {
-          setCheckoutClientSecret(checkoutData.clientSecret);
-          setIsCheckoutOpen(true);
-          setIsRedirectingToCheckout(false);
-        } else {
-          // Fallback to redirect if no client secret (backend doesn't support embedded yet)
-          window.location.href = checkoutData.sessionUrl;
-          setIsRedirectingToCheckout(false);
-        }
-      } else {
-        // If checkout fails with "already have an active subscription" error, try update instead
-        const errorMessage = (result.payload as string) || '';
-        if (
-          errorMessage.includes('already have an active subscription') ||
-          errorMessage.includes('already subscribed')
-        ) {
-          toast.info('Updating existing subscription...');
-          const updateResult = await dispatch(updateSubscription({ planType }));
-          if (updateSubscription.fulfilled.match(updateResult)) {
-            toast.success('Subscription updated successfully!');
-            // Refresh subscription data
-            dispatch(getMySubscription({ silent: true }));
-          } else {
-            toast.error('Failed to update subscription');
-          }
-        } else {
-          toast.error('Failed to create checkout session');
-        }
-        setIsRedirectingToCheckout(false);
-      }
+      // No active subscription - use checkout endpoint
+      handleCheckout(planType);
     } catch (err: any) {
       toast.error(err.message || 'Failed to process subscription');
       setIsRedirectingToCheckout(false);
     }
   };
 
-  const handleCancel = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription?')) return;
-
-    const result = await dispatch(cancelSubscription({}));
-    if (cancelSubscription.fulfilled.match(result)) {
-      toast.success('Subscription will be cancelled at the end of the current period.');
-      // Refresh subscription data
-      dispatch(getMySubscription({ silent: true }));
-    }
+  const handleCheckout = (planType: PlanType) => {
+    setIsRedirectingToCheckout(true);
+    createCheckout(planType, {
+      onSuccess: (checkoutData: any) => {
+        // Open embedded checkout with client secret
+        const data = checkoutData.data || checkoutData;
+        if (data?.clientSecret) {
+          setCheckoutClientSecret(data.clientSecret);
+          setIsCheckoutOpen(true);
+          setIsRedirectingToCheckout(false);
+        } else if (data?.sessionUrl) {
+          // Fallback to redirect if no client secret
+          window.location.href = data.sessionUrl;
+          setIsRedirectingToCheckout(false);
+        }
+      },
+      onError: (error: any) => {
+        const errorMessage = error?.response?.data?.message || '';
+        // If checkout fails with "already have an active subscription" error, try update instead
+        if (
+          errorMessage.includes('already have an active subscription') ||
+          errorMessage.includes('already subscribed')
+        ) {
+          toast.info('Updating existing subscription...');
+          updateSubscriptionMutation({ planType });
+        } else {
+          toast.error('Failed to create checkout session');
+        }
+        setIsRedirectingToCheckout(false);
+      },
+    });
   };
 
-  const handleResume = async () => {
-    const result = await dispatch(resumeSubscription());
-    if (resumeSubscription.fulfilled.match(result)) {
-      toast.success('Subscription resumed successfully!');
-      // Refresh subscription data
-      dispatch(getMySubscription({ silent: true }));
-    }
+  const handleCancel = () => {
+    if (!confirm('Are you sure you want to cancel your subscription?')) return;
+    cancelSubscriptionMutation(
+      {},
+      {
+        onSuccess: () => {
+          toast.success('Subscription will be cancelled at the end of the current period.');
+          // React Query will automatically refetch
+        },
+      },
+    );
+  };
+
+  const handleResume = () => {
+    resumeSubscriptionMutation(undefined, {
+      onSuccess: () => {
+        // React Query will automatically refetch
+      },
+    });
   };
 
   const handleOpenBillingPortal = async () => {
     try {
       setIsLoadingPortal(true);
-      const result = await dispatch(getBillingPortal());
-      if (getBillingPortal.fulfilled.match(result)) {
+      const result = await refetchBillingPortal();
+      if (result.data) {
         // Open billing portal in new tab
-        window.open(result.payload, '_blank', 'noopener,noreferrer');
+        window.open(result.data, '_blank', 'noopener,noreferrer');
       }
     } catch (err: any) {
       toast.error('Failed to open billing portal');
@@ -427,11 +412,10 @@ export default function SubscriptionManagement() {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
           }}
-          onSuccess={async () => {
+          onSuccess={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            // Refresh subscription data
-            await dispatch(getMySubscription({ silent: true }));
+            // React Query will automatically refetch subscription
             toast.success('Payment successful! Your subscription is now active.');
             // Refresh to show updated status
             setTimeout(() => {

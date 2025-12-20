@@ -1,27 +1,15 @@
 'use client';
 
-import {
-  AlertCircle,
-  ArrowRight,
-  Award,
-  CheckCircle,
-  Clock,
-  FileText,
-  Shield,
-  XCircle,
-} from 'lucide-react';
+import { AlertCircle, ArrowRight, Award, CheckCircle, FileText, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { getFirstAidCertificateStatus } from '@/redux/api/certificateApi';
-import { getVerificationDocuments, getVerificationStatus } from '@/redux/api/verificationApi';
-import { RootState } from '@/redux/store';
+import { useFirstAidCertificateStatus as useCertificateStatus } from '@/hooks/queries/useCertificate';
+import { useFreelancerFiles, useVerificationStatus } from '@/hooks/queries/useVerification';
 
 interface VerificationStatusWidgetProps {
   className?: string;
@@ -29,37 +17,16 @@ interface VerificationStatusWidgetProps {
 
 export default function VerificationStatusWidget({ className }: VerificationStatusWidgetProps) {
   const router = useRouter();
-  const dispatch = useDispatch();
 
-  // Get data from Redux store
-  const verificationState = useSelector((state: RootState) => state.verification);
-  const certificateState = useSelector((state: RootState) => state.certificate);
+  const { data: verificationStatusData, isLoading: isLoadingVerification } =
+    useVerificationStatus();
+  const { data: certificateStatusData, isLoading: isLoadingCertificate } = useCertificateStatus();
+  const { data: documents = [], isLoading: isLoadingDocuments } = useFreelancerFiles();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoading = isLoadingVerification || isLoadingCertificate || isLoadingDocuments;
 
-  // Fetch data on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        await Promise.all([
-          dispatch(getVerificationStatus({}) as any),
-          dispatch(getFirstAidCertificateStatus() as any),
-          dispatch(getVerificationDocuments() as any),
-        ]);
-      } catch (error) {
-        console.error('Error fetching verification data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [dispatch]);
-
-  const verificationStatus = verificationState?.verificationStatus || 'NOT_SUBMITTED';
-  const certificateStatus = certificateState?.certificate?.firstAidCertificateStatus || 'PENDING';
-  const documents = verificationState?.documents || [];
+  const verificationStatus = verificationStatusData?.status || 'NOT_SUBMITTED';
+  const certificateStatus = certificateStatusData?.status || 'PENDING';
 
   const getStatusBadge = (status: string) => {
     if (status === 'APPROVED') {

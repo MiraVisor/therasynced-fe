@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import adminBookingsService, { AdminBookingDto } from '@/services/adminBookingsService';
 import bookingService from '@/services/bookingService';
-import { ApiResponse, Booking, PaginationDto } from '@/types/types';
+import { Booking, PaginationDto } from '@/types/types';
 
 interface UseBookingsOptions {
   includePast?: boolean;

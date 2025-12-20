@@ -2,12 +2,11 @@
 
 import { ArrowDown, ArrowUp, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { getPatientBookingHistory } from '@/redux/api/bookingApi';
+import { usePatientBookingHistory } from '@/hooks/queries/useBookings';
 
 interface BookingHistoryChartProps {
   className?: string;
@@ -27,131 +26,101 @@ interface SummaryStats {
 }
 
 const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
+  const { data: bookingsData = [], isLoading: loading } = usePatientBookingHistory({
+    page: 1,
+    limit: 100,
+  });
+
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [stats, setStats] = useState<SummaryStats | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const initialLoading = loading && !bookingsData;
 
   useEffect(() => {
-    const fetchBookingHistory = async () => {
-      const hasData = data.length > 0 || stats !== null;
-      try {
-        if (!hasData) {
-          setInitialLoading(true);
-        } else {
-          setLoading(true);
+    if (bookingsData && Array.isArray(bookingsData)) {
+      const now = new Date();
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+      // Aggregate bookings by week for the last 12 weeks
+      const weeklyBookings: Record<string, number> = {};
+      const monthlyBookings: Record<string, number> = {};
+
+      bookingsData.forEach((booking: any) => {
+        const bookingDate = new Date(booking.slot?.startTime || booking.createdAt);
+        if (bookingDate >= threeMonthsAgo) {
+          // Weekly aggregation
+          const weekStart = new Date(bookingDate);
+          weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Start of week (Sunday)
+          const weekKey = weekStart.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          });
+          weeklyBookings[weekKey] = (weeklyBookings[weekKey] || 0) + 1;
+
+          // Monthly aggregation for stats
+          const monthKey = bookingDate.toLocaleDateString('en-US', {
+            month: 'short',
+            year: 'numeric',
+          });
+          monthlyBookings[monthKey] = (monthlyBookings[monthKey] || 0) + 1;
         }
-        const response = await getPatientBookingHistory({
-          page: 1,
-          limit: 100,
+      });
+
+      // Generate chart data for the last 12 weeks
+      const chartData: ChartDataPoint[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i * 7);
+        const weekStart = new Date(date);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        const period = weekStart.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
         });
-
-        if (response.success && Array.isArray(response.data)) {
-          const now = new Date();
-          const threeMonthsAgo = new Date();
-          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
-          // Aggregate bookings by week for the last 12 weeks
-          const weeklyBookings: Record<string, number> = {};
-          const monthlyBookings: Record<string, number> = {};
-
-          response.data.forEach((booking: any) => {
-            const bookingDate = new Date(booking.slot?.startTime || booking.createdAt);
-            if (bookingDate >= threeMonthsAgo) {
-              // Weekly aggregation
-              const weekStart = new Date(bookingDate);
-              weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Start of week (Sunday)
-              const weekKey = weekStart.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-              });
-              weeklyBookings[weekKey] = (weeklyBookings[weekKey] || 0) + 1;
-
-              // Monthly aggregation for stats
-              const monthKey = bookingDate.toLocaleDateString('en-US', {
-                month: 'short',
-                year: 'numeric',
-              });
-              monthlyBookings[monthKey] = (monthlyBookings[monthKey] || 0) + 1;
-            }
-          });
-
-          // Generate chart data for the last 12 weeks
-          const chartData: ChartDataPoint[] = [];
-          for (let i = 11; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i * 7);
-            const weekStart = new Date(date);
-            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-            const period = weekStart.toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-            });
-            chartData.push({
-              period,
-              bookings: weeklyBookings[period] || 0,
-            });
-          }
-
-          setData(chartData);
-
-          // Calculate summary statistics
-          const currentMonth = now.toLocaleDateString('en-US', {
-            month: 'short',
-            year: 'numeric',
-          });
-          const lastMonthDate = new Date(now);
-          lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-          const lastMonth = lastMonthDate.toLocaleDateString('en-US', {
-            month: 'short',
-            year: 'numeric',
-          });
-
-          const thisMonthCount = monthlyBookings[currentMonth] || 0;
-          const lastMonthCount = monthlyBookings[lastMonth] || 0;
-          const total = Object.values(monthlyBookings).reduce((sum, count) => sum + count, 0);
-          const average =
-            chartData.length > 0
-              ? Math.round((total / Object.keys(monthlyBookings).length) * 10) / 10
-              : 0;
-
-          const trend =
-            lastMonthCount > 0
-              ? Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100)
-              : thisMonthCount > 0
-                ? 100
-                : 0;
-
-          setStats({
-            total,
-            average,
-            trend,
-            thisMonth: thisMonthCount,
-            lastMonth: lastMonthCount,
-          });
-        }
-      } catch (err: any) {
-        const errorMessage = err.message || 'Failed to load booking history';
-        setError(errorMessage);
-        // Only show error toast on initial load
-        if (!hasData) {
-          toast.error(`Failed to load booking history: ${errorMessage}`);
-        }
-        // Don't clear data on error if we have existing data
-        if (!hasData) {
-          setData([]);
-          setStats(null);
-        }
-      } finally {
-        setLoading(false);
-        setInitialLoading(false);
+        chartData.push({
+          period,
+          bookings: weeklyBookings[period] || 0,
+        });
       }
-    };
 
-    fetchBookingHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      setData(chartData);
+
+      // Calculate summary statistics
+      const currentMonth = now.toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
+      const lastMonthDate = new Date(now);
+      lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+      const lastMonth = lastMonthDate.toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
+
+      const thisMonthCount = monthlyBookings[currentMonth] || 0;
+      const lastMonthCount = monthlyBookings[lastMonth] || 0;
+      const total = Object.values(monthlyBookings).reduce((sum, count) => sum + count, 0);
+      const average =
+        chartData.length > 0
+          ? Math.round((total / Object.keys(monthlyBookings).length) * 10) / 10
+          : 0;
+
+      const trend =
+        lastMonthCount > 0
+          ? Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100)
+          : thisMonthCount > 0
+            ? 100
+            : 0;
+
+      setStats({
+        total,
+        average,
+        trend,
+        thisMonth: thisMonthCount,
+        lastMonth: lastMonthCount,
+      });
+    }
+  }, [bookingsData]);
 
   const isLoading = initialLoading || (loading && data.length === 0 && !stats);
   if (isLoading) {

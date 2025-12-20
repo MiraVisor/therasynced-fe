@@ -81,6 +81,8 @@ export const ENDPOINTS = {
   // Dashboard endpoints
   dashboard: {
     freelancerOverview: '/dashboard/freelancer/overview',
+    freelancerStats: '/dashboard/freelancer/stats',
+    freelancerWeeklyAppointments: '/dashboard/freelancer/weekly-appointments',
   },
   // Chat/messaging endpoints
   chat: {

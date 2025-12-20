@@ -5,13 +5,13 @@ import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { setCookie } from '@/lib/utils';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { useAuthStore } from '@/stores/authStore';
 
 function AuthCallbackContent() {
   const [isProcessing, setIsProcessing] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  const { setToken, setUser } = useAuthStore();
 
   useEffect(() => {
     const processCallback = async () => {
@@ -54,22 +54,10 @@ function AuthCallbackContent() {
           // For login flow, store token and redirect
           if (typeof window !== 'undefined') {
             setCookie('token', token);
+            setToken(token);
+            // User data will be fetched by API interceptor
+            setUser({ role: 'PATIENT' } as any);
           }
-
-          // Update Redux state exactly like normal login
-          dispatch({
-            type: 'auth/googleSignIn/fulfilled',
-            payload: {
-              data: {
-                data: {
-                  token,
-                  user: {
-                    role: 'PATIENT', // Default role, will be updated by API interceptor
-                  },
-                },
-              },
-            },
-          });
 
           toast.success('Successfully signed in with Google!');
 
@@ -91,7 +79,7 @@ function AuthCallbackContent() {
     };
 
     processCallback();
-  }, [searchParams, router, dispatch]);
+  }, [searchParams, router, setToken, setUser]);
 
   if (isProcessing) {
     return (

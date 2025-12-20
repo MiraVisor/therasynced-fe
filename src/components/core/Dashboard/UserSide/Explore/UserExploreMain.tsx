@@ -2,18 +2,13 @@
 
 import { ArrowRight, Calendar, Heart, MessageCircle, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import {
-  fetchAllFavoriteFreelancers,
-  fetchExplorePatientBookings,
-} from '@/redux/slices/exploreSlice';
-import { fetchFreelancers } from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
+import { useExplorePatientBookings } from '@/hooks/queries/useExplore';
+import { useFavoriteFreelancers, useFreelancers } from '@/hooks/queries/useFreelancers';
+import { useAuth } from '@/hooks/useAuthZustand';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
@@ -120,39 +115,20 @@ const getUpcomingAppointments = (bookings: any[]) => {
 
 const UserExploreMain = () => {
   const router = useRouter();
-  const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
-  const { favorites, loading, bookings, bookingsLoading } = useSelector(
-    (state: RootState) => state.explore as any,
-  );
-  const { experts: allExperts, loading: expertsLoading } = useSelector(
-    (state: RootState) => state.overview,
-  );
   const [selectedFreelancer, setSelectedFreelancer] = useState<Expert | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  // Fetch all-time bookings for stats
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const hasBookings = bookings && bookings.length > 0;
-    dispatch(fetchExplorePatientBookings({ silent: hasBookings }) as any);
-  }, [dispatch, isAuthenticated, bookings?.length]);
-
-  // Fetch favorites and experts
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const hasFavorites = favorites && favorites.length > 0;
-    const hasExperts = allExperts && allExperts.length > 0;
-    dispatch(fetchAllFavoriteFreelancers({ silent: hasFavorites }) as any);
-    dispatch(fetchFreelancers({ silent: hasExperts }) as any);
-  }, [dispatch, isAuthenticated, favorites?.length, allExperts?.length]);
+  // Use React Query hooks
+  const { data: allExperts = [], isLoading: expertsLoading } = useFreelancers();
+  const { data: favorites = [], isLoading: favoritesLoading } = useFavoriteFreelancers();
+  const { data: bookings = [], isLoading: bookingsLoading } = useExplorePatientBookings();
 
   // Process data - map favorites through the same function as experts
   const favoritesList = favorites?.map((favorite: any) => mapFreelancerToExpert(favorite)) || [];
 
   const allTimeBookings = bookings || [];
+  const loading = expertsLoading || favoritesLoading;
   const nextAppointment = getNextUpcomingAppointment(allTimeBookings);
   const upcomingAppointments = getUpcomingAppointments(allTimeBookings);
   const recommendedFreelancers = getRecommendedFreelancers(allExperts, favoritesList);
@@ -181,7 +157,7 @@ const UserExploreMain = () => {
     setSelectedFreelancer(null);
   };
 
-  if (loading || expertsLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <LoadingSpinner />

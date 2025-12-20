@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { forgotPasswordApi } from '@/redux/api/authApi';
+import { forgotPasswordApi } from '@/services/authService';
 
 interface ForgotPasswordFormProps {
   onBackToSignIn: () => void;

@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
@@ -58,12 +57,15 @@ import {
 } from '@/components/ui/skeletons/AccountSectionSkeleton';
 import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkeleton';
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
+import { useJobTitles } from '@/hooks/queries/useJobTitles';
+import {
+  useChangeEmail,
+  useChangePassword,
+  useProfile,
+  useUpdateProfile,
+} from '@/hooks/queries/useProfile';
+import { useAuth } from '@/hooks/useAuthZustand';
 import { cn } from '@/lib/utils';
-import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
-import { changeEmail, changePassword, updateProfile } from '@/redux/api/profileApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { fetchProfile, updateMainJobTitle, updateProfileData } from '@/redux/slices/profileSlice';
-import { RootState } from '@/redux/store';
 import { JobTitle, ROLES } from '@/types/types';
 
 interface UserProfile {
@@ -93,18 +95,19 @@ export default function AccountPage() {
   const [isSubscriptionLoading] = useState(false);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<string>>(new Set());
   const [showSignOutModal, setShowSignOutModal] = useState(false);
-  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
-  const [isLoadingJobTitles, setIsLoadingJobTitles] = useState(false);
   const { role, logout } = useAuth();
-  const dispatch = useDispatch();
 
-  // Get profile data from Redux
+  // Use React Query hooks
   const {
     data: profileData,
-    loading,
-    initialLoading,
+    isLoading: loading,
+    isFetching: initialLoading,
     error: profileError,
-  } = useSelector((state: RootState) => state.profile);
+  } = useProfile();
+  const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+  const { mutate: changePasswordMutation, isPending: isChangingPassword } = useChangePassword();
+  const { mutate: changeEmailMutation, isPending: isChangingEmail } = useChangeEmail();
+  const { data: jobTitles = [], isLoading: isLoadingJobTitles } = useJobTitles();
 
   // Local form state for editing
   const [formData, setFormData] = useState<UserProfile>({
@@ -133,16 +136,10 @@ export default function AccountPage() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    const loadData = async () => {
-      await loadJobTitles();
-      await loadUserProfile();
-    };
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Profile and job titles are automatically loaded by React Query
+  // No need for manual loading
 
-  // Sync Redux profile data to local form state
+  // Sync profile data to local form state
   useEffect(() => {
     if (profileData) {
       setFormData({
@@ -154,9 +151,9 @@ export default function AccountPage() {
         dob: profileData.dob || '',
         city: profileData.city || '',
         isEmailVerified: profileData.isEmailVerified,
-        isActive: profileData.isActive,
+        isActive: true, // Default to true, can be derived from other fields if needed
         role: profileData.role || '',
-        mainJobTitleId: profileData.mainJobTitleId,
+        mainJobTitleId: profileData.mainJobTitle?.id,
         mainJobTitle: profileData.mainJobTitle,
         clinicAddress: profileData.clinicAddress || '',
       });
@@ -176,45 +173,8 @@ export default function AccountPage() {
     }
   }, [jobTitles, formData.mainJobTitleId, formData.mainJobTitle]);
 
-  const loadJobTitles = async () => {
-    const hasData = jobTitles.length > 0;
-    try {
-      // Only show loading if we don't have data yet
-      if (!hasData) {
-        setIsLoadingJobTitles(true);
-      }
-      const response = await dispatch(getActiveJobTitles() as any);
-
-      if (response.payload && Array.isArray(response.payload) && response.payload.length > 0) {
-        setJobTitles(response.payload);
-      } else if (!hasData) {
-        // Only clear job titles if we didn't have data before
-        setJobTitles([]);
-      }
-    } catch (error) {
-      // Don't show error toast for job titles as it's not critical
-      // Don't clear existing data on error
-      if (!hasData) {
-        setJobTitles([]);
-      }
-    } finally {
-      setIsLoadingJobTitles(false);
-    }
-  };
-
-  const loadUserProfile = async () => {
-    try {
-      // If we have profile data, fetch silently in background
-      // If no data exists, show loading state
-      await dispatch(fetchProfile({ silent: !!profileData, jobTitles }) as any);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load user profile';
-      // Only show error toast if we don't have existing data
-      if (!profileData) {
-        toast.error(`Failed to load profile: ${errorMessage}`);
-      }
-    }
-  };
+  // Job titles and profile are automatically loaded by React Query
+  // No manual loading functions needed
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev: UserProfile) => ({
@@ -280,30 +240,20 @@ export default function AccountPage() {
         dobToSend = formData.dob;
       }
 
-      const response = await updateProfile({
-        name: formData.name.trim(),
-        ...(formData.city && { city: formData.city.trim() }),
-        ...(formData.gender && { gender: formData.gender }),
-        ...(formData.dob && { dob: dobToSend }),
-      });
-
-      if (response.success) {
-        toast.success('Profile updated successfully');
-        setProfileUpdated(true);
-        // Update Redux state
-        dispatch(
-          updateProfileData({
-            name: formData.name.trim(),
-            ...(formData.city && { city: formData.city.trim() }),
-            ...(formData.gender && { gender: formData.gender }),
-            ...(formData.dob && { dob: dobToSend }),
-          }) as any,
-        );
-
-        setTimeout(() => setProfileUpdated(false), 3000);
-      } else {
-        toast.error(response.message || 'Failed to update profile');
-      }
+      updateProfile(
+        {
+          name: formData.name.trim(),
+          ...(formData.city && { city: formData.city.trim() }),
+          ...(formData.gender && { gender: formData.gender }),
+          ...(formData.dob && { dob: dobToSend }),
+        },
+        {
+          onSuccess: () => {
+            setProfileUpdated(true);
+            setTimeout(() => setProfileUpdated(false), 3000);
+          },
+        },
+      );
     } catch (error: any) {
       toast.error(error?.message || 'Failed to update profile');
     } finally {
@@ -311,38 +261,19 @@ export default function AccountPage() {
     }
   };
 
-  const handleProfessionalInfoUpdate = async () => {
-    try {
-      setIsProfessionalInfoLoading(true);
-
-      const response = await updateProfile({
+  const handleProfessionalInfoUpdate = () => {
+    updateProfile(
+      {
         ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
         ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
-      });
-
-      if (response.success) {
-        toast.success('Professional information updated successfully');
-        setProfileUpdated(true);
-        // Update Redux state
-        dispatch(
-          updateProfileData({
-            ...(formData.mainJobTitle && { mainJobTitleId: formData.mainJobTitle.id }),
-            ...(formData.clinicAddress && { clinicAddress: formData.clinicAddress }),
-          }) as any,
-        );
-        if (formData.mainJobTitle) {
-          dispatch(updateMainJobTitle(formData.mainJobTitle) as any);
-        }
-
-        setTimeout(() => setProfileUpdated(false), 3000);
-      } else {
-        toast.error(response.message || 'Failed to update professional information');
-      }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to update professional information');
-    } finally {
-      setIsProfessionalInfoLoading(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setProfileUpdated(true);
+          setTimeout(() => setProfileUpdated(false), 3000);
+        },
+      },
+    );
   };
 
   const handlePasswordUpdate = async () => {
@@ -356,49 +287,32 @@ export default function AccountPage() {
       return;
     }
 
-    try {
-      setIsLoading(true);
-      const response = await changePassword({
+    changePasswordMutation(
+      {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
-      });
-
-      if (response.success) {
-        toast.success('Password updated successfully');
-        setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
-        });
-      } else {
-        toast.error(response.message || 'Failed to update password');
-      }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to update password');
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setPasswordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+          });
+        },
+      },
+    );
   };
 
-  const handleEmailChange = async (newEmail: string) => {
-    try {
-      setIsLoading(true);
-      const response = await changeEmail({
-        newEmail,
-      });
-
-      if (response.success) {
-        toast.success('Email change initiated. Please check your new email for verification.');
-        // Reload profile silently to get updated email status
-        await dispatch(fetchProfile({ silent: true, jobTitles }) as any);
-      } else {
-        toast.error(response.message || 'Failed to initiate email change');
-      }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to initiate email change');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleEmailChange = (newEmail: string) => {
+    changeEmailMutation(
+      { newEmail },
+      {
+        onSuccess: () => {
+          // Profile will be automatically refetched by React Query
+        },
+      },
+    );
   };
 
   const toggleFaq = (faqId: string) => {
@@ -732,11 +646,9 @@ export default function AccountPage() {
               <Button
                 className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
                 onClick={handleProfessionalInfoUpdate}
-                disabled={
-                  isProfessionalInfoLoading || ((initialLoading || loading) && !profileData)
-                }
+                disabled={isUpdatingProfile || ((initialLoading || loading) && !profileData)}
               >
-                {isProfessionalInfoLoading ? (
+                {isUpdatingProfile ? (
                   <>Saving...</>
                 ) : (
                   <>

@@ -1,22 +1,23 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import { reserveSlot } from '@/redux/api/overviewApi';
-import {
-  clearReservedSlots,
-  confirmSlotReservation,
-  releaseSlotReservation,
-  setSocketConnected,
-  updateMultipleSlots,
-  updateSlotStatus,
-} from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
+import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
 import socketService from '@/services/socketService';
+import { useSlotStore } from '@/stores/slotStore';
 
 export const useSocketSlots = (freelancerId?: string) => {
-  const dispatch = useDispatch();
-  const { socketConnected, reservedSlots } = useSelector((state: RootState) => state.overview);
+  const {
+    socketConnected,
+    reservedSlots,
+    setSocketConnected,
+    updateSlotStatus,
+    updateMultipleSlots,
+    reserveSlot,
+    releaseSlot,
+    confirmSlotReservation,
+  } = useSlotStore();
+
   const isConnectedRef = useRef(false);
   const freelancerIdRef = useRef(freelancerId);
 
@@ -32,11 +33,11 @@ export const useSocketSlots = (freelancerId?: string) => {
       isConnectedRef.current = true;
     }
 
-    // Update Redux state when socket connects/disconnects
+    // Update Zustand state when socket connects/disconnects
     const checkConnection = () => {
       const connected = socketService.isSocketConnected();
       if (connected !== socketConnected) {
-        dispatch(setSocketConnected(connected));
+        setSocketConnected(connected);
       }
     };
 
@@ -45,29 +46,23 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     // Listen for socket events
     const handleSlotStatusUpdated = (event: CustomEvent) => {
-      dispatch(updateSlotStatus(event.detail));
+      const { slotId, statusInfo } = event.detail;
+      if (slotId && statusInfo) {
+        updateSlotStatus(slotId, statusInfo);
+      }
     };
 
     const handleMultipleSlotsUpdated = (event: CustomEvent) => {
-      dispatch(updateMultipleSlots(event.detail));
+      const updates = event.detail;
+      if (Array.isArray(updates)) {
+        updateMultipleSlots(updates);
+      }
     };
 
     const handleSlotReserved = (event: CustomEvent) => {
-      console.log('=== SLOT RESERVED EVENT ===');
-      console.log('Full event:', event);
-      console.log('Event detail:', event.detail);
-      console.log('Event detail type:', typeof event.detail);
-      console.log('Event detail keys:', Object.keys(event.detail || {}));
-      console.log('Current reserved slots:', reservedSlots);
-
-      // Handle different possible data structures from backend
       const eventData = event.detail;
       const slotId = eventData.slotId || eventData.slot?.id || eventData.id;
       const statusInfo = eventData.statusInfo;
-
-      console.log('Extracted slotId:', slotId);
-      console.log('Slot status from event:', eventData.slot?.status);
-      console.log('StatusInfo from event:', statusInfo);
 
       if (!slotId) {
         console.error('No slotId found in slot-reserved event:', eventData);
@@ -75,28 +70,22 @@ export const useSocketSlots = (freelancerId?: string) => {
       }
 
       // This is a reservation - update slot status to reserved
-      dispatch(
-        updateSlotStatus({
-          slotId,
-          status: 'RESERVED',
-          isBooked: false, // Reservations are not booked
-          statusInfo: statusInfo || {
-            status: 'RESERVED',
-            isAvailable: false,
-            isReserved: true,
-            isBooked: false,
-            canBeReserved: false,
-            statusMessage: 'Reserved by another user',
-          },
-        }),
-      );
+      updateSlotStatus(slotId, {
+        status: 'RESERVED',
+        isAvailable: false,
+        isReserved: true,
+        isBooked: false,
+        canBeReserved: false,
+        statusMessage: 'Reserved by another user',
+        ...statusInfo,
+      });
 
       // Check if this slot is in our reserved slots (meaning we reserved it)
       const isOurReservation = reservedSlots.includes(slotId);
 
       if (isOurReservation) {
         // We reserved this slot - update our tracking
-        dispatch(reserveSlot(slotId) as any);
+        reserveSlot(slotId);
       } else {
         // Someone else reserved this slot - show notification
         toast.info('A slot you were viewing has been reserved by another user.', {
@@ -106,51 +95,39 @@ export const useSocketSlots = (freelancerId?: string) => {
       }
     };
 
-    // NEW: Handle slot booked event
     const handleSlotBooked = (event: CustomEvent) => {
-      console.log('Slot booked event received:', event.detail);
       const { slotId, statusInfo } = event.detail;
-      dispatch(
-        updateSlotStatus({
-          slotId: slotId || event.detail.slot?.id,
+      const id = slotId || event.detail.slot?.id;
+      if (id) {
+        updateSlotStatus(id, {
           status: 'BOOKED',
+          isAvailable: false,
+          isReserved: false,
           isBooked: true,
-          statusInfo: statusInfo || {
-            status: 'BOOKED',
-            isAvailable: false,
-            isReserved: false,
-            isBooked: true,
-            canBeReserved: false,
-            statusMessage: 'Booked',
-          },
-        }),
-      );
+          canBeReserved: false,
+          statusMessage: 'Booked',
+          ...statusInfo,
+        });
+      }
     };
 
-    // NEW: Handle slot removed event
     const handleSlotRemoved = (event: CustomEvent) => {
-      console.log('Slot removed event received:', event.detail);
       const { slotId, statusInfo } = event.detail;
-      dispatch(
-        updateSlotStatus({
-          slotId: slotId || event.detail.slotId,
+      const id = slotId || event.detail.slotId;
+      if (id) {
+        updateSlotStatus(id, {
           status: 'BOOKED',
+          isAvailable: false,
+          isReserved: false,
           isBooked: true,
-          statusInfo: statusInfo || {
-            status: 'BOOKED',
-            isAvailable: false,
-            isReserved: false,
-            isBooked: true,
-            canBeReserved: false,
-            statusMessage: 'Booked',
-          },
-        }),
-      );
+          canBeReserved: false,
+          statusMessage: 'Booked',
+          ...statusInfo,
+        });
+      }
     };
 
-    // Handle slot released event
     const handleSlotReleased = (event: CustomEvent) => {
-      console.log('Slot released event received:', event.detail);
       const eventData = event.detail;
       const slotId = eventData.slotId || eventData.slot?.id || eventData.id;
       const statusInfo = eventData.statusInfo;
@@ -161,37 +138,31 @@ export const useSocketSlots = (freelancerId?: string) => {
       }
 
       // Update slot status to available
-      dispatch(
-        updateSlotStatus({
-          slotId,
-          status: 'AVAILABLE',
-          isBooked: false,
-          statusInfo: statusInfo || {
-            status: 'AVAILABLE',
-            isAvailable: true,
-            isReserved: false,
-            isBooked: false,
-            canBeReserved: true,
-            statusMessage: 'Available for booking',
-          },
-        }),
-      );
+      updateSlotStatus(slotId, {
+        status: 'AVAILABLE',
+        isAvailable: true,
+        isReserved: false,
+        isBooked: false,
+        canBeReserved: true,
+        statusMessage: 'Available for booking',
+        ...statusInfo,
+      });
 
       // Remove from our tracking if it was in our reserved slots
       if (reservedSlots.includes(slotId)) {
-        dispatch(releaseSlotReservation({ slotId }));
+        releaseSlot(slotId);
       }
     };
 
     const handleSlotReservationConfirmed = (event: CustomEvent) => {
-      console.log('=== SLOT RESERVATION CONFIRMED ===');
-      console.log('Event detail:', event.detail);
-      dispatch(confirmSlotReservation(event.detail));
+      const { slotId } = event.detail;
+      if (slotId) {
+        confirmSlotReservation(slotId);
+      }
     };
 
     const handleSlotReservationFailed = (event: CustomEvent) => {
       console.error('Slot reservation failed:', event.detail);
-      // Optionally show a toast notification
     };
 
     // Add event listeners
@@ -211,7 +182,6 @@ export const useSocketSlots = (freelancerId?: string) => {
     );
 
     return () => {
-      clearInterval(interval);
       window.removeEventListener('slot-status-updated', handleSlotStatusUpdated as EventListener);
       window.removeEventListener(
         'multiple-slots-updated',
@@ -229,44 +199,78 @@ export const useSocketSlots = (freelancerId?: string) => {
         'slot-reservation-failed',
         handleSlotReservationFailed as EventListener,
       );
+      clearInterval(interval);
     };
-  }, [dispatch, reservedSlots]);
+  }, [
+    socketConnected,
+    reservedSlots,
+    setSocketConnected,
+    updateSlotStatus,
+    updateMultipleSlots,
+    reserveSlot,
+    releaseSlot,
+    confirmSlotReservation,
+  ]);
 
-  useEffect(() => {
-    // Join freelancer slots room when freelancerId is provided and socket is connected
-    if (freelancerId && socketService.isSocketConnected()) {
-      socketService.joinFreelancerSlots(freelancerId);
-    }
+  // Reserve a slot
+  const reserveSlotLocal = useCallback(
+    async (slotId: string, duration: number = 300000) => {
+      try {
+        // Call API to reserve slot
+        await api.post(ENDPOINTS.slots?.reserve || `/slots/${slotId}/reserve`, {
+          duration,
+        });
 
-    // Leave room when freelancerId changes or component unmounts
-    return () => {
-      if (freelancerId) {
-        socketService.leaveFreelancerSlots(freelancerId);
+        // Update local state
+        reserveSlot(slotId);
+        updateSlotStatus(slotId, {
+          status: 'RESERVED',
+          isAvailable: false,
+          isReserved: true,
+          isBooked: false,
+          canBeReserved: false,
+          statusMessage: 'Reserved by you',
+        });
+
+        // Emit socket event
+        socketService.emit('reserve-slot', { slotId, duration });
+      } catch (error) {
+        console.error('Failed to reserve slot:', error);
+        throw error;
       }
-    };
-  }, [freelancerId]);
-
-  // Slot reservation functions - memoized to prevent unnecessary re-renders
-  const reserveSlotForUser = useCallback((slotId: string, duration: number = 300000) => {
-    socketService.reserveSlot(slotId, duration);
-  }, []);
-
-  const releaseSlotForUser = useCallback(
-    (slotId: string) => {
-      socketService.releaseSlot(slotId);
-      dispatch(releaseSlotReservation({ slotId }));
     },
-    [dispatch],
+    [reserveSlot, updateSlotStatus],
   );
 
-  const clearAllReservations = useCallback(() => {
-    // Release all reserved slots
-    reservedSlots.forEach((slotId) => {
-      socketService.releaseSlot(slotId);
-    });
-    dispatch(clearReservedSlots());
-  }, [reservedSlots, dispatch]);
+  // Release a slot reservation
+  const releaseSlotLocal = useCallback(
+    async (slotId: string) => {
+      try {
+        // Call API to release slot
+        await api.post(ENDPOINTS.slots?.release || `/slots/${slotId}/release`);
 
+        // Update local state
+        releaseSlot(slotId);
+        updateSlotStatus(slotId, {
+          status: 'AVAILABLE',
+          isAvailable: true,
+          isReserved: false,
+          isBooked: false,
+          canBeReserved: true,
+          statusMessage: 'Available for booking',
+        });
+
+        // Emit socket event
+        socketService.emit('release-slot', { slotId });
+      } catch (error) {
+        console.error('Failed to release slot:', error);
+        throw error;
+      }
+    },
+    [releaseSlot, updateSlotStatus],
+  );
+
+  // Check if a slot is reserved
   const isSlotReserved = useCallback(
     (slotId: string) => {
       return reservedSlots.includes(slotId);
@@ -275,12 +279,10 @@ export const useSocketSlots = (freelancerId?: string) => {
   );
 
   return {
-    socketConnected,
-    isConnected: socketService.isSocketConnected(),
+    isConnected: socketConnected,
     reservedSlots,
-    reserveSlot: reserveSlotForUser,
-    releaseSlot: releaseSlotForUser,
-    clearAllReservations,
+    reserveSlot: reserveSlotLocal,
+    releaseSlot: releaseSlotLocal,
     isSlotReserved,
   };
 };

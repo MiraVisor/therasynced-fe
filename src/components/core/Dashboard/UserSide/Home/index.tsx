@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuth } from '@/hooks/useAuthZustand';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import BookingHistoryChart from './BookingHistoryChart';

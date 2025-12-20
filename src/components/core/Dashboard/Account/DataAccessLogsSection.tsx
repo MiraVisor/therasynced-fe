@@ -1,8 +1,7 @@
 'use client';
 
 import { Calendar, Shield } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { userHealthDataLogsColumns } from '@/components/common/DataTable/health-data-logs-columns';
@@ -16,28 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  HealthDataAccessLog,
-  HealthDataLogsFilters,
-  getMyHealthDataLogs,
-} from '@/redux/api/dataRightsApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useMyHealthDataLogs } from '@/hooks/queries/useDataRights';
+import { useAuthStore } from '@/stores/authStore';
+import type { HealthDataLogsFilters } from '@/types/dataRights';
 
 export function DataAccessLogsSection() {
-  const { isAuthenticated } = useAuth();
-  const [logs, setLogs] = useState<HealthDataAccessLog[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const { isAuthenticated } = useAuthStore();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [pagination, setPagination] = useState<{
-    skip: number;
-    take: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  } | null>(null);
 
   // Filters
   const [startDate, setStartDate] = useState<string>('');
@@ -46,101 +31,66 @@ export function DataAccessLogsSection() {
   const [action, setAction] = useState<string>('');
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [accessTypeFilter, setAccessTypeFilter] = useState<string>('');
-  const [allLogs, setAllLogs] = useState<HealthDataAccessLog[]>([]); // Store all logs for client-side filtering
 
-  const fetchLogs = async () => {
-    if (!isAuthenticated) return;
-
-    try {
-      if (initialLoading) {
-        setInitialLoading(true);
-      } else {
-        setLoading(true);
-      }
-
-      const filters: HealthDataLogsFilters = {
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      };
-
-      if (startDate) {
-        const date = new Date(startDate);
-        date.setHours(0, 0, 0, 0);
-        filters.startDate = date.toISOString();
-      }
-
-      if (endDate) {
-        const date = new Date(endDate);
-        date.setHours(23, 59, 59, 999);
-        filters.endDate = date.toISOString();
-      }
-
-      if (dataType && dataType !== 'all') {
-        filters.dataType = dataType as HealthDataLogsFilters['dataType'];
-      }
-
-      if (action && action !== 'all') {
-        filters.action = action as HealthDataLogsFilters['action'];
-      }
-
-      const response = await getMyHealthDataLogs(filters);
-
-      if (response.success) {
-        setAllLogs(response.data);
-        // Apply client-side filters
-        applyClientFilters(response.data);
-        setPagination(response.pagination);
-      }
-    } catch (error: any) {
-      console.error('Failed to fetch health data logs:', error);
-      toast.error(error?.message || 'Failed to load access logs. Please try again.');
-    } finally {
-      setLoading(false);
-      setInitialLoading(false);
-    }
+  const filters: HealthDataLogsFilters = {
+    skip: (page - 1) * pageSize,
+    take: pageSize,
   };
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchLogs();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, isAuthenticated]);
+  if (startDate) {
+    const date = new Date(startDate);
+    date.setHours(0, 0, 0, 0);
+    filters.startDate = date.toISOString();
+  }
 
-  const applyClientFilters = (data: HealthDataAccessLog[]) => {
-    let filtered = [...data];
+  if (endDate) {
+    const date = new Date(endDate);
+    date.setHours(23, 59, 59, 999);
+    filters.endDate = date.toISOString();
+  }
 
+  if (dataType && dataType !== 'all') {
+    filters.dataType = dataType as HealthDataLogsFilters['dataType'];
+  }
+
+  if (action && action !== 'all') {
+    filters.action = action as HealthDataLogsFilters['action'];
+  }
+
+  const {
+    data: logsResponse,
+    isLoading: loading,
+    isFetching,
+  } = useMyHealthDataLogs(isAuthenticated ? filters : undefined);
+  const allLogs = logsResponse?.data || [];
+  const pagination = logsResponse?.pagination || null;
+  const initialLoading = loading && !logsResponse;
+
+  // Apply client-side filters
+  const logs = allLogs.filter((log) => {
     // Filter by role
     if (roleFilter && roleFilter !== 'all') {
-      filtered = filtered.filter(
-        (log) => log.accessedByUser.role?.toUpperCase() === roleFilter.toUpperCase(),
-      );
+      if (log.accessedByUser.role?.toUpperCase() !== roleFilter.toUpperCase()) {
+        return false;
+      }
     }
 
     // Filter by access type
     if (accessTypeFilter && accessTypeFilter !== 'all') {
-      if (accessTypeFilter === 'self') {
-        filtered = filtered.filter((log) => log.isSelfAccess === true);
-      } else if (accessTypeFilter === 'third-party') {
-        filtered = filtered.filter((log) => log.isSelfAccess !== true);
+      if (accessTypeFilter === 'self' && log.isSelfAccess !== true) {
+        return false;
+      }
+      if (accessTypeFilter === 'third-party' && log.isSelfAccess === true) {
+        return false;
       }
     }
 
-    setLogs(filtered);
-  };
+    return true;
+  });
 
   const handleFilterChange = () => {
     setPage(1);
-    fetchLogs();
   };
-
-  // Apply client-side filters when role or access type filter changes
-  useEffect(() => {
-    if (allLogs.length > 0) {
-      applyClientFilters(allLogs);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roleFilter, accessTypeFilter]);
 
   return (
     <div className="space-y-6">

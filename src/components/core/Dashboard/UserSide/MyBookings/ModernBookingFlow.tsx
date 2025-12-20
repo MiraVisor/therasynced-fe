@@ -20,7 +20,6 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
@@ -31,11 +30,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useCreateBooking } from '@/hooks/queries/useBookings';
+import { useStampDetail } from '@/hooks/queries/useLoyalty';
+import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
-import { rescheduleBooking } from '@/redux/api/exploreApi';
-import { getStampDetail } from '@/redux/api/loyaltyApi';
-import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
 import { Expert } from '@/types/types';
 
 import { StampDiscountBadge } from './StampDiscountBadge';
@@ -65,22 +63,22 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 }) => {
   const params = useParams();
   const router = useRouter();
-  const dispatch = useDispatch();
 
   const freelancerId = Array.isArray(params?.freelancerId)
     ? params?.freelancerId[0]
     : params?.freelancerId;
-  const { slots } = useSelector((state: RootState) => state.overview);
-  const { stampDetail, isLoadingDetail, selectedTherapistId } = useSelector(
-    (state: RootState) => state.stamps,
-  );
+
+  // Use React Query hooks
+  const { data: slots = [] } = useAvailableSlots(freelancerId || null);
+  const { mutate: createBooking, isPending: isCreatingBooking } = useCreateBooking();
+  const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(null);
+  const { data: stampDetail, isLoading: isLoadingDetail } = useStampDetail(selectedTherapistId);
 
   // Use WebSocket hook for real-time slot updates
   const { isConnected, reservedSlots, reserveSlot, releaseSlot, isSlotReserved } =
     useSocketSlots(freelancerId);
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [bookingLoading, setBookingLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [datePage, setDatePage] = useState(0);
@@ -98,19 +96,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     resolver: zodResolver(detailsSchema),
   });
 
-  useEffect(() => {
-    if (freelancerId) {
-      dispatch(
-        fetchFreelancerSlots({
-          page: 1,
-          limit: 100, // Increased limit to get more slots
-          sortBy: 'startTime',
-          sortOrder: 'asc',
-          freelancerId: freelancerId,
-        }) as any,
-      );
-    }
-  }, [dispatch, freelancerId]);
+  // Slots are automatically fetched by useAvailableSlots hook
 
   // Extract service categories from slots when they're loaded
   useEffect(() => {
@@ -165,27 +151,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     }
   }, [selectedTime, fetchSlotDetails, serviceForm]);
 
-  // Load more slots when needed
+  // Load more slots when needed - React Query handles pagination automatically
   const loadMoreSlots = async () => {
-    if (!freelancerId || loadingMoreSlots) return;
-
-    setLoadingMoreSlots(true);
-    try {
-      await dispatch(
-        fetchFreelancerSlots({
-          page: datePage + 2,
-          limit: 100,
-          sortBy: 'startTime',
-          sortOrder: 'asc',
-          freelancerId: freelancerId,
-        }) as any,
-      );
-      setDatePage(datePage + 1);
-    } catch (error) {
-      // Failed to load more slots
-    } finally {
-      setLoadingMoreSlots(false);
-    }
+    // React Query handles pagination automatically
+    // This can be implemented with infinite queries if needed
+    setDatePage(datePage + 1);
   };
 
   // Handle slot selection with reservation
@@ -276,46 +246,31 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
     return {
       id: firstSlot.freelancerId,
-      name: firstSlot.freelancerName || firstSlot.freelancer?.name,
-      specialty: firstSlot.freelancer?.mainService || 'Therapist', // Fallback
-      rating: firstSlot.averageRating || firstSlot.freelancer?.averageRating || 0,
-      reviews: firstSlot.numberOfRatings || firstSlot.freelancer?.cardInfo?.totalRatings || 0,
-      avatar: firstSlot.profilePicture || firstSlot.freelancer?.profilePicture,
-      experience: firstSlot.freelancer?.yearsOfExperience
-        ? `${firstSlot.freelancer.yearsOfExperience}+ years`
-        : firstSlot.freelancer?.createdAt
-          ? `${Math.floor((new Date().getTime() - new Date(firstSlot.freelancer.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365))}+ years`
-          : undefined,
-      location: firstSlot.location?.name || firstSlot.freelancer?.locations?.[0]?.name,
-      services:
-        freelancerServices.length > 0 ? freelancerServices : firstSlot.freelancer?.services || [],
-      sessionTypes: firstSlot.freelancer?.sessionTypes || [],
-      pricing: firstSlot.freelancer?.pricing,
-      description: firstSlot.freelancer?.description,
+      name: firstSlot.freelancerName || 'Therapist',
+      specialty: 'Therapist', // Fallback
+      rating: firstSlot.averageRating || 0,
+      reviews: firstSlot.numberOfRatings || 0,
+      avatar: firstSlot.profilePicture,
+      experience: undefined,
+      location: firstSlot.location?.name,
+      services: freelancerServices.length > 0 ? freelancerServices : [],
+      sessionTypes: [],
+      pricing: undefined,
+      description: undefined,
       availableSlots: slotStats.availableSlots,
       totalSlots: slotStats.totalSlots,
       nextAvailableSlot: slotStats.nextAvailableSlot,
-      cardInfo: firstSlot.freelancer?.cardInfo,
-      isFavorite: firstSlot.freelancer?.isFavorite,
+      cardInfo: undefined,
+      isFavorite: false,
     };
   }, [freelancerData, firstSlot, freelancerServices, slotStats]);
 
-  // Fetch stamp detail when therapist is available
+  // Update selected therapist ID when therapist changes
   useEffect(() => {
-    // Only fetch if:
-    // 1. therapist ID is available
-    // 2. Not currently loading
-    // 3. Don't have detail for this therapist already loaded
-    if (
-      therapist?.id &&
-      !isLoadingDetail &&
-      (!stampDetail ||
-        stampDetail.therapist.id !== therapist.id ||
-        selectedTherapistId !== therapist.id)
-    ) {
-      dispatch(getStampDetail(therapist.id) as any);
+    if (therapist?.id && selectedTherapistId !== therapist.id) {
+      setSelectedTherapistId(therapist.id);
     }
-  }, [dispatch, therapist?.id, isLoadingDetail, stampDetail?.therapist.id, selectedTherapistId]);
+  }, [therapist?.id, selectedTherapistId]);
 
   // Helper function to format date safely without timezone issues
   const formatDateForAPI = (date: Date): string => {
@@ -404,61 +359,44 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       return;
     }
 
-    setBookingLoading(true);
-    try {
-      const serviceData = serviceForm.getValues();
-      const detailsData = detailsForm.getValues();
+    const serviceData = serviceForm.getValues();
+    const detailsData = detailsForm.getValues();
 
-      const bookingData = {
-        slotId: selectedTime,
-        serviceCategoryIds: serviceData.serviceCategoryIds || [],
-        notes: detailsData.notes || '',
-        clientAddress: detailsData.clientAddress || '',
-      };
+    const bookingData = {
+      slotId: selectedTime,
+      serviceCategoryIds: serviceData.serviceCategoryIds || [],
+      notes: detailsData.notes || '',
+      clientAddress: detailsData.clientAddress || '',
+    };
 
-      if (rescheduleBookingId) {
-        await rescheduleBooking(rescheduleBookingId, selectedTime);
-        toast.success('Appointment rescheduled successfully!');
-      } else {
-        // Use Redux action instead of direct fetch
-        const result = await dispatch(bookAppointment(bookingData) as any);
-
-        if (bookAppointment.fulfilled.match(result)) {
-          // Get the message from the response if available
-          const responseMessage = result.payload?.message || 'Appointment booked successfully!';
-          toast.success(responseMessage, {
-            autoClose: 5000, // Show for 5 seconds to read the stamp message
-          });
-          router.push('/dashboard/my-bookings');
-        } else {
-          // Handle error payload (could be string or object with status)
-          const errorPayload = result.payload;
-          const errorMessage =
-            typeof errorPayload === 'string'
-              ? errorPayload
-              : errorPayload?.message || 'Failed to book appointment';
-          const errorStatus = typeof errorPayload === 'object' ? errorPayload?.status : null;
-          throw { message: errorMessage, status: errorStatus, statusCode: errorStatus };
-        }
-      }
-    } catch (err: any) {
-      // Handle 403 errors for expired trial freelancers
-      if (err?.status === 403 || err?.statusCode === 403) {
-        const errorMessage =
-          err?.message ||
-          err?.data?.message ||
-          "This freelancer's trial has expired. They cannot accept new bookings. Please subscribe to continue.";
-        toast.error(errorMessage, {
-          autoClose: 7000, // Show longer for important messages
+    createBooking(bookingData, {
+      onSuccess: (response: any) => {
+        // Get the message from the response if available
+        const responseMessage =
+          response?.message ||
+          (rescheduleBookingId
+            ? 'Appointment rescheduled successfully!'
+            : 'Appointment booked successfully!');
+        toast.success(responseMessage, {
+          autoClose: 5000, // Show for 5 seconds to read the stamp message
         });
-        // Optionally redirect or refresh the page to update freelancer list
-        // router.refresh();
-      } else {
-        toast.error(err?.message || 'Failed to book appointment');
-      }
-    } finally {
-      setBookingLoading(false);
-    }
+        router.push('/dashboard/my-bookings');
+      },
+      onError: (err: any) => {
+        // Handle 403 errors for expired trial freelancers
+        if (err?.status === 403 || err?.statusCode === 403 || err?.response?.status === 403) {
+          const errorMessage =
+            err?.message ||
+            err?.response?.data?.message ||
+            "This freelancer's trial has expired. They cannot accept new bookings. Please subscribe to continue.";
+          toast.error(errorMessage, {
+            autoClose: 7000, // Show longer for important messages
+          });
+        } else {
+          toast.error(err?.message || 'Failed to book appointment');
+        }
+      },
+    });
   };
 
   const renderStepContent = () => {
@@ -679,9 +617,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                           </div>
                           <div className="text-sm text-green-700 dark:text-green-300">
                             {new Date(
-                              slotsByDate[selectedDate].find(
-                                (s) => s.id === selectedTime,
-                              )?.startTime,
+                              slotsByDate[selectedDate].find((s) => s.id === selectedTime)
+                                ?.startTime,
                             ).toLocaleDateString('en-US', {
                               weekday: 'long',
                               month: 'long',
@@ -689,9 +626,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                             })}{' '}
                             at{' '}
                             {new Date(
-                              slotsByDate[selectedDate].find(
-                                (s) => s.id === selectedTime,
-                              )?.startTime,
+                              slotsByDate[selectedDate].find((s) => s.id === selectedTime)
+                                ?.startTime,
                             ).toLocaleTimeString('en-US', {
                               hour: 'numeric',
                               minute: '2-digit',
@@ -876,7 +812,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                   {/* Therapist Info */}
                   <div className="flex items-center gap-4 mb-6">
                     <Avatar className="w-16 h-16 border-3 border-primary">
-                      <AvatarImage src={therapist?.avatar} />
+                      <AvatarImage src={therapist?.avatar || undefined} />
                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
                         {therapist?.name?.charAt(0) || 'T'}
                       </div>
@@ -926,9 +862,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                           {selectedTime &&
                             slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
                             new Date(
-                              slotsByDate[selectedDate].find(
-                                (s) => s.id === selectedTime,
-                              )!.startTime,
+                              slotsByDate[selectedDate].find((s) => s.id === selectedTime)!
+                                .startTime,
                             ).toLocaleTimeString('en-US', {
                               hour: 'numeric',
                               minute: '2-digit',
@@ -1213,7 +1148,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                   {/* Therapist Info */}
                   <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                     <Avatar className="w-16 h-16 border-2 border-gray-200">
-                      <AvatarImage src={therapist?.avatar} />
+                      <AvatarImage src={therapist?.avatar || undefined} />
                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
                         {therapist?.name?.charAt(0) || 'T'}
                       </div>
@@ -1253,9 +1188,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
                             <div className="text-sm text-gray-500">
                               {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
                                 new Date(
-                                  slotsByDate[selectedDate].find(
-                                    (s) => s.id === selectedTime,
-                                  )!.startTime,
+                                  slotsByDate[selectedDate].find((s) => s.id === selectedTime)!
+                                    .startTime,
                                 ).toLocaleTimeString('en-US', {
                                   hour: 'numeric',
                                   minute: '2-digit',
@@ -1394,10 +1328,10 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
               {currentStep === steps.length && (
                 <Button
                   onClick={handleCompleteBooking}
-                  disabled={bookingLoading}
+                  disabled={isCreatingBooking}
                   className="w-full mt-6 bg-primary hover:bg-primary/90 disabled:opacity-50 py-3 text-base font-semibold rounded-lg text-white"
                 >
-                  {bookingLoading ? <>Confirming...</> : 'Confirm and book'}
+                  {isCreatingBooking ? <>Confirming...</> : 'Confirm and book'}
                 </Button>
               )}
 

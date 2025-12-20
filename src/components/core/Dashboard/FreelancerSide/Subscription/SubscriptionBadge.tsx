@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { useSubscriptionPlans } from '@/hooks/queries/useSubscription';
 import { getDecodedToken } from '@/lib/utils';
-import { useAppSelector } from '@/redux/hooks/useAppHooks';
 
 export default function SubscriptionBadge() {
   const router = useRouter();
-  const { plans } = useAppSelector((state) => state.subscription);
+  const { data: plans = [] } = useSubscriptionPlans();
   const decodedToken = getDecodedToken();
   const subscriptionStatus = decodedToken?.subscriptionStatus;
 

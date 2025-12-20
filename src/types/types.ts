@@ -1,3 +1,6 @@
+// Re-export data rights types
+export * from './dataRights';
+
 // Job Title interface for freelancers
 export interface JobTitle {
   id: string;

@@ -1,6 +1,5 @@
 import { format, getYear, setYear } from 'date-fns';
 import { Calendar } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
 import { Calendar as ShadcnCalendar } from '@/components/ui/calendar';
@@ -16,22 +15,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { setSelectedDate } from '@/redux/slices/calendarSlice';
-import { RootState } from '@/redux/store';
+import { useCalendarStore } from '@/stores/calendarStore';
 
 export const DateSelector = () => {
-  const dispatch = useDispatch();
-  const { selectedDate } = useSelector((state: RootState) => state.calendar);
+  const { selectedDate, setSelectedDate } = useCalendarStore();
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i);
 
   const handleYearChange = (year: string) => {
     const newDate = setYear(selectedDate, parseInt(year));
-    dispatch(setSelectedDate(newDate));
+    setSelectedDate(newDate);
   };
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      dispatch(setSelectedDate(date));
+      setSelectedDate(date);
     }
   };
 

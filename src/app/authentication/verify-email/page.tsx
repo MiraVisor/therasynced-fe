@@ -5,17 +5,15 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { verifyEmailLinkUser } from '@/redux/slices/authSlice';
+import { useVerifyEmail } from '@/hooks/queries/useAuth';
 
 export default function VerifyEmailPage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-
-  const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState('');
   const [token, setToken] = useState<string | null>(null);
+
+  const { mutate: verifyEmail, isPending: isVerifying } = useVerifyEmail();
 
   useEffect(() => {
     // Get search params only on client side
@@ -25,33 +23,22 @@ export default function VerifyEmailPage() {
       setToken(tokenParam);
 
       if (tokenParam) {
-        verifyEmail(tokenParam);
+        verifyEmail(tokenParam, {
+          onSuccess: () => {
+            setIsVerified(true);
+            setTimeout(() => {
+              router.push('/dashboard');
+            }, 2000);
+          },
+          onError: (err: any) => {
+            setError(err?.message || 'Failed to verify email. Please try again.');
+          },
+        });
       } else {
         setError('Invalid verification link. Please check your email for the correct link.');
       }
     }
-  }, []);
-
-  const verifyEmail = async (emailToken: string) => {
-    if (!emailToken) return;
-
-    setIsVerifying(true);
-    setError('');
-
-    try {
-      await dispatch(verifyEmailLinkUser(emailToken)).unwrap();
-      setIsVerified(true);
-
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to verify email. Please try again.');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+  }, [verifyEmail, router]);
 
   const handleBackToSignIn = () => {
     router.push('/authentication/sign-in');

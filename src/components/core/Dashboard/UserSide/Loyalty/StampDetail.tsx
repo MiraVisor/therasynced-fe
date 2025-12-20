@@ -1,18 +1,6 @@
 'use client';
 
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  Gift,
-  History,
-  Sparkles,
-  Stamp,
-  User,
-} from 'lucide-react';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { ArrowLeft, CheckCircle2, Gift, History, Sparkles, Stamp, User } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -20,9 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
-import { getStampDetail } from '@/redux/api/loyaltyApi';
-import { setSelectedTherapistId } from '@/redux/slices/stampSlice';
-import { RootState } from '@/redux/store';
+import { useStampDetail } from '@/hooks/queries/useLoyalty';
 import { StampHistory } from '@/types/types';
 
 interface StampDetailProps {
@@ -69,21 +55,8 @@ const getEventIcon = (eventType: StampHistory['eventType']) => {
 };
 
 export function StampDetail({ therapistId, onBack }: StampDetailProps) {
-  const dispatch = useDispatch();
-  const { stampDetail, isLoadingDetail, error } = useSelector((state: RootState) => state.stamps);
-
-  useEffect(() => {
-    const fetchDetail = async () => {
-      try {
-        dispatch(setSelectedTherapistId(therapistId));
-        await dispatch(getStampDetail(therapistId) as any);
-      } catch (error) {
-        toast.error('Failed to load stamp details. Please try again.');
-      }
-    };
-
-    fetchDetail();
-  }, [dispatch, therapistId]);
+  // Use React Query hook
+  const { data: stampDetail, isLoading: isLoadingDetail, error } = useStampDetail(therapistId);
 
   if (isLoadingDetail) {
     return (

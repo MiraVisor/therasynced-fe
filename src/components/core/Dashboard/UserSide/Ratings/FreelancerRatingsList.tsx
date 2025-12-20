@@ -5,7 +5,7 @@ import { Star } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { getFreelancerRatings } from '@/redux/api/ratingApi';
+import { useFreelancerRatings } from '@/hooks/queries/useRatings';
 import { RatingWithDetails } from '@/types/types';
 
 import { RatingDisplay } from './RatingDisplay';
@@ -28,26 +28,18 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
   initialRatings = [],
   initialPagination,
 }) => {
-  const [ratings, setRatings] = useState<RatingWithDetails[]>(initialRatings);
-  const [pagination, setPagination] = useState(initialPagination);
-  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(initialPagination?.page || 1);
+  const { data: ratingsData, isLoading: loading } = useFreelancerRatings(freelancerId, {
+    page,
+    limit: 10,
+    enabled: true,
+  });
 
-  const loadRatings = async (pageNum: number) => {
-    setLoading(true);
-    try {
-      const response = await getFreelancerRatings(freelancerId, {
-        page: pageNum,
-        limit: 10,
-      });
-      setRatings(response.data);
-      setPagination(response.pagination);
-      setPage(pageNum);
-    } catch (error) {
-      console.error('Error loading ratings:', error);
-    } finally {
-      setLoading(false);
-    }
+  const ratings = ratingsData?.ratings || initialRatings;
+  const pagination = ratingsData?.pagination || initialPagination;
+
+  const loadRatings = (pageNum: number) => {
+    setPage(pageNum);
   };
 
   if (ratings.length === 0 && !loading) {

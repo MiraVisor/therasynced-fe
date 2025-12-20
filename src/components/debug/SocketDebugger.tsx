@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 
-import { RootState } from '@/redux/store';
 import socketService from '@/services/socketService';
 
 interface SocketEvent {
@@ -16,7 +14,6 @@ const SocketDebugger = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [events, setEvents] = useState<SocketEvent[]>([]);
   const [slotDetails, setSlotDetails] = useState<any>(null);
-  const { slots } = useSelector((state: RootState) => state.overview);
 
   useEffect(() => {
     // Listen for socket events
@@ -160,14 +157,11 @@ const SocketDebugger = () => {
         </div>
       </div>
 
-      {/* Slot Summary */}
+      {/* Slot Summary - Removed as slots are now managed via React Query */}
       <div>
         <h4 className="font-medium mb-2">Slot Summary</h4>
-        <div className="text-sm">
-          <div>Total Slots: {slots?.length || 0}</div>
-          <div>Available: {slots?.filter((s: any) => s.status === 'AVAILABLE').length || 0}</div>
-          <div>Reserved: {slots?.filter((s: any) => s.status === 'RESERVED').length || 0}</div>
-          <div>Booked: {slots?.filter((s: any) => s.status === 'BOOKED').length || 0}</div>
+        <div className="text-sm text-muted-foreground">
+          Slot data is now managed via React Query hooks
         </div>
       </div>
     </div>

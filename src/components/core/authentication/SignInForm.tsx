@@ -2,15 +2,12 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { loginUser } from '@/redux/slices/authSlice';
+import { useLogin } from '@/hooks/queries/useAuth';
 
 import GoogleSignInButton from './GoogleSignInButton';
 
@@ -40,21 +37,10 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
     mode: 'onBlur',
     resolver: zodResolver(formSchema),
   });
-  const dispatch = useAppDispatch();
-  const router = useRouter();
+  const { mutate: login, isPending } = useLogin();
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
-    try {
-      const res = await dispatch(loginUser(data)).unwrap();
-      toast.success(res?.message || 'Login Successful');
-      // Wait a bit for Redux state to update before redirecting
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 100);
-    } catch (err) {
-      const error = err as { message?: string };
-      toast.error(error.message || 'Login Failed');
-    }
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    login(data);
   };
 
   return (

@@ -1,8 +1,5 @@
-import {
-  type HealthDataConsentRequest,
-  getHealthDataConsent,
-  updateHealthDataConsent,
-} from '@/redux/api/dataRightsApi';
+import * as dataRightsService from '@/services/dataRightsService';
+import type { HealthDataConsentRequest } from '@/types/dataRights';
 
 export type ConsentType = 'MEDICAL_HISTORY' | 'SOAP_NOTES' | 'COMPLAINTS' | 'FIRST_AID_CERTIFICATE';
 
@@ -24,7 +21,7 @@ export async function checkHealthDataConsent(
   userId?: string,
 ): Promise<boolean> {
   try {
-    const response = await getHealthDataConsent(userId);
+    const response = await dataRightsService.getHealthDataConsent(userId);
     const consent = response.data.consents.find((c) => c.consentType === consentType);
     return consent ? consent.granted && !consent.withdrawnAt : false;
   } catch (error) {
@@ -59,7 +56,7 @@ export async function requireHealthDataConsent(
  */
 export async function getConsentStatus(userId?: string): Promise<ConsentStatus[]> {
   try {
-    const response = await getHealthDataConsent(userId);
+    const response = await dataRightsService.getHealthDataConsent(userId);
     return response.data.consents;
   } catch (error) {
     console.error('Error getting consent status:', error);
@@ -78,7 +75,7 @@ export async function grantConsent(consentType: ConsentType): Promise<boolean> {
       consentType,
       granted: true,
     };
-    await updateHealthDataConsent(request);
+    await dataRightsService.updateHealthDataConsent(request);
     return true;
   } catch (error) {
     console.error('Error granting consent:', error);
@@ -97,7 +94,7 @@ export async function withdrawConsent(consentType: ConsentType): Promise<boolean
       consentType,
       granted: false,
     };
-    await updateHealthDataConsent(request);
+    await dataRightsService.updateHealthDataConsent(request);
     return true;
   } catch (error) {
     console.error('Error withdrawing consent:', error);

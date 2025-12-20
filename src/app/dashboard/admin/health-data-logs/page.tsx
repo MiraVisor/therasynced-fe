@@ -18,30 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  AdminHealthDataLogsFilters,
-  HealthDataAccessLog,
-  getAllHealthDataLogs,
-} from '@/redux/api/dataRightsApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAllHealthDataLogs } from '@/hooks/queries/useDataRights';
+import { useAuthStore } from '@/stores/authStore';
+import type { AdminHealthDataLogsFilters } from '@/types/dataRights';
 import { ROLES } from '@/types/types';
 
 export default function AdminHealthDataLogsPage() {
   const router = useRouter();
-  const { isAuthenticated, role } = useAuth();
-  const [logs, setLogs] = useState<HealthDataAccessLog[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const { isAuthenticated, role } = useAuthStore();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [pagination, setPagination] = useState<{
-    skip: number;
-    take: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  } | null>(null);
 
   // Filters
   const [startDate, setStartDate] = useState<string>('');
@@ -64,81 +50,46 @@ export default function AdminHealthDataLogsPage() {
     }
   }, [isAuthenticated, role, router]);
 
-  const fetchLogs = async () => {
-    if (role !== ROLES.ADMIN) {
-      return;
-    }
-
-    try {
-      if (initialLoading) {
-        setInitialLoading(true);
-      } else {
-        setLoading(true);
-      }
-
-      const filters: AdminHealthDataLogsFilters = {
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      };
-
-      if (startDate) {
-        const date = new Date(startDate);
-        date.setHours(0, 0, 0, 0);
-        filters.startDate = date.toISOString();
-      }
-
-      if (endDate) {
-        const date = new Date(endDate);
-        date.setHours(23, 59, 59, 999);
-        filters.endDate = date.toISOString();
-      }
-
-      if (dataType && dataType !== 'all') {
-        filters.dataType = dataType as AdminHealthDataLogsFilters['dataType'];
-      }
-
-      if (action && action !== 'all') {
-        filters.action = action as AdminHealthDataLogsFilters['action'];
-      }
-
-      if (userId) {
-        filters.userId = userId;
-      }
-
-      if (accessedBy) {
-        filters.accessedBy = accessedBy;
-      }
-
-      const response = await getAllHealthDataLogs(filters);
-
-      if (response.success) {
-        setLogs(response.data);
-        setPagination(response.pagination);
-      }
-    } catch (error: any) {
-      console.error('Failed to fetch health data logs:', error);
-      if (error?.status === 403) {
-        toast.error('Access denied. Admin privileges required.');
-        router.push('/dashboard');
-      } else {
-        toast.error(error?.message || 'Failed to load access logs. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-      setInitialLoading(false);
-    }
+  const filters: AdminHealthDataLogsFilters = {
+    skip: (page - 1) * pageSize,
+    take: pageSize,
   };
 
-  useEffect(() => {
-    if (isAuthenticated && role === ROLES.ADMIN) {
-      fetchLogs();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, isAuthenticated, role]);
+  if (startDate) {
+    const date = new Date(startDate);
+    date.setHours(0, 0, 0, 0);
+    filters.startDate = date.toISOString();
+  }
+
+  if (endDate) {
+    const date = new Date(endDate);
+    date.setHours(23, 59, 59, 999);
+    filters.endDate = date.toISOString();
+  }
+
+  if (dataType && dataType !== 'all') {
+    filters.dataType = dataType as AdminHealthDataLogsFilters['dataType'];
+  }
+
+  if (action && action !== 'all') {
+    filters.action = action as AdminHealthDataLogsFilters['action'];
+  }
+
+  if (userId) {
+    filters.userId = userId;
+  }
+
+  if (accessedBy) {
+    filters.accessedBy = accessedBy;
+  }
+
+  const { data: logsResponse, isLoading: loading, isFetching } = useAllHealthDataLogs(filters);
+  const logs = logsResponse?.data || [];
+  const pagination = logsResponse?.pagination || null;
+  const initialLoading = loading && !logsResponse;
 
   const handleFilterChange = () => {
     setPage(1);
-    fetchLogs();
   };
 
   if (role !== ROLES.ADMIN) {

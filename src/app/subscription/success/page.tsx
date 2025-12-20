@@ -8,55 +8,33 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { verifyCheckoutSession } from '@/redux/api/subscriptionApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { useVerifyCheckoutSession } from '@/hooks/queries/useSubscription';
 
 function SubscriptionSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(true);
+  const { mutate: verifyCheckout, isPending: isLoading } = useVerifyCheckoutSession();
   const [error, setError] = useState<string | null>(null);
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // Verify payment using the verify-checkout endpoint
-    const verifyPayment = async () => {
-      try {
-        if (sessionId) {
-          // Verify checkout session with backend
-          const result = await dispatch(verifyCheckoutSession(sessionId) as any);
-
-          if (verifyCheckoutSession.fulfilled.match(result)) {
-            setIsLoading(false);
-            toast.success('Payment successful! Your subscription is now active.');
-
-            // Redirect to subscription management after a short delay
-            setTimeout(() => {
-              router.push('/dashboard/account?tab=subscription');
-            }, 3000);
-          } else {
-            // Payment verification failed
-            const errorMessage = (result.payload as string) || 'Payment verification failed';
-            setIsLoading(false);
-            setError(errorMessage);
-            toast.error(`Payment verification failed: ${errorMessage}`);
-          }
-        } else {
-          setIsLoading(false);
-          setError('No session ID found');
-          toast.error('No session ID found. Please contact support if payment was successful.');
-        }
-      } catch (error) {
-        setIsLoading(false);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to verify payment';
-        setError(errorMessage);
-        toast.error(`Failed to verify payment: ${errorMessage}`);
-      }
-    };
-
-    verifyPayment();
-  }, [sessionId, dispatch, router]);
+    if (sessionId) {
+      verifyCheckout(sessionId, {
+        onSuccess: () => {
+          setTimeout(() => {
+            router.push('/dashboard/account?tab=subscription');
+          }, 3000);
+        },
+        onError: (error: any) => {
+          const errorMessage = error?.response?.data?.message || 'Payment verification failed';
+          setError(errorMessage);
+        },
+      });
+    } else {
+      setError('No session ID found');
+      toast.error('No session ID found. Please contact support if payment was successful.');
+    }
+  }, [sessionId, verifyCheckout, router]);
 
   if (isLoading) {
     return (

@@ -1,30 +1,19 @@
 'use client';
 
+import { Avatar, AvatarFallback } from '@radix-ui/react-avatar';
+import { Separator } from '@radix-ui/react-select';
 import { addDays, format, isToday, isTomorrow, startOfDay } from 'date-fns';
-import {
-  AlertCircle,
-  ArrowLeft,
-  Calendar,
-  Check,
-  Clock,
-  Info,
-  RotateCcw,
-  Star,
-  X,
-} from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, Clock, Info, RotateCcw, Star, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices';
-import { RootState } from '@/redux/store';
+import { useCreateBooking } from '@/hooks/queries/useBookings';
+import { useAvailableSlots } from '@/hooks/queries/useSlots';
 
 interface RescheduleBookingProps {
   bookingId: string;
@@ -33,82 +22,40 @@ interface RescheduleBookingProps {
   onCancel: () => void;
 }
 
-const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
-  freelancerId,
-  currentBooking,
-  onCancel,
-}) => {
+const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingProps) => {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { slots } = useSelector((state: RootState) => state.overview);
 
   // State management
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Fetch available slots for the freelancer
-  useEffect(() => {
-    if (freelancerId && selectedDate) {
-      dispatch(
-        fetchFreelancerSlots({
-          page: 1,
-          limit: 50,
-          sortBy: 'startTime',
-          sortOrder: 'asc',
-          freelancerId: freelancerId,
-        }) as any,
-      );
-    }
-  }, [dispatch, freelancerId, selectedDate]);
+  // Use React Query hooks
+  const { data: slots = [] } = useAvailableSlots(freelancerId);
+  const { mutate: createBooking } = useCreateBooking();
 
   // Filter available slots for selected date
-  useEffect(() => {
-    if (slots && selectedDate) {
-      const selectedDateStr = selectedDate.toDateString();
-      const filteredSlots = slots.filter((slot: any) => {
-        const slotDate = new Date(slot.startTime).toDateString();
-        return (
-          slotDate === selectedDateStr &&
-          slot.status === 'AVAILABLE' &&
-          slot.id !== currentBooking?.slot?.id // Exclude current slot
-        );
-      });
-      setAvailableSlots(filteredSlots);
-    }
-  }, [slots, selectedDate, currentBooking]);
 
-  const handleReschedule = async () => {
+  const handleReschedule = () => {
     if (!selectedTimeSlot) {
       toast.error('Please select a new time slot');
       return;
     }
 
-    setRescheduleLoading(true);
-    try {
-      const rescheduleData = {
-        slotId: selectedTimeSlot,
-        serviceCategoryIds:
-          currentBooking.services?.map((s: any) => s.id || s.serviceCategoryId) || [],
-        notes: currentBooking.notes || '',
-      };
+    const rescheduleData = {
+      slotId: selectedTimeSlot,
+      serviceCategoryIds:
+        currentBooking.services?.map((s: any) => s.id || s.serviceCategoryId) || [],
+      notes: currentBooking.notes || '',
+    };
 
-      await dispatch(bookAppointment(rescheduleData) as any).unwrap();
-      toast.success('Appointment rescheduled successfully!');
-      router.push('/dashboard/my-bookings');
-    } catch (err: any) {
-      if (err?.response?.data?.message) {
-        toast.error(err.response.data.message);
-      } else if (err?.message) {
-        toast.error(err.message);
-      } else {
-        toast.error('Failed to reschedule appointment');
-      }
-    } finally {
-      setRescheduleLoading(false);
-    }
+    createBooking(rescheduleData, {
+      onSuccess: () => {
+        toast.success('Appointment rescheduled successfully!');
+        router.push('/dashboard/my-bookings');
+      },
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -148,7 +95,7 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
     );
   };
 
-  const selectedSlotData = availableSlots.find((slot) => slot.id === selectedTimeSlot);
+  const selectedSlotData = slots.find((slot: any) => slot.id === selectedTimeSlot);
   const freelancer = currentBooking?.slot?.freelancer;
 
   const getDateDisplay = (date: Date) => {
@@ -175,7 +122,12 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={onCancel} className="hover:bg-gray-100">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
+                className="hover:bg-gray-100"
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
@@ -185,7 +137,12 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
                 <p className="text-sm text-gray-500">Choose a new date and time</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onCancel} className="hover:bg-gray-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="hover:bg-gray-100"
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -287,12 +244,12 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
 
                 {/* Calendar */}
                 <div className="border border-gray-200 rounded-lg p-4">
-                  <CalendarComponent
+                  <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={setSelectedDate}
+                    onSelect={(date: Date | undefined) => setSelectedDate(date as Date)}
                     className="rounded-lg"
-                    disabled={(date) => {
+                    disabled={(date: Date) => {
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
                       return date < today || date.getDay() === 0 || date.getDay() === 6;
@@ -311,9 +268,9 @@ const RescheduleBooking: React.FC<RescheduleBookingProps> = ({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {availableSlots.length > 0 ? (
+                  {slots.length > 0 ? (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                      {availableSlots.map((slot) => (
+                      {slots.map((slot: any) => (
                         <Button
                           key={slot.id}
                           variant={selectedTimeSlot === slot.id ? 'default' : 'outline'}

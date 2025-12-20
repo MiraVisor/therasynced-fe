@@ -19,8 +19,7 @@ const enhancedCardVariants = cva('rounded-2xl border bg-white/80 backdrop-blur-s
 });
 
 export interface EnhancedCardProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof enhancedCardVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof enhancedCardVariants> {
   interactive?: boolean;
 }
 

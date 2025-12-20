@@ -1,8 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
 import { getCookie, removeCookie } from '@/lib/utils';
-import { logout } from '@/redux/slices/authSlice';
-import store from '@/redux/store';
+import { useAuthStore } from '@/stores/authStore';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
@@ -51,10 +50,10 @@ api.interceptors.response.use(
       const isAuthEndpoint = error.config?.url?.startsWith('/auth/');
 
       if (!isAuthEndpoint) {
-        // Dispatch logout action to clear Redux state
-        store.dispatch(logout());
+        // Use Zustand store to logout
+        useAuthStore.getState().logout();
 
-        // Note: logout action already removes the cookie, but we keep removeCookie
+        // Note: logout already removes the cookie, but we keep removeCookie
         // here as a safety measure in case the action hasn't run yet
         removeCookie('token');
 

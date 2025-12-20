@@ -4,19 +4,10 @@ import { format, getDay, parse, startOfWeek } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { useState } from 'react';
 import { View, dateFnsLocalizer } from 'react-big-calendar';
-import { useDispatch, useSelector } from 'react-redux';
 
+import { useFreelancerAppointmentsByDate } from '@/hooks/queries/useBookings';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import {
-  navigateToNext,
-  navigateToPrev,
-  navigateToToday,
-  setCalendarView,
-  setFilters,
-  setSelectedDate,
-  setSelectedEvent,
-} from '@/redux/slices/calendarSlice';
-import { RootState } from '@/redux/store';
+import { useCalendarStore } from '@/stores/calendarStore';
 import { Appointment } from '@/types/types';
 
 import { CalendarToolbar } from '../CalendarToolbar';
@@ -51,9 +42,18 @@ interface CalendarFilters {
 }
 
 const FreelancerAppointments = () => {
-  const dispatch = useDispatch();
-  const { selectedDate, calendarView, filters } = useSelector((state: RootState) => state.calendar);
-  const appointments = useSelector((state: RootState) => state.appointment.appointments);
+  const {
+    selectedDate,
+    calendarView,
+    filters,
+    setSelectedDate,
+    setCalendarView,
+    setFilters,
+    setSelectedEvent,
+    navigateToPrev,
+    navigateToNext,
+    navigateToToday,
+  } = useCalendarStore();
   const [, setIsTyping] = useState(false);
   const isMobile = useMediaQuery('(max-width: 1024px)');
 
@@ -63,33 +63,38 @@ const FreelancerAppointments = () => {
       start: event.start.toISOString(),
       end: event.end.toISOString(),
     };
-    dispatch(setSelectedEvent(appointment));
+    setSelectedEvent(appointment);
   };
 
   const handleFilterChange = (newFilters: Partial<CalendarFilters>) => {
-    dispatch(setFilters(newFilters));
+    setFilters(newFilters);
   };
 
   const handleNavigateAction = (action: 'PREV' | 'NEXT' | 'TODAY' | 'DATE', date?: Date) => {
     switch (action) {
       case 'PREV':
-        dispatch(navigateToPrev());
+        navigateToPrev();
         break;
       case 'NEXT':
-        dispatch(navigateToNext());
+        navigateToNext();
         break;
       case 'TODAY':
-        dispatch(navigateToToday());
+        navigateToToday();
         break;
       case 'DATE':
         if (date) {
-          dispatch(setSelectedDate(date));
+          setSelectedDate(date);
         }
         break;
     }
   };
 
-  const calendarEvents = appointments
+  // Get appointments from parent component or fetch them
+  const { data: appointmentsData = [] } = useFreelancerAppointmentsByDate(
+    format(selectedDate, 'yyyy-MM-dd'),
+  );
+
+  const calendarEvents = appointmentsData
     .filter((event) => {
       if (filters.hideCompleted && event.status === 'COMPLETED') return false;
       if (filters.hideCancelled && event.status === 'CANCELLED') return false;
@@ -121,7 +126,7 @@ const FreelancerAppointments = () => {
         <div className="flex-1 pb-12">
           {isMobile ? (
             <ListView
-              events={appointments.filter((event) => {
+              events={appointmentsData.filter((event) => {
                 if (filters.hideCompleted && event.status === 'COMPLETED') return false;
                 if (filters.hideCancelled && event.status === 'CANCELLED') return false;
 
@@ -148,8 +153,8 @@ const FreelancerAppointments = () => {
               events={calendarEvents}
               view={calendarView}
               date={new Date(selectedDate)}
-              onView={(newView: View) => dispatch(setCalendarView(newView))}
-              onNavigate={(date: Date) => dispatch(setSelectedDate(date))}
+              onView={(newView: View) => setCalendarView(newView)}
+              onNavigate={(date: Date) => setSelectedDate(date)}
               onSelectEvent={handleSelectEvent}
               filters={filters}
               onFilterChange={handleFilterChange}

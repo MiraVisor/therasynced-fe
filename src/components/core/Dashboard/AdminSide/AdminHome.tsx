@@ -1,13 +1,12 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Calendar, DollarSign, UserCheck, Users } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 import adminOverviewService from '@/services/adminOverviewService';
-import { AdminOverviewDto } from '@/services/adminOverviewService';
+import { useAuthStore } from '@/stores/authStore';
 
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
 import { AdminRevenueChart } from './Charts/AdminRevenueChart';
@@ -15,10 +14,22 @@ import { AdminRevenueChart } from './Charts/AdminRevenueChart';
 type IconName = 'users' | 'clients' | 'calendar' | 'money';
 
 const AdminHome = () => {
-  const { role } = useAuth();
-  const [overviewData, setOverviewData] = useState<AdminOverviewDto | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const { role } = useAuthStore();
+
+  const {
+    data: overviewData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ['adminOverview'],
+    queryFn: () => adminOverviewService.getOverview(),
+    onError: (err) => {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load overview data';
+      toast.error(`Error loading overview data: ${errorMessage}`);
+    },
+  });
+
+  const initialLoading = isLoading && !overviewData;
 
   // Map icons to Lucide icons for EnhancedStatCard
   const iconMap = {
@@ -35,39 +46,6 @@ const AdminHome = () => {
     calendar: { iconColor: 'text-error', iconBg: 'bg-error/10' },
     money: { iconColor: 'text-primary', iconBg: 'bg-primary/10' },
   };
-
-  // Fetch overview data
-  useEffect(() => {
-    const fetchOverview = async () => {
-      const hasData = overviewData !== null;
-      try {
-        if (!hasData) {
-          setInitialLoading(true);
-        } else {
-          setIsLoading(true);
-        }
-        const data = await adminOverviewService.getOverview();
-        setOverviewData(data);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load overview data';
-        // Only show error toast on initial load
-        if (!hasData) {
-          toast.error(`Error loading overview data: ${errorMessage}`);
-        }
-        console.error('Error fetching admin overview:', err);
-        // Don't clear data on error if we have existing data
-        if (!hasData) {
-          setOverviewData(null);
-        }
-      } finally {
-        setIsLoading(false);
-        setInitialLoading(false);
-      }
-    };
-
-    fetchOverview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Format currency value
   const formatCurrency = (value: number): string => {

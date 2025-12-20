@@ -1,39 +1,18 @@
 'use client';
 
 import { Gift } from 'lucide-react';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { getStampDetail } from '@/redux/api/loyaltyApi';
-import { RootState } from '@/redux/store';
+import { useStampDetail } from '@/hooks/queries/useLoyalty';
 
 interface StampDiscountBadgeProps {
   therapistId: string;
 }
 
 export function StampDiscountBadge({ therapistId }: StampDiscountBadgeProps) {
-  const dispatch = useDispatch();
-  const { stampDetail, isLoadingDetail, selectedTherapistId } = useSelector(
-    (state: RootState) => state.stamps,
-  );
-
-  useEffect(() => {
-    // Only fetch if:
-    // 1. therapistId is provided
-    // 2. Not currently loading
-    // 3. Don't have detail for this therapist already loaded
-    if (
-      therapistId &&
-      !isLoadingDetail &&
-      (!stampDetail ||
-        stampDetail.therapist.id !== therapistId ||
-        selectedTherapistId !== therapistId)
-    ) {
-      dispatch(getStampDetail(therapistId) as any);
-    }
-  }, [dispatch, therapistId, isLoadingDetail, stampDetail?.therapist.id, selectedTherapistId]);
+  // Use React Query hook
+  const { data: stampDetail, isLoading: isLoadingDetail } = useStampDetail(therapistId);
 
   // Show discount if reward is ready and not already reserved
   if (

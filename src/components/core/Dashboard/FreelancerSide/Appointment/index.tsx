@@ -14,7 +14,6 @@ import {
 } from 'date-fns';
 import { Calendar, ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -33,11 +32,10 @@ import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  cancelAppointment,
-  fetchFreelancerAppointmentsByDate,
-  updateAppointmentNotes,
-} from '@/redux/slices/appointmentSlice';
-import { RootState } from '@/redux/store';
+  useCancelBooking,
+  useFreelancerAppointmentsByDate,
+  useUpdateBookingNotes,
+} from '@/hooks/queries/useBookings';
 import { Appointment, LocationType } from '@/types/types';
 
 import { InvoiceGenerationDialog } from './InvoiceGenerationDialog';
@@ -86,21 +84,25 @@ const getDistinctColors = (count: number) => {
 };
 
 const Appointments = () => {
-  const dispatch = useDispatch();
-  const { appointments, isLoading } = useSelector((state: RootState) => state.appointment);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const {
+    data: appointments = [],
+    isLoading,
+    refetch,
+  } = useFreelancerAppointmentsByDate(format(currentDate, 'yyyy-MM-dd'));
+  const { mutate: cancelBookingMutation } = useCancelBooking();
+  const { mutate: updateNotesMutation } = useUpdateBookingNotes();
 
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  const [currentDate, setCurrentDate] = useState(new Date()); // Reset to current date
   const [viewType, setViewType] = useState<'day' | 'month'>('day');
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   const [, setIsMobile] = useState(false);
   const [editingNotes, setEditingNotes] = useState<string>('');
 
   useEffect(() => {
-    loadAppointments(); // Restore API call
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
@@ -118,57 +120,56 @@ const Appointments = () => {
     setEditingNotes(value);
   };
 
-  const handleSaveNotes = async () => {
+  const handleSaveNotes = () => {
     if (!selectedAppointment) return;
 
-    try {
-      // Dispatch the async thunk to update notes via API
-      await dispatch(
-        updateAppointmentNotes({
-          appointmentId: selectedAppointment.id,
-          notes: editingNotes,
-        }) as any,
-      ).unwrap();
-
-      // Update the local appointment state
-      const updatedAppointment = {
-        ...selectedAppointment,
+    updateNotesMutation(
+      {
+        bookingId: selectedAppointment.id,
         notes: editingNotes,
-      };
-      setSelectedAppointment(updatedAppointment);
-
-      toast.success('Notes updated successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update notes');
-    }
+      },
+      {
+        onSuccess: () => {
+          const updatedAppointment = {
+            ...selectedAppointment,
+            notes: editingNotes,
+          };
+          setSelectedAppointment(updatedAppointment);
+          toast.success('Notes updated successfully');
+          refetch();
+        },
+        onError: (error: any) => {
+          toast.error(error?.message || 'Failed to update notes');
+        },
+      },
+    );
   };
 
   const checkMobile = () => {
     setIsMobile(window.innerWidth < 768);
   };
 
-  const loadAppointments = () => {
-    dispatch(fetchFreelancerAppointmentsByDate(format(currentDate, 'yyyy-MM-dd')) as any); // Restore API call
-  };
-
-  const handleCancelAppointment = async () => {
+  const handleCancelAppointment = () => {
     if (!selectedAppointment) return;
 
-    try {
-      await dispatch(
-        cancelAppointment({
-          bookingId: selectedAppointment.id,
-          reason: cancelReason,
-        }) as any,
-      ).unwrap();
-      toast.success('Appointment cancelled successfully');
-      setShowCancelDialog(false);
-      setCancelReason('');
-      setSelectedAppointment(null);
-      loadAppointments();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to cancel appointment');
-    }
+    cancelBookingMutation(
+      {
+        bookingId: selectedAppointment.id,
+        reason: cancelReason,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Appointment cancelled successfully');
+          setShowCancelDialog(false);
+          setCancelReason('');
+          setSelectedAppointment(null);
+          refetch();
+        },
+        onError: (error: any) => {
+          toast.error(error?.message || 'Failed to cancel appointment');
+        },
+      },
+    );
   };
 
   const getAppointmentsForDate = (date: Date) => {

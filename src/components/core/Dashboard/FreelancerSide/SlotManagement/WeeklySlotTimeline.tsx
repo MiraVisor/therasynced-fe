@@ -1,4 +1,4 @@
-import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
+import { eachDayOfInterval, endOfWeek, format, isSameDay } from 'date-fns';
 import { Calendar } from 'lucide-react';
 import { useMemo } from 'react';
 

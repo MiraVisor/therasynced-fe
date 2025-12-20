@@ -7,12 +7,12 @@ import { toast } from 'react-toastify';
 
 import { AuditDashboard } from '@/components/core/Dashboard/Audit/AuditDashboard';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuthStore } from '@/stores/authStore';
 import { ROLES } from '@/types/types';
 
 export default function AdminAuditPage() {
   const router = useRouter();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role } = useAuthStore();
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {

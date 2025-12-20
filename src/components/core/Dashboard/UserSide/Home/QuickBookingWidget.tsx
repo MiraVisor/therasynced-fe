@@ -1,10 +1,8 @@
 'use client';
 
-import { ArrowRight, CheckCircle, Clock, Star } from 'lucide-react';
+import { ArrowRight, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { VerificationBadge } from '@/components/ui/verification-badge';

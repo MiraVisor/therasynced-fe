@@ -1,8 +1,6 @@
 import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
@@ -13,8 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { TierBadge } from '@/components/ui/tier-badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VerificationBadge } from '@/components/ui/verification-badge';
+import { useFavoriteFreelancer } from '@/hooks/queries/useFreelancers';
 import { cn } from '@/lib/utils';
-import { favoriteFreelancer } from '@/redux/slices/overviewSlice';
 import { Expert, SubscriptionPlanType } from '@/types/types';
 
 interface ExpertCardProps extends Expert {
@@ -56,10 +54,9 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   stampInfo,
 }) => {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
-  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   const handleBookNow = () => {
     // Pass freelancer data through route state to avoid loading issues
     const freelancerData = {
@@ -85,24 +82,17 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
     setShowProfileDialog(true);
   };
 
-  const handleFavorite = async (e: React.MouseEvent) => {
+  const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isFavoriteLoading) return;
 
-    // Prevent multiple clicks
-    setIsFavoriteLoading(true);
-    try {
-      const result = await dispatch(favoriteFreelancer(id) as any).unwrap();
-      if (result && typeof result === 'object' && 'favorited' in result) {
-        toast.success(result.favorited ? 'Added to favorites' : 'Removed from favorites');
-      } else {
-        toast.success(!isFavorite ? 'Added to favorites' : 'Removed from favorites');
-      }
-    } catch (err: any) {
-      toast.error('Failed to update favorite');
-    } finally {
-      setIsFavoriteLoading(false);
-    }
+    toggleFavorite(id, {
+      onSuccess: (result: any) => {
+        if (result && typeof result === 'object' && 'favorited' in result) {
+          // Toast is handled by the mutation hook
+        }
+      },
+    });
   };
 
   // Get the lowest price for quick display

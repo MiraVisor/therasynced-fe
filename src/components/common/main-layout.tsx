@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuthStore } from '@/stores/authStore';
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,7 +11,7 @@ interface LayoutProps {
 
 const MainLayout = ({ children }: LayoutProps) => {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

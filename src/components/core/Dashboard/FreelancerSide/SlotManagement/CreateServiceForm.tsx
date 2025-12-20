@@ -2,7 +2,6 @@
 
 import { Package } from 'lucide-react';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { createServiceAsync } from '@/redux/slices/serviceSlice';
+import { useCreateService } from '@/hooks/queries/useServices';
 import { CreateServiceDto, LocationType } from '@/types/types';
 
 interface CreateServiceFormProps {
@@ -27,7 +26,7 @@ interface CreateServiceFormProps {
 }
 
 export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
-  const dispatch = useDispatch();
+  const { mutateAsync: createServiceMutation, isPending } = useCreateService();
   const [formData, setFormData] = useState<CreateServiceDto>({
     name: '',
     description: '',
@@ -47,12 +46,14 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
       return;
     }
 
-    try {
-      await dispatch(createServiceAsync(formData) as any).unwrap();
-      onSuccess?.();
-    } catch (error) {
-      toast.error('Failed to create service');
-    }
+    createServiceMutation(formData, {
+      onSuccess: () => {
+        onSuccess?.();
+      },
+      onError: (error: any) => {
+        toast.error(error?.message || 'Failed to create service');
+      },
+    });
   };
 
   const addTag = () => {

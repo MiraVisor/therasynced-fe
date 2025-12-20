@@ -10,8 +10,7 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -25,21 +24,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Progress } from '@/components/ui/progress';
 import {
-  deleteCertificate,
-  getFirstAidCertificateStatus,
-  uploadFirstAidCertificate,
-} from '@/redux/api/certificateApi';
-import { uploadVerificationDocumentsBatch } from '@/redux/api/imageUploadApi';
+  useDeleteCertificate,
+  useFirstAidCertificateStatus,
+  useUploadFirstAidCertificate,
+} from '@/hooks/queries/useCertificate';
 import {
-  deleteVerificationDocument,
-  getFreelancerFiles,
-  getVerificationDocuments,
-  getVerificationStatus,
-  requestVerification,
-} from '@/redux/api/verificationApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { selectAllFiles, selectFilesError } from '@/redux/slices/verificationSlice';
-import { RootState } from '@/redux/store';
+  useDeleteVerificationDocument,
+  useFreelancerFiles,
+  useRequestVerification,
+  useUploadVerificationDocument,
+  useVerificationDocuments,
+  useVerificationStatus,
+} from '@/hooks/queries/useVerification';
+import { useAuth } from '@/hooks/useAuthZustand';
 import { ROLES } from '@/types/types';
 
 // Verification Timeline Component
@@ -236,47 +233,35 @@ interface CertificateStatus {
 
 export default function VerificationPage() {
   const { role } = useAuth();
-  const dispatch = useDispatch();
 
-  // Get data from Redux store
-  const verificationState = useSelector((state: RootState) => state.verification);
-  const certificateState = useSelector((state: RootState) => state.certificate);
-  const allFiles = useSelector(selectAllFiles);
-  const filesError = useSelector(selectFilesError);
+  // Use React Query hooks
+  const { data: verificationStatusData, isLoading: isLoadingVerificationStatus } =
+    useVerificationStatus();
+  const { data: verificationDocuments = [], isLoading: isLoadingDocuments } =
+    useVerificationDocuments();
+  const {
+    data: allFiles = [],
+    isLoading: isLoadingFiles,
+    error: filesError,
+  } = useFreelancerFiles();
+  const { data: certificateStatusData, isLoading: isLoadingCertificate } =
+    useFirstAidCertificateStatus();
+
+  const { mutate: uploadDocument, isPending: isUploading } = useUploadVerificationDocument();
+  const { mutate: deleteDocument } = useDeleteVerificationDocument();
+  const { mutate: requestVerificationMutation } = useRequestVerification();
+  const { mutate: uploadCertificate, isPending: isUploadingCertificate } =
+    useUploadFirstAidCertificate();
+  const { mutate: deleteCertificateMutation } = useDeleteCertificate();
 
   // Local state
-  const [isUploading, setIsUploading] = useState(false);
-  const [isUploadingCertificate, setIsUploadingCertificate] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [hasCertificateConsent, setHasCertificateConsent] = useState(false);
   const MAX_FILES_PER_UPLOAD = 10;
 
-  // Determine if we should show loading - only if no data exists
-  const hasVerificationData =
-    verificationState.verificationStatus !== 'NOT_SUBMITTED' ||
-    verificationState.documents.length > 0;
-  const hasFiles = allFiles.length > 0;
   const isLoading =
-    (verificationState.initialLoading && !hasVerificationData) ||
-    (verificationState.isLoading && !hasVerificationData) ||
-    (verificationState.initialLoadingFiles && !hasFiles) ||
-    (verificationState.isLoadingFiles && !hasFiles);
-
-  // Fetch data on component mount - use silent refresh if data exists
-  useEffect(() => {
-    const fetchData = async () => {
-      await Promise.all([
-        dispatch(getVerificationStatus({ silent: hasVerificationData }) as any),
-        dispatch(getFirstAidCertificateStatus() as any),
-        dispatch(getVerificationDocuments() as any),
-        dispatch(getFreelancerFiles({ silent: hasFiles }) as any),
-      ]);
-    };
-
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]);
+    isLoadingVerificationStatus || isLoadingDocuments || isLoadingFiles || isLoadingCertificate;
 
   // Redirect if not freelancer
   useEffect(() => {
@@ -289,7 +274,7 @@ export default function VerificationPage() {
     return null;
   }
 
-  // Get certificate status from files data if available, otherwise from certificate state
+  // Get certificate status from files data if available, otherwise from certificate query
   const getCertificateStatus = (): CertificateStatus => {
     // First, try to get status from files data (more up-to-date)
     const certificateFile = allFiles?.find((file) => file.fileType === 'CERTIFICATE');
@@ -304,17 +289,22 @@ export default function VerificationPage() {
       };
     }
 
-    // Fallback to certificate state
+    // Fallback to certificate query data
+    if (certificateStatusData) {
+      return {
+        status: certificateStatusData.firstAidCertificateStatus || 'PENDING',
+        url: certificateStatusData.firstAidCertificateUrl,
+        uploadedAt: certificateStatusData.firstAidCertificateUrl
+          ? new Date().toISOString()
+          : undefined,
+        approvedAt: certificateStatusData.firstAidCertificateApprovedAt?.toString(),
+        rejectedAt: certificateStatusData.firstAidCertificateRejectedAt?.toString(),
+        rejectionReason: certificateStatusData.firstAidCertificateRejectionReason || undefined,
+      };
+    }
+
     return {
-      status: certificateState?.certificate?.firstAidCertificateStatus || 'PENDING',
-      url: certificateState?.certificate?.firstAidCertificateUrl,
-      uploadedAt: certificateState?.certificate?.firstAidCertificateUrl
-        ? new Date().toISOString()
-        : undefined,
-      approvedAt: certificateState?.certificate?.firstAidCertificateApprovedAt?.toString(),
-      rejectedAt: certificateState?.certificate?.firstAidCertificateRejectedAt?.toString(),
-      rejectionReason:
-        certificateState?.certificate?.firstAidCertificateRejectionReason || undefined,
+      status: 'PENDING',
     };
   };
 
@@ -322,13 +312,13 @@ export default function VerificationPage() {
 
   const verificationStatus: VerificationStatus = {
     status:
-      verificationState?.verificationStatus === 'NOT_SUBMITTED'
+      verificationStatusData?.verificationStatus === 'NOT_SUBMITTED'
         ? 'UNVERIFIED'
-        : verificationState?.verificationStatus || 'UNVERIFIED',
-    documents: verificationState?.documents || [],
+        : verificationStatusData?.verificationStatus || 'UNVERIFIED',
+    documents: verificationDocuments || [],
   };
 
-  const documents: VerificationDocument[] = verificationState?.documents || [];
+  const documents: VerificationDocument[] = verificationDocuments || [];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -376,7 +366,7 @@ export default function VerificationPage() {
     }
   };
 
-  const handleFileUpload = async (files: File[]) => {
+  const handleFileUpload = (files: File[]) => {
     if (files.length === 0) return;
 
     if (files.length > MAX_FILES_PER_UPLOAD) {
@@ -385,40 +375,20 @@ export default function VerificationPage() {
       return;
     }
 
-    setIsUploading(true);
     setUploadError(null);
 
-    try {
-      // Upload all files in a single batch request
-      const result = await dispatch(uploadVerificationDocumentsBatch(files) as any);
-
-      if (result.type.endsWith('/fulfilled')) {
-        // Check if response is an array (batch response) or single object
-        const responseData = result.payload?.data || result.payload;
-        const uploadedCount = Array.isArray(responseData) ? responseData.length : 1;
-
-        toast.success(
-          `${uploadedCount} file${uploadedCount !== 1 ? 's' : ''} uploaded successfully`,
-        );
-      } else {
-        // Handle rejection
-        const errorMessage = result.payload || 'Failed to upload documents';
-        setUploadError(errorMessage);
-        toast.error(errorMessage);
-      }
-
-      // Refetch files data after upload
-      await dispatch(getFreelancerFiles({ silent: true }) as any);
-    } catch (error: any) {
-      const errorMessage = error?.data?.message || error?.message || 'Failed to upload documents';
-      setUploadError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsUploading(false);
-    }
+    // Upload files one by one (React Query mutation handles one file at a time)
+    files.forEach((file) => {
+      uploadDocument(file, {
+        onError: (error: any) => {
+          const errorMessage = error?.message || 'Failed to upload document';
+          setUploadError(errorMessage);
+        },
+      });
+    });
   };
 
-  const handleCertificateUpload = async (file: File) => {
+  const handleCertificateUpload = (file: File) => {
     if (!hasCertificateConsent) {
       toast.error(
         'You must grant explicit consent for health data processing before uploading a first aid certificate.',
@@ -426,55 +396,27 @@ export default function VerificationPage() {
       return;
     }
 
-    setIsUploadingCertificate(true);
-    try {
-      await dispatch(uploadFirstAidCertificate(file) as any);
-      toast.success('Certificate uploaded successfully');
-      // Refetch files data after successful upload
-      await dispatch(getFreelancerFiles({ silent: true }) as any);
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to upload certificate');
-    } finally {
-      setIsUploadingCertificate(false);
+    uploadCertificate(file);
+  };
+
+  const handleDeleteDocument = (documentUrl: string) => {
+    deleteDocument(documentUrl);
+  };
+
+  const handleDeleteFile = (fileUrl: string, fileType: string) => {
+    if (fileType === 'CERTIFICATE') {
+      deleteCertificateMutation();
+    } else if (fileType === 'VERIFICATION_DOCUMENT') {
+      deleteDocument(fileUrl);
     }
   };
 
-  const handleDeleteDocument = async (documentUrl: string) => {
-    try {
-      await dispatch(deleteVerificationDocument(documentUrl) as any);
-      toast.success('Document deleted successfully');
-      // Refetch files data after successful deletion
-      await dispatch(getFreelancerFiles({ silent: true }) as any);
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to delete document');
-    }
-  };
-
-  const handleDeleteFile = async (fileUrl: string, fileType: string) => {
-    try {
-      if (fileType === 'CERTIFICATE') {
-        // Delete first aid certificate
-        await dispatch(deleteCertificate() as any);
-        toast.success('First aid certificate deleted successfully');
-      } else if (fileType === 'VERIFICATION_DOCUMENT') {
-        // Delete verification document using the full URL
-        await dispatch(deleteVerificationDocument(fileUrl) as any);
-        toast.success('Verification document deleted successfully');
-      }
-      // Refetch files data after successful deletion
-      await dispatch(getFreelancerFiles({ silent: true }) as any);
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to delete file');
-    }
-  };
-
-  const handleRequestVerification = async () => {
-    try {
-      await dispatch(requestVerification() as any);
-      toast.success('Verification request submitted successfully');
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to submit verification request');
-    }
+  const handleRequestVerification = () => {
+    requestVerificationMutation(undefined, {
+      onSuccess: () => {
+        toast.success('Verification request submitted successfully');
+      },
+    });
   };
 
   const canRequestVerification = () => {

@@ -8,9 +8,7 @@ import { toast } from 'react-toastify';
 import EmailVerificationForm from '@/components/core/authentication/EmailVerificationForm';
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
 import SignInForm from '@/components/core/authentication/SignInForm';
-import { sendVerificationEmailApi } from '@/redux/api/authApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { signUpUser } from '@/redux/slices/authSlice';
+import { useResendVerificationEmail, useSignUp } from '@/hooks/queries/useAuth';
 
 import MultiStepSignup from './MultiStepSignup';
 
@@ -23,11 +21,12 @@ type AuthView = 'sign-in' | 'sign-up' | 'forgot-password' | 'email-verification'
 const validAuthTypes = ['sign-up', 'sign-in'];
 
 export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const [currentView, setCurrentView] = useState<AuthView>(authtype as AuthView);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+
+  const { mutate: signup, isPending: isSubmitting } = useSignUp();
+  const { mutate: resendEmail } = useResendVerificationEmail();
 
   if (!validAuthTypes.includes(authtype)) {
     return notFound();
@@ -44,24 +43,12 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
   };
 
   const handleSignUpSubmit = (data: any) => {
-    setIsSubmitting(true);
     setUserEmail(data.email);
-
-    dispatch(signUpUser(data))
-      .unwrap()
-      .then((res) => {
-        toast.success(
-          'Account created successfully! Please check your email for the verification link.',
-        );
-        // Show email verification page instead of redirecting to dashboard
+    signup(data, {
+      onSuccess: () => {
         setCurrentView('email-verification');
-      })
-      .catch((err) => {
-        toast.error(err?.message || 'Sign-Up Failed');
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+      },
+    });
   };
 
   const handleBackToSignInFromSignup = () => {
@@ -69,18 +56,12 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     window.history.pushState({}, '', '/authentication/sign-in');
   };
 
-  const handleResendEmail = async () => {
+  const handleResendEmail = () => {
     if (!userEmail) {
       toast.error('Email address not found');
       return;
     }
-
-    try {
-      await sendVerificationEmailApi({ email: userEmail });
-      toast.success('Verification email resent to your inbox');
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to resend verification email');
-    }
+    resendEmail({ email: userEmail });
   };
 
   const renderAuthForm = () => {

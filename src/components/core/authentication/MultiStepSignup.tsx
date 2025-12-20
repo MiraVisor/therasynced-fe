@@ -20,7 +20,6 @@ import { z } from 'zod';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -29,11 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useJobTitles } from '@/hooks/queries/useJobTitles';
 import { cn } from '@/lib/utils';
-import { getActiveJobTitles } from '@/redux/api/jobTitleApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { BACKEND_URL } from '@/services/endpoints';
-import { JobTitle } from '@/types/types';
 
 // Define options locally
 const genderOptions = [
@@ -115,7 +112,6 @@ interface MultiStepSignupProps {
 }
 
 export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiStepSignupProps) {
-  const dispatch = useAppDispatch();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -123,8 +119,9 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isRequestingLocation, setIsRequestingLocation] = useState(false);
   const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
-  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
-  const [isLoadingJobTitles, setIsLoadingJobTitles] = useState(false);
+
+  // Use React Query for job titles
+  const { data: jobTitles = [], isLoading: isLoadingJobTitles } = useJobTitles();
 
   const {
     register,
@@ -153,49 +150,6 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const selectedRole = watch('role');
   const selectedDob = watch('dob');
   const selectedJobTitleId = watch('mainJobTitleId');
-
-  // Load job titles when role is freelancer
-  useEffect(() => {
-    if (selectedRole === 'freelancer' && jobTitles.length === 0) {
-      loadJobTitles();
-    }
-  }, [selectedRole]);
-
-  const loadJobTitles = async () => {
-    try {
-      setIsLoadingJobTitles(true);
-      const response = await dispatch(getActiveJobTitles() as any);
-
-      // Handle both fulfilled and rejected responses
-      if (response.type?.endsWith('/fulfilled')) {
-        if (Array.isArray(response.payload)) {
-          setJobTitles(response.payload);
-          if (response.payload.length === 0) {
-            console.warn('No job titles returned from API');
-          }
-        } else {
-          console.error('Invalid job titles response format:', response.payload);
-          setJobTitles([]);
-        }
-      } else if (response.type?.endsWith('/rejected')) {
-        console.error('Failed to load job titles:', response.payload || response.error);
-        toast.error('Failed to load job titles');
-        setJobTitles([]);
-      } else if (response.payload && Array.isArray(response.payload)) {
-        // Fallback for direct payload
-        setJobTitles(response.payload);
-      } else {
-        console.error('Unexpected response format:', response);
-        setJobTitles([]);
-      }
-    } catch (error) {
-      console.error('Failed to load job titles:', error);
-      toast.error('Failed to load job titles');
-      setJobTitles([]);
-    } finally {
-      setIsLoadingJobTitles(false);
-    }
-  };
 
   // Determine steps based on role
   const getSteps = () => {

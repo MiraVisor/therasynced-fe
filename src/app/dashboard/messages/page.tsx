@@ -16,9 +16,9 @@ import {
   ChatMessagesSkeleton,
 } from '@/components/ui/skeletons/ChatSkeletons';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useAuth } from '@/hooks/useAuthZustand';
 import useChat from '@/hooks/useChat';
 import { getDecodedToken } from '@/lib/utils';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 
 // Types
 interface Contact {

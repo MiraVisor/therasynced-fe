@@ -23,7 +23,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
@@ -45,10 +44,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useCreateSlot } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
-import { createSlot } from '@/redux/slices/slotSlice';
-import type { AppDispatch } from '@/redux/store';
-import { RootState } from '@/redux/store';
 import api from '@/services/api';
 import { FORM_TYPE_LABELS, FormType } from '@/types/formTypes';
 import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
@@ -172,8 +169,7 @@ const ServiceCategorySelector = ({
 // Collapsible categories component
 
 export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { isCreating } = useSelector((state: RootState) => state.slot);
+  const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
 
   const [formData, setFormData] = useState<CreateSlotDto>({
     locationType: LocationType.HOME, // Default fallback
@@ -441,46 +437,32 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       };
     });
 
-    try {
-      await dispatch(
-        createSlot({
-          ...formData,
-          slots,
-        }),
-      ).unwrap();
-
-      toast.success(
-        `Successfully created ${slots.length} time slot${slots.length !== 1 ? 's' : ''}!`,
-      );
-      onSuccess?.();
-    } catch (error: any) {
-      // Extract error message from API response
-      // The Redux thunk rejects with the message string via rejectWithValue
-      // The API interceptor wraps errors, so check multiple possible locations
-      let errorMessage = 'Failed to create time slots';
-
-      // When using .unwrap(), the rejected value is thrown directly
-      if (typeof error === 'string') {
-        errorMessage = error;
-      } else if (error?.message) {
-        // Error object with message property (from interceptor or thunk)
-        errorMessage = error.message;
-      } else if (error?.data?.message) {
-        // Wrapped error with data.message
-        errorMessage = error.data.message;
-      } else if (error?.response?.data?.message) {
-        // Axios error structure
-        errorMessage = error.response.data.message;
-      } else if (error?.payload) {
-        // Redux Toolkit sometimes wraps in payload
-        errorMessage =
-          typeof error.payload === 'string'
-            ? error.payload
-            : error.payload?.message || errorMessage;
-      }
-
-      toast.error(errorMessage);
-    }
+    createSlot(
+      {
+        ...formData,
+        slots,
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            `Successfully created ${slots.length} time slot${slots.length !== 1 ? 's' : ''}!`,
+          );
+          onSuccess?.();
+        },
+        onError: (error: any) => {
+          // Extract error message from API response
+          let errorMessage = 'Failed to create time slots';
+          if (typeof error === 'string') {
+            errorMessage = error;
+          } else if (error?.message) {
+            errorMessage = error.message;
+          } else if (error?.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          }
+          toast.error(errorMessage);
+        },
+      },
+    );
   };
 
   const getDateDisplay = (date: Date | undefined) => {

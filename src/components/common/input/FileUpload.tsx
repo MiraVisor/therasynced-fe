@@ -7,16 +7,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   type FileUploadOptions,
-  type UploadProgress,
   type UploadResult,
   deleteFile,
   formatFileSize,
   getFilePreviewUrl,
-  getFileTypeIcon,
   isImageFile,
   isPdfFile,
   revokeFilePreviewUrl,
-  uploadFile,
   uploadMultipleFiles,
   validateFile,
 } from '@/utils/fileUpload';

@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Clock, MapPin, Video } from 'lucide-react';
+import { Clock, MapPin, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';

@@ -6,7 +6,7 @@ import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
 import { SidebarSkeleton } from '@/components/common/sidebar/SidebarSkeleton';
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuth } from '@/hooks/useAuthZustand';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { role: userRole } = useAuth();

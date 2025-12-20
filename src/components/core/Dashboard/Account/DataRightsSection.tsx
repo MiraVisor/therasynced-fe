@@ -1,17 +1,6 @@
 'use client';
 
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  Download,
-  Edit,
-  FileText,
-  Info,
-  Lock,
-  Shield,
-  Trash2,
-} from 'lucide-react';
+import { AlertCircle, Download, Edit, FileText, Info, Lock, Shield, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -32,13 +21,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  deleteAccount,
-  exportDataPortable,
-  exportUserData,
-  getDataRightsStatus,
-} from '@/redux/api/dataRightsApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuth } from '@/hooks/useAuthZustand';
+import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
 import { ROLES } from '@/types/types';
 
 export function DataRightsSection() {
@@ -66,15 +51,15 @@ export function DataRightsSection() {
   const handleDataAccess = async () => {
     setLoading('access');
     try {
-      const response = await exportUserData();
+      const response = await api.get(ENDPOINTS.dataRights?.export || '/user/data/export');
 
-      if (response.anonymized) {
+      if (data.anonymized) {
         toast.info('User data has been anonymized');
         setShowExportDialog(false);
         return;
       }
 
-      const blob = new Blob([JSON.stringify(response.data, null, 2)], {
+      const blob = new Blob([JSON.stringify(data.data, null, 2)], {
         type: 'application/json',
       });
       const url = URL.createObjectURL(blob);
@@ -98,9 +83,8 @@ export function DataRightsSection() {
   const handleDataPortability = async () => {
     setLoading('portability');
     try {
-      const { exportMyData, downloadEncryptedExport, downloadUnencryptedExport } = await import(
-        '@/services/exportService'
-      );
+      const { exportMyData, downloadEncryptedExport, downloadUnencryptedExport } =
+        await import('@/services/exportService');
       const response = await exportMyData({
         format: exportFormat,
         encrypt: exportEncrypt,
@@ -152,7 +136,7 @@ export function DataRightsSection() {
 
     setLoading('erasure');
     try {
-      const response = await deleteAccount();
+      const response = await api.delete(ENDPOINTS.dataRights?.delete || '/user/account');
 
       toast.success(
         response.message ||
@@ -182,7 +166,7 @@ export function DataRightsSection() {
       try {
         setIsLoadingConsents(true);
         // Use the data rights status endpoint for getting current user's own status
-        const response = await getDataRightsStatus();
+        const response = await api.get(ENDPOINTS.dataRights?.status || '/user/data-rights/status');
         // Extract health data consents from the response
         setConsentStatuses(response.data.healthDataConsents);
       } catch (error) {

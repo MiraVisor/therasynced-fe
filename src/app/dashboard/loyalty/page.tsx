@@ -11,10 +11,7 @@ import {
   TrendingUp,
   XCircle,
 } from 'lucide-react';
-import { useEffect } from 'react';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { StampDetail } from '@/components/core/Dashboard/UserSide/Loyalty/StampDetail';
@@ -23,55 +20,34 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { LoyaltySectionSkeleton } from '@/components/ui/skeletons/LoyaltySectionSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  getLoyaltyProfile,
-  getLoyaltyRewards,
-  getRedemptionHistory,
-  redeemReward,
-} from '@/redux/api/loyaltyApi';
-import { RootState } from '@/redux/store';
+  useLoyaltyProfile,
+  useLoyaltyRewards,
+  useRedeemReward,
+  useRedemptionHistory,
+} from '@/hooks/queries/useLoyalty';
+import { useStampStore } from '@/stores/stampStore';
 import { LoyaltyTier } from '@/types/types';
 
 export default function LoyaltyPage() {
-  const dispatch = useDispatch();
-  const { profile, rewards, redemptions, isLoading, isRedeeming, error } = useSelector(
-    (state: RootState) => state.loyalty,
-  );
-  const { selectedTherapistId } = useSelector((state: RootState) => state.stamps);
+  const { data: profile, isLoading: isLoadingProfile } = useLoyaltyProfile();
+  const { data: rewards = [], isLoading: isLoadingRewards } = useLoyaltyRewards();
+  const { data: redemptions = [], isLoading: isLoadingRedemptions } = useRedemptionHistory();
+  const { mutate: redeemRewardMutation, isPending: isRedeeming } = useRedeemReward();
+  const { selectedTherapistId } = useStampStore();
   const [activeTab, setActiveTab] = useState<'points' | 'stamps'>('points');
   const [viewingStampDetail, setViewingStampDetail] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await Promise.all([
-          dispatch(getLoyaltyProfile() as any),
-          dispatch(getLoyaltyRewards() as any),
-          dispatch(getRedemptionHistory() as any),
-        ]);
-      } catch (error) {
-        toast.error('Failed to load loyalty information. Please try again.');
-      }
-    };
+  const isLoading = isLoadingProfile || isLoadingRewards || isLoadingRedemptions;
 
-    fetchData();
-  }, [dispatch]);
-
-  const handleRedeem = async (rewardId: string) => {
-    try {
-      const result = await dispatch(redeemReward(rewardId) as any);
-      if (redeemReward.fulfilled.match(result)) {
-        toast.success('Reward redeemed successfully!');
-        // Refresh data
-        dispatch(getLoyaltyProfile() as any);
-        dispatch(getRedemptionHistory() as any);
-      }
-    } catch (error) {
-      toast.error('Failed to redeem reward');
-    }
+  const handleRedeem = (rewardId: string) => {
+    redeemRewardMutation(rewardId, {
+      onSuccess: () => {
+        // React Query will automatically refetch the queries
+      },
+    });
   };
 
   const getTierColor = (tier: LoyaltyTier) => {

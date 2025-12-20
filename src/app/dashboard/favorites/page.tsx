@@ -2,13 +2,11 @@
 
 import { Search } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { fetchAllFavoriteFreelancers } from '@/redux/slices/exploreSlice';
-import type { AppDispatch, RootState } from '@/redux/store';
+import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
 import { Expert } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../../components/core/Dashboard/DashboardPageWrapper';
@@ -132,42 +130,42 @@ const FavoritesSearchBar = ({
 };
 
 const FavoritesPage = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { favorites, loading, error } = useSelector((state: RootState) => state.explore as any);
-  const [filteredFavorites, setFilteredFavorites] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const {
+    data: favorites = [],
+    isLoading: loading,
+    error,
+  } = useFavoriteFreelancers({
+    name: debouncedSearchQuery || undefined,
+  });
+
+  const [filteredFavorites, setFilteredFavorites] = useState<Expert[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   // Debounced search function
-  const debouncedSearch = useCallback(
-    (query: string) => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
+  const debouncedSearch = useCallback((query: string) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
 
-      setIsSearching(true);
+    setIsSearching(true);
 
-      debounceTimeoutRef.current = setTimeout(() => {
-        setSearchQuery(query);
-        // Trigger new fetch with search query
-        dispatch(fetchAllFavoriteFreelancers({ name: query || undefined }) as any);
-        setIsSearching(false);
-      }, 500);
-    },
-    [dispatch],
-  );
+    debounceTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(query);
+      setIsSearching(false);
+    }, 500);
+  }, []);
 
   const handleSearch = useCallback(
     (query: string) => {
+      setSearchQuery(query);
       debouncedSearch(query);
     },
     [debouncedSearch],
   );
-
-  useEffect(() => {
-    dispatch(fetchAllFavoriteFreelancers({}));
-  }, [dispatch]);
 
   useEffect(() => {
     if (!favorites || !Array.isArray(favorites)) {
@@ -256,7 +254,7 @@ const FavoritesPage = () => {
             </h3>
             <p className="font-inter text-muted-foreground mb-4">{error}</p>
             <Button
-              onClick={() => dispatch(fetchAllFavoriteFreelancers({}))}
+              onClick={() => window.location.reload()}
               className="bg-primary hover:bg-primary/90 text-white"
             >
               Try Again
@@ -285,7 +283,7 @@ const FavoritesPage = () => {
                     if (debounceTimeoutRef.current) {
                       clearTimeout(debounceTimeoutRef.current);
                     }
-                    dispatch(fetchAllFavoriteFreelancers({}) as any);
+                    setDebouncedSearchQuery('');
                   }}
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"

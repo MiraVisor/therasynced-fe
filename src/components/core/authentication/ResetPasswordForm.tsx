@@ -4,7 +4,7 @@ import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { resetPasswordApi } from '@/redux/api/authApi';
+import { resetPasswordApi } from '@/services/authService';
 
 interface ResetPasswordFormProps {
   onBackToSignIn: () => void;

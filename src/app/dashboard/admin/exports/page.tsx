@@ -23,19 +23,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 import {
   type AdminExportFormData,
-  type EncryptedExportResponse,
   adminExportUserData,
   checkIfEncrypted,
   downloadFile,
 } from '@/services/exportService';
+import { useAuthStore } from '@/stores/authStore';
 import { ROLES } from '@/types/types';
 
 export default function AdminExportsPage() {
   const router = useRouter();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role } = useAuthStore();
   const [isExporting, setIsExporting] = useState(false);
   const [showEncryptionInfo, setShowEncryptionInfo] = useState(false);
   const [encryptedExportInfo, setEncryptedExportInfo] = useState<{

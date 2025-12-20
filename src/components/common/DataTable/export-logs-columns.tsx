@@ -1,10 +1,9 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Download, Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { ExportLog } from '@/services/exportService';
 
 export const formatLogDate = (dateString: string) => {

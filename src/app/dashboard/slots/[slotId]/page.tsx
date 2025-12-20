@@ -3,7 +3,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { SlotFormsTab } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotFormsTab';
@@ -11,20 +10,17 @@ import { SlotInfoTab } from '@/components/core/Dashboard/FreelancerSide/SlotMana
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { RootState } from '@/redux/store';
-import { Slot } from '@/types/types';
+import { useSlotById } from '@/hooks/queries/useSlots';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function SlotDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { role } = useAuth();
+  const { role } = useAuthStore();
   const slotId = params.slotId as string;
 
-  const { slots, isLoading } = useSelector((state: RootState) => state.slot);
-
-  // Find the slot from Redux state
-  const slot = slots.find((s: Slot) => s.id === slotId);
+  // Use React Query hook
+  const { data: slot, isLoading } = useSlotById(slotId);
 
   useEffect(() => {
     // If slot not found and not loading, redirect back to slots list

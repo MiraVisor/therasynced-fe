@@ -2,9 +2,7 @@
 
 import { AlertTriangle, Shield } from 'lucide-react';
 import { AlertCircle, Ban, FileText } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
@@ -15,34 +13,16 @@ import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getComplaintsAgainstMe, getMyComplaints } from '@/redux/api/complaintApi';
-import { RootState } from '@/redux/store';
-import { ComplaintCategory, ComplaintStatus } from '@/types/types';
+import { useComplaintsAgainstMe, useMyComplaints } from '@/hooks/queries/useComplaints';
+import { ComplaintCategory } from '@/types/types';
 
 export default function MyComplaintsPage() {
-  const dispatch = useDispatch();
-  const { myComplaints, complaintsAgainstMe, isLoading, error } = useSelector(
-    (state: RootState) => state.complaint,
-  );
+  const { data: myComplaints = [], isLoading: isLoadingMy } = useMyComplaints();
+  const { data: complaintsAgainstMe = [], isLoading: isLoadingAgainst } = useComplaintsAgainstMe();
+  const isLoading = isLoadingMy || isLoadingAgainst;
   const [selectedTab, setSelectedTab] = useState('filed');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await Promise.all([
-          dispatch(getMyComplaints({}) as any),
-          dispatch(getComplaintsAgainstMe({}) as any),
-        ]);
-      } catch (error) {
-        console.error('Error fetching complaints:', error);
-        toast.error('Failed to fetch complaints');
-      }
-    };
-
-    fetchData();
-  }, [dispatch]);
 
   const getCategoryLabel = (category: ComplaintCategory) => {
     const labels: Record<ComplaintCategory, string> = {
