@@ -21,9 +21,8 @@ function SubscriptionSuccessContent() {
     if (sessionId) {
       verifyCheckout(sessionId, {
         onSuccess: () => {
-          setTimeout(() => {
-            router.push('/dashboard/account?tab=subscription');
-          }, 3000);
+          // Navigate with success parameter for toast
+          router.push('/dashboard/account?tab=subscription&subscription=success');
         },
         onError: (error: unknown) => {
           const apiError = error as { response?: { data?: { message?: string } } };

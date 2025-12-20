@@ -39,6 +39,8 @@
     // Performance
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
+    // Build performance optimizations
+    "skipDefaultLibCheck": true,
 
     "plugins": [
       {

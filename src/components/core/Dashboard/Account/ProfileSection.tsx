@@ -152,7 +152,7 @@ export function ProfileSection() {
         },
         {
           onSuccess: () => {
-            toast.success('Profile updated successfully');
+            // Toast is already shown in the hook
           },
         },
       );
@@ -172,7 +172,7 @@ export function ProfileSection() {
       },
       {
         onSuccess: () => {
-          toast.success('Professional information updated successfully');
+          // Toast is already shown in the hook
         },
       },
     );
@@ -354,9 +354,14 @@ export function ProfileSection() {
           <Button
             className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
             onClick={handlePersonalInfoUpdate}
-            disabled={isPersonalInfoLoading || ((initialLoading || loading) && !profileData)}
+            disabled={
+              isPersonalInfoLoading ||
+              isUpdatingProfile ||
+              ((initialLoading || loading) && !profileData)
+            }
+            isLoading={isPersonalInfoLoading || isUpdatingProfile}
           >
-            {isPersonalInfoLoading ? (
+            {isPersonalInfoLoading || isUpdatingProfile ? (
               <>Saving...</>
             ) : (
               <>
@@ -453,6 +458,7 @@ export function ProfileSection() {
               className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
               onClick={handleProfessionalInfoUpdate}
               disabled={isUpdatingProfile || ((initialLoading || loading) && !profileData)}
+              isLoading={isUpdatingProfile}
             >
               {isUpdatingProfile ? (
                 <>Saving...</>

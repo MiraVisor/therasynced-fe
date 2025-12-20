@@ -52,7 +52,7 @@ export function PasswordSection() {
             newPassword: '',
             confirmPassword: '',
           });
-          toast.success('Password changed successfully!');
+          // Toast is already shown in the hook
         },
       },
     );
@@ -125,6 +125,7 @@ export function PasswordSection() {
           className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto text-sm font-inter font-medium"
           onClick={handlePasswordUpdate}
           disabled={isLoading || isChangingPassword}
+          isLoading={isChangingPassword}
         >
           {isChangingPassword ? 'Updating...' : 'Update Password'}
           <Lock className="ml-2 h-4 w-4" />

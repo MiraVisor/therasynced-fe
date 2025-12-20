@@ -59,11 +59,16 @@ function AuthCallbackContent() {
             setUser({ role: 'PATIENT' } as any);
           }
 
-          toast.success('Successfully signed in with Google!');
-
           // Redirect to the intended page or dashboard
           const finalUrl = returnUrl || '/dashboard';
-          router.push(finalUrl);
+          router.push(
+            finalUrl +
+              (finalUrl === '/dashboard'
+                ? `?login=google&message=${encodeURIComponent(
+                    'Successfully signed in with Google!',
+                  )}`
+                : ''),
+          );
         } else {
           toast.error('Authentication failed');
           router.push(isSignup ? '/authentication/sign-up' : '/authentication/sign-in');

@@ -256,6 +256,7 @@ export const ReportFreelancerDialog = ({
             <Button
               type="submit"
               disabled={isSubmitting || !hasConsent}
+              isLoading={isSubmitting}
               aria-label={!hasConsent ? 'Consent required before submitting' : 'Submit complaint'}
             >
               {isSubmitting ? (

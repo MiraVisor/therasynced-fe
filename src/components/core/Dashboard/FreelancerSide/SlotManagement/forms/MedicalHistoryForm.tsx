@@ -1240,6 +1240,7 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
         <Button
           type="submit"
           disabled={isSubmitting || !clientId}
+          isLoading={isSubmitting}
           className="font-inter font-semibold"
         >
           {isSubmitting ? (

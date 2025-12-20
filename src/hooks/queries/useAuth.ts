@@ -21,8 +21,7 @@ export const useLogin = () => {
       const role = response.data.data.user.role as RoleType;
 
       login(token, role);
-      toast.success('Login successful!');
-      router.push('/dashboard');
+      router.push('/dashboard?login=success');
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error) || 'Login failed. Please check your credentials.');
@@ -45,7 +44,9 @@ export const useSignUp = () => {
         const { token } = response.data.data;
         const role = response.data.data.user.role as RoleType;
         login(token, role);
-        router.push('/dashboard');
+        router.push(
+          `/dashboard?login=success&message=${encodeURIComponent('Account created successfully!')}`,
+        );
       } else {
         toast.success('Account created! Please verify your email.');
       }
@@ -70,8 +71,7 @@ export const useGoogleSignIn = () => {
       const role = response.data.data.user.role as RoleType;
 
       login(token, role);
-      toast.success('Login successful!');
-      router.push('/dashboard');
+      router.push('/dashboard?login=success');
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error) || 'Google sign-in failed.');
@@ -93,8 +93,9 @@ export const useVerifyEmail = () => {
         const { token } = response.data.data;
         const role = response.data.data.user.role as RoleType;
         login(token, role);
-        toast.success('Email verified successfully!');
-        router.push('/dashboard');
+        router.push(
+          `/dashboard?login=email&message=${encodeURIComponent('Email verified successfully!')}`,
+        );
       } else {
         toast.success('Email verified successfully!');
       }
@@ -130,8 +131,11 @@ export const useResetPassword = () => {
     mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
       authApi.resetPasswordApi(token, { newPassword }),
     onSuccess: () => {
-      toast.success('Password reset successful!');
-      router.push('/authentication/sign-in');
+      router.push('/authentication/sign-in?reset=success');
+      // Show toast after navigation
+      setTimeout(() => {
+        toast.success('Password reset successful!');
+      }, 100);
     },
     onError: (error: unknown) => {
       toast.error(getErrorMessage(error) || 'Password reset failed.');

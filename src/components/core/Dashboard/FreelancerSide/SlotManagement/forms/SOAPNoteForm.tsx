@@ -1064,7 +1064,12 @@ export const SOAPNoteForm = ({ initialData, onSubmit, slot }: SOAPNoteFormProps)
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <Button type="submit" disabled={isSubmitting} className="font-inter font-semibold">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          isLoading={isSubmitting}
+          className="font-inter font-semibold"
+        >
           {isSubmitting ? (
             <>
               <LoadingSpinner size="sm" className="mr-2" />

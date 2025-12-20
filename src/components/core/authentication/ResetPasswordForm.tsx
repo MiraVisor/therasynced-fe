@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ interface ResetPasswordFormProps {
 }
 
 const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn }) => {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
 
   const [newPassword, setNewPassword] = useState('');
@@ -53,6 +55,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
     try {
       await resetPasswordApi(token, { newPassword });
       setSuccess(true);
+      // Navigate to sign-in with success parameter
+      setTimeout(() => {
+        router.push('/authentication/sign-in?reset=success');
+      }, 1500);
     } catch (err: unknown) {
       const apiError = err as { response?: { data?: { message?: string } } };
       setError(apiError?.response?.data?.message || 'Failed to reset password. Please try again.');

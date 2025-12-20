@@ -397,7 +397,11 @@ const JobTitlesPage = () => {
               >
                 Cancel
               </Button>
-              <Button onClick={handleUpdate} disabled={updateMutation.isPending || !formData.name}>
+              <Button
+                onClick={handleUpdate}
+                disabled={updateMutation.isPending || !formData.name}
+                isLoading={updateMutation.isPending}
+              >
                 {updateMutation.isPending ? 'Updating...' : 'Update'}
               </Button>
             </DialogFooter>

@@ -57,6 +57,17 @@ export default function AccountPage() {
     if (section) {
       setActiveSection(section);
     }
+
+    // Show subscription success toast
+    const subscriptionSuccess = searchParams.get('subscription');
+    if (subscriptionSuccess === 'success') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('subscription');
+      window.history.replaceState({}, '', url.pathname + url.search);
+      setTimeout(() => {
+        toast.success('Subscription activated successfully!');
+      }, 100);
+    }
   }, [searchParams]);
 
   const handleSignOut = () => {

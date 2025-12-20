@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import EmailVerificationForm from '@/components/core/authentication/EmailVerificationForm';
@@ -23,11 +23,25 @@ const validAuthTypes = ['sign-up', 'sign-in'];
 
 export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<AuthView>(authtype as AuthView);
   const [userEmail, setUserEmail] = useState('');
 
   const { mutate: signup, isPending: isSubmitting } = useSignUp();
   const { mutate: resendEmail } = useResendVerificationEmail();
+
+  // Show password reset success toast
+  useEffect(() => {
+    const resetSuccess = searchParams.get('reset');
+    if (resetSuccess === 'success' && currentView === 'sign-in') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('reset');
+      router.replace(url.pathname + url.search, { scroll: false });
+      setTimeout(() => {
+        toast.success('Password reset successful! You can now sign in with your new password.');
+      }, 100);
+    }
+  }, [searchParams, currentView, router]);
 
   if (!validAuthTypes.includes(authtype)) {
     return notFound();

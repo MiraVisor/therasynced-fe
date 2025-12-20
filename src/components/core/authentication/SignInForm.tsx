@@ -113,8 +113,8 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 
           <Button
             type="submit"
-            disabled={isSubmitting}
-            isLoading={isSubmitting}
+            disabled={isPending}
+            isLoading={isPending}
             className="w-full h-10 font-inter font-semibold rounded-lg transition-all duration-200 bg-primary text-white hover:bg-primary/90 text-sm"
           >
             Sign In
