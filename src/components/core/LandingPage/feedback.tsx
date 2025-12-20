@@ -75,10 +75,7 @@ const testimonialData = [
 
 const Feedback = () => {
   useEffect(() => {
-    // Initialize AOS if available
-    if (typeof window !== 'undefined' && (window as any).AOS) {
-      (window as any).AOS.refresh();
-    }
+    // AOS refresh is now handled globally in the Animation component
   }, []);
 
   const renderStars = (rating: number) => {
@@ -161,8 +158,8 @@ const Feedback = () => {
                     {/* Main Card */}
                     <div className="relative h-full flex flex-col p-5 sm:p-6 lg:p-7 rounded-2xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900/80 backdrop-blur-sm shadow-sm dark:shadow-lg transition-all duration-300 group-hover:shadow-lg dark:group-hover:shadow-primary/10 group-hover:border-primary/30 dark:hover:border-primary/40 hover:-translate-y-2 ">
                       {/* Quote Icon */}
-                      <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
-                        <Quote className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
+                      <div className="absolute top-4 right-4 opacity-40 group-hover:opacity-50 transition-opacity duration-300">
+                        <Quote className="w-8 h-8 sm:w-8 sm:h-10 text-primary" />
                       </div>
 
                       {/* Rating Stars */}

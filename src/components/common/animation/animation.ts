@@ -13,7 +13,30 @@ export default function Animation() {
       offset: 100,
     });
 
-    AOS.refresh();
+    // Refresh AOS after a short delay to ensure DOM is fully rendered
+    const refreshAOS = () => {
+      if (typeof window !== 'undefined' && window.AOS) {
+        window.AOS.refresh();
+      }
+    };
+
+    // Initial refresh
+    setTimeout(refreshAOS, 100);
+
+    // Additional refresh for dynamic content
+    setTimeout(refreshAOS, 500);
+    setTimeout(refreshAOS, 1000);
+
+    // Listen for window resize to refresh animations
+    const handleResize = () => {
+      setTimeout(refreshAOS, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   return null;
