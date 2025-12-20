@@ -45,8 +45,8 @@ const Navbar = () => {
           <Image
             src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
             alt="logo"
-            width={77}
-            height={77}
+            width={100}
+            height={80}
             className="transition-transform duration-300"
           />
         </Link>
@@ -57,7 +57,20 @@ const Navbar = () => {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="relative px-3 py-1.5 text-sm font-medium tracking-wide text-gray-600 dark:text-zinc-300 hover:text-primary dark:hover:text-primary transition-colors"
+                onClick={(e) => {
+                  if (typeof link.href === 'string' && link.href.startsWith('#')) {
+                    e.preventDefault();
+                    const id = link.href.slice(1);
+                    const el = document.getElementById(id);
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                      // If the element isn't on this page, navigate to the anchor on the home page
+                      router.push('/' + link.href);
+                    }
+                  }
+                }}
+                className="relative px-3 py-1.5 text-lg font-medium tracking-wide text-gray-600 dark:text-zinc-300 hover:text-primary dark:hover:text-primary transition-colors"
               >
                 {link.label}
               </Link>
@@ -95,7 +108,21 @@ const Navbar = () => {
             <Link
               key={link.href}
               href={link.href}
-              onClick={closeMenu}
+              onClick={(e) => {
+                if (typeof link.href === 'string' && link.href.startsWith('#')) {
+                  e.preventDefault();
+                  closeMenu();
+                  const id = link.href.slice(1);
+                  const el = document.getElementById(id);
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } else {
+                    router.push('/' + link.href);
+                  }
+                } else {
+                  closeMenu();
+                }
+              }}
               className="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-primary transition-colors"
             >
               {link.label}
