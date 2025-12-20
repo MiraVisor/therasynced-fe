@@ -47,6 +47,7 @@ const LandingPage = () => {
         <Hero />
         <div className="space-y-24 sm:space-y-32 lg:space-y-40">
           <WhoItsFor />
+
           <Services />
           <Features />
           <Freelancers />

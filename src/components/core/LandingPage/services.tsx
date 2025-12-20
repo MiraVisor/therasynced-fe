@@ -32,7 +32,7 @@ const Services = () => {
   return (
     <section
       id="services"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
+      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500 bg-gray-100"
     >
       <div className="max-w-screen-xl mx-auto flex flex-col h-full lg:flex-row gap-10 lg:gap-16 items-stretch">
         {/* Image Section (hidden on small screens) */}

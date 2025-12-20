@@ -90,12 +90,12 @@ const Features = () => {
         </div>
 
         {/* Image Section */}
-        <div className="relative w-full max-w-[450px] mx-0 aspect-square rounded-2xl overflow-hidden hidden lg:block">
+        <div className="relative w-full max-w-[500px] mx-0 aspect-square rounded-2xl overflow-hidden hidden lg:block">
           <Image
-            src={'/svgs/features.svg'}
+            src={'/images/physio/woman-working-with-personal-trainer.jpg'}
             alt="Why Choose Us"
             fill
-            className="object-cover transition-transform duration-500 hover:scale-105"
+            className="object-cover object-center transition-transform duration-500 hover:scale-105"
             priority
           />
         </div>
