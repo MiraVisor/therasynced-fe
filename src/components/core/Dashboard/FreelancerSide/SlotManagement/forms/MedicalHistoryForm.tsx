@@ -1241,7 +1241,10 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
       </Card>
 
       {/* Submit Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <p className="text-xs font-inter text-muted-foreground self-center mr-2">
+          Form auto-saves as draft. Click Submit to finalize.
+        </p>
         <Button
           type="submit"
           disabled={isSubmitting || !clientId}
@@ -1250,12 +1253,12 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
           {isSubmitting ? (
             <>
               <LoadingSpinner size="sm" className="mr-2" />
-              Saving...
+              Submitting...
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Save Form
+              Submit Form
             </>
           )}
         </Button>
