@@ -116,7 +116,7 @@ const Freelancers = () => {
         </div>
 
         {/* Experts Slider - Marquee-style continuous scroll */}
-        <div className="w-full max-w-6xl mx-auto transform lg:translate-y-24 relative z-20">
+        <div className="w-full max-w-7xl mx-auto transform lg:translate-y-24 relative z-20">
           <div className="overflow-hidden">
             <div
               className="marquee flex gap-2 items-stretch will-change-transform px-2"
@@ -180,9 +180,15 @@ const Freelancers = () => {
 
         {/* Professional Healthcare Section - Softer green background that cards overlap into */}
         <div className="w-full bg-primary -mt-12 lg:-mt-20 relative z-0 pt-12 lg:pt-20 pb-12 lg:pb-24">
-          <div className="max-w-6xl mx-auto p-6 md:p-12 lg:p-20 lg:min-h-[500px] grid grid-cols-1 lg:grid-cols-2 gap-10 items-start relative overflow-visible mt-10">
+          <div className="max-w-6xl mx-auto py-6 md:py-12 lg:py-20 lg:min-h-[500px] grid grid-cols-1 lg:grid-cols-2 gap-10 items-start relative overflow-visible mt-10">
             {/* Left Column - FAQ Section */}
-            <div className="text-white" data-aos="fade-right">
+            <div
+              className="text-white"
+              data-aos="fade-right"
+              data-aos-once="false"
+              data-aos-mirror="true"
+              data-aos-delay="400"
+            >
               <h3 className="text-3xl md:text-4xl font-extrabold mb-3">
                 Your Questions, <span className="text-primary-light">Answered</span>
               </h3>
@@ -197,10 +203,14 @@ const Freelancers = () => {
 
               {/* FAQ Accordion */}
               <div className="space-y-3">
-                {faqData.map((faq) => (
+                {faqData.map((faq, idx) => (
                   <div
                     key={faq.id}
                     className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 overflow-hidden transition-all duration-300 hover:bg-white/15"
+                    data-aos="fade-up"
+                    data-aos-once="false"
+                    data-aos-mirror="true"
+                    data-aos-delay={idx * 100}
                   >
                     <button
                       onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
@@ -252,6 +262,9 @@ const Freelancers = () => {
             <div
               className="relative w-full max-w-[480px] mx-auto lg:mx-0 h-[500px]"
               data-aos="fade-left"
+              data-aos-once="false"
+              data-aos-mirror="true"
+              data-aos-delay="200"
             >
               <div className="relative w-full max-w-[420px] mx-auto lg:ml-auto h-full">
                 {/* Decorative elements */}

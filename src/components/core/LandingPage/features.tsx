@@ -46,11 +46,19 @@ const Features = () => {
   return (
     <section
       id="features"
+      data-aos="fade-up"
+      data-aos-once="false"
+      data-aos-mirror="true"
       className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
     >
       <div className="max-w-screen-xl mx-auto flex flex-col h-full lg:flex-row gap-10 lg:gap-16 items-stretch">
         {/* Content Section (Header + Cards) */}
-        <div className="flex flex-col justify-between min-h-[300px] gap-20">
+        <div
+          className="flex flex-col justify-between min-h-[300px] gap-20"
+          data-aos="fade-right"
+          data-aos-once="false"
+          data-aos-mirror="true"
+        >
           {/* Header Section */}
           <div className="text-center lg:text-left space-y-4">
             <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary tracking-tight">
@@ -90,7 +98,12 @@ const Features = () => {
         </div>
 
         {/* Image Section */}
-        <div className="relative w-full max-w-[500px] mx-0 aspect-square rounded-2xl overflow-hidden hidden lg:block">
+        <div
+          className="relative w-full max-w-[500px] mx-0 aspect-square rounded-2xl overflow-hidden hidden lg:block"
+          data-aos="fade-left"
+          data-aos-once="false"
+          data-aos-mirror="true"
+        >
           <Image
             src={'/images/physio/woman-working-with-personal-trainer.jpg'}
             alt="Why Choose Us"

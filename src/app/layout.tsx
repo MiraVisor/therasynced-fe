@@ -3,11 +3,13 @@ import { Inter, Open_Sans, Poppins } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 
 import CookieConsent from '@/components/common/CookieConsent';
+import Animation from '@/components/common/animation/animation';
 import { ThemeProvider } from '@/components/theme-provider';
 import { StoreProvider } from '@/redux/StoreProvider';
 
 import './globals.css';
 
+import 'aos/dist/aos.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 const openSans = Open_Sans({
@@ -121,6 +123,7 @@ export default function RootLayout({
           <ToastContainer />
           {/* <SocketConnectionTest /> */}
           <ThemeProvider>
+            <Animation />
             <main id="main-content" tabIndex={-1}>
               {children}
             </main>
