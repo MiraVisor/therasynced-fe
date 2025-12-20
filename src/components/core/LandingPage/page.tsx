@@ -11,6 +11,7 @@ import Hero from './hero';
 import Navbar from './navbar';
 import Pricing from './pricing';
 import Services from './services';
+import WhoItsFor from './who-its-for';
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -45,6 +46,7 @@ const LandingPage = () => {
         <Navbar />
         <Hero />
         <div className="space-y-24 sm:space-y-32 lg:space-y-40">
+          <WhoItsFor />
           <Services />
           <Features />
           <Freelancers />

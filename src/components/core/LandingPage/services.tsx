@@ -36,9 +36,9 @@ const Services = () => {
     >
       <div className="max-w-screen-xl mx-auto flex flex-col h-full lg:flex-row gap-10 lg:gap-16 items-stretch">
         {/* Image Section (hidden on small screens) */}
-        <div className="relative w-full max-w-[300px] mx-0 aspect-[9/16] rounded-2xl overflow-hidden hidden lg:block">
+        <div className="relative w-full max-w-[400px] mx-0 aspect-[9/16] rounded-2xl overflow-hidden hidden lg:block">
           <Image
-            src={'/svgs/service.svg'}
+            src={'/images/rehabilitation.jpg'}
             alt="Wellness Services"
             fill
             className="object-cover transition-transform duration-500 hover:scale-105"
