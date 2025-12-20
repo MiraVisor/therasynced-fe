@@ -279,6 +279,28 @@ html {
   }
 }
 
+/* Marquee animation for continuous carousel
+   - The inner content must be duplicated in the markup so translating -50% loops seamlessly */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: marquee 20s linear infinite;
+  display: flex;
+  gap: 1rem;
+}
+
+/* Pause marquee on hover */
+.marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
