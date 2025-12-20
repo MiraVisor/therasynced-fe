@@ -8,9 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
+import type { Booking } from '@/types';
 
 interface NextAppointmentHeroProps {
-  booking: any;
+  booking: Booking | null;
   loading?: boolean;
 }
 
@@ -56,13 +57,13 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
         <CardContent className="p-8">
           <div className="animate-pulse">
             <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+              <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
               <div className="flex-1">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-1/3"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-1/3" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
               </div>
-              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-32" />
             </div>
           </div>
         </CardContent>
@@ -74,11 +75,11 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
     return null; // Don't show anything if no booking
   }
 
-  const getExpertName = (booking: any) => {
-    return booking?.slot?.freelancer?.name || booking?.expertName || 'Unknown Therapist';
+  const getExpertName = (booking: Booking | null) => {
+    return booking?.slot?.freelancer?.name || 'Unknown Therapist';
   };
 
-  const getBookingTime = (booking: any) => {
+  const getBookingTime = (booking: Booking | null) => {
     if (!booking?.slot?.startTime) return '';
     return new Date(booking.slot.startTime).toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -87,7 +88,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
     });
   };
 
-  const getBookingDate = (booking: any) => {
+  const getBookingDate = (booking: Booking | null) => {
     if (!booking?.slot?.startTime) return '';
     return new Date(booking.slot.startTime).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -96,7 +97,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
     });
   };
 
-  const getBookingLocation = (booking: any) => {
+  const getBookingLocation = (booking: Booking | null) => {
     const locationType = booking?.slot?.locationType;
     switch (locationType) {
       case 'OFFICE':
@@ -110,7 +111,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
     }
   };
 
-  const getLocationIcon = (booking: any) => {
+  const getLocationIcon = (booking: Booking | null) => {
     const locationType = booking?.slot?.locationType;
     return locationType === 'VIRTUAL' ? Video : MapPin;
   };

@@ -26,13 +26,12 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useBreaches, useCreateBreach } from '@/hooks/queries/useDataRights';
-import { BreachRiskLevel, BreachStatus } from '@/types/dataRights';
-import type { BreachFilters } from '@/types/dataRights';
+import { type BreachFilters, BreachRiskLevel, BreachStatus } from '@/types/dataRights';
 
-import { DateRange, DateRangePresets } from './components/DateRangePresets';
-import { StatCard, StatsCardsGrid } from './components/StatsCards';
 import { DistributionChart } from './components/charts/DistributionChart';
 import { TimelineChart } from './components/charts/TimelineChart';
+import { DateRange, DateRangePresets } from './components/DateRangePresets';
+import { StatCard, StatsCardsGrid } from './components/StatsCards';
 
 export function BreachesTab() {
   const [page, setPage] = useState(1);

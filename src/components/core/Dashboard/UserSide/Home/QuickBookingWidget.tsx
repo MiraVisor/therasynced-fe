@@ -49,14 +49,14 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
                 <div className="animate-pulse">
                   <div className="bg-gray-200 dark:bg-gray-700 rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                      <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full" />
                       <div className="flex-1">
-                        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-3/4"></div>
-                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-3/4" />
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2" />
                       </div>
                     </div>
-                    <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full mb-2"></div>
-                    <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-2/3"></div>
+                    <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full mb-2" />
+                    <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-2/3" />
                   </div>
                 </div>
               </div>

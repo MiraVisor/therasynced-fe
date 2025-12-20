@@ -7,12 +7,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Booking } from '@/types';
 
-export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[] }> = ({
+export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Booking[] }> = ({
   bookings,
 }) => {
   const router = useRouter();
-  let booking: any = null;
+  let booking: Booking | null = null;
   if (Array.isArray(bookings) && bookings.length > 0) {
     booking = bookings[0];
   }
@@ -44,6 +45,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: any[
   }
 
   const expert = booking.slot?.freelancer || {};
+  const status = booking.status?.toLowerCase() || 'pending';
 
   const handleReschedule = () => {
     if (booking?.slot?.freelancer?.id && booking?.id) {

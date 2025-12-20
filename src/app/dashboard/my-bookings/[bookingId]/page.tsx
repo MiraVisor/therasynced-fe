@@ -132,7 +132,7 @@ export default function BookingDetailsPage() {
         </pre>
         {(() => {
           const freelancer = booking.slot?.freelancer;
-          const slot = booking.slot;
+          const { slot } = booking;
           const location = slot?.location;
           return (
             <>
@@ -293,7 +293,7 @@ export default function BookingDetailsPage() {
                       <CardContent>
                         <div className="space-y-3">
                           {booking.serviceCategories && booking.serviceCategories.length > 0
-                            ? booking.serviceCategories.map((category: any, index: number) => (
+                            ? booking.serviceCategories.map((category, index: number) => (
                                 <div
                                   key={category.id || index}
                                   className="flex justify-between items-start py-2"
@@ -308,7 +308,7 @@ export default function BookingDetailsPage() {
                                   </div>
                                 </div>
                               ))
-                            : booking.services?.map((service: any, index: number) => (
+                            : booking.services?.map((service, index: number) => (
                                 <div
                                   key={service.id || index}
                                   className="flex justify-between items-center py-2"
@@ -374,7 +374,7 @@ export default function BookingDetailsPage() {
 
                       <div className="space-y-2">
                         {booking.serviceCategories && booking.serviceCategories.length > 0
-                          ? booking.serviceCategories.map((category: any, index: number) => (
+                          ? booking.serviceCategories.map((category, index: number) => (
                               <div
                                 key={category.id || index}
                                 className="flex justify-between items-center"
@@ -384,7 +384,7 @@ export default function BookingDetailsPage() {
                             ))
                           : booking.services &&
                             booking.services.length > 0 &&
-                            booking.services.map((service: any, index: number) => (
+                            booking.services.map((service, index: number) => (
                               <div
                                 key={service.id || index}
                                 className="flex justify-between items-center"

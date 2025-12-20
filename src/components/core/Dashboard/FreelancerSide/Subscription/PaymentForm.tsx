@@ -36,8 +36,10 @@ const PaymentForm = ({ clientSecret, planType, onSuccess, onCancel }: PaymentFor
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate payment
       toast.success('Payment successful! Your subscription is now active.');
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || 'Payment failed. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Payment failed. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }

@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
+import adminComplaintService, { ComplaintListResponse } from '@/services/adminComplaintService';
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
-import { Complaint, CreateComplaintDto } from '@/types/types';
+import { getApiErrorMessage } from '@/types/common';
+import { Complaint, ComplaintStatus, CreateComplaintDto } from '@/types/types';
 
 /**
  * Hook to fetch my complaints
@@ -59,8 +61,63 @@ export const useCreateComplaint = () => {
       queryClient.invalidateQueries({ queryKey: ['complaints'] });
       toast.success('Complaint submitted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to create complaint');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to create complaint');
     },
+  });
+};
+
+// Admin Complaints
+export const useAdminComplaints = (params?: {
+  page?: number;
+  limit?: number;
+  name?: string;
+  status?: ComplaintStatus;
+}) => {
+  return useQuery({
+    queryKey: ['adminComplaints', params],
+    queryFn: async () => {
+      const paginationParams = {
+        page: params?.page,
+        limit: params?.limit,
+        name: params?.name,
+      };
+
+      let response;
+      if (!params?.status) {
+        response = await adminComplaintService.getAll(paginationParams, {});
+      } else {
+        switch (params.status) {
+          case 'PENDING':
+            response = await adminComplaintService.getPending(paginationParams);
+            break;
+          case 'UNDER_REVIEW':
+            response = await adminComplaintService.getUnderReview(paginationParams);
+            break;
+          case 'RESOLVED':
+            response = await adminComplaintService.getResolved(paginationParams);
+            break;
+          case 'DISMISSED':
+            response = await adminComplaintService.getDismissed(paginationParams);
+            break;
+          default:
+            response = await adminComplaintService.getAll(paginationParams, {
+              status: params.status,
+            });
+        }
+      }
+
+      return {
+        complaints: response.data as ComplaintListResponse['data'],
+        pagination: response.pagination,
+      };
+    },
+  });
+};
+
+export const useAdminComplaintStats = () => {
+  return useQuery({
+    queryKey: ['adminComplaints', 'stats'],
+    queryFn: () => adminComplaintService.getStatistics(),
   });
 };

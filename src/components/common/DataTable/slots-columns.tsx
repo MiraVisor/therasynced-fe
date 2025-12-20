@@ -70,7 +70,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
       return <div className="font-semibold text-sm text-black text-left">Location</div>;
     },
     cell: ({ row }) => {
-      const locationType = row.getValue('locationType') as LocationType;
+      const locationType = row.getValue('locationType');
       const config = getLocationTypeConfig(locationType);
 
       return (
@@ -110,7 +110,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
       return <div className="font-semibold text-sm text-black text-left">Duration</div>;
     },
     cell: ({ row }) => {
-      const duration = row.getValue('duration') as number;
+      const duration = row.getValue('duration');
       return (
         <div className="text-sm text-gray-600 whitespace-nowrap text-left">{duration} min</div>
       );
@@ -122,7 +122,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
       return <div className="font-semibold text-sm text-black text-left">Status</div>;
     },
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const status = row.getValue('status');
 
       let badgeProps = {
         variant: 'secondary' as 'default' | 'secondary',
@@ -180,7 +180,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
       return <div className="font-semibold text-sm text-black text-left">Notes</div>;
     },
     cell: ({ row }) => {
-      const notes = row.getValue('notes') as string;
+      const notes = row.getValue('notes');
 
       if (!notes) {
         return <span className="text-gray-400 text-sm text-left">-</span>;

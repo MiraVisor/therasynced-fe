@@ -31,20 +31,41 @@ export const notificationService = {
     const apiResponse = response.data;
 
     // Transform snake_case to camelCase for notifications
-    const transformedData = (apiResponse.data || []).map((notification: any) => ({
-      id: notification.id,
-      userId: notification.user_id || notification.userId,
-      type: notification.type,
-      priority: notification.priority,
-      title: notification.title,
-      message: notification.message,
-      isRead: notification.is_read !== undefined ? notification.is_read : notification.isRead,
-      createdAt: notification.created_at || notification.createdAt,
-      updatedAt: notification.updated_at || notification.updatedAt,
-      actionUrl: notification.action_url || notification.actionUrl,
-      actionText: notification.action_text || notification.actionText,
-      metadata: notification.metadata,
-    }));
+    const transformedData = (apiResponse.data || []).map(
+      (notification: {
+        id: string;
+        user_id?: string;
+        userId?: string;
+        type: string;
+        priority?: string;
+        title: string;
+        message: string;
+        is_read?: boolean;
+        isRead?: boolean;
+        created_at?: string;
+        createdAt?: string;
+        updated_at?: string;
+        updatedAt?: string;
+        action_url?: string;
+        actionUrl?: string;
+        action_text?: string;
+        actionText?: string;
+        metadata?: unknown;
+      }) => ({
+        id: notification.id,
+        userId: notification.user_id || notification.userId,
+        type: notification.type,
+        priority: notification.priority,
+        title: notification.title,
+        message: notification.message,
+        isRead: notification.is_read !== undefined ? notification.is_read : notification.isRead,
+        createdAt: notification.created_at || notification.createdAt,
+        updatedAt: notification.updated_at || notification.updatedAt,
+        actionUrl: notification.action_url || notification.actionUrl,
+        actionText: notification.action_text || notification.actionText,
+        metadata: notification.metadata,
+      }),
+    );
 
     return {
       success: apiResponse.success,

@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 import * as profileApi from '@/services/profileService';
 import { useAuthStore } from '@/stores/authStore';
+import { getApiErrorMessage } from '@/types/common';
 import {
   BackendProfileResponse,
   ChangeEmailDto,
@@ -67,8 +68,8 @@ export const useUpdateProfile = () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success('Profile updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update profile');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update profile');
     },
   });
 };
@@ -82,8 +83,8 @@ export const useChangePassword = () => {
     onSuccess: () => {
       toast.success('Password changed successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to change password');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to change password');
     },
   });
 };
@@ -97,11 +98,11 @@ export const useChangeEmail = () => {
   return useMutation({
     mutationFn: (data: ChangeEmailDto) => profileApi.changeEmail(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      void queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success('Email change request sent! Please check your email.');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to change email');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to change email');
     },
   });
 };
@@ -120,8 +121,8 @@ export const useDeleteProfile = () => {
       logout();
       toast.success('Profile deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete profile');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to delete profile');
     },
   });
 };

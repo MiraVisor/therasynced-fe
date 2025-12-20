@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
+import { getApiErrorMessage } from '@/types/common';
 import {
   BulkTherapistStampConfigDto,
   CreateTherapistStampConfigDto,
@@ -63,11 +64,11 @@ export const useRedeemReward = () => {
   return useMutation({
     mutationFn: (rewardId: string) => api.post(ENDPOINTS.loyalty.redeem, { rewardId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['loyalty'] });
+      void queryClient.invalidateQueries({ queryKey: ['loyalty'] });
       toast.success('Reward redeemed successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to redeem reward');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to redeem reward');
     },
   });
 };
@@ -140,11 +141,11 @@ export const useCreateOrUpdateStampConfig = () => {
     mutationFn: (dto: CreateTherapistStampConfigDto) =>
       api.post(ENDPOINTS.loyalty.stampConfig, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
+      void queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
       toast.success('Stamp configuration saved successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to save stamp configuration');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to save stamp configuration');
     },
   });
 };
@@ -164,11 +165,11 @@ export const useUpdateStampConfig = () => {
       dto: UpdateTherapistStampConfigDto;
     }) => api.patch(ENDPOINTS.loyalty.stampConfigByTherapist(therapistId), dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
+      void queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
       toast.success('Stamp configuration updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to update stamp configuration');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update stamp configuration');
     },
   });
 };
@@ -183,11 +184,11 @@ export const useDeleteStampConfig = () => {
     mutationFn: (therapistId: string) =>
       api.delete(ENDPOINTS.loyalty.stampConfigByTherapist(therapistId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
+      void queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
       toast.success('Stamp configuration deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to delete stamp configuration');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to delete stamp configuration');
     },
   });
 };
@@ -202,11 +203,11 @@ export const useBulkUpdateStampConfigs = () => {
     mutationFn: (dto: BulkTherapistStampConfigDto) =>
       api.post(ENDPOINTS.loyalty.stampConfigBulk, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
+      void queryClient.invalidateQueries({ queryKey: ['stamps', 'configs'] });
       toast.success('Stamp configurations updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to update stamp configurations');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update stamp configurations');
     },
   });
 };

@@ -41,7 +41,7 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
     accessorKey: 'exportedByUser',
     header: 'Exported By',
     cell: ({ row }) => {
-      const exportedByUser = row.original.exportedByUser;
+      const { exportedByUser } = row.original;
       if (!exportedByUser) {
         return <div className="font-inter text-sm text-muted-foreground">N/A</div>;
       }
@@ -66,7 +66,7 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
     accessorKey: 'exportedUser',
     header: 'User Exported',
     cell: ({ row }) => {
-      const exportedUser = row.original.exportedUser;
+      const { exportedUser } = row.original;
       if (!exportedUser) {
         return <div className="font-inter text-sm text-muted-foreground">N/A</div>;
       }
@@ -91,7 +91,7 @@ export const exportLogsColumns: ColumnDef<ExportLog>[] = [
     accessorKey: 'exportType',
     header: 'Export Type',
     cell: ({ row }) => {
-      const exportType = row.original.exportType;
+      const { exportType } = row.original;
       // Map API export types to display names
       const displayType =
         exportType === 'BULK_USER_DATA'

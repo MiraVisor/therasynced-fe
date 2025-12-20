@@ -7,14 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
-import { Expert } from '@/types/types';
+import { Expert, Freelancer } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../../components/core/Dashboard/DashboardPageWrapper';
 import { ExpertList } from '../../../components/core/Dashboard/UserSide/Overview/ExpertSection';
 import ExpertCardSkeleton from '../../../components/ui/skeletons/ExpertCardSkeleton';
 
 // Map freelancer data to Expert format (same as in UserExploreMain)
-const mapFreelancerToExpert = (freelancer: any): Expert => {
+const mapFreelancerToExpert = (freelancer: Freelancer): Expert => {
   // Extract services and their location types
   const services = freelancer.services || [];
   const allLocationTypes = new Set<string>();
@@ -60,9 +60,7 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
     isFavorite: freelancer.isFavorite ?? false,
     // Additional data for profile dialog
     profilePicture: freelancer.profilePicture,
-    services: Array.isArray(services)
-      ? services.filter((service: any) => service && service.isActive)
-      : [],
+    services: Array.isArray(services) ? services.filter((service) => service?.isActive) : [],
     location: primaryLocation,
     sessionTypes: sessionTypes,
     pricing: freelancer.pricing,

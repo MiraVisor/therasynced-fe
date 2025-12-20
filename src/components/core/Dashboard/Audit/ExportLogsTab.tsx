@@ -16,15 +16,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  exportExportLogsToCSV,
   type ExportLog,
   type ExportLogFilters,
-  exportExportLogsToCSV,
   getExportLogs,
 } from '@/services/exportService';
 
+import { TimelineChart } from './components/charts/TimelineChart';
 import { DateRange, DateRangePresets } from './components/DateRangePresets';
 import { StatCard, StatsCardsGrid } from './components/StatsCards';
-import { TimelineChart } from './components/charts/TimelineChart';
 
 export function ExportLogsTab() {
   const [logs, setLogs] = useState<ExportLog[]>([]);
@@ -130,13 +130,19 @@ export function ExportLogsTab() {
         setLogs([]);
         setPagination(null);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as {
+        status?: number;
+        statusText?: string;
+        response?: { data?: unknown };
+        message?: string;
+      };
       console.error('Failed to fetch export logs:', error);
       console.error('Error details:', {
-        status: error?.status,
-        statusText: error?.statusText,
-        response: error?.response?.data,
-        message: error?.message,
+        status: apiError?.status,
+        statusText: apiError?.statusText,
+        response: apiError?.response?.data,
+        message: apiError?.message,
       });
 
       // If it's a 404, the endpoint might not exist yet
@@ -361,9 +367,10 @@ export function ExportLogsTab() {
       window.URL.revokeObjectURL(url);
 
       toast.success('Export logs downloaded as CSV');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as { status?: number };
       console.error('Failed to export logs:', error);
-      if (error?.status === 404) {
+      if (apiError?.status === 404) {
         toast.error('CSV export endpoint not found. Please check backend configuration.');
       } else {
         toast.error(error?.message || 'Failed to export logs. Please try again.');

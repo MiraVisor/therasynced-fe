@@ -27,7 +27,7 @@ const ChatDebug = () => {
   const testBackendApi = async () => {
     try {
       console.log('Testing backend API connectivity...');
-      const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/chat/contacts', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/contacts`, {
         headers: {
           Authorization: `Bearer ${document.cookie.split('token=')[1]?.split(';')[0] || ''}`,
           'Content-Type': 'application/json',

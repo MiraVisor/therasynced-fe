@@ -58,9 +58,9 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 
         <div className="relative">
           <div className="flex items-center">
-            <div className="flex-1 border-t border-gray-200"></div>
+            <div className="flex-1 border-t border-gray-200" />
             <span className="px-3 text-xs text-gray-500 font-inter">or continue with email</span>
-            <div className="flex-1 border-t border-gray-200"></div>
+            <div className="flex-1 border-t border-gray-200" />
           </div>
         </div>
 

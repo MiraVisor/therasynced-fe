@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUp, LucideIcon } from 'lucide-react';
 import * as React from 'react';
+import { ArrowDown, ArrowUp, LucideIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 

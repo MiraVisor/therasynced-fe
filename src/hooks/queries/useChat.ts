@@ -47,7 +47,7 @@ export const useChatMessages = (
     },
     enabled: !!conversationId,
     select: (data) => {
-      const messages = data.data as ChatMessage[];
+      const messages = data.data;
 
       // Update Zustand store
       if (page === 1) {
@@ -74,7 +74,7 @@ export const useSendMessage = () => {
   return useMutation({
     mutationFn: (data: { recipientId: string; content: string }) => chatService.sendMessage(data),
     onSuccess: (response, variables) => {
-      const message = response.data as ChatMessage;
+      const message = response.data;
 
       // Add message to Zustand store
       if (message.conversationId) {

@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
+import { getApiErrorMessage } from '@/types/common';
 import {
   CancelSubscriptionDto,
   PlanType,
@@ -47,11 +48,11 @@ export const useCreateSubscription = () => {
   return useMutation({
     mutationFn: (planType: PlanType) => api.post(ENDPOINTS.subscription.subscribe, { planType }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       toast.success('Subscription created successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to create subscription');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to create subscription');
     },
   });
 };
@@ -65,11 +66,11 @@ export const useUpdateSubscription = () => {
   return useMutation({
     mutationFn: (data: UpdateSubscriptionDto) => api.put(ENDPOINTS.subscription.update, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       toast.success('Subscription updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to update subscription');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update subscription');
     },
   });
 };
@@ -83,11 +84,11 @@ export const useCancelSubscription = () => {
   return useMutation({
     mutationFn: (data: CancelSubscriptionDto = {}) => api.post(ENDPOINTS.subscription.cancel, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       toast.success('Subscription cancelled successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to cancel subscription');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to cancel subscription');
     },
   });
 };
@@ -101,11 +102,11 @@ export const useResumeSubscription = () => {
   return useMutation({
     mutationFn: () => api.post(ENDPOINTS.subscription.resume),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       toast.success('Subscription resumed successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to resume subscription');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to resume subscription');
     },
   });
 };
@@ -130,8 +131,8 @@ export const useBillingPortal = () => {
 export const useCreateCheckoutSession = () => {
   return useMutation({
     mutationFn: (planType: PlanType) => api.post(ENDPOINTS.subscription.checkout, { planType }),
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to create checkout session');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to create checkout session');
     },
   });
 };
@@ -148,11 +149,11 @@ export const useVerifyCheckoutSession = () => {
         params: { session_id: sessionId },
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       toast.success('Payment verified successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to verify checkout session');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to verify checkout session');
     },
   });
 };

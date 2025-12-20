@@ -380,8 +380,8 @@ export default function VerificationPage() {
     // Upload files one by one (React Query mutation handles one file at a time)
     files.forEach((file) => {
       uploadDocument(file, {
-        onError: (error: any) => {
-          const errorMessage = error?.message || 'Failed to upload document';
+        onError: (error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to upload document';
           setUploadError(errorMessage);
         },
       });
@@ -564,7 +564,7 @@ export default function VerificationPage() {
                   type="file"
                   accept=".jpg,.jpeg,.png,.pdf"
                   onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
+                    if (e.target.files?.[0]) {
                       handleCertificateUpload(e.target.files[0]);
                     }
                   }}

@@ -6,19 +6,20 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
+import type { Booking } from '@/types';
 
 interface UpcomingAppointmentCardProps {
-  booking: any;
+  booking: Booking;
 }
 
 const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booking }) => {
   const router = useRouter();
 
-  const getExpertName = (booking: any) => {
+  const getExpertName = (booking: Booking) => {
     return booking?.slot?.freelancer?.name || booking?.expertName || 'Unknown Therapist';
   };
 
-  const getBookingTime = (booking: any) => {
+  const getBookingTime = (booking: Booking) => {
     if (!booking?.slot?.startTime) return '';
     return new Date(booking.slot.startTime).toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -27,7 +28,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
     });
   };
 
-  const getBookingDate = (booking: any) => {
+  const getBookingDate = (booking: Booking) => {
     if (!booking?.slot?.startTime) return '';
     const date = new Date(booking.slot.startTime);
     const now = new Date();
@@ -39,7 +40,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
 
-  const getBookingLocation = (booking: any) => {
+  const getBookingLocation = (booking: Booking) => {
     const locationType = booking?.slot?.locationType;
     switch (locationType) {
       case 'OFFICE':
@@ -53,12 +54,12 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
     }
   };
 
-  const getLocationIcon = (booking: any) => {
+  const getLocationIcon = (booking: Booking) => {
     const locationType = booking?.slot?.locationType;
     return locationType === 'VIRTUAL' ? Video : MapPin;
   };
 
-  const getDateBadgeColor = (booking: any) => {
+  const getDateBadgeColor = (booking: Booking) => {
     const bookingDate = new Date(booking?.slot?.startTime);
     const now = new Date();
     const isToday = bookingDate.toDateString() === now.toDateString();

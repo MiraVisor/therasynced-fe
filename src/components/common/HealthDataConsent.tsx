@@ -118,8 +118,9 @@ export function HealthDataConsent({
       }
 
       onConsentChange?.(granted);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Error handled by mutation
+      console.error('Health data consent error:', error);
     }
   };
 

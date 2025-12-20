@@ -51,11 +51,11 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   onReview,
   cancellingBookingId,
 }) => {
-  if (!booking) return null;
+  if (!booking?.slot) return null;
 
-  const freelancer = booking.slot?.freelancer;
-  const slot = booking.slot;
-  const location = slot?.location;
+  const { freelancer } = booking.slot;
+  const { slot } = booking;
+  const { location } = slot;
   const bookingDate = new Date(slot.startTime);
   const now = new Date();
   const isUpcoming = booking.status === 'CONFIRMED' && bookingDate > now;
@@ -90,18 +90,25 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     return status.charAt(0) + status.slice(1).toLowerCase();
   };
 
-  const getLocationDetails = () => {
+  const getLocationDetails = (): { type: string; address: string } => {
     if (slot.locationType === 'ONLINE') {
       return { type: 'Online', address: 'Video call session' };
     }
-    if (slot.locationType === 'CLINIC' && (freelancer as any)?.clinicAddress) {
-      return { type: 'Clinic', address: (freelancer as any).clinicAddress };
+    if (slot.locationType === 'CLINIC' && freelancer && 'clinicAddress' in freelancer) {
+      const { clinicAddress } = freelancer as { clinicAddress?: string };
+      if (clinicAddress) {
+        return { type: 'Clinic', address: clinicAddress };
+      }
     }
     if (slot.locationType === 'HOME') {
-      return { type: 'Home Visit', address: (booking as any)?.clientAddress || 'Address provided' };
+      const clientAddress =
+        'clientAddress' in booking
+          ? (booking as { clientAddress?: string }).clientAddress
+          : undefined;
+      return { type: 'Home Visit', address: clientAddress ?? 'Address provided' };
     }
-    if (location) {
-      return { type: location.name, address: location.address };
+    if (location?.name && location.address) {
+      return { type: String(location.name), address: String(location.address) };
     }
     return { type: 'Office', address: 'Address to be confirmed' };
   };
@@ -110,9 +117,9 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
   // Calculate total services price (legacy support)
   const servicesTotal =
-    booking.services?.reduce((sum, service) => sum + (service.additionalPrice || 0), 0) || 0;
-  const basePrice = slot?.basePrice || 0;
-  const totalAmount = booking.totalAmount || basePrice + servicesTotal;
+    booking.services?.reduce((sum, service) => sum + (service.additionalPrice ?? 0), 0) ?? 0;
+  const basePrice = slot?.basePrice ?? 0;
+  const totalAmount = booking.totalAmount ?? basePrice + servicesTotal;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -167,16 +174,12 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 {/* Ratings Display */}
                 <div className="mt-2 space-y-2">
                   {/* Freelancer Overall Rating */}
-                  {((freelancer as any)?.cardInfo?.averageRating ||
-                    (freelancer as any)?.averageRating) && (
+                  {(freelancer?.cardInfo?.averageRating ?? freelancer?.averageRating ?? 0) > 0 && (
                     <RatingDisplay
-                      rating={
-                        (freelancer as any)?.cardInfo?.averageRating ||
-                        (freelancer as any)?.averageRating
-                      }
+                      rating={freelancer?.cardInfo?.averageRating ?? freelancer?.averageRating ?? 0}
                       size="sm"
                       showCount={true}
-                      reviewCount={(freelancer as any)?.cardInfo?.totalRatings || 0}
+                      reviewCount={freelancer?.cardInfo?.totalRatings ?? 0}
                     />
                   )}
                   {/* Booking Specific Rating - Styled as a distinct badge */}
@@ -295,14 +298,14 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
           ) : null}
 
           {/* Notes */}
-          {(booking as any).notes && (
+          {'notes' in booking && booking.notes && (
             <div className="space-y-3">
               <h3 className="text-sm font-poppins font-semibold text-charcoal flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Notes
               </h3>
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm font-inter text-muted-foreground">{(booking as any).notes}</p>
+                <p className="text-sm font-inter text-muted-foreground">{String(booking.notes)}</p>
               </div>
             </div>
           )}

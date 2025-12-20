@@ -68,8 +68,9 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
         pauseOnHover: true,
         draggable: true,
       });
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to update status');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update status';
+      toast.error(errorMessage);
     }
   };
 

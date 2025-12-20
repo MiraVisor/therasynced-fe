@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import api from '@/services/api';
@@ -7,6 +7,9 @@ import {
   favoriteFreelancer,
   getAllFavoriteFreelancers,
   getAllFreelancers,
+  getStats,
+  searchFreelancers,
+  SearchFreelancersParams,
 } from '@/services/freelancerService';
 import { Expert } from '@/types/types';
 
@@ -25,7 +28,10 @@ export const useFreelancers = (params?: FreelancerParams) => {
   return useQuery({
     queryKey: ['freelancers', params],
     queryFn: () => getAllFreelancers(params),
-    select: (data) => data.data as Expert[],
+    select: (data) => ({
+      freelancers: data.data,
+      pagination: data.pagination,
+    }),
   });
 };
 
@@ -48,14 +54,15 @@ export const useFavoriteFreelancer = () => {
 
   return useMutation({
     mutationFn: (freelancerId: string) => favoriteFreelancer(freelancerId),
-    onSuccess: (result: any) => {
+    onSuccess: (result: unknown) => {
       // Invalidate freelancers query to refetch
-      queryClient.invalidateQueries({ queryKey: ['freelancers'] });
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      void queryClient.invalidateQueries({ queryKey: ['freelancers'] });
+      void queryClient.invalidateQueries({ queryKey: ['favorites'] });
 
       // Show toast notification
       if (result && typeof result === 'object' && 'favorited' in result) {
-        toast.success(result.favorited ? 'Added to favorites' : 'Removed from favorites');
+        const { favorited } = result as { favorited: boolean };
+        toast.success(favorited ? 'Added to favorites' : 'Removed from favorites');
       } else {
         toast.success('Favorite updated');
       }
@@ -77,5 +84,59 @@ export const useFreelancerDashboard = () => {
       return response.data.data;
     },
     select: (data) => data,
+  });
+};
+
+/**
+ * Hook to fetch freelancer stats
+ */
+export const useFreelancerStats = () => {
+  return useQuery({
+    queryKey: ['freelancerStats'],
+    queryFn: () => getStats(),
+  });
+};
+
+/**
+ * Hook to search freelancers with filters (single page)
+ */
+export const useSearchFreelancers = (params: SearchFreelancersParams) => {
+  return useQuery({
+    queryKey: ['searchFreelancers', params],
+    queryFn: () => searchFreelancers(params),
+    select: (data) => ({
+      freelancers: data.data,
+      pagination: data.pagination,
+    }),
+  });
+};
+
+/**
+ * Hook to search freelancers with infinite scroll/load more
+ */
+export const useInfiniteSearchFreelancers = (baseParams: Omit<SearchFreelancersParams, 'page'>) => {
+  return useInfiniteQuery({
+    queryKey: ['searchFreelancers', 'infinite', baseParams],
+    queryFn: ({ pageParam = 1 }) =>
+      searchFreelancers({
+        ...baseParams,
+        page: pageParam,
+        limit: baseParams.limit || 12,
+      }),
+    getNextPageParam: (lastPage, allPages) => {
+      const { pagination } = lastPage;
+      if (pagination?.hasNext) {
+        return (pagination.page || allPages.length) + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    select: (data) => ({
+      pages: data.pages.map((page) => ({
+        freelancers: page.data,
+        pagination: page.pagination,
+      })),
+      pageParams: data.pageParams,
+    }),
   });
 };

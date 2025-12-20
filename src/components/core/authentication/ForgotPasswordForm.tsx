@@ -25,8 +25,11 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToSignIn 
     try {
       await forgotPasswordApi({ email });
       setEmailSent(true);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to send reset email. Please try again.');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(
+        apiError?.response?.data?.message || 'Failed to send reset email. Please try again.',
+      );
     } finally {
       setLoading(false);
     }

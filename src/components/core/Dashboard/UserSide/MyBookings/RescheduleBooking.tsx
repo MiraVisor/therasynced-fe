@@ -14,11 +14,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
 import { useAvailableSlots } from '@/hooks/queries/useSlots';
+import type { Booking } from '@/types/booking';
+import type { Slot } from '@/types/slot';
 
 interface RescheduleBookingProps {
   bookingId: string;
   freelancerId: string;
-  currentBooking: any;
+  currentBooking: Booking;
   onCancel: () => void;
 }
 
@@ -28,12 +30,10 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
   // State management
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [rescheduleLoading, setRescheduleLoading] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Use React Query hooks
   const { data: slots = [] } = useAvailableSlots(freelancerId);
-  const { mutate: createBooking } = useCreateBooking();
+  const { mutate: createBooking, isPending: rescheduleLoading } = useCreateBooking();
 
   // Filter available slots for selected date
 
@@ -46,8 +46,10 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
     const rescheduleData = {
       slotId: selectedTimeSlot,
       serviceCategoryIds:
-        currentBooking.services?.map((s: any) => s.id || s.serviceCategoryId) || [],
-      notes: currentBooking.notes || '',
+        currentBooking.services?.map((s) => s.id) ||
+        currentBooking.serviceCategories?.map((sc) => sc.id) ||
+        [],
+      notes: '',
     };
 
     createBooking(rescheduleData, {
@@ -95,7 +97,7 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
     );
   };
 
-  const selectedSlotData = slots.find((slot: any) => slot.id === selectedTimeSlot);
+  const selectedSlotData = slots.find((slot: Slot) => slot.id === selectedTimeSlot);
   const freelancer = currentBooking?.slot?.freelancer;
 
   const getDateDisplay = (date: Date) => {
@@ -169,7 +171,9 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
                           {freelancer?.name || 'Unknown'}
                         </h2>
                         <p className="text-gray-600">
-                          {freelancer?.specialty || 'Healthcare Professional'}
+                          {freelancer?.cardInfo?.title ||
+                            freelancer?.cardInfo?.mainService ||
+                            'Healthcare Professional'}
                         </p>
                         <div className="flex items-center gap-2 mt-2">
                           <div className="flex items-center gap-1">
@@ -270,7 +274,7 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
                 <CardContent>
                   {slots.length > 0 ? (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                      {slots.map((slot: any) => (
+                      {slots.map((slot: Slot) => (
                         <Button
                           key={slot.id}
                           variant={selectedTimeSlot === slot.id ? 'default' : 'outline'}
@@ -330,7 +334,7 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
                 {currentBooking?.services && currentBooking.services.length > 0 && (
                   <div className="space-y-3">
                     <p className="text-sm font-medium text-gray-700">Services</p>
-                    {currentBooking.services.map((service: any, index: number) => (
+                    {currentBooking.services?.map((service, index: number) => (
                       <div key={service.id || index} className="flex justify-between items-center">
                         <div>
                           <p className="text-sm font-medium">{service.name}</p>
@@ -338,7 +342,7 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
                             <p className="text-xs text-gray-500">{service.duration}</p>
                           )}
                         </div>
-                        <p className="text-sm font-medium">€{service.price}</p>
+                        <p className="text-sm font-medium">€{service.additionalPrice || 0}</p>
                       </div>
                     ))}
                   </div>
@@ -360,7 +364,7 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
                 >
                   {rescheduleLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                       Rescheduling...
                     </>
                   ) : (

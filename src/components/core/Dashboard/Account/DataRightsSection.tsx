@@ -73,8 +73,10 @@ export function DataRightsSection() {
 
       toast.success('Your data has been exported successfully');
       setShowExportDialog(false);
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to export data. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to export data. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(null);
     }
@@ -121,8 +123,10 @@ export function DataRightsSection() {
       } else {
         toast.error(response.message || 'Failed to export data');
       }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to export data. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to export data. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(null);
     }
@@ -150,8 +154,12 @@ export function DataRightsSection() {
         logout();
         router.push('/authentication/sign-in');
       }, 2000);
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to delete account. Please contact support.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete account. Please contact support.';
+      toast.error(errorMessage);
     } finally {
       setLoading(null);
     }

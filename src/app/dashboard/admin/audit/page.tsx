@@ -1,14 +1,27 @@
 'use client';
 
 import { Shield } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { AuditDashboard } from '@/components/core/Dashboard/Audit/AuditDashboard';
+import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { useAuthStore } from '@/stores/authStore';
 import { ROLES } from '@/types/types';
+
+// Dynamically import heavy audit dashboard component
+const AuditDashboard = dynamic(
+  () =>
+    import('@/components/core/Dashboard/Audit/AuditDashboard').then((mod) => ({
+      default: mod.AuditDashboard,
+    })),
+  {
+    loading: () => <AdminPageSkeleton />,
+    ssr: false,
+  },
+);
 
 export default function AdminAuditPage() {
   const router = useRouter();

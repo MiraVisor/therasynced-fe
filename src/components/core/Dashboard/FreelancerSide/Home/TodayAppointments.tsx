@@ -83,8 +83,8 @@ const TodayAppointments = ({ isLoading }: { isLoading?: boolean }) => {
     return (
       <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
         <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
         </CardHeader>
         <CardContent className="p-5">
           <div className="space-y-3">
@@ -97,22 +97,22 @@ const TodayAppointments = ({ isLoading }: { isLoading?: boolean }) => {
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
                     </div>
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-16"></div>
+                      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded" />
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-16" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-12"></div>
+                      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded" />
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-12" />
                     </div>
                   </div>
                   <div className="flex items-center justify-between lg:justify-end gap-2">
                     <div className="px-3 py-1 bg-gray-200 dark:bg-gray-700/30 rounded-lg overflow-hidden relative">
                       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700/30 rounded w-16"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700/30 rounded w-16" />
                     </div>
                   </div>
                 </div>

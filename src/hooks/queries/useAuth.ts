@@ -4,7 +4,8 @@ import { toast } from 'react-toastify';
 
 import * as authApi from '@/services/authService';
 import { useAuthStore } from '@/stores/authStore';
-import { RoleType, registerUserTypes } from '@/types/types';
+import { getErrorMessage } from '@/types/common';
+import { registerUserTypes, RoleType } from '@/types/types';
 
 /**
  * Hook for user login
@@ -16,15 +17,15 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (credentials: { email: string; password: string }) => authApi.loginApi(credentials),
     onSuccess: (response) => {
-      const token = response.data.data.token;
+      const { token } = response.data.data;
       const role = response.data.data.user.role as RoleType;
 
       login(token, role);
       toast.success('Login successful!');
       router.push('/dashboard');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Login failed. Please check your credentials.');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Login failed. Please check your credentials.');
     },
   });
 };
@@ -41,7 +42,7 @@ export const useSignUp = () => {
     onSuccess: (response) => {
       // If signup returns a token immediately, login the user
       if (response.data?.data?.token) {
-        const token = response.data.data.token;
+        const { token } = response.data.data;
         const role = response.data.data.user.role as RoleType;
         login(token, role);
         router.push('/dashboard');
@@ -49,8 +50,8 @@ export const useSignUp = () => {
         toast.success('Account created! Please verify your email.');
       }
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Signup failed. Please try again.');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Signup failed. Please try again.');
     },
   });
 };
@@ -65,15 +66,15 @@ export const useGoogleSignIn = () => {
   return useMutation({
     mutationFn: (idToken: string) => authApi.googleSignInApi(idToken),
     onSuccess: (response) => {
-      const token = response.data.data.token;
+      const { token } = response.data.data;
       const role = response.data.data.user.role as RoleType;
 
       login(token, role);
       toast.success('Login successful!');
       router.push('/dashboard');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Google sign-in failed.');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Google sign-in failed.');
     },
   });
 };
@@ -89,7 +90,7 @@ export const useVerifyEmail = () => {
     mutationFn: (token: string) => authApi.verifyEmailLinkApi({ token }),
     onSuccess: (response) => {
       if (response.data?.data?.token) {
-        const token = response.data.data.token;
+        const { token } = response.data.data;
         const role = response.data.data.user.role as RoleType;
         login(token, role);
         toast.success('Email verified successfully!');
@@ -98,8 +99,8 @@ export const useVerifyEmail = () => {
         toast.success('Email verified successfully!');
       }
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Email verification failed.');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Email verification failed.');
     },
   });
 };
@@ -113,8 +114,8 @@ export const useForgotPassword = () => {
     onSuccess: () => {
       toast.success('Password reset email sent! Please check your inbox.');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to send password reset email.');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to send password reset email.');
     },
   });
 };
@@ -132,8 +133,8 @@ export const useResetPassword = () => {
       toast.success('Password reset successful!');
       router.push('/authentication/sign-in');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Password reset failed.');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Password reset failed.');
     },
   });
 };
@@ -147,8 +148,8 @@ export const useResendVerificationEmail = () => {
     onSuccess: () => {
       toast.success('Verification email resent to your inbox');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to resend verification email');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to resend verification email');
     },
   });
 };

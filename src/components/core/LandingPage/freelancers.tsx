@@ -86,7 +86,7 @@ const Freelancers = () => {
                     {/* Image Section */}
                     <div className="relative w-full aspect-[3/4] flex items-end justify-center rounded-t-xl overflow-hidden">
                       {/* Green Background Shape */}
-                      <div className="absolute bottom-0 w-[calc(100%-32px)] h-[70%] bg-green-100/80 dark:bg-green-900/20 rounded-lg"></div>
+                      <div className="absolute bottom-0 w-[calc(100%-32px)] h-[70%] bg-green-100/80 dark:bg-green-900/20 rounded-lg" />
                       <Image
                         src={expert.image}
                         alt={expert.name}

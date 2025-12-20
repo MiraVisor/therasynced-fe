@@ -62,7 +62,7 @@ export const useSocketSlots = (freelancerId?: string) => {
     const handleSlotReserved = (event: CustomEvent) => {
       const eventData = event.detail;
       const slotId = eventData.slotId || eventData.slot?.id || eventData.id;
-      const statusInfo = eventData.statusInfo;
+      const { statusInfo } = eventData;
 
       if (!slotId) {
         console.error('No slotId found in slot-reserved event:', eventData);
@@ -97,7 +97,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleSlotBooked = (event: CustomEvent) => {
       const { slotId, statusInfo } = event.detail;
-      const id = slotId || event.detail.slot?.id;
+      const id = slotId ?? event.detail.slot?.id;
       if (id) {
         updateSlotStatus(id, {
           status: 'BOOKED',
@@ -113,7 +113,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleSlotRemoved = (event: CustomEvent) => {
       const { slotId, statusInfo } = event.detail;
-      const id = slotId || event.detail.slotId;
+      const id = slotId ?? event.detail.slotId;
       if (id) {
         updateSlotStatus(id, {
           status: 'BOOKED',
@@ -129,8 +129,8 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleSlotReleased = (event: CustomEvent) => {
       const eventData = event.detail;
-      const slotId = eventData.slotId || eventData.slot?.id || eventData.id;
-      const statusInfo = eventData.statusInfo;
+      const slotId = eventData.slotId ?? eventData.slot?.id ?? eventData.id;
+      const { statusInfo } = eventData;
 
       if (!slotId) {
         console.error('No slotId found in slot-released event:', eventData);
@@ -217,7 +217,7 @@ export const useSocketSlots = (freelancerId?: string) => {
     async (slotId: string, duration: number = 300000) => {
       try {
         // Call API to reserve slot
-        await api.post(ENDPOINTS.slots?.reserve || `/slots/${slotId}/reserve`, {
+        await api.post(ENDPOINTS.slots?.reserve ?? `/slots/${slotId}/reserve`, {
           duration,
         });
 
@@ -247,7 +247,7 @@ export const useSocketSlots = (freelancerId?: string) => {
     async (slotId: string) => {
       try {
         // Call API to release slot
-        await api.post(ENDPOINTS.slots?.release || `/slots/${slotId}/release`);
+        await api.post(ENDPOINTS.slots?.release ?? `/slots/${slotId}/release`);
 
         // Update local state
         releaseSlot(slotId);

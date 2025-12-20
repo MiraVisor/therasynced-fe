@@ -61,11 +61,10 @@ export default function AdminExportsPage() {
     if (role && role !== ROLES.ADMIN) {
       toast.error('Access denied. Admin privileges required.');
       router.push('/dashboard');
-      return;
     }
   }, [isAuthenticated, role, router]);
 
-  const handleInputChange = (field: keyof AdminExportFormData, value: any) => {
+  const handleInputChange = (field: keyof AdminExportFormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -103,7 +102,7 @@ export default function AdminExportsPage() {
 
       if (encryptionCheck.isEncrypted && encryptionCheck.encryptedData) {
         // Handle encrypted export
-        const encryptedData = encryptionCheck.encryptedData;
+        const { encryptedData } = encryptionCheck;
 
         // Store encryption info to show in dialog
         setEncryptedExportInfo({
@@ -118,9 +117,11 @@ export default function AdminExportsPage() {
         // Handle unencrypted export
         toast.success('Export downloaded successfully');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to export data. Please try again.';
       console.error('Export error:', error);
-      toast.error(error?.message || 'Failed to export data. Please try again.');
+      toast.error(errorMessage);
     } finally {
       setIsExporting(false);
     }

@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
+import { getApiErrorMessage } from '@/types/common';
 import { FirstAidCertificateInfo } from '@/types/types';
 import { uploadFile } from '@/utils/fileUpload';
 
@@ -40,8 +41,8 @@ export const useUploadFirstAidCertificate = () => {
       queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
       toast.success('Certificate uploaded successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to upload certificate');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to upload certificate');
     },
   });
 };
@@ -72,8 +73,8 @@ export const useDeleteCertificate = () => {
       queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
       toast.success('Certificate deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to delete certificate');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to delete certificate');
     },
   });
 };

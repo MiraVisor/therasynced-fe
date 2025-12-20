@@ -6,15 +6,15 @@ export function clearLocalStorageDrafts() {
   if (typeof window === 'undefined') return;
 
   const keys = Object.keys(localStorage);
+  // Also clear user data if stored
   const draftKeys = keys.filter(
-    (key) => key.startsWith('formData_') || key.startsWith('slot_notes_') || key === 'user', // Also clear user data if stored
+    (key) => key.startsWith('formData_') || key.startsWith('slot_notes_') || key === 'user',
   );
 
   draftKeys.forEach((key) => {
     localStorage.removeItem(key);
   });
 
-  if (draftKeys.length > 0) {
-    console.log(`Cleared ${draftKeys.length} draft-related localStorage items`);
-  }
+  // Silently clear drafts without logging
+  // Drafts are cleared for GDPR compliance
 }

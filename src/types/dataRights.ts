@@ -1,3 +1,15 @@
+// Data Rights Types
+import { UserProfileData } from '@/hooks/queries';
+
+import type { Booking } from './booking';
+import type { Conversation } from './chat';
+import type { Complaint } from './complaint';
+import type { LoyaltyProfile } from './loyalty';
+import type { Notification } from './notification';
+import type { RatingWithFreelancer, RatingWithPatient } from './rating';
+import type { Subscription } from './subscription';
+import type { Expert } from './types';
+
 // Data Rights and GDPR Compliance Types
 
 // Breach Enums
@@ -149,37 +161,50 @@ export interface HealthDataLogsResponse {
   };
 }
 
-// Data Rights Types
 export interface DataExportResponse {
   success: boolean;
   message: string;
   data: {
-    profile: any;
-    bookings: any[];
-    messages: any[];
+    profile: UserProfileData | Record<string, unknown>;
+    bookings: Booking[];
+    messages: Conversation[];
     complaints: {
-      reported: any[];
-      received: any[];
+      reported: Complaint[];
+      received: Complaint[];
     };
     healthData: {
-      firstAidCertificate: any;
-      consents: any[];
+      firstAidCertificate: Record<string, unknown> | null;
+      consents: Array<{
+        consentType: string;
+        granted: boolean;
+        grantedAt: string | null;
+        withdrawnAt: string | null;
+      }>;
     };
     payments: {
-      subscription: any;
+      subscription: Subscription | null;
       stripeCustomerId: string;
-      bookingAmounts: any[];
+      bookingAmounts: Array<{
+        bookingId: string;
+        amount: number;
+        currency: string;
+        createdAt: string;
+      }>;
     };
     preferences: {
-      favorites: any[];
-      loyaltyProfile: any;
+      favorites: Expert[];
+      loyaltyProfile: LoyaltyProfile | null;
     };
     ratings: {
-      given: any[];
-      received: any[];
+      given: RatingWithFreelancer[];
+      received: RatingWithPatient[];
     };
-    notifications: any[];
-    cookieConsent: any;
+    notifications: Notification[];
+    cookieConsent: {
+      essential: boolean;
+      analytics: boolean;
+      marketing: boolean;
+    } | null;
   };
   anonymized?: boolean;
 }

@@ -147,12 +147,16 @@ export const useChat = (currentUserId?: string) => {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleVisibilityChange);
+    const wrappedHandler = () => {
+      void handleVisibilityChange();
+    };
+
+    document.addEventListener('visibilitychange', wrappedHandler);
+    window.addEventListener('focus', wrappedHandler);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleVisibilityChange);
+      document.removeEventListener('visibilitychange', wrappedHandler);
+      window.removeEventListener('focus', wrappedHandler);
     };
   }, [isConnected, refetchContacts]);
 
@@ -228,7 +232,7 @@ export const useChat = (currentUserId?: string) => {
   );
 
   const refreshContacts = useCallback(() => {
-    refetchContacts();
+    void refetchContacts();
   }, [refetchContacts]);
 
   const clearChatError = useCallback(() => {

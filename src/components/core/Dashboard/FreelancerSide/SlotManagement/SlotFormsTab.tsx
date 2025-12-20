@@ -169,8 +169,9 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
             },
           });
           setLastSaved(new Date());
-        } catch (error: any) {
-          if (error.response?.status === 429) {
+        } catch (error: unknown) {
+          const apiError = error as { response?: { status?: number } };
+          if (apiError.response?.status === 429) {
             // Rate limit - don't show error, just skip this save
             console.warn('Rate limited - skipping auto-save');
           } else {
@@ -327,7 +328,7 @@ export const SlotFormsTab = ({ slot }: SlotFormsTabProps) => {
             </Select>
             {slot.formType && (
               <p className="text-xs font-inter text-muted-foreground mt-1">
-                Default form type for this slot: {FORM_TYPE_LABELS[slot.formType as FormType]}
+                Default form type for this slot: {FORM_TYPE_LABELS[slot.formType]}
               </p>
             )}
             {/* Auto-save indicator */}

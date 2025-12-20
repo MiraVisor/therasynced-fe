@@ -34,7 +34,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   const [rating, setRating] = useState<number>(0);
   const { mutate: createRatingMutation, isPending: isSubmitting } = useCreateRating();
   const { data: eligibilityData, isLoading: isCheckingEligibility } = useRatingEligibility(
-    booking?.id || null,
+    booking?.id ?? null,
   );
 
   const eligibility = eligibilityData
@@ -50,8 +50,8 @@ export const RatingModal: React.FC<RatingModalProps> = ({
       // Use booking.canBeRated and booking.hasRating if available from API response
       if (booking.canBeRated !== undefined && booking.hasRating !== undefined) {
         // Eligibility is handled by React Query hook
-        if (booking.hasRating && (booking as any).rating) {
-          setRating((booking as any).rating.rating);
+        if (booking.hasRating && booking.rating) {
+          setRating(booking.rating.rating);
         }
       } else if (eligibilityData?.hasRating && eligibilityData.rating) {
         setRating(eligibilityData.rating.rating);
@@ -86,7 +86,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   if (!booking) return null;
 
   const freelancer = booking.slot?.freelancer;
-  const slot = booking.slot;
+  const { slot } = booking;
   const bookingDate = slot ? new Date(slot.startTime) : null;
 
   const canSubmit =

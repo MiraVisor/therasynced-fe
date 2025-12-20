@@ -1,7 +1,6 @@
 'use client';
 
-import { AlertTriangle, Shield } from 'lucide-react';
-import { AlertCircle, Ban, FileText } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Ban, FileText, Shield } from 'lucide-react';
 import { useState } from 'react';
 
 import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
@@ -14,7 +13,7 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useComplaintsAgainstMe, useMyComplaints } from '@/hooks/queries/useComplaints';
-import { ComplaintCategory } from '@/types/types';
+import { Complaint, ComplaintCategory } from '@/types/types';
 
 export default function MyComplaintsPage() {
   const { data: myComplaints = [], isLoading: isLoadingMy } = useMyComplaints();
@@ -38,7 +37,7 @@ export default function MyComplaintsPage() {
     return labels[category] || category;
   };
 
-  const filteredComplaints = (complaints: any[]) => {
+  const filteredComplaints = (complaints: Complaint[]) => {
     let filtered = complaints;
 
     // Filter by status

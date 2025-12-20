@@ -137,7 +137,10 @@ const adminVerificationService = {
 
   // Get verifications by status (legacy method)
   getByStatus: async (status: 'PENDING' | 'APPROVED' | 'REJECTED', pagination?: PaginationDto) => {
-    const params: any = { ...pagination, status };
+    const params: PaginationDto & { status: 'PENDING' | 'APPROVED' | 'REJECTED' } = {
+      ...pagination,
+      status,
+    };
     const response = await api.get(ENDPOINTS.admin.verification.getAll, {
       params,
     });

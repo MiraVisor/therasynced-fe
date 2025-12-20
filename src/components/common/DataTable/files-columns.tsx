@@ -86,7 +86,7 @@ export const createFilesColumns = (
     accessorKey: 'fileType',
     header: 'Type',
     cell: ({ row }) => {
-      const fileType = row.getValue('fileType') as FreelancerFileType;
+      const fileType = row.getValue('fileType');
       return (
         <div className="flex items-center space-x-2">
           {getFileTypeIconComponent(fileType)}
@@ -112,7 +112,7 @@ export const createFilesColumns = (
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string | undefined;
+      const status = row.getValue('status');
       if (!status) {
         return <Badge variant="outline">No Status</Badge>;
       }

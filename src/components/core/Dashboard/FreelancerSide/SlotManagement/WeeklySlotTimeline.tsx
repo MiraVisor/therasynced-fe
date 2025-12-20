@@ -125,11 +125,11 @@ export const WeeklySlotTimeline = ({
       {/* Legend */}
       <div className="flex items-center gap-6 mt-6 pt-6 border-t border-gray-200">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-success rounded"></div>
+          <div className="w-3 h-3 bg-success rounded" />
           <span className="text-xs font-inter text-muted-foreground">Booked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-info rounded"></div>
+          <div className="w-3 h-3 bg-info rounded" />
           <span className="text-xs font-inter text-muted-foreground">Available</span>
         </div>
       </div>

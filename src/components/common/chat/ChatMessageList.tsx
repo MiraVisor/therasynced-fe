@@ -106,7 +106,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
               className={cn('flex space-x-3', index % 2 === 0 ? 'justify-start' : 'justify-end')}
             >
               {index % 2 === 0 && (
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
               )}
               <div
                 className={cn(
@@ -114,11 +114,11 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
                   index % 2 === 0 ? 'bg-gray-200' : 'bg-green-200',
                 )}
               >
-                <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                <div className="h-3 bg-gray-300 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-300 rounded mb-2" />
+                <div className="h-3 bg-gray-300 rounded w-3/4" />
               </div>
               {index % 2 === 1 && (
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
               )}
             </div>
           ))}

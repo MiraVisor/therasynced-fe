@@ -1,6 +1,6 @@
 import api from '@/services/api';
-import { ApiResponse } from '@/types/types';
 import {
+  ApiResponse,
   BookingStats,
   CancelBookingDto,
   CreateBookingDto,

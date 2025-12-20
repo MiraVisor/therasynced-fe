@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import * as ratingApi from '@/services/ratingService';
+import { getApiErrorMessage } from '@/types/common';
 import { CreateRatingDto, FreelancerRatingsResponse, RatingEligibility } from '@/types/types';
 
 /**
@@ -61,12 +62,12 @@ export const useCreateRating = () => {
   return useMutation({
     mutationFn: (data: CreateRatingDto) => ratingApi.createRating(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['ratings'] });
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      void queryClient.invalidateQueries({ queryKey: ['ratings'] });
+      void queryClient.invalidateQueries({ queryKey: ['bookings'] });
       toast.success('Rating submitted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to submit rating');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to submit rating');
     },
   });
 };

@@ -353,11 +353,11 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
               {freelancer.services && freelancer.services.length > 0 && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    <span className="w-2 h-2 bg-primary rounded-full" />
                     Services Offered
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {freelancer.services.map((service: any, index: number) => (
+                    {freelancer.services?.map((service, index: number) => (
                       <Badge
                         key={index}
                         variant="secondary"
@@ -374,7 +374,7 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
               {freelancer.sessionTypes && freelancer.sessionTypes.length > 0 && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    <span className="w-2 h-2 bg-primary rounded-full" />
                     Session Types Available
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -395,7 +395,7 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
               {freelancer.pricing && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    <span className="w-2 h-2 bg-primary rounded-full" />
                     Pricing Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -436,7 +436,7 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
               {/* Certifications */}
               <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
+                  <span className="w-2 h-2 bg-primary rounded-full" />
                   Certifications & Verification
                 </h4>
                 <div className="flex flex-wrap gap-2">

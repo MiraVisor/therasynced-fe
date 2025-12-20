@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
+import { getApiErrorMessage } from '@/types/common';
 import { FreelancerFile, FreelancerFilesResponse } from '@/types/types';
 import { uploadFile } from '@/utils/fileUpload';
 
@@ -104,12 +105,12 @@ export const useUploadVerificationDocument = () => {
       } as VerificationDocument;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['verification'] });
-      queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
+      void queryClient.invalidateQueries({ queryKey: ['verification'] });
+      void queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
       toast.success('Document uploaded successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to upload document');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to upload document');
     },
   });
 };
@@ -137,12 +138,12 @@ export const useDeleteVerificationDocument = () => {
     mutationFn: (documentUrl: string) =>
       api.delete(ENDPOINTS.verification.deleteDocument(documentUrl)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['verification'] });
-      queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
+      void queryClient.invalidateQueries({ queryKey: ['verification'] });
+      void queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
       toast.success('Document deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to delete document');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to delete document');
     },
   });
 };
@@ -186,8 +187,8 @@ export const useRequestVerification = () => {
       queryClient.invalidateQueries({ queryKey: ['verification'] });
       toast.success('Verification request submitted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to request verification');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to request verification');
     },
   });
 };

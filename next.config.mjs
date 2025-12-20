@@ -22,7 +22,15 @@ const nextConfig = {
     workerThreads: false,
     cpus: 1,
     // Enable optimizations
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      'recharts',
+      '@react-pdf/renderer',
+      'date-fns',
+      'react-hook-form',
+      '@tanstack/react-table',
+    ],
   },
   // Bundle analyzer (uncomment for analysis)
   // webpack: (config, { isServer }) => {
@@ -37,7 +45,60 @@ const nextConfig = {
   // Performance optimizations
   swcMinify: true,
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+  // Optimize bundle size
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Reduce bundle size by excluding server-only modules
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    // Optimize chunk splitting
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Vendor chunk for large libraries
+          vendor: {
+            name: 'vendor',
+            chunks: 'all',
+            test: /node_modules/,
+            priority: 20,
+          },
+          // Separate chunk for recharts
+          recharts: {
+            name: 'recharts',
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
+            chunks: 'all',
+            priority: 30,
+          },
+          // Separate chunk for react-pdf
+          reactPdf: {
+            name: 'react-pdf',
+            test: /[\\/]node_modules[\\/]@react-pdf[\\/]/,
+            chunks: 'all',
+            priority: 30,
+          },
+          // Common chunk for shared code
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 10,
+            reuseExistingChunk: true,
+          },
+        },
+      },
+    };
+    return config;
   },
   // Ensure CSS is properly loaded
   onDemandEntries: {

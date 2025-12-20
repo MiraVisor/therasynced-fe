@@ -11,8 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import { useFreelancers } from '@/hooks/useFreelancers';
-import freelancerService, { FreelancerStatsDto } from '@/services/freelancerService';
+import { useFreelancers, useFreelancerStats } from '@/hooks/queries/useFreelancers';
 import { Freelancer } from '@/types/types';
 
 // Column definitions for freelancers table
@@ -136,7 +135,7 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     accessorKey: 'isActive',
     header: 'Status',
     cell: ({ row }) => {
-      const isActive = row.original.isActive;
+      const { isActive } = row.original;
 
       return (
         <Badge
@@ -170,8 +169,6 @@ const RealFreelancersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [freelancerStats, setFreelancerStats] = useState<FreelancerStatsDto | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
 
   // Debounce search query
   useEffect(() => {
@@ -188,40 +185,46 @@ const RealFreelancersPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch freelancer stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setStatsLoading(true);
-        const stats = await freelancerService.getStats();
-        setFreelancerStats(stats);
-      } catch (err) {
-        toast.error(
-          `Failed to load freelancer stats: ${err instanceof Error ? err.message : 'Unknown error'}`,
-        );
-      } finally {
-        setStatsLoading(false);
-      }
-    };
+  const {
+    data: freelancerStats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useFreelancerStats();
 
-    fetchStats();
-  }, []);
+  // Show stats error as toast
+  useEffect(() => {
+    if (statsError) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load freelancer stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError]);
 
   // Fetch freelancers with pagination and search
-  const { freelancers, loading, initialLoading, error, pagination } = useFreelancers({
+  const {
+    data: freelancersData,
+    isLoading,
+    isFetching,
+    error,
+  } = useFreelancers({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
   });
 
+  const freelancers = freelancersData?.freelancers || [];
+  const pagination = freelancersData?.pagination;
+
   // Show error as toast when it occurs
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load freelancers: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load freelancers';
+      toast.error(errorMessage);
     }
   }, [error]);
 
   const stats =
-    freelancerStats && freelancerStats.totalFreelancers && freelancerStats.activeFreelancers
+    freelancerStats?.totalFreelancers?.value && freelancerStats.activeFreelancers?.value
       ? [
           {
             title: 'Total Freelancers',
@@ -303,8 +306,8 @@ const RealFreelancersPage = () => {
         enablePagination={true}
         showSearch={true}
         showSorting={false}
-        initialLoading={initialLoading}
-        loading={loading}
+        initialLoading={isLoading && !freelancers.length}
+        loading={isFetching}
         externalSearchValue={searchQuery}
         onExternalSearchChange={(value) => setSearchQuery(value)}
         externalPageIndex={page - 1}

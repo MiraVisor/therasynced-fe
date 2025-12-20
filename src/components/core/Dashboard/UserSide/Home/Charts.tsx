@@ -14,8 +14,14 @@ const chartData = [
   { day: 'Sun', current: 1, last: 0 },
 ];
 
-const ChartTooltipContent = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number; name: string }>;
+  label?: string;
+}
+
+const ChartTooltipContent = ({ active, payload, label }: ChartTooltipProps) => {
+  if (active && payload?.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-100">
         <p className="text-sm font-medium text-charcoal mb-1">{label}</p>

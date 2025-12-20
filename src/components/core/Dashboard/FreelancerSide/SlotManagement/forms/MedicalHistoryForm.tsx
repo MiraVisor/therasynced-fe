@@ -657,7 +657,7 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
                     <div key={key} className="flex items-center space-x-2">
                       <Checkbox
                         id={`otherSymptoms.${key}`}
-                        checked={otherSymptoms[key as keyof typeof otherSymptoms] as boolean}
+                        checked={otherSymptoms[key as keyof typeof otherSymptoms]}
                         onCheckedChange={(checked) =>
                           handleCheckboxChange(
                             `medicalHistory.otherSymptoms.${key}`,
@@ -940,9 +940,7 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
                       <div key={key} className="flex items-center space-x-2">
                         <Checkbox
                           id={`painCharacteristics.${key}`}
-                          checked={
-                            painCharacteristics[key as keyof typeof painCharacteristics] as boolean
-                          }
+                          checked={painCharacteristics[key as keyof typeof painCharacteristics]}
                           onCheckedChange={(checked) =>
                             handleCheckboxChange(`painCharacteristics.${key}`, checked as boolean)
                           }
@@ -973,7 +971,7 @@ export const MedicalHistoryForm = ({ initialData, onSubmit, slot }: MedicalHisto
                       <div key={key} className="flex items-center space-x-2">
                         <Checkbox
                           id={`sensorySymptoms.${key}`}
-                          checked={sensorySymptoms[key as keyof typeof sensorySymptoms] as boolean}
+                          checked={sensorySymptoms[key as keyof typeof sensorySymptoms]}
                           onCheckedChange={(checked) =>
                             handleCheckboxChange(`sensorySymptoms.${key}`, checked as boolean)
                           }

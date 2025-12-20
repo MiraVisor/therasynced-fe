@@ -249,7 +249,7 @@ export function StampDetail({ therapistId, onBack }: StampDetailProps) {
                   if (history.eventType === 'REWARD_RESERVED' && history.notes) {
                     // Extract reservation reference from notes (format: "Reward reserved with reference XXX" or "Reservation XXX attached to booking")
                     const match = history.notes.match(/(?:reference|Reservation)\s+([a-f0-9-]+)/i);
-                    if (match && match[1]) {
+                    if (match?.[1]) {
                       const ref = match[1];
                       if (seenReservations.has(ref)) {
                         return false; // Skip duplicate

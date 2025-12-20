@@ -1,20 +1,23 @@
 import { Circle, Crown, Star } from 'lucide-react';
 
-import { SubscriptionPlanType } from '@/types/types';
-import { Expert } from '@/types/types';
+import { Expert, SubscriptionPlanType } from '@/types/types';
 
 /**
  * Get color scheme for a tier
  */
 export const getTierColor = (tier: SubscriptionPlanType | null | undefined): string => {
-  if (!tier) return '#6B7280'; // Default gray
+  // Default gray
+  if (!tier) return '#6B7280';
   switch (tier) {
     case 'GOLD':
-      return '#FFD700'; // Gold
+      // Gold
+      return '#FFD700';
     case 'SILVER':
-      return '#C0C0C0'; // Silver
+      // Silver
+      return '#C0C0C0';
     case 'BRONZE':
-      return '#CD7F32'; // Bronze
+      // Bronze
+      return '#CD7F32';
     default:
       return '#6B7280';
   }
@@ -92,7 +95,7 @@ export const groupFreelancersByTier = (
   };
 
   freelancers.forEach((freelancer) => {
-    const tier = freelancer.tier || freelancer.planFeatures?.planType;
+    const tier = freelancer.tier ?? freelancer.planFeatures?.planType;
     if (!tier) {
       grouped.noTier.push(freelancer);
     } else {
@@ -126,11 +129,12 @@ export const sortFreelancersByTier = (freelancers: Expert[]): Expert[] => {
   };
 
   return [...freelancers].sort((a, b) => {
-    const tierA = a.tier || a.planFeatures?.planType || '';
-    const tierB = b.tier || b.planFeatures?.planType || '';
-    const priorityA = tierPriority[tierA] || 0;
-    const priorityB = tierPriority[tierB] || 0;
-    return priorityB - priorityA; // Higher priority first
+    const tierA = a.tier ?? a.planFeatures?.planType ?? '';
+    const tierB = b.tier ?? b.planFeatures?.planType ?? '';
+    const priorityA = tierPriority[tierA] ?? 0;
+    const priorityB = tierPriority[tierB] ?? 0;
+    // Higher priority first
+    return priorityB - priorityA;
   });
 };
 
@@ -143,7 +147,7 @@ export const getCurrentFeaturedTier = (): 'gold' | 'silver' | 'bronze' => {
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
   );
   const tiers: ('gold' | 'silver' | 'bronze')[] = ['gold', 'silver', 'bronze'];
-  return tiers[dayOfYear % 3];
+  return tiers[dayOfYear % 3] ?? 'gold';
 };
 
 /**

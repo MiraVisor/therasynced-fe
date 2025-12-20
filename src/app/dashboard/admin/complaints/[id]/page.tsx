@@ -68,13 +68,15 @@ const ComplaintDetailPage = () => {
       setLoading(true);
       const response = await adminComplaintService.getDetails(complaintId);
       if (response.success) {
-        const data = response.data;
+        const { data } = response;
         setComplaint(data);
         setStatus(data.status);
         setAdminResponse(data.adminResponse || '');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch complaint details');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to fetch complaint details';
+      toast.error(errorMessage);
       router.push('/dashboard/admin/complaints');
     } finally {
       setLoading(false);
@@ -95,8 +97,10 @@ const ComplaintDetailPage = () => {
         setIsStatusDialogOpen(false);
         fetchComplaintDetails();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update complaint status');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update complaint status';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -120,8 +124,9 @@ const ComplaintDetailPage = () => {
         setActionReason('');
         fetchComplaintDetails();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to take action');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to take action';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

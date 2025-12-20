@@ -1,8 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import { format, getMonth, getYear, setDate, setMonth, setYear } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import * as React from 'react';
 
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -78,9 +78,9 @@ export function ImprovedDatePicker({
     // Auto-format as user types (DD/MM/YYYY)
     if (cleanInput.length <= 10) {
       if (cleanInput.length === 2 && !cleanInput.includes('/')) {
-        cleanInput = cleanInput + '/';
+        cleanInput = `${cleanInput}/`;
       } else if (cleanInput.length === 5 && cleanInput.split('/').length === 2) {
-        cleanInput = cleanInput + '/';
+        cleanInput = `${cleanInput}/`;
       }
 
       setTextInput(cleanInput);

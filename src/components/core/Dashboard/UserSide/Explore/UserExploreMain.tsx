@@ -9,7 +9,8 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useExplorePatientBookings } from '@/hooks/queries/useExplore';
 import { useFavoriteFreelancers, useFreelancers } from '@/hooks/queries/useFreelancers';
 import { useAuth } from '@/hooks/useAuthZustand';
-import { Expert } from '@/types/types';
+import type { Booking } from '@/types/booking';
+import type { Expert, Freelancer } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import DashboardWidget from '../Home/DashboardWidget';
@@ -20,17 +21,17 @@ import QuickBookingWidget from '../Home/QuickBookingWidget';
 import UpcomingAppointmentCard from '../Home/UpcomingAppointmentCard';
 
 // Helper functions for data processing
-const getNextUpcomingAppointment = (bookings: any[]) => {
+const getNextUpcomingAppointment = (bookings: Booking[]) => {
   if (!bookings || bookings.length === 0) return null;
 
   const now = new Date();
   const upcomingBookings = bookings
-    .filter((booking: any) => {
+    .filter((booking: Booking) => {
       if (!booking?.slot?.startTime) return false;
       const bookingDate = new Date(booking.slot.startTime);
       return bookingDate > now;
     })
-    .sort((a: any, b: any) => {
+    .sort((a: Booking, b: Booking) => {
       return new Date(a.slot.startTime).getTime() - new Date(b.slot.startTime).getTime();
     });
 
@@ -38,9 +39,9 @@ const getNextUpcomingAppointment = (bookings: any[]) => {
 };
 
 // Map freelancer data to Expert format
-const mapFreelancerToExpert = (freelancer: any): Expert => {
+const mapFreelancerToExpert = (freelancer: Freelancer | Expert): Expert => {
   // Extract services and their location types
-  const services = freelancer.services || [];
+  const services = freelancer.services ?? [];
   const allLocationTypes = new Set<string>();
 
   // Convert location types to session types
@@ -49,13 +50,13 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
   const primaryService = services.length > 0 ? services[0]?.name : undefined;
 
   // Get location information
-  const locations = freelancer.locations || [];
+  const locations = freelancer.locations ?? [];
 
   // Calculate experience from creation date
 
   // Get rating and reviews from cardInfo
-  const cardInfo = freelancer.cardInfo || {};
-  const rating = cardInfo.averageRating || freelancer.averageRating;
+  const cardInfo = freelancer.cardInfo ?? {};
+  const rating = cardInfo.averageRating ?? freelancer.averageRating;
 
   // Only use rating if it's a valid number greater than 0
   const validRating = rating && rating > 0 ? rating : undefined;
@@ -63,26 +64,26 @@ const mapFreelancerToExpert = (freelancer: any): Expert => {
   // Map API freelancer to Expert type for UI
   return {
     id: freelancer.id,
-    name: freelancer.name || cardInfo.name,
-    specialty: cardInfo.mainService || primaryService,
+    name: freelancer.name ?? cardInfo.name,
+    specialty: cardInfo.mainService ?? primaryService,
     jobTitle: freelancer.mainJobTitle, // Add job title mapping
     rating: validRating,
-    reviews: cardInfo.totalRatings || freelancer.cardInfo?.patientStories || 0,
-    description: freelancer.description || cardInfo.title,
+    reviews: cardInfo.totalRatings ?? freelancer.cardInfo?.patientStories ?? 0,
+    description: freelancer.description ?? cardInfo.title,
     isFavorite: freelancer.isFavorite ?? false,
     profilePicture: freelancer.profilePicture,
-    slots: freelancer.slots || [],
-    slotSummary: freelancer.slotSummary || {},
+    slots: freelancer.slots ?? [],
+    slotSummary: freelancer.slotSummary ?? {},
     cardInfo: cardInfo,
-    availableSlots: freelancer.slotSummary?.availableSlots || 0,
-    totalSlots: freelancer.slotSummary?.totalSlots || 0,
-    planFeatures: freelancer.planFeatures || null,
-    tier: freelancer.planFeatures?.planType || null,
-    subscriptionStatus: freelancer.subscriptionStatus || undefined,
+    availableSlots: freelancer.slotSummary?.availableSlots ?? 0,
+    totalSlots: freelancer.slotSummary?.totalSlots ?? 0,
+    planFeatures: freelancer.planFeatures ?? null,
+    tier: freelancer.planFeatures?.planType ?? null,
+    subscriptionStatus: freelancer.subscriptionStatus ?? undefined,
   };
 };
 
-const getRecommendedFreelancers = (freelancers: any[], favorites: Expert[]) => {
+const getRecommendedFreelancers = (freelancers: Freelancer[], favorites: Expert[]) => {
   if (!freelancers || freelancers.length === 0) return [];
 
   // Map freelancers to Expert format
@@ -96,17 +97,17 @@ const getRecommendedFreelancers = (freelancers: any[], favorites: Expert[]) => {
   return available.sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
 };
 
-const getUpcomingAppointments = (bookings: any[]) => {
+const getUpcomingAppointments = (bookings: Booking[]) => {
   if (!bookings || bookings.length === 0) return [];
 
   const now = new Date();
   const upcomingBookings = bookings
-    .filter((booking: any) => {
+    .filter((booking: Booking) => {
       if (!booking?.slot?.startTime) return false;
       const bookingDate = new Date(booking.slot.startTime);
       return bookingDate > now;
     })
-    .sort((a: any, b: any) => {
+    .sort((a: Booking, b: Booking) => {
       return new Date(a.slot.startTime).getTime() - new Date(b.slot.startTime).getTime();
     });
 
@@ -125,23 +126,24 @@ const UserExploreMain = () => {
   const { data: bookings = [], isLoading: bookingsLoading } = useExplorePatientBookings();
 
   // Process data - map favorites through the same function as experts
-  const favoritesList = favorites?.map((favorite: any) => mapFreelancerToExpert(favorite)) || [];
+  const favoritesList =
+    favorites?.map((favorite: Freelancer | Expert) => mapFreelancerToExpert(favorite)) ?? [];
 
-  const allTimeBookings = bookings || [];
+  const allTimeBookings = bookings ?? [];
   const loading = expertsLoading || favoritesLoading;
   const nextAppointment = getNextUpcomingAppointment(allTimeBookings);
   const upcomingAppointments = getUpcomingAppointments(allTimeBookings);
   const recommendedFreelancers = getRecommendedFreelancers(allExperts, favoritesList);
 
   // Calculate stats
-  const totalSessions = allTimeBookings?.length || 0;
+  const totalSessions = allTimeBookings?.length ?? 0;
   const upcomingSessions =
-    allTimeBookings?.filter((booking: any) => {
+    allTimeBookings?.filter((booking: Booking) => {
       const bookingDate = new Date(booking.slot?.startTime);
       const now = new Date();
       return bookingDate > now;
-    }).length || 0;
-  const favoriteFreelancers = favoritesList?.length || 0;
+    }).length ?? 0;
+  const favoriteFreelancers = favoritesList?.length ?? 0;
 
   // Calculate actual unread messages from others (not from user)
   const unreadMessages = 0; // TODO: Implement real unread message count from API
@@ -278,7 +280,7 @@ const UserExploreMain = () => {
           </div>
           {upcomingAppointments && upcomingAppointments.length > 1 ? (
             <div className="space-y-3">
-              {upcomingAppointments.slice(1, 4).map((booking: any) => (
+              {upcomingAppointments.slice(1, 4).map((booking: Booking) => (
                 <UpcomingAppointmentCard key={booking.id} booking={booking} />
               ))}
             </div>

@@ -117,9 +117,9 @@ const BookingDetailsModal = ({
 
   if (!booking) return null;
 
-  const freelancer = booking.slot.freelancer;
-  const slot = booking.slot;
-  const location = slot.location;
+  const { freelancer } = booking.slot;
+  const { slot } = booking;
+  const { location } = slot;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -364,7 +364,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
       );
     },
     cell: ({ row }) => {
-      const freelancer = row.original.slot.freelancer;
+      const { freelancer } = row.original.slot;
       return (
         <div className="flex items-center gap-3">
           <Avatar className="h-16 w-16">
@@ -474,7 +474,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
       return <div className="font-semibold text-sm text-black text-left">Status</div>;
     },
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const status = row.getValue('status');
 
       let badgeProps = {
         variant: 'secondary' as 'default' | 'secondary',

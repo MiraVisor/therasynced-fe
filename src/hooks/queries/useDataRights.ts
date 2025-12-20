@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import * as dataRightsService from '@/services/dataRightsService';
+import { getApiErrorMessage, getErrorMessage } from '@/types/common';
 import type {
   AdminHealthDataLogsFilters,
   BreachFilters,
@@ -30,8 +31,8 @@ export const useExportUserData = () => {
     onSuccess: () => {
       toast.success('Data export initiated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to export data');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to export data');
     },
   });
 };
@@ -42,8 +43,8 @@ export const useExportDataPortable = () => {
     onSuccess: () => {
       toast.success('Data export initiated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to export data');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to export data');
     },
   });
 };
@@ -55,8 +56,8 @@ export const useDeleteAccount = () => {
     onSuccess: () => {
       toast.success('Account deletion initiated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete account');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to delete account');
     },
   });
 };
@@ -67,11 +68,11 @@ export const useRestrictProcessing = () => {
   return useMutation({
     mutationFn: (data: RestrictProcessingRequest) => dataRightsService.restrictProcessing(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dataRights'] });
+      void queryClient.invalidateQueries({ queryKey: ['dataRights'] });
       toast.success('Processing restriction updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to restrict processing');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to restrict processing');
     },
   });
 };
@@ -82,11 +83,11 @@ export const useObjectToProcessing = () => {
   return useMutation({
     mutationFn: (data: ObjectProcessingRequest) => dataRightsService.objectToProcessing(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dataRights'] });
+      void queryClient.invalidateQueries({ queryKey: ['dataRights'] });
       toast.success('Processing objection updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to object to processing');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to object to processing');
     },
   });
 };
@@ -104,10 +105,10 @@ export const useUpdateHealthDataConsent = () => {
   return useMutation({
     mutationFn: (data: HealthDataConsentRequest) => dataRightsService.updateHealthDataConsent(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['healthDataConsent'] });
+      void queryClient.invalidateQueries({ queryKey: ['healthDataConsent'] });
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update consent');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update consent');
     },
   });
 };
@@ -116,8 +117,10 @@ export const useUpdateHealthDataConsent = () => {
 export const useStoreCookieConsent = () => {
   return useMutation({
     mutationFn: (data: CookieConsentRequest) => dataRightsService.storeCookieConsent(data),
-    onError: (error: any) => {
-      console.warn('Failed to sync cookie consent with backend:', error);
+    onError: (error: unknown) => {
+      // Using logger utility would be better, but keeping console.warn for non-critical errors
+      // eslint-disable-next-line no-console
+      console.warn('Failed to sync cookie consent with backend:', getErrorMessage(error));
     },
   });
 };
@@ -158,11 +161,11 @@ export const useCreateBreach = () => {
   return useMutation({
     mutationFn: (data: CreateBreachDto) => dataRightsService.createBreach(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['breaches'] });
+      void queryClient.invalidateQueries({ queryKey: ['breaches'] });
       toast.success('Breach created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to create breach');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to create breach');
     },
   });
 };
@@ -173,12 +176,12 @@ export const useUpdateBreachStatus = () => {
     mutationFn: ({ id, data }: { id: string; data: UpdateBreachStatusDto }) =>
       dataRightsService.updateBreachStatus(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['breaches'] });
-      queryClient.invalidateQueries({ queryKey: ['breach', variables.id] });
+      void queryClient.invalidateQueries({ queryKey: ['breaches'] });
+      void queryClient.invalidateQueries({ queryKey: ['breach', variables.id] });
       toast.success('Breach status updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update breach status');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update breach status');
     },
   });
 };
@@ -189,12 +192,12 @@ export const useReportBreachToDpc = () => {
     mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
       dataRightsService.reportBreachToDpc(id, notes),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['breaches'] });
-      queryClient.invalidateQueries({ queryKey: ['breach', variables.id] });
+      void queryClient.invalidateQueries({ queryKey: ['breaches'] });
+      void queryClient.invalidateQueries({ queryKey: ['breach', variables.id] });
       toast.success('Breach marked as reported to DPC');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to mark as reported to DPC');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to mark as reported to DPC');
     },
   });
 };
@@ -205,12 +208,12 @@ export const useNotifyUsersAboutBreach = () => {
     mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
       dataRightsService.notifyUsersAboutBreach(id, notes),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['breaches'] });
-      queryClient.invalidateQueries({ queryKey: ['breach', variables.id] });
+      void queryClient.invalidateQueries({ queryKey: ['breaches'] });
+      void queryClient.invalidateQueries({ queryKey: ['breach', variables.id] });
       toast.success('Users marked as notified');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to mark users as notified');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to mark users as notified');
     },
   });
 };

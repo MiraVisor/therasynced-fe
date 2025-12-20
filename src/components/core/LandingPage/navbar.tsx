@@ -67,7 +67,7 @@ const Navbar = () => {
                       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     } else {
                       // If the element isn't on this page, navigate to the anchor on the home page
-                      router.push('/' + link.href);
+                      router.push(`/${link.href}`);
                     }
                   }
                 }}
@@ -118,7 +118,7 @@ const Navbar = () => {
                   if (el) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   } else {
-                    router.push('/' + link.href);
+                    router.push(`/${link.href}`);
                   }
                 } else {
                   closeMenu();
@@ -143,10 +143,7 @@ const Navbar = () => {
 
       {/* Overlay when menu is open */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black bg-opacity-40 md:hidden"
-          onClick={closeMenu}
-        ></div>
+        <div className="fixed inset-0 z-30 bg-black bg-opacity-40 md:hidden" onClick={closeMenu} />
       )}
     </header>
   );

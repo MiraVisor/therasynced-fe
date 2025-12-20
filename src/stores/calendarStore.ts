@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { View } from '@/types/types';
+import { Appointment, View } from '@/types/types';
 
 interface CalendarFilters {
   hideCompleted: boolean;
@@ -13,12 +13,12 @@ interface CalendarState {
   selectedDate: Date;
   calendarView: View;
   filters: CalendarFilters;
-  selectedEvent: any | null;
+  selectedEvent: Appointment | null;
   isEventDialogOpen: boolean;
   setSelectedDate: (date: Date) => void;
   setCalendarView: (view: View) => void;
   setFilters: (filters: Partial<CalendarFilters>) => void;
-  setSelectedEvent: (event: any | null) => void;
+  setSelectedEvent: (event: Appointment | null) => void;
   setIsEventDialogOpen: (open: boolean) => void;
   navigateToPrev: () => void;
   navigateToNext: () => void;

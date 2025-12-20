@@ -1,6 +1,26 @@
 // Re-export data rights types
 export * from './dataRights';
 
+// Re-export from organized domain files
+export * from './analytics';
+export * from './api';
+export * from './appointment';
+export * from './auth';
+export * from './booking';
+export * from './chat';
+export * from './common';
+export * from './complaint';
+export * from './enums';
+export * from './freelancer';
+export * from './location';
+export * from './loyalty';
+export * from './notification';
+export * from './rating';
+export * from './service';
+export * from './slot';
+export * from './subscription';
+export * from './user';
+
 // Job Title interface for freelancers
 export interface JobTitle {
   id: string;
@@ -187,7 +207,7 @@ export interface UpdateProfileDto {
 }
 
 // Backend response types
-export interface BackendResponse<T = any> {
+export interface BackendResponse<T> {
   success: boolean;
   message: string;
   data: T;
@@ -228,7 +248,7 @@ export interface BackendProfileResponse {
       firstAidCertificateRejectedAt?: Date | null;
       firstAidCertificateRejectionReason?: string | null;
     };
-    freelancerData?: any;
+    freelancerData?: Record<string, unknown>;
   };
   meta: {
     timestamp: string;
@@ -274,7 +294,13 @@ export interface Expert {
   isFavorite?: boolean;
   // Additional properties for profile dialog
   profilePicture?: string;
-  services?: any[];
+  services?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    additionalPrice?: number;
+    duration?: number;
+  }>;
   location?: string;
   sessionTypes?: string[];
   pricing?: {
@@ -307,10 +333,14 @@ export interface Expert {
   // First aid certificate information
   firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   // Slot information
-  slots?: any[];
-  slotSummary?: any;
+  slots?: Array<{ id: string; startTime: string; endTime: string; status: string }>;
+  slotSummary?: {
+    nextAvailable: { id: string; startTime: string; endTime: string; status: string } | null;
+    totalSlots: number;
+    availableSlots: number;
+  };
   // Favorites information
-  favoritedBy?: any[];
+  favoritedBy?: Array<{ id: string; name: string; email: string }>;
   // Card info
   cardInfo?: CardInfo;
   // Available slots count
@@ -379,7 +409,7 @@ export interface Appointment {
   clientAddress?: string | null;
   freelancer?: {
     clinicAddress?: string | null;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -465,7 +495,13 @@ export interface Slot {
     };
     discountAmount?: number;
     discountPercentage?: number;
-    services?: any[]; // Legacy: Services for backward compatibility
+    services?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      additionalPrice?: number;
+      duration?: number;
+    }>; // Legacy: Services for backward compatibility
     serviceCategories?: Array<{
       id: string;
       name: string;
@@ -571,7 +607,7 @@ export interface PaginationDto {
   name?: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
   data: T;
@@ -590,7 +626,7 @@ export interface ApiResponse<T = any> {
 }
 
 // Updated to match backend response structure
-export interface BackendApiResponse<T = any> {
+export interface BackendApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data: T;
@@ -868,7 +904,7 @@ export interface Booking {
   canBeRated?: boolean; // From backend API - indicates if booking can be rated
   hasRating?: boolean; // From backend API - indicates if booking already has a rating
   rating?: BookingRating | null; // The rating object if the booking has been rated
-  formData?: Record<string, any> | null;
+  formData?: Record<string, unknown> | null;
   slot: {
     id: string;
     startTime: string;
@@ -1019,7 +1055,7 @@ export interface Notification {
     slotId?: string;
     startTime?: string;
     amount?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -1350,7 +1386,7 @@ export interface RotationInfo {
 export interface TierFreelancerResponse {
   success: boolean;
   message: string;
-  data: any[]; // Freelancer objects
+  data: Expert[]; // Freelancer objects
   pagination: {
     page: number;
     limit: number;

@@ -1,8 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle, FileText, XCircle } from 'lucide-react';
-import { Edit, Plus } from 'lucide-react';
+import { CheckCircle, Edit, FileText, Plus, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 

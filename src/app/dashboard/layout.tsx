@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 
 import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
-import { SidebarSkeleton } from '@/components/common/sidebar/SidebarSkeleton';
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
+import { SidebarSkeleton } from '@/components/common/sidebar/SidebarSkeleton';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuthZustand';
 

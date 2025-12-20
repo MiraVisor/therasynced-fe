@@ -64,8 +64,10 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
             draggable: true,
           });
         },
-        onError: (error: any) => {
-          toast.error(error?.message || 'Failed to cancel appointment');
+        onError: (error: unknown) => {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Failed to cancel appointment';
+          toast.error(errorMessage);
         },
       },
     );

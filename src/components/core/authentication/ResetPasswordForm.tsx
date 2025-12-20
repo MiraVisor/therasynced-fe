@@ -53,8 +53,9 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
     try {
       await resetPasswordApi(token, { newPassword });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to reset password. Please try again.');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError?.response?.data?.message || 'Failed to reset password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -188,7 +189,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
 
         {error && (
           <p className="text-red-500 text-sm font-inter flex items-center gap-1" role="alert">
-            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+            <span className="w-1 h-1 bg-red-500 rounded-full" />
             {error}
           </p>
         )}

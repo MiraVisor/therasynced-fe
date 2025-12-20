@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useCreateComplaint } from '@/hooks/queries/useComplaints';
 import { ComplaintCategory } from '@/types/types';
 
 const complaintSchema = z.object({
@@ -61,8 +62,7 @@ export const ReportFreelancerDialog = ({
   freelancerId,
   freelancerName,
 }: ReportFreelancerDialogProps) => {
-  const dispatch = useDispatch();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate: createComplaintMutation, isPending: isSubmitting } = useCreateComplaint();
   const [hasConsent, setHasConsent] = useState(false);
 
   const {

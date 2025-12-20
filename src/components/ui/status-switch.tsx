@@ -1,8 +1,8 @@
 'use client';
 
 import * as SwitchPrimitives from '@radix-ui/react-switch';
-import { Check, X } from 'lucide-react';
 import * as React from 'react';
+import { Check, X } from 'lucide-react';
 
 import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';

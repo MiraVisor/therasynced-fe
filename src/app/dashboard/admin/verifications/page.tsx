@@ -10,7 +10,7 @@ import {
   Shield,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
-import { useVerifications } from '@/hooks/useVerifications';
+import { useAdminVerifications, useAdminVerificationStats } from '@/hooks/queries/useAdmin';
 import adminVerificationService, {
   type PendingVerificationResponse,
 } from '@/services/adminVerificationService';
@@ -110,97 +110,59 @@ const VerificationsPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch verifications with pagination, search, and status filter
-  const { verifications, loading, initialLoading, error, pagination, refetch } = useVerifications({
+  const {
+    data: verificationsData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useAdminVerifications({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
     status: statusFilter,
   });
 
-  // Calculate stats - we'll need to fetch these separately or from the API
-  const [stats, setStats] = useState<VerificationStats>({
-    pending: 0,
-    approved: 0,
-    rejected: 0,
-    total: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
+  const verifications = verificationsData?.verifications || [];
+  const pagination = verificationsData?.pagination;
 
-  // Fetch stats separately
-  useEffect(() => {
-    let isMounted = true;
+  // Fetch stats
+  const {
+    data: statsData,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useAdminVerificationStats();
 
-    const fetchStats = async () => {
-      const hasStats = stats.total > 0 || stats.pending > 0 || stats.approved > 0;
-      try {
-        if (!hasStats) {
-          setInitialStatsLoading(true);
-        } else {
-          setStatsLoading(true);
-        }
-        const response = await adminVerificationService.getStatistics();
-
-        if (response.success && isMounted) {
-          const { total, pending, approved, rejected } = response.data;
-          setStats({
-            total,
-            pending,
-            approved,
-            rejected,
-          });
-        }
-      } catch (error) {
-        // Silently handle stats fetch errors to avoid spam
-        console.warn('Failed to fetch stats:', error);
-      } finally {
-        if (isMounted) {
-          setStatsLoading(false);
-          setInitialStatsLoading(false);
-        }
+  const stats: VerificationStats = statsData?.data
+    ? {
+        total: statsData.data.total || 0,
+        pending: statsData.data.pending || 0,
+        approved: statsData.data.approved || 0,
+        rejected: statsData.data.rejected || 0,
       }
-    };
+    : {
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        total: 0,
+      };
 
-    fetchStats();
-
-    return () => {
-      isMounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show error as toast when it occurs
+  // Show errors as toast when they occur
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load verifications: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load verifications';
+      toast.error(errorMessage);
     }
   }, [error]);
 
-  // Function to refetch stats with debouncing
-  const refetchStats = useCallback(async () => {
-    // Prevent multiple concurrent stats requests
-    if (statsLoading) return;
-
-    try {
-      setStatsLoading(true);
-      const response = await adminVerificationService.getStatistics();
-
-      if (response.success) {
-        const { total, pending, approved, rejected } = response.data;
-        setStats({
-          total,
-          pending,
-          approved,
-          rejected,
-        });
-      }
-    } catch (error) {
-      // Silently handle stats refetch errors to avoid spam
-      console.warn('Failed to refetch stats:', error);
-    } finally {
-      setStatsLoading(false);
+  useEffect(() => {
+    if (statsError) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load verification stats';
+      toast.error(errorMessage);
     }
-  }, [statsLoading]);
+  }, [statsError]);
 
   // Handle action submission with improved error handling
   const handleActionSubmit = async () => {
@@ -381,7 +343,7 @@ const VerificationsPage = () => {
       header: 'Actions',
       cell: ({ row }) => {
         const freelancer = row.original;
-        const verificationStatus = freelancer.verificationStatus;
+        const { verificationStatus } = freelancer;
         const certificateStatus = freelancer.firstAidCertificateStatus;
 
         // Show actions button if there are pending actions
@@ -448,9 +410,7 @@ const VerificationsPage = () => {
               icon={config.icon}
               iconColor={config.iconColor}
               iconBg={config.iconBg}
-              loading={
-                initialStatsLoading || (statsLoading && stats.total === 0 && stats.pending === 0)
-              }
+              loading={statsLoading && !statsData}
             />
           ))}
         </div>
@@ -478,8 +438,8 @@ const VerificationsPage = () => {
           enablePagination={true}
           showSearch={true}
           showSorting={false}
-          initialLoading={initialLoading}
-          loading={loading}
+          initialLoading={isLoading && !verifications.length}
+          loading={isFetching}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}

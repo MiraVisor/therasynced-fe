@@ -7,13 +7,13 @@ import socketService from '@/services/socketService';
 interface SocketEvent {
   type: string;
   timestamp: Date;
-  data: any;
+  data: unknown;
 }
 
 const SocketDebugger = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [events, setEvents] = useState<SocketEvent[]>([]);
-  const [slotDetails, setSlotDetails] = useState<any>(null);
+  const [slotDetails, setSlotDetails] = useState<unknown>(null);
 
   useEffect(() => {
     // Listen for socket events
@@ -43,7 +43,7 @@ const SocketDebugger = () => {
     };
   }, []);
 
-  const addEvent = (type: string, data: any) => {
+  const addEvent = (type: string, data: unknown) => {
     setEvents((prev) => [
       { type, timestamp: new Date(), data },
       ...prev.slice(0, 49), // Keep only last 50 events

@@ -60,9 +60,11 @@ const VerificationDetailPage = () => {
       } else {
         setError('Failed to load verification details');
       }
-    } catch (error: any) {
-      setError(error.message || 'Failed to fetch verification details');
-      toast.error(error.message || 'Failed to fetch verification details');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to fetch verification details';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -81,8 +83,10 @@ const VerificationDetailPage = () => {
         fetchVerificationDetails();
         router.push('/dashboard/admin/verifications');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to approve verification');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to approve verification';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -106,8 +110,9 @@ const VerificationDetailPage = () => {
         fetchVerificationDetails();
         router.push('/dashboard/admin/verifications');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to reject verification');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reject verification';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -125,8 +130,9 @@ const VerificationDetailPage = () => {
         setIsCertificateApproveDialogOpen(false);
         fetchVerificationDetails();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to approve certificate');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to approve certificate';
+      toast.error(errorMessage);
     } finally {
       setIsCertificateSubmitting(false);
     }
@@ -149,8 +155,9 @@ const VerificationDetailPage = () => {
         setCertificateRejectionReason('');
         fetchVerificationDetails();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to reject certificate');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reject certificate';
+      toast.error(errorMessage);
     } finally {
       setIsCertificateSubmitting(false);
     }

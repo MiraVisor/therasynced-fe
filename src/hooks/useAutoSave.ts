@@ -10,7 +10,7 @@ interface UseAutoSaveOptions {
  * Hook for auto-saving with debouncing
  * Prevents excessive API calls while user is typing
  */
-export function useAutoSave(data: any, options: UseAutoSaveOptions) {
+export function useAutoSave<T = unknown>(data: T, options: UseAutoSaveOptions) {
   const { onSave, debounceMs = 2000, enabled = true } = options;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedRef = useRef<string>('');
@@ -18,19 +18,21 @@ export function useAutoSave(data: any, options: UseAutoSaveOptions) {
   // Serialize data for comparison
   const dataString = JSON.stringify(data);
 
-  const debouncedSave = useCallback(async () => {
+  const debouncedSave = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        await onSave();
-        lastSavedRef.current = dataString;
-      } catch (error) {
-        console.error('Auto-save failed:', error);
-        // Optionally show user notification
-      }
+    timeoutRef.current = setTimeout(() => {
+      void (async () => {
+        try {
+          await onSave();
+          lastSavedRef.current = dataString;
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+          // Optionally show user notification
+        }
+      })();
     }, debounceMs);
   }, [onSave, debounceMs, dataString]);
 
@@ -44,7 +46,7 @@ export function useAutoSave(data: any, options: UseAutoSaveOptions) {
       dataString !== 'null' &&
       dataString !== '""'
     ) {
-      debouncedSave();
+      void debouncedSave();
     }
 
     // Cleanup on unmount

@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
-import { FaArrowTrendUp } from 'react-icons/fa6';
-import { FaArrowTrendDown } from 'react-icons/fa6';
+import { FaArrowTrendDown, FaArrowTrendUp } from 'react-icons/fa6';
 
 interface StatsCardProps {
   title: string;

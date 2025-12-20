@@ -25,8 +25,9 @@ function SubscriptionSuccessContent() {
             router.push('/dashboard/account?tab=subscription');
           }, 3000);
         },
-        onError: (error: any) => {
-          const errorMessage = error?.response?.data?.message || 'Payment verification failed';
+        onError: (error: unknown) => {
+          const apiError = error as { response?: { data?: { message?: string } } };
+          const errorMessage = apiError?.response?.data?.message || 'Payment verification failed';
           setError(errorMessage);
         },
       });

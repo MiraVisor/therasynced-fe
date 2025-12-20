@@ -1,13 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import * as bookingApi from '@/services/bookingService';
-import {
-  Booking,
-  BookingStats,
-  CancelBookingDto,
-  CreateBookingDto,
-  RescheduleBookingDto,
-} from '@/types/types';
+import { Booking, CancelBookingDto, CreateBookingDto, RescheduleBookingDto } from '@/types/types';
 
 /**
  * Hook to fetch patient bookings
@@ -61,7 +55,7 @@ export const usePatientBookingStats = () => {
   return useQuery({
     queryKey: ['bookings', 'patient', 'stats'],
     queryFn: () => bookingApi.getPatientBookingStats(),
-    select: (data) => data.data as BookingStats,
+    select: (data) => data.data,
   });
 };
 
@@ -153,11 +147,11 @@ export const useFreelancerAppointmentsByDate = (date: string | null) => {
     select: (data) => {
       // Map bookings to appointments format
       const bookings = data.data || [];
-      return bookings.map((booking: any) => ({
+      return bookings.map((booking: Booking) => ({
         id: booking.id,
         title:
-          booking.services?.length > 0
-            ? booking.services.map((s: any) => s.name).join(', ')
+          booking.services && booking.services.length > 0
+            ? booking.services.map((s) => s.name).join(', ')
             : 'General Session',
         start: booking.slot.startTime,
         end: booking.slot.endTime,

@@ -1,5 +1,4 @@
-import { bookingFormDraftService } from '@/services/draftStorage.service';
-import { slotNoteService } from '@/services/draftStorage.service';
+import { bookingFormDraftService, slotNoteService } from '@/services/draftStorage.service';
 
 /**
  * One-time migration script to move localStorage drafts to backend
@@ -23,20 +22,26 @@ export async function migrateLocalStorageDrafts() {
 
       if (!storedData) continue;
 
-      const formData = JSON.parse(storedData);
+      const formData = JSON.parse(storedData) as Record<string, unknown>;
 
       if (formData && Object.keys(formData).length > 0) {
+        // Handle both formats
+        const draftFormData = (formData.formData as Record<string, unknown>) ?? formData;
+        const formType = formData.formType as string | undefined;
+        const savedAt = formData.savedAt as string | undefined;
+
         await bookingFormDraftService.saveDraft(bookingId, {
-          formData: formData.formData || formData, // Handle both formats
-          formType: formData.formType,
+          formData: draftFormData,
+          formType,
           metadata: {
             migrated: true,
             migratedAt: new Date().toISOString(),
-            originalSavedAt: formData.savedAt,
+            originalSavedAt: savedAt,
           },
         });
         migrated.push(key);
-        localStorage.removeItem(key); // Remove after successful migration
+        // Remove after successful migration
+        localStorage.removeItem(key);
       }
     } catch (error) {
       errors.push({ key, error: error as Error });
@@ -49,22 +54,21 @@ export async function migrateLocalStorageDrafts() {
   for (const key of noteKeys) {
     try {
       const slotId = key.replace('slot_notes_', '');
-      const content = localStorage.getItem(key) || '';
+      const content = localStorage.getItem(key) ?? '';
 
       if (content.length > 0) {
         await slotNoteService.saveNote(slotId, { content });
         migrated.push(key);
-        localStorage.removeItem(key); // Remove after successful migration
+        // Remove after successful migration
+        localStorage.removeItem(key);
       }
     } catch (error) {
       errors.push({ key, error: error as Error });
     }
   }
 
-  console.log(`Migrated ${migrated.length} items`);
-  if (errors.length > 0) {
-    console.error('Migration errors:', errors);
-  }
+  // Migration completed - errors are returned in the response
+  // Logging is handled by the caller if needed
 
   return { migrated, errors };
 }

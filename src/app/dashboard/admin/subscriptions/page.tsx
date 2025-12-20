@@ -42,8 +42,10 @@ const SubscriptionsPage = () => {
         }
         const plansData = await adminSubscriptionService.getPlans();
         setPlans(plansData);
-      } catch (error: any) {
-        const errorMessage = error.response?.data?.message || 'Failed to fetch subscription plans';
+      } catch (error: unknown) {
+        const apiError = error as { response?: { data?: { message?: string } } };
+        const errorMessage =
+          apiError.response?.data?.message || 'Failed to fetch subscription plans';
         // Only show error toast on initial load
         if (!hasData) {
           toast.error(errorMessage);
@@ -82,8 +84,9 @@ const SubscriptionsPage = () => {
       // Refresh plans
       const plansData = await adminSubscriptionService.getPlans();
       setPlans(plansData);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update plan price');
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Failed to update plan price');
     } finally {
       setIsSubmitting(false);
     }
@@ -123,14 +126,14 @@ const SubscriptionsPage = () => {
                 key={i}
                 className="border border-border rounded-2xl p-8 bg-card animate-pulse shadow-lg"
               >
-                <div className="h-7 bg-muted rounded w-1/3 mb-6"></div>
-                <div className="h-12 bg-muted rounded w-1/2 mb-4"></div>
-                <div className="h-4 bg-muted rounded w-full mb-2"></div>
-                <div className="h-4 bg-muted rounded w-3/4 mb-6"></div>
+                <div className="h-7 bg-muted rounded w-1/3 mb-6" />
+                <div className="h-12 bg-muted rounded w-1/2 mb-4" />
+                <div className="h-4 bg-muted rounded w-full mb-2" />
+                <div className="h-4 bg-muted rounded w-3/4 mb-6" />
                 <div className="space-y-2 mb-6">
-                  <div className="h-3 bg-muted rounded w-1/4"></div>
-                  <div className="h-3 bg-muted rounded w-full"></div>
-                  <div className="h-3 bg-muted rounded w-5/6"></div>
+                  <div className="h-3 bg-muted rounded w-1/4" />
+                  <div className="h-3 bg-muted rounded w-full" />
+                  <div className="h-3 bg-muted rounded w-5/6" />
                 </div>
               </div>
             ))}

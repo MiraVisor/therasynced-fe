@@ -1,6 +1,5 @@
 import React from 'react';
-import { CiSearch } from 'react-icons/ci';
-import { CiLocationOn } from 'react-icons/ci';
+import { CiLocationOn, CiSearch } from 'react-icons/ci';
 
 interface SearchBarProps {
   placeholder?: string;

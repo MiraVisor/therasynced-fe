@@ -449,9 +449,15 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
           );
           onSuccess?.();
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
           // Extract error message from API response
           let errorMessage = 'Failed to create time slots';
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          } else if (error && typeof error === 'object' && 'response' in error) {
+            const apiError = error as { response?: { data?: { message?: string } } };
+            errorMessage = apiError.response?.data?.message || errorMessage;
+          }
           if (typeof error === 'string') {
             errorMessage = error;
           } else if (error?.message) {

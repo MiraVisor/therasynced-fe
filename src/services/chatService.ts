@@ -1,4 +1,4 @@
-import { Socket, io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 import { getCookie } from '@/lib/utils';
 

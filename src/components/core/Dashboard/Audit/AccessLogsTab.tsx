@@ -16,9 +16,9 @@ import {
 import { useAllHealthDataLogs } from '@/hooks/queries/useDataRights';
 import type { AdminHealthDataLogsFilters } from '@/types/dataRights';
 
+import { TimelineChart } from './components/charts/TimelineChart';
 import { DateRange, DateRangePresets } from './components/DateRangePresets';
 import { StatCard, StatsCardsGrid } from './components/StatsCards';
-import { TimelineChart } from './components/charts/TimelineChart';
 
 export function AccessLogsTab() {
   const [page, setPage] = useState(1);

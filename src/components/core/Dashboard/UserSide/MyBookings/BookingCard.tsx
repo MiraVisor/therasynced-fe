@@ -27,7 +27,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   onClick,
 }) => {
   const bookingDate = new Date(booking.slot.startTime);
-  const freelancer = booking.slot.freelancer;
+  const { freelancer } = booking.slot;
 
   const getStatusColor = (status: string) => {
     const isUpcoming = status === 'CONFIRMED' && new Date(booking.slot.startTime) > new Date();
@@ -120,12 +120,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 {/* Ratings Display */}
                 <div className="mb-2 space-y-2">
                   {/* Freelancer Overall Rating */}
-                  {(freelancer as any)?.averageRating && (
-                    <RatingDisplay
-                      rating={(freelancer as any).averageRating}
-                      size="sm"
-                      showCount={false}
-                    />
+                  {freelancer?.averageRating && (
+                    <RatingDisplay rating={freelancer.averageRating} size="sm" showCount={false} />
                   )}
                 </div>
               </div>

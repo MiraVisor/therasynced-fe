@@ -6,15 +6,15 @@ import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  type FileUploadOptions,
-  type UploadResult,
   deleteFile,
+  type FileUploadOptions,
   formatFileSize,
   getFilePreviewUrl,
   isImageFile,
   isPdfFile,
   revokeFilePreviewUrl,
   uploadMultipleFiles,
+  type UploadResult,
   validateFile,
 } from '@/utils/fileUpload';
 
@@ -180,7 +180,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
       if (disabled) return;
 
-      const files = e.dataTransfer.files;
+      const { files } = e.dataTransfer;
       handleFileSelect(files);
     },
     [disabled, handleFileSelect],

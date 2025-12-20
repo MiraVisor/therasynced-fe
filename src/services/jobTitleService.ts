@@ -46,7 +46,7 @@ export const jobTitleService = {
         success: true,
         data: [],
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching job titles:', error);
       // Return empty array instead of throwing error to prevent UI crashes
       return {

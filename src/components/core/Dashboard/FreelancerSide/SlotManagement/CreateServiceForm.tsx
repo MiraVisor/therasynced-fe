@@ -50,8 +50,9 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
       onSuccess: () => {
         onSuccess?.();
       },
-      onError: (error: any) => {
-        toast.error(error?.message || 'Failed to create service');
+      onError: (error: unknown) => {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create service';
+        toast.error(errorMessage);
       },
     });
   };
@@ -178,7 +179,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
                   </div>
                   {formData.locationTypes.includes(locationType as LocationType) && (
                     <div className="absolute top-2 right-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     </div>
                   )}
                 </div>
@@ -243,7 +244,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
           {/* Summary */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full" />
               <span className="font-medium text-blue-800">Service Summary</span>
             </div>
             <div className="text-sm text-blue-700">

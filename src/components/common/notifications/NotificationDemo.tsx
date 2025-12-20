@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotificationsWithCount } from '@/hooks/queries/useNotifications';
 import { Notification, NotificationPriority, NotificationType, RoleType } from '@/types/types';
 
 import { NotificationPopover } from './NotificationPopover';
@@ -16,7 +16,7 @@ interface NotificationDemoProps {
 }
 
 export function NotificationDemo({ userRole, className }: NotificationDemoProps) {
-  const notifications = useNotifications();
+  const notifications = useNotificationsWithCount();
   const [isAddingNotification, setIsAddingNotification] = useState(false);
   const [demoNotifications, setDemoNotifications] = useState<Notification[]>([]);
 

@@ -9,6 +9,7 @@ import EmailVerificationForm from '@/components/core/authentication/EmailVerific
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
 import SignInForm from '@/components/core/authentication/SignInForm';
 import { useResendVerificationEmail, useSignUp } from '@/hooks/queries/useAuth';
+import type { SignUpDto } from '@/types';
 
 import MultiStepSignup from './MultiStepSignup';
 
@@ -42,7 +43,7 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     setCurrentView('sign-in');
   };
 
-  const handleSignUpSubmit = (data: any) => {
+  const handleSignUpSubmit = (data: SignUpDto) => {
     setUserEmail(data.email);
     signup(data, {
       onSuccess: () => {

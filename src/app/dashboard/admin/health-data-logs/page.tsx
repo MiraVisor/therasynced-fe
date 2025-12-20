@@ -46,7 +46,6 @@ export default function AdminHealthDataLogsPage() {
     if (role && role !== ROLES.ADMIN) {
       toast.error('Access denied. Admin privileges required.');
       router.push('/dashboard');
-      return;
     }
   }, [isAuthenticated, role, router]);
 

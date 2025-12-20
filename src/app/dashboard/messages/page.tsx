@@ -126,9 +126,11 @@ const MessagesPage = () => {
           try {
             await sendMessage(targetUserId, 'Hello!');
             // The contact will appear via socket updates, handled in the next useEffect
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Failed to start conversation';
             console.error('Failed to start conversation:', error);
-            toast.error(error?.message || 'Failed to start conversation');
+            toast.error(errorMessage);
             hasHandledUserIdRef.current = false; // Allow retry
           }
         };
@@ -255,7 +257,10 @@ const MessagesPage = () => {
       setNewMessage('');
       // Scroll to bottom after sending message
       setTimeout(scrollToBottom, 100);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+      console.error('Failed to send message:', error);
+      toast.error(errorMessage);
       toast.error(error.message || 'Failed to send message');
     }
   };
@@ -479,7 +484,7 @@ const MessagesPage = () => {
                       disabled={!newMessage.trim() || !isConnected || loading.sending}
                     >
                       {loading.sending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                       ) : (
                         <Send className="h-4 w-4" />
                       )}

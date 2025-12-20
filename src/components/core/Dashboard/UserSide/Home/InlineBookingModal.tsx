@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import { Expert } from '@/types/types';
+import type { Expert, Slot } from '@/types/types';
 
 interface InlineBookingModalProps {
   freelancer: Expert | null;
   isOpen: boolean;
   onClose: () => void;
-  onBook: (freelancer: Expert, slot: any) => void;
+  onBook: (freelancer: Expert, slot: Slot) => void;
 }
 
 const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
@@ -22,12 +22,12 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
   onClose,
   onBook,
 }) => {
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
   if (!freelancer) return null;
 
   // No slots available - redirect to booking page
-  const availableSlots: any[] = [];
+  const availableSlots: Slot[] = [];
 
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {

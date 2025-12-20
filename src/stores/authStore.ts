@@ -31,7 +31,7 @@ const getInitialState = () => {
 
   // Check if token is valid and not expired
   const isTokenValid =
-    decodedToken && decodedToken.exp && decodedToken.exp > Math.floor(Date.now() / 1000);
+    decodedToken?.exp !== undefined && decodedToken.exp > Math.floor(Date.now() / 1000);
 
   return {
     isAuthenticated: !!token && !!isTokenValid,

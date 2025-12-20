@@ -26,35 +26,23 @@ import { EmbeddedCheckout } from './EmbeddedCheckout';
 import { PlanCard } from './PlanCard';
 
 export default function SubscriptionManagement() {
-  const [isLoadingPortal, setIsLoadingPortal] = useState(false);
-  const [isRedirectingToCheckout, setIsRedirectingToCheckout] = useState(false);
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Use React Query hooks
-  const {
-    data: plans = [],
-    isLoading: isLoadingPlansData,
-    isFetching: initialLoading,
-  } = useSubscriptionPlans();
-  const {
-    data: currentSubscription,
-    isLoading: isLoadingSubscription,
-    isFetching: isLoading,
-  } = useMySubscription();
+  const { data: plans = [], isFetching: initialLoading } = useSubscriptionPlans();
+  const { data: currentSubscription, isFetching: isLoading } = useMySubscription();
   const { mutate: createCheckout, isPending: isSubscribing } = useCreateCheckoutSession();
   const { mutate: updateSubscriptionMutation, isPending: isUpdating } = useUpdateSubscription();
   const { mutate: cancelSubscriptionMutation, isPending: isCanceling } = useCancelSubscription();
   const { mutate: resumeSubscriptionMutation } = useResumeSubscription();
 
   // For billing portal, we need to use query with enabled: false and refetch
-  const { data: billingPortalUrl, refetch: refetchBillingPortal } = useBillingPortal();
+  const { refetch: refetchBillingPortal, isFetching: isLoadingPortal } = useBillingPortal();
 
   // Combine loading states - only show loader if no data exists
   const isLoadingPlans =
-    initialLoading ||
-    (isLoading && plans.length === 0 && !currentSubscription) ||
-    isRedirectingToCheckout;
+    initialLoading || (isLoading && plans.length === 0 && !currentSubscription) || isSubscribing;
 
   const decodedToken = getDecodedToken();
   const subscriptionStatus = decodedToken?.subscriptionStatus;
@@ -98,7 +86,7 @@ export default function SubscriptionManagement() {
             onSuccess: () => {
               // React Query will automatically refetch subscription
             },
-            onError: (error: any) => {
+            onError: (error: unknown) => {
               const errorMessage =
                 error?.response?.data?.message || 'Failed to update subscription';
               // If update fails with "No active subscription", try checkout instead
@@ -121,30 +109,34 @@ export default function SubscriptionManagement() {
 
       // No active subscription - use checkout endpoint
       handleCheckout(planType);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to process subscription');
-      setIsRedirectingToCheckout(false);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process subscription';
+      toast.error(errorMessage);
     }
   };
 
   const handleCheckout = (planType: PlanType) => {
-    setIsRedirectingToCheckout(true);
     createCheckout(planType, {
-      onSuccess: (checkoutData: any) => {
+      onSuccess: (checkoutData: unknown) => {
         // Open embedded checkout with client secret
-        const data = checkoutData.data || checkoutData;
+        const data =
+          checkoutData && typeof checkoutData === 'object' && 'data' in checkoutData
+            ? (checkoutData as { data: { clientSecret?: string; sessionUrl?: string } }).data
+            : (checkoutData as { clientSecret?: string; sessionUrl?: string });
         if (data?.clientSecret) {
           setCheckoutClientSecret(data.clientSecret);
           setIsCheckoutOpen(true);
-          setIsRedirectingToCheckout(false);
         } else if (data?.sessionUrl) {
           // Fallback to redirect if no client secret
           window.location.href = data.sessionUrl;
-          setIsRedirectingToCheckout(false);
         }
       },
-      onError: (error: any) => {
-        const errorMessage = error?.response?.data?.message || '';
+      onError: (error: unknown) => {
+        const errorMessage =
+          error && typeof error === 'object' && 'response' in error
+            ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+              ''
+            : '';
         // If checkout fails with "already have an active subscription" error, try update instead
         if (
           errorMessage.includes('already have an active subscription') ||
@@ -155,7 +147,6 @@ export default function SubscriptionManagement() {
         } else {
           toast.error('Failed to create checkout session');
         }
-        setIsRedirectingToCheckout(false);
       },
     });
   };
@@ -183,16 +174,13 @@ export default function SubscriptionManagement() {
 
   const handleOpenBillingPortal = async () => {
     try {
-      setIsLoadingPortal(true);
       const result = await refetchBillingPortal();
       if (result.data) {
         // Open billing portal in new tab
         window.open(result.data, '_blank', 'noopener,noreferrer');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error('Failed to open billing portal');
-    } finally {
-      setIsLoadingPortal(false);
     }
   };
 
@@ -219,7 +207,7 @@ export default function SubscriptionManagement() {
         <Skeleton className="h-32 w-full" />
         <Skeleton className="h-64 w-full" />
         <Skeleton className="h-64 w-full" />
-        {isRedirectingToCheckout && (
+        {isSubscribing && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="rounded-lg bg-white p-6 dark:bg-gray-800">
               <p className="text-center">Redirecting to Stripe Checkout...</p>
@@ -384,9 +372,7 @@ export default function SubscriptionManagement() {
       {/* Available Plans */}
       <div>
         <h2 className="mb-4 text-2xl font-poppins font-bold text-charcoal">
-          {currentSubscription && currentSubscription.plan
-            ? 'Upgrade or Change Plan'
-            : 'Choose a Plan'}
+          {currentSubscription?.plan ? 'Upgrade or Change Plan' : 'Choose a Plan'}
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => (
@@ -396,7 +382,7 @@ export default function SubscriptionManagement() {
               currentPlanName={currentSubscription?.plan?.name}
               isRecommended={plan.name === 'SILVER'}
               onSelectPlan={handleSelectPlan}
-              isLoading={isSubscribing || isUpdating || isRedirectingToCheckout}
+              isLoading={isSubscribing || isUpdating}
               hasActiveSubscription={userHasActiveSubscription}
             />
           ))}

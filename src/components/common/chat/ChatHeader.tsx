@@ -67,7 +67,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
-            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
           </div>
         </div>
       </div>
@@ -92,7 +92,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
               <VerificationBadge status={contact.verificationStatus || 'unverified'} size="sm" />
             </div>
             {contact.isOnline && (
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
             )}
           </div>
 
@@ -109,7 +109,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
               </p>
               {!isConnected && (
                 <div className="flex items-center">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
                   <span className="text-xs text-gray-400 ml-1">Disconnected</span>
                 </div>
               )}

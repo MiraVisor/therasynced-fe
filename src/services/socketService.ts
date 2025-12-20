@@ -1,4 +1,4 @@
-import { Socket, io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 import { getCookie } from '@/lib/utils';
 
@@ -307,7 +307,7 @@ class SocketService {
     };
   }
 
-  public emitDebugEvent(eventName: string, data: any) {
+  public emitDebugEvent(eventName: string, data: unknown) {
     if (this.socket && this.isConnected) {
       this.socket.emit(eventName, data);
       console.log(`SocketService: Debug event emitted: ${eventName}`, data);
@@ -357,17 +357,17 @@ class SocketService {
       // Try base URL (most likely to work based on Postman test)
       baseSocketUrl,
       // Try base URL with /slots namespace
-      baseSocketUrl + '/slots',
+      `${baseSocketUrl}/slots`,
       // Try base URL with /socket
-      baseSocketUrl + '/socket',
+      `${baseSocketUrl}/socket`,
       // Try base URL with /ws
-      baseSocketUrl + '/ws',
+      `${baseSocketUrl}/ws`,
       // Try base URL with /realtime
-      baseSocketUrl + '/realtime',
+      `${baseSocketUrl}/realtime`,
       // Try base URL with /api/v1 (in case it's needed)
-      baseSocketUrl + '/api/v1',
+      `${baseSocketUrl}/api/v1`,
       // Try base URL with /slots
-      baseSocketUrl + '/slots',
+      `${baseSocketUrl}/slots`,
     ];
 
     endpoints.forEach((endpoint, index) => {

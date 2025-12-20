@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import * as serviceApi from '@/services/serviceService';
+import { getApiErrorMessage } from '@/types/common';
 import { CreateServiceDto, Service } from '@/types/types';
 
 interface ServiceParams {
@@ -55,11 +56,11 @@ export const useCreateService = () => {
   return useMutation({
     mutationFn: (data: CreateServiceDto) => serviceApi.createService(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['services'] });
+      void queryClient.invalidateQueries({ queryKey: ['services'] });
       toast.success('Service created successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to create service');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to create service');
     },
   });
 };
@@ -74,12 +75,12 @@ export const useUpdateService = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateServiceDto> }) =>
       serviceApi.updateService(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['services'] });
-      queryClient.invalidateQueries({ queryKey: ['service', variables.id] });
+      void queryClient.invalidateQueries({ queryKey: ['services'] });
+      void queryClient.invalidateQueries({ queryKey: ['service', variables.id] });
       toast.success('Service updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update service');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update service');
     },
   });
 };
@@ -93,11 +94,11 @@ export const useDeleteService = () => {
   return useMutation({
     mutationFn: (id: string) => serviceApi.deleteService(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['services'] });
+      void queryClient.invalidateQueries({ queryKey: ['services'] });
       toast.success('Service deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete service');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to delete service');
     },
   });
 };

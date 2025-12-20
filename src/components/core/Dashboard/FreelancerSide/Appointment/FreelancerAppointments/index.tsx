@@ -3,7 +3,7 @@
 import { format, getDay, parse, startOfWeek } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { useState } from 'react';
-import { View, dateFnsLocalizer } from 'react-big-calendar';
+import { dateFnsLocalizer, View } from 'react-big-calendar';
 
 import { useFreelancerAppointmentsByDate } from '@/hooks/queries/useBookings';
 import { useMediaQuery } from '@/hooks/use-media-query';

@@ -1,8 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Shield } from 'lucide-react';
-import { AlertTriangle, CheckCircle, FileText, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Eye, FileText, Shield, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -16,8 +15,7 @@ import {
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { useComplaints } from '@/hooks/useComplaints';
-import adminComplaintService from '@/services/adminComplaintService';
+import { useAdminComplaints, useAdminComplaintStats } from '@/hooks/queries/useComplaints';
 import { ComplaintStatus } from '@/types/types';
 
 interface ComplaintStats {
@@ -70,64 +68,56 @@ const ComplaintsPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch complaints with pagination, search, and status filter
-  const { complaints, loading, initialLoading, error, pagination, refetch } = useComplaints({
+  const {
+    data: complaintsData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useAdminComplaints({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
     status: statusFilter,
   });
 
-  // Calculate stats - we'll need to fetch these separately or from the API
-  const [stats, setStats] = useState<ComplaintStats>({
-    total: 0,
-    pending: 0,
-    underReview: 0,
-    resolved: 0,
-    dismissed: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
+  const complaints = complaintsData?.complaints || [];
+  const pagination = complaintsData?.pagination;
 
-  // Fetch stats separately
-  useEffect(() => {
-    const fetchStats = async () => {
-      const hasStats = stats.total > 0 || stats.pending > 0 || stats.resolved > 0;
-      try {
-        if (!hasStats) {
-          setInitialStatsLoading(true);
-        } else {
-          setStatsLoading(true);
-        }
-        const response = await adminComplaintService.getStatistics();
+  // Fetch stats
+  const { data: statsData, isLoading: statsLoading, error: statsError } = useAdminComplaintStats();
 
-        if (response.success) {
-          const { total, pending, underReview, resolved, dismissed } = response.data;
-          setStats({
-            total,
-            pending,
-            underReview,
-            resolved,
-            dismissed,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setStatsLoading(false);
-        setInitialStatsLoading(false);
+  const stats: ComplaintStats = statsData?.data
+    ? {
+        total: statsData.data.total || 0,
+        pending: statsData.data.pending || 0,
+        underReview: statsData.data.underReview || 0,
+        resolved: statsData.data.resolved || 0,
+        dismissed: statsData.data.dismissed || 0,
       }
-    };
+    : {
+        total: 0,
+        pending: 0,
+        underReview: 0,
+        resolved: 0,
+        dismissed: 0,
+      };
 
-    fetchStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show error as toast when it occurs
+  // Show errors as toast when they occur
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load complaints: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load complaints';
+      toast.error(errorMessage);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (statsError) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load complaint stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError]);
 
   const handleViewDetails = (complaintId: string) => {
     router.push(`/dashboard/admin/complaints/${complaintId}`);
@@ -296,9 +286,7 @@ const ComplaintsPage = () => {
             icon={card.icon}
             iconColor={card.iconColor}
             iconBg={card.iconBg}
-            loading={
-              initialStatsLoading || (statsLoading && stats.total === 0 && stats.pending === 0)
-            }
+            loading={statsLoading && !statsData}
           />
         </div>
       ))}
@@ -336,8 +324,8 @@ const ComplaintsPage = () => {
           enablePagination={true}
           showSearch={true}
           showSorting={false}
-          initialLoading={initialLoading}
-          loading={loading}
+          initialLoading={isLoading && !complaints.length}
+          loading={isFetching}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}

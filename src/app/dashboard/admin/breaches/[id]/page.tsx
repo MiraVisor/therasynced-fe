@@ -74,7 +74,6 @@ const BreachDetailPage = () => {
     if (role && role !== ROLES.ADMIN) {
       toast.error('Access denied. Admin privileges required.');
       router.push('/dashboard');
-      return;
     }
   }, [isAuthenticated, role, router]);
 
@@ -161,7 +160,7 @@ const BreachDetailPage = () => {
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
             <p className="font-open-sans text-muted-foreground">Loading breach details...</p>
           </div>
         </div>
@@ -462,7 +461,7 @@ const BreachDetailPage = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-start gap-4">
-                <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
+                <div className="w-2 h-2 rounded-full bg-primary mt-2" />
                 <div>
                   <p className="font-inter font-semibold">Breach Detected</p>
                   <p className="font-open-sans text-sm text-muted-foreground">
@@ -472,7 +471,7 @@ const BreachDetailPage = () => {
               </div>
               {breach.reportedAt && (
                 <div className="flex items-start gap-4">
-                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
                   <div>
                     <p className="font-inter font-semibold">Reported to DPC</p>
                     <p className="font-open-sans text-sm text-muted-foreground">
@@ -483,7 +482,7 @@ const BreachDetailPage = () => {
               )}
               {breach.notifiedAt && (
                 <div className="flex items-start gap-4">
-                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
                   <div>
                     <p className="font-inter font-semibold">Users Notified</p>
                     <p className="font-open-sans text-sm text-muted-foreground">
@@ -493,7 +492,7 @@ const BreachDetailPage = () => {
                 </div>
               )}
               <div className="flex items-start gap-4">
-                <div className="w-2 h-2 rounded-full bg-gray-400 mt-2"></div>
+                <div className="w-2 h-2 rounded-full bg-gray-400 mt-2" />
                 <div>
                   <p className="font-inter font-semibold">Last Updated</p>
                   <p className="font-open-sans text-sm text-muted-foreground">

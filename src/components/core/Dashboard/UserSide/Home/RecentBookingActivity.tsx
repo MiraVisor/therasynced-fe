@@ -110,26 +110,26 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse"></div>
-                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse" />
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse" />
                   </div>
                   <div className="flex items-center gap-4">
                     {Array.from({ length: 3 }).map((_, j) => (
                       <div key={j} className="flex items-center gap-1">
-                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse"></div>
+                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse" />
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse" />
                       </div>
                     ))}
                   </div>
                   <div className="mt-2">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse" />
                   </div>
                 </div>
-                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4 animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4 animate-pulse" />
               </div>
             ))}
           </div>
-          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4 animate-pulse"></div>
+          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4 animate-pulse" />
         </CardContent>
       </Card>
     );

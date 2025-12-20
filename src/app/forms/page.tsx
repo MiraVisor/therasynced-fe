@@ -50,7 +50,7 @@ export default function FormsPage() {
   const [selectedFormType, setSelectedFormType] = useState<FormType>(FormType.SOAP_NOTE);
   const mockSlot = createMockSlot();
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = (data: Record<string, unknown>) => {
     // In a real scenario, this would save to a backend
     // For this unauthenticated view, we'll just log it
     console.log('Form submitted:', { formType: selectedFormType, data });

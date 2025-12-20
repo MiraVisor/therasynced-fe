@@ -2,14 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import * as slotApi from '@/services/slotService';
-import {
-  CreateSlotsDto,
-  PaginationDto,
-  ReserveSlotDto,
-  Slot,
-  SlotStats,
-  UpdateSlotDto,
-} from '@/types/types';
+import { getApiErrorMessage } from '@/types/common';
+import { CreateSlotsDto, PaginationDto, ReserveSlotDto, UpdateSlotDto } from '@/types/types';
 
 /**
  * Hook to fetch slots with pagination
@@ -18,7 +12,7 @@ export const useSlots = (params: PaginationDto) => {
   return useQuery({
     queryKey: ['slots', params],
     queryFn: () => slotApi.getSlots(params),
-    select: (data) => data.data as Slot[],
+    select: (data) => data.data,
   });
 };
 
@@ -35,7 +29,7 @@ export const useMySlots = (
   return useQuery({
     queryKey: ['slots', 'my-slots', params],
     queryFn: () => slotApi.getMySlots(params),
-    select: (data) => data.data as Slot[],
+    select: (data) => data.data,
   });
 };
 
@@ -46,7 +40,7 @@ export const useSlotStats = () => {
   return useQuery({
     queryKey: ['slots', 'stats'],
     queryFn: () => slotApi.getMySlotsStats(),
-    select: (data) => data.data as SlotStats,
+    select: (data) => data.data,
   });
 };
 
@@ -58,7 +52,7 @@ export const useSlot = (id: string | null) => {
     queryKey: ['slot', id],
     queryFn: () => slotApi.getSlot(id!),
     enabled: !!id,
-    select: (data) => data.data as Slot,
+    select: (data) => data.data,
   });
 };
 
@@ -70,7 +64,7 @@ export const useAvailableSlots = (freelancerId: string | null) => {
     queryKey: ['slots', 'available', freelancerId],
     queryFn: () => slotApi.getAvailableSlots(freelancerId!),
     enabled: !!freelancerId,
-    select: (data) => data.data as Slot[],
+    select: (data) => data.data,
   });
 };
 
@@ -83,11 +77,11 @@ export const useCreateSlots = () => {
   return useMutation({
     mutationFn: (data: CreateSlotsDto) => slotApi.createSlot(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
       toast.success('Slots created successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to create slots');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to create slots');
     },
   });
 };
@@ -101,12 +95,12 @@ export const useUpdateSlot = () => {
   return useMutation({
     mutationFn: (data: UpdateSlotDto) => slotApi.updateSlot(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
-      queryClient.invalidateQueries({ queryKey: ['slot', variables.id] });
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
+      void queryClient.invalidateQueries({ queryKey: ['slot', variables.id] });
       toast.success('Slot updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update slot');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update slot');
     },
   });
 };
@@ -120,11 +114,11 @@ export const useDeleteSlot = () => {
   return useMutation({
     mutationFn: (id: string) => slotApi.deleteSlot(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
       toast.success('Slot deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete slot');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to delete slot');
     },
   });
 };
@@ -138,10 +132,10 @@ export const useReserveSlot = () => {
   return useMutation({
     mutationFn: (data: ReserveSlotDto) => slotApi.reserveSlot(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to reserve slot');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to reserve slot');
     },
   });
 };

@@ -26,8 +26,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { BookingCardSkeleton } from '@/components/ui/skeletons/BookingCardSkeleton';
 import {
   useCancelBooking,
-  usePatientBookingStats,
   usePatientBookings,
+  usePatientBookingStats,
 } from '@/hooks/queries/useBookings';
 import { Booking, BookingStats } from '@/types/types';
 
@@ -492,7 +492,7 @@ export default function MyBookingsPage() {
             >
               {isCancelling || cancellingBookingId === bookingToCancel?.id ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                   Cancelling...
                 </>
               ) : (

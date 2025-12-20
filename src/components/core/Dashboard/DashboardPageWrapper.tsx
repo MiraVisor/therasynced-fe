@@ -4,8 +4,8 @@ import { useTheme } from 'next-themes';
 
 import { NotificationPopover } from '@/components/common/notifications';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useNotificationsWithCount } from '@/hooks/queries/useNotifications';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useNotifications } from '@/hooks/useNotifications';
 import { cn } from '@/lib/utils';
 import { RoleType } from '@/types/types';
 
@@ -22,7 +22,7 @@ export function DashboardPageWrapper({
 }) {
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
-  const notifications = useNotifications();
+  const notifications = useNotificationsWithCount();
 
   // Removed notification click navigation for now - keeping it simple
 

@@ -3,6 +3,7 @@
 import { pdf } from '@react-pdf/renderer';
 import { format } from 'date-fns';
 import { Download, FileText, Loader2, Plus, Trash2, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -14,7 +15,15 @@ import { Separator } from '@/components/ui/separator';
 import { useProfile } from '@/hooks/queries/useProfile';
 import { Appointment } from '@/types/types';
 
-import { InvoiceData, InvoicePDF } from './InvoicePDF';
+import type { InvoiceData } from './InvoicePDF';
+
+// Dynamically import heavy PDF component
+const InvoicePDF = dynamic(
+  () => import('./InvoicePDF').then((mod) => ({ default: mod.InvoicePDF })),
+  {
+    ssr: false,
+  },
+);
 
 interface InvoiceGenerationDialogProps {
   appointment: Appointment;

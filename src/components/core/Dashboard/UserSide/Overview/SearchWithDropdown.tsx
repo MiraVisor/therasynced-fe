@@ -9,7 +9,7 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { TierBadge } from '@/components/ui/tier-badge';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { freelancerService } from '@/services/freelancerService';
-import { Expert } from '@/types/types';
+import { Expert, Freelancer } from '@/types/types';
 
 interface SearchWithDropdownProps {
   onSearch: (query: string) => void;
@@ -32,7 +32,7 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Map freelancer data to Expert format (simplified version)
-  const mapFreelancerToExpert = (freelancer: any): Expert => {
+  const mapFreelancerToExpert = (freelancer: Freelancer): Expert => {
     const cardInfo = freelancer.cardInfo || {};
     return {
       id: freelancer.id,

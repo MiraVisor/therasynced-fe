@@ -138,8 +138,9 @@ const Appointments = () => {
           toast.success('Notes updated successfully');
           refetch();
         },
-        onError: (error: any) => {
-          toast.error(error?.message || 'Failed to update notes');
+        onError: (error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to update notes';
+          toast.error(errorMessage);
         },
       },
     );
@@ -165,8 +166,10 @@ const Appointments = () => {
           setSelectedAppointment(null);
           refetch();
         },
-        onError: (error: any) => {
-          toast.error(error?.message || 'Failed to cancel appointment');
+        onError: (error: unknown) => {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Failed to cancel appointment';
+          toast.error(errorMessage);
         },
       },
     );
@@ -361,7 +364,7 @@ const Appointments = () => {
                 </div>
                 <div className="flex items-center justify-between w-full sm:w-auto gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
                     <span className="text-sm font-inter font-medium text-muted-foreground">
                       {getDayAppointments().length} appointment
                       {getDayAppointments().length !== 1 ? 's' : ''}
@@ -395,10 +398,10 @@ const Appointments = () => {
                       {/* Time Slot Area - Google Calendar Style */}
                       <div className="flex-1 relative bg-white hover:bg-gray-50 transition-colors duration-150">
                         {/* Grid line positioned at the same level as time label */}
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gray-200"></div>
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gray-200" />
                         {/* Alternate row shading for better visual separation */}
                         {index % 2 === 0 && (
-                          <div className="absolute inset-0 bg-gray-50/30 pointer-events-none"></div>
+                          <div className="absolute inset-0 bg-gray-50/30 pointer-events-none" />
                         )}
 
                         {/* Appointment Blocks - Google Calendar Style */}
@@ -508,7 +511,7 @@ const Appointments = () => {
                     >
                       {getDate(date)}
                       {hasAppointments && (
-                        <div className="absolute bottom-1 w-2 h-2 bg-blue-500 rounded-full shadow-sm"></div>
+                        <div className="absolute bottom-1 w-2 h-2 bg-blue-500 rounded-full shadow-sm" />
                       )}
                     </button>
                   );

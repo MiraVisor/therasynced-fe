@@ -644,7 +644,7 @@ export const ROMAssessmentForm = ({ initialData, onSubmit, slot }: ROMAssessment
                   <div className="space-y-4">
                     <h4 className="font-poppins font-semibold text-charcoal">Hip</h4>
                     <div className="grid grid-cols-4 gap-2">
-                      <div></div>
+                      <div />
                       <div className="font-inter text-sm font-semibold">Left Assessment</div>
                       <div className="font-inter text-sm font-semibold">Right Assessment</div>
                       <div className="font-inter text-sm font-semibold">Follow-up</div>
