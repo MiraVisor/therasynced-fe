@@ -178,18 +178,23 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
             {/* Messages */}
             <div className="space-y-3">
               {groupMessages.map((message) => {
-                const isOwnMessage = message.users.id === currentUserId;
+                const isOwnMessage =
+                  message.senderId === currentUserId ||
+                  (message.users?.id && message.users.id === currentUserId);
 
                 return (
                   <div
                     key={message.id}
                     className={cn('flex gap-3', isOwnMessage ? 'justify-end' : 'justify-start')}
                   >
-                    {!isOwnMessage && (
+                    {!isOwnMessage && message.users && (
                       <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
-                        <AvatarImage src={message.users.profilePicture} alt={message.users.name} />
+                        <AvatarImage
+                          src={message.users.profilePicture || ''}
+                          alt={message.users.name || 'User'}
+                        />
                         <AvatarFallback className="bg-green-100 text-green-700 text-xs">
-                          {message.users.name.charAt(0)}
+                          {message.users.name?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     )}

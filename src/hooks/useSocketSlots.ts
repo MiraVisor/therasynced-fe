@@ -26,6 +26,19 @@ export const useSocketSlots = (freelancerId?: string) => {
     freelancerIdRef.current = freelancerId;
   }, [freelancerId]);
 
+  // Join/leave freelancer slots room when freelancerId changes
+  useEffect(() => {
+    if (freelancerId && socketService.isSocketConnected()) {
+      socketService.joinFreelancerSlots(freelancerId);
+    }
+
+    return () => {
+      if (freelancerId && socketService.isSocketConnected()) {
+        socketService.leaveFreelancerSlots(freelancerId);
+      }
+    };
+  }, [freelancerId]);
+
   useEffect(() => {
     // Connect to socket service only once
     if (!isConnectedRef.current) {
@@ -46,38 +59,57 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     // Listen for socket events
     const handleSlotStatusUpdated = (event: CustomEvent) => {
-      const { slotId, statusInfo } = event.detail;
-      if (slotId && statusInfo) {
-        updateSlotStatus(slotId, statusInfo);
+      // Backend sends: { freelancerId, slot: { id, freelancerId, locationType, startTime, endTime, status, reservedUntil }, timestamp }
+      const { slot, freelancerId } = event.detail;
+      if (slot?.id) {
+        updateSlotStatus(slot.id, {
+          status: slot.status,
+          isAvailable: slot.status === 'AVAILABLE',
+          isReserved: slot.status === 'RESERVED',
+          isBooked: slot.status === 'BOOKED',
+          canBeReserved: slot.status === 'AVAILABLE',
+          statusMessage: `Status: ${slot.status}`,
+        });
       }
     };
 
     const handleMultipleSlotsUpdated = (event: CustomEvent) => {
-      const updates = event.detail;
-      if (Array.isArray(updates)) {
+      // Backend sends: { freelancerId, slots: SlotData[], timestamp }
+      const { slots, freelancerId } = event.detail;
+      if (Array.isArray(slots)) {
+        const updates = slots.map((slot) => ({
+          slotId: slot.id,
+          statusInfo: {
+            status: slot.status,
+            isAvailable: slot.status === 'AVAILABLE',
+            isReserved: slot.status === 'RESERVED',
+            isBooked: slot.status === 'BOOKED',
+            canBeReserved: slot.status === 'AVAILABLE',
+            statusMessage: `Status: ${slot.status}`,
+          },
+        }));
         updateMultipleSlots(updates);
       }
     };
 
     const handleSlotReserved = (event: CustomEvent) => {
-      const eventData = event.detail;
-      const slotId = eventData.slotId || eventData.slot?.id || eventData.id;
-      const { statusInfo } = eventData;
+      // Backend sends: { freelancerId, slot: SlotData, timestamp }
+      const { slot, freelancerId } = event.detail;
+      const slotId = slot?.id;
 
       if (!slotId) {
-        console.error('No slotId found in slot-reserved event:', eventData);
+        console.error('No slotId found in slot-reserved event:', event.detail);
         return;
       }
 
       // This is a reservation - update slot status to reserved
       updateSlotStatus(slotId, {
-        status: 'RESERVED',
+        status: slot.status || 'RESERVED',
         isAvailable: false,
         isReserved: true,
         isBooked: false,
         canBeReserved: false,
         statusMessage: 'Reserved by another user',
-        ...statusInfo,
       });
 
       // Check if this slot is in our reserved slots (meaning we reserved it)
@@ -96,41 +128,40 @@ export const useSocketSlots = (freelancerId?: string) => {
     };
 
     const handleSlotBooked = (event: CustomEvent) => {
-      const { slotId, statusInfo } = event.detail;
-      const id = slotId ?? event.detail.slot?.id;
-      if (id) {
-        updateSlotStatus(id, {
-          status: 'BOOKED',
+      // Backend sends: { freelancerId, slot: SlotData, timestamp }
+      const { slot, freelancerId } = event.detail;
+      const slotId = slot?.id;
+      if (slotId) {
+        updateSlotStatus(slotId, {
+          status: slot.status || 'BOOKED',
           isAvailable: false,
           isReserved: false,
           isBooked: true,
           canBeReserved: false,
           statusMessage: 'Booked',
-          ...statusInfo,
         });
       }
     };
 
     const handleSlotRemoved = (event: CustomEvent) => {
-      const { slotId, statusInfo } = event.detail;
-      const id = slotId ?? event.detail.slotId;
-      if (id) {
-        updateSlotStatus(id, {
+      // Backend sends: { freelancerId, slotId, timestamp }
+      const { slotId, freelancerId } = event.detail;
+      if (slotId) {
+        updateSlotStatus(slotId, {
           status: 'BOOKED',
           isAvailable: false,
           isReserved: false,
           isBooked: true,
           canBeReserved: false,
           statusMessage: 'Booked',
-          ...statusInfo,
         });
       }
     };
 
     const handleSlotReleased = (event: CustomEvent) => {
+      // Backend may send different structures, handle both
       const eventData = event.detail;
       const slotId = eventData.slotId ?? eventData.slot?.id ?? eventData.id;
-      const { statusInfo } = eventData;
 
       if (!slotId) {
         console.error('No slotId found in slot-released event:', eventData);
@@ -145,7 +176,6 @@ export const useSocketSlots = (freelancerId?: string) => {
         isBooked: false,
         canBeReserved: true,
         statusMessage: 'Available for booking',
-        ...statusInfo,
       });
 
       // Remove from our tracking if it was in our reserved slots
@@ -232,8 +262,8 @@ export const useSocketSlots = (freelancerId?: string) => {
           statusMessage: 'Reserved by you',
         });
 
-        // Emit socket event
-        socketService.emit('reserve-slot', { slotId, duration });
+        // Emit socket event using service method
+        socketService.reserveSlot(slotId, duration);
       } catch (error) {
         console.error('Failed to reserve slot:', error);
         throw error;
@@ -260,8 +290,8 @@ export const useSocketSlots = (freelancerId?: string) => {
           statusMessage: 'Available for booking',
         });
 
-        // Emit socket event
-        socketService.emit('release-slot', { slotId });
+        // Emit socket event using service method
+        socketService.releaseSlot(slotId);
       } catch (error) {
         console.error('Failed to release slot:', error);
         throw error;

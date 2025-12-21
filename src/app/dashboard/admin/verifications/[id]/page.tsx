@@ -1,9 +1,19 @@
 'use client';
 
-import { format } from 'date-fns';
-import { AlertCircle, Award, CheckCircle, Clock, MapPin, XCircle } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
+import {
+  AlertCircle,
+  Award,
+  CheckCircle,
+  Clock,
+  Download,
+  FileText,
+  MapPin,
+  XCircle,
+} from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
@@ -17,13 +27,24 @@ import {
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useAdminFilesList, useAdminGetFileSignedUrl } from '@/hooks/queries/useFreelancerFiles';
 import adminVerificationService, {
   type VerificationDetailsResponse,
 } from '@/services/adminVerificationService';
+import { FileMetadata } from '@/services/freelancerFileService';
+import { formatFileSize } from '@/utils/fileUpload';
+
+// Dynamically import DataTable to ensure it's client-only
+const DataTable = dynamic(
+  () =>
+    import('@/components/common/DataTable/data-table').then((mod) => ({ default: mod.DataTable })),
+  { ssr: false },
+);
 
 const VerificationDetailPage = () => {
   const { id } = useParams();
@@ -43,6 +64,13 @@ const VerificationDetailPage = () => {
   const [isCertificateRejectDialogOpen, setIsCertificateRejectDialogOpen] = useState(false);
   const [certificateRejectionReason, setCertificateRejectionReason] = useState('');
   const [isCertificateSubmitting, setIsCertificateSubmitting] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  // Fetch files for this freelancer
+  const { data: files = [], isLoading: isLoadingFiles } = useAdminFilesList({
+    freelancerId,
+  });
+  const signedUrlMutation = useAdminGetFileSignedUrl();
 
   useEffect(() => {
     if (freelancerId) {
@@ -54,7 +82,7 @@ const VerificationDetailPage = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await adminVerificationService.getDetails(freelancerId);
+      const response = await adminVerificationService.getDetails(freelancerId || '');
       if (response.success) {
         setVerification(response.data);
       } else {
@@ -237,6 +265,116 @@ const VerificationDetailPage = () => {
 
   const canApproveOrReject = verification.verificationStatus === 'PENDING';
 
+  // Handle file download - opens file in new tab using signed URL
+  const handleDownload = async (file: FileMetadata) => {
+    setDownloadingId(file.id);
+    try {
+      const data = await signedUrlMutation.mutateAsync(file.id);
+
+      // Fetch the PDF as a blob to avoid CORS issues
+      const response = await fetch(data.signedUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/pdf',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Open the blob URL in a new tab
+      window.open(blobUrl, '_blank');
+
+      // Clean up the blob URL after a delay (optional)
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+      setDownloadingId(null);
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      toast.error('Failed to load PDF. Please try again.');
+      setDownloadingId(null);
+    }
+  };
+
+  // Table columns for files
+  const fileColumns: ColumnDef<FileMetadata>[] = [
+    {
+      accessorKey: 'title',
+      header: 'Title',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <a
+            href={row.original.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary hover:underline cursor-pointer"
+          >
+            {row.original.title}
+          </a>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'fileName',
+      header: 'File Name',
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">{row.original.fileName}</span>
+      ),
+    },
+    {
+      accessorKey: 'fileSize',
+      header: 'Size',
+      cell: ({ row }) => <span className="text-sm">{formatFileSize(row.original.fileSize)}</span>,
+    },
+    {
+      accessorKey: 'createdAt',
+      header: 'Uploaded',
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.createdAt && (
+            <>
+              {new Date(row.original.createdAt).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+              })}
+            </>
+          )}
+        </span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const file = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDownload(file)}
+              disabled={downloadingId === file.id}
+            >
+              {downloadingId === file.id ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <DashboardPageWrapper
       header={
@@ -294,11 +432,35 @@ const VerificationDetailPage = () => {
           />
         </EnhancedCard>
 
-        {/* Verification Documents */}
+        {/* Uploaded Files Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Uploaded Files</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DataTable
+              columns={fileColumns as any}
+              data={files}
+              title="All Files"
+              searchKey="title"
+              searchPlaceholder="Search by title or filename..."
+              enableSorting={true}
+              enableFiltering={true}
+              enableColumnVisibility={true}
+              enablePagination={true}
+              showSearch={true}
+              showSorting={false}
+              initialLoading={isLoadingFiles && files.length > 0}
+              loading={isLoadingFiles}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Verification Documents (Legacy - keeping for backward compatibility) */}
         {verification.verificationDocuments && verification.verificationDocuments.length > 0 && (
           <EnhancedCard variant="default" className="p-6">
             <h3 className="font-poppins text-lg font-semibold text-foreground mb-4">
-              Verification Documents ({verification.verificationDocuments.length})
+              Legacy Verification Documents ({verification.verificationDocuments.length})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {verification.verificationDocuments.map((doc, index) => (
@@ -340,10 +502,16 @@ const VerificationDetailPage = () => {
                     <Clock className="h-4 w-4" />
                     <span className="font-open-sans">
                       Uploaded:{' '}
-                      {format(
-                        new Date(verification.firstAidCertificate.uploadedAt),
-                        'MMM dd, yyyy',
-                      )}
+                      {verification.firstAidCertificate.uploadedAt
+                        ? new Date(verification.firstAidCertificate.uploadedAt).toLocaleDateString(
+                            undefined,
+                            {
+                              month: 'short',
+                              day: '2-digit',
+                              year: 'numeric',
+                            },
+                          )
+                        : 'N/A'}
                     </span>
                   </div>
 
@@ -352,10 +520,18 @@ const VerificationDetailPage = () => {
                       <CheckCircle className="h-4 w-4" />
                       <span className="font-open-sans">
                         Approved:{' '}
-                        {format(
-                          new Date(verification.firstAidCertificate.approvedAt),
-                          'MMM dd, yyyy HH:mm',
-                        )}
+                        {verification.firstAidCertificate.approvedAt
+                          ? new Date(verification.firstAidCertificate.approvedAt).toLocaleString(
+                              undefined,
+                              {
+                                month: 'short',
+                                day: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              },
+                            )
+                          : 'N/A'}
                       </span>
                     </div>
                   )}
@@ -365,10 +541,18 @@ const VerificationDetailPage = () => {
                       <XCircle className="h-4 w-4" />
                       <span className="font-open-sans">
                         Rejected:{' '}
-                        {format(
-                          new Date(verification.firstAidCertificate.rejectedAt),
-                          'MMM dd, yyyy HH:mm',
-                        )}
+                        {verification.firstAidCertificate.rejectedAt
+                          ? new Date(verification.firstAidCertificate.rejectedAt).toLocaleString(
+                              undefined,
+                              {
+                                month: 'short',
+                                day: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              },
+                            )
+                          : 'N/A'}
                       </span>
                     </div>
                   )}

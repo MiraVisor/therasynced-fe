@@ -36,6 +36,12 @@ import {
 import { LoadingSpinner } from './loading-spinner';
 import { TableSkeleton } from './table-skeleton';
 
+export interface FilterOption<T = string> {
+  label: string;
+  value: T;
+  color?: string; // e.g., 'primary', 'warning', 'success', 'error'
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -61,6 +67,10 @@ interface DataTableProps<TData, TValue> {
   totalPages?: number;
   onExternalPageChange?: (pageIndex: number) => void;
   onExternalPageSizeChange?: (pageSize: number) => void;
+  // Filter buttons beside search bar
+  filterOptions?: FilterOption[];
+  selectedFilter?: string;
+  onFilterChange?: (value: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -86,12 +96,14 @@ export function DataTable<TData, TValue>({
   totalPages,
   onExternalPageChange,
   onExternalPageSizeChange,
+  filterOptions,
+  selectedFilter,
+  onFilterChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [isFiltering, setIsFiltering] = useState(false);
 
   // External pagination state
   const [internalPageIndex, setInternalPageIndex] = useState(0);
@@ -114,6 +126,21 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
     onColumnVisibilityChange: enableColumnVisibility ? setColumnVisibility : undefined,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange:
+      enablePagination && !onExternalPageChange
+        ? (updater) => {
+            const newPagination =
+              typeof updater === 'function'
+                ? updater({ pageIndex: internalPageIndex, pageSize: internalPageSize })
+                : updater;
+            if (newPagination.pageIndex !== undefined) {
+              setInternalPageIndex(newPagination.pageIndex);
+            }
+            if (newPagination.pageSize !== undefined) {
+              setInternalPageSize(newPagination.pageSize);
+            }
+          }
+        : undefined,
     state: {
       sorting: enableSorting ? sorting : undefined,
       columnFilters: enableFiltering ? columnFilters : undefined,
@@ -122,7 +149,7 @@ export function DataTable<TData, TValue>({
       ...(enablePagination &&
         !onExternalPageChange && {
           pagination: {
-            pageIndex: currentPageIndex,
+            pageIndex: internalPageIndex,
             pageSize: currentPageSize,
           },
         }),
@@ -155,31 +182,50 @@ export function DataTable<TData, TValue>({
             </div>
           )}
 
-          {/* Search Input */}
-          {showSearch && enableFiltering && searchKey && (
-            <div className="w-full sm:max-w-sm px-3 py-2">
-              {/* ← outer padding here */}
-              <div className="relative w-full">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={searchPlaceholder}
-                  value={
-                    onExternalSearchChange
-                      ? (externalSearchValue ?? '')
-                      : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
-                  }
-                  onChange={(event) => {
-                    if (onExternalSearchChange) {
-                      onExternalSearchChange(event.target.value);
-                    } else {
-                      table.getColumn(searchKey)?.setFilterValue(event.target.value);
+          {/* Search Input and Filters */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto px-3 py-2">
+            {showSearch && enableFiltering && searchKey && (
+              <div className="w-full sm:max-w-sm">
+                <div className="relative w-full">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={searchPlaceholder}
+                    value={
+                      onExternalSearchChange
+                        ? (externalSearchValue ?? '')
+                        : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
                     }
-                  }}
-                  className="pl-8 border-gray-200 w-full"
-                />
+                    onChange={(event) => {
+                      if (onExternalSearchChange) {
+                        onExternalSearchChange(event.target.value);
+                      } else {
+                        table.getColumn(searchKey)?.setFilterValue(event.target.value);
+                      }
+                    }}
+                    className="pl-8 border-gray-200 w-full"
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Filter Dropdown */}
+            {filterOptions && filterOptions.length > 0 && onFilterChange && (
+              <div className="w-full sm:w-[180px]">
+                <Select value={selectedFilter ?? 'all'} onValueChange={onFilterChange}>
+                  <SelectTrigger className="h-8 border-gray-200">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterOptions.map((option) => (
+                      <SelectItem key={String(option.value)} value={String(option.value)}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
 
           {/* Sort By Dropdown */}
           {showSorting && enableSorting && (
@@ -319,7 +365,8 @@ export function DataTable<TData, TValue>({
                   if (onExternalPageChange) {
                     onExternalPageChange(currentPageIndex - 1);
                   } else {
-                    table.previousPage();
+                    const newPageIndex = Math.max(0, currentPageIndex - 1);
+                    table.setPageIndex(newPageIndex);
                   }
                 }}
                 disabled={currentPageIndex === 0}
@@ -374,7 +421,9 @@ export function DataTable<TData, TValue>({
                   if (onExternalPageChange) {
                     onExternalPageChange(currentPageIndex + 1);
                   } else {
-                    table.nextPage();
+                    const maxPage = (totalPages || table.getPageCount()) - 1;
+                    const newPageIndex = Math.min(maxPage, currentPageIndex + 1);
+                    table.setPageIndex(newPageIndex);
                   }
                 }}
                 disabled={currentPageIndex >= (totalPages || table.getPageCount()) - 1}
@@ -389,7 +438,8 @@ export function DataTable<TData, TValue>({
                   if (onExternalPageChange) {
                     onExternalPageChange((totalPages || table.getPageCount()) - 1);
                   } else {
-                    table.setPageIndex(table.getPageCount() - 1);
+                    const lastPage = table.getPageCount() - 1;
+                    table.setPageIndex(lastPage);
                   }
                 }}
                 disabled={currentPageIndex >= (totalPages || table.getPageCount()) - 1}

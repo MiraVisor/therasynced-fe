@@ -29,6 +29,8 @@ export const useChat = (currentUserId?: string) => {
     setTypingUsers,
     removeTypingUser,
     updateMessage,
+    setConversationContext,
+    archiveConversation,
   } = useChatStore();
 
   // Use React Query hooks
@@ -56,6 +58,7 @@ export const useChat = (currentUserId?: string) => {
       console.log('Current user ID:', currentUserId);
 
       if (message.conversationId) {
+        // Deduplication in addMessage prevents duplicates (from REST API + WebSocket)
         addMessage(message.conversationId, message);
 
         // Update contact's last message
@@ -63,11 +66,15 @@ export const useChat = (currentUserId?: string) => {
           .getState()
           .contacts.find((c) => c.conversationId === message.conversationId);
         if (contact) {
+          // Determine if message is from current user using senderId if available, otherwise fallback to users.id
+          const isFromMe =
+            message.senderId === currentUserId ||
+            (message.users?.id && message.users.id === currentUserId);
           updateContact(contact.id, {
             lastMessage: {
-              content: message.content,
-              createdAt: message.createdAt,
-              isFromMe: message.senderId === currentUserId,
+              content: message.content || '',
+              createdAt: message.createdAt || new Date().toISOString(),
+              isFromMe,
               isRead: false,
             },
           });
@@ -100,10 +107,30 @@ export const useChat = (currentUserId?: string) => {
       }
     });
 
+    const unsubscribeContextChanged = chatService.onConversationContextChanged(
+      ({ conversationId, context }) => {
+        // Update conversation context in store
+        // Note: context is a string from backend, may need to parse if it's JSON
+        try {
+          const parsedContext = typeof context === 'string' ? JSON.parse(context) : context;
+          setConversationContext(conversationId, parsedContext);
+        } catch {
+          // If parsing fails, store as string
+          setConversationContext(conversationId, context as any);
+        }
+      },
+    );
+
+    const unsubscribeArchived = chatService.onConversationArchived(({ conversationId }) => {
+      archiveConversation(conversationId);
+    });
+
     return () => {
       unsubscribeNewMessage();
       unsubscribeTypingIndicator();
       unsubscribeMessageRead();
+      unsubscribeContextChanged();
+      unsubscribeArchived();
     };
   }, [
     currentUserId,
@@ -115,6 +142,8 @@ export const useChat = (currentUserId?: string) => {
     removeTypingUser,
     updateMessage,
     typingUsers,
+    setConversationContext,
+    archiveConversation,
   ]);
 
   // Refresh data when page comes back into focus

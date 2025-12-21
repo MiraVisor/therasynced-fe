@@ -78,6 +78,16 @@ export const deleteFormTemplate = async (
 };
 
 /**
+ * Admin: Get signed URL for form template
+ */
+export const getAdminFormTemplateSignedUrl = async (
+  id: string,
+): Promise<FormTemplateSignedUrlResponse> => {
+  const response = await api.get(`/form/${id}/signed-url`);
+  return response.data.data || response.data;
+};
+
+/**
  * Admin: Download form template
  */
 export const downloadFormTemplate = async (id: string): Promise<Blob> => {
@@ -153,7 +163,24 @@ export const getVisibleFormTemplates = async (): Promise<ApiResponse<FormTemplat
 };
 
 /**
- * Freelancer: Download visible form template
+ * Freelancer: Get signed URL for form template
+ */
+export interface FormTemplateSignedUrlResponse {
+  signedUrl: string;
+  expiresIn: number; // seconds
+  fileName: string;
+}
+
+export const getFreelancerFormTemplateSignedUrl = async (
+  id: string,
+): Promise<FormTemplateSignedUrlResponse> => {
+  const response = await api.get(`/freelancer/forms/${id}/signed-url`);
+  return response.data.data || response.data;
+};
+
+/**
+ * Freelancer: Download visible form template (legacy - use getFreelancerFormTemplateSignedUrl instead)
+ * @deprecated Use getFreelancerFormTemplateSignedUrl instead
  */
 export const downloadFreelancerFormTemplate = async (id: string): Promise<Blob> => {
   const token = getCookie('token');

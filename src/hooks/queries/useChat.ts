@@ -10,23 +10,31 @@ import { ChatContactState, useChatStore } from '@/stores/chatStore';
 export const useChatContacts = () => {
   const { setContacts, setArchivedContacts } = useChatStore();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['chat', 'contacts'],
     queryFn: async () => {
       const response = await chatService.getContacts();
       return response.data;
     },
     select: (data) => {
-      const contacts = (data.contacts || []) as ChatContactState[];
-      const archived = (data.archivedContacts || []) as ChatContactState[];
-
-      // Update Zustand store
-      setContacts(contacts);
-      setArchivedContacts(archived);
+      // Backend returns an array of contacts, filter by isArchived
+      const allContacts = (data || []) as ChatContactState[];
+      const contacts = allContacts.filter((c) => !c.isArchived);
+      const archived = allContacts.filter((c) => c.isArchived);
 
       return { contacts, archived };
     },
   });
+
+  // Update Zustand store when data changes (not during render)
+  useEffect(() => {
+    if (query.data) {
+      setContacts(query.data.contacts);
+      setArchivedContacts(query.data.archived);
+    }
+  }, [query.data, setContacts, setArchivedContacts]);
+
+  return query;
 };
 
 /**
@@ -39,7 +47,7 @@ export const useChatMessages = (
 ) => {
   const { setMessages, prependMessages } = useChatStore();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['chat', 'messages', conversationId, page],
     queryFn: async () => {
       const response = await chatService.getMessages(conversationId!, page, limit);
@@ -48,20 +56,25 @@ export const useChatMessages = (
     enabled: !!conversationId,
     select: (data) => {
       const messages = data.data;
-
-      // Update Zustand store
-      if (page === 1) {
-        setMessages(conversationId!, messages);
-      } else {
-        prependMessages(conversationId!, messages);
-      }
-
       return {
         messages,
         pagination: data.pagination,
       };
     },
   });
+
+  // Update Zustand store when data changes (not during render)
+  useEffect(() => {
+    if (query.data && conversationId) {
+      if (page === 1) {
+        setMessages(conversationId, query.data.messages);
+      } else {
+        prependMessages(conversationId, query.data.messages);
+      }
+    }
+  }, [query.data, conversationId, page, setMessages, prependMessages]);
+
+  return query;
 };
 
 /**
@@ -98,8 +111,9 @@ export const useSendMessage = () => {
         });
       }
 
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['chat', 'messages'] });
+      // Don't invalidate messages query - it will cause refetch and duplicate messages
+      // The WebSocket event will handle real-time updates
+      // Only invalidate contacts to refresh the last message
       queryClient.invalidateQueries({ queryKey: ['chat', 'contacts'] });
     },
   });
@@ -113,7 +127,14 @@ export const useMarkMessagesAsRead = () => {
   const { clearUnreadCount, updateMessage } = useChatStore();
 
   return useMutation({
-    mutationFn: (conversationId: string) => chatService.markAsRead(conversationId),
+    mutationFn: async (conversationId: string) => {
+      // Mark all unread messages in the conversation as read
+      const messages = useChatStore.getState().conversations[conversationId] || [];
+      const unreadMessages = messages.filter((msg) => !msg.isRead);
+
+      // Mark each unread message as read via API
+      await Promise.all(unreadMessages.map((msg) => chatService.markMessageAsRead(msg.id)));
+    },
     onSuccess: (_, conversationId) => {
       // Clear unread count in Zustand
       clearUnreadCount(conversationId);
@@ -143,7 +164,6 @@ export const useChatConnection = () => {
     incrementUnreadCount,
     setTypingUsers,
     removeTypingUser,
-    setConversationContext,
   } = useChatStore();
 
   useEffect(() => {
@@ -230,7 +250,7 @@ export const useChatConnection = () => {
     window.addEventListener('chat:max_reconnect_attempts', handleMaxReconnectAttempts);
 
     // Check initial connection status
-    setConnectionStatus(chatService.isConnected());
+    setConnectionStatus(chatService.isSocketConnected());
 
     return () => {
       unsubscribeNewMessage();

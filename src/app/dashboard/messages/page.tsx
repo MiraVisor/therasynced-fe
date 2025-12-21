@@ -98,14 +98,14 @@ const MessagesPage = () => {
   useEffect(() => {
     if (targetUserId && !hasHandledUserIdRef.current && !loading.contacts) {
       // Wait for contacts to load
-      if (contacts.length === 0 && loading.contacts) {
+      if ((!contacts || contacts.length === 0) && loading.contacts) {
         return;
       }
 
       hasHandledUserIdRef.current = true;
 
       // Find contact by userId
-      const contact = contacts.find((c) => c.id === targetUserId);
+      const contact = contacts?.find((c) => c.id === targetUserId);
 
       if (contact) {
         // Contact exists, select the conversation
@@ -151,7 +151,7 @@ const MessagesPage = () => {
   // Handle new contact appearing after sending message (when conversation is created)
   useEffect(() => {
     if (targetUserId && hasHandledUserIdRef.current) {
-      const contact = contacts.find((c) => c.id === targetUserId);
+      const contact = contacts?.find((c) => c.id === targetUserId);
       if (contact) {
         // Contact appeared (either existed or was just created), select it if not already selected
         if (activeConversationId !== contact.conversationId) {
@@ -185,10 +185,11 @@ const MessagesPage = () => {
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [selectedContact, activeConversation, markConversationAsRead]);
 
   // Transform backend contacts to match original UI format
-  const transformedContacts: Contact[] = contacts.map((contact) => ({
+  const transformedContacts: Contact[] = (contacts || []).map((contact) => ({
     id: contact.id,
     name: contact.name,
     avatar: contact.profilePicture || '',
@@ -202,14 +203,16 @@ const MessagesPage = () => {
   const getCurrentMessages = (): MessageType[] => {
     if (!selectedContact) return [];
     const backendMessages = activeConversation || [];
-    return backendMessages.map((message) => ({
-      id: message.id,
-      content: message.content,
-      timestamp: message.createdAt,
-      isFromMe: message.users.id !== selectedContact.id,
-      isRead: message.isRead,
-      type: 'text' as const,
-    }));
+    return backendMessages
+      .filter((message) => message && message.users && message.id) // Filter out invalid messages
+      .map((message) => ({
+        id: message.id,
+        content: message.content || '',
+        timestamp: message.createdAt || new Date().toISOString(),
+        isFromMe: message.users?.id !== selectedContact.id,
+        isRead: message.isRead ?? false,
+        type: 'text' as const,
+      }));
   };
 
   const filteredContacts = transformedContacts.filter((contact) => {
@@ -219,7 +222,7 @@ const MessagesPage = () => {
 
   const handleContactSelect = (contact: Contact) => {
     // Find the backend contact
-    const backendContact = contacts.find((c) => c.id === contact.id);
+    const backendContact = contacts?.find((c) => c.id === contact.id);
     if (backendContact) {
       // If clicking the same contact that's already selected, toggle chat
       if (selectedContact?.id === contact.id) {
@@ -261,7 +264,6 @@ const MessagesPage = () => {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
       console.error('Failed to send message:', error);
       toast.error(errorMessage);
-      toast.error(error.message || 'Failed to send message');
     }
   };
 
@@ -311,17 +313,21 @@ const MessagesPage = () => {
   };
 
   // Show toast error for any errors but continue showing the interface
+  // Note: error is currently null in useChat, but keeping this for future error handling
   useEffect(() => {
-    if (error.contacts) {
-      toast.error('Failed to load conversations. Please try again.');
+    if (error && typeof error === 'object' && error !== null) {
+      const errorObj = error as Record<string, unknown>;
+      if (errorObj['contacts']) {
+        toast.error('Failed to load conversations. Please try again.');
+      }
+      if (errorObj['messages']) {
+        toast.error('Failed to load messages. Please try again.');
+      }
+      if (errorObj['sending']) {
+        toast.error('Failed to send message. Please try again.');
+      }
     }
-    if (error.messages) {
-      toast.error('Failed to load messages. Please try again.');
-    }
-    if (error.sending) {
-      toast.error('Failed to send message. Please try again.');
-    }
-  }, [error.contacts, error.messages, error.sending]);
+  }, [error]);
 
   return (
     <DashboardPageWrapper

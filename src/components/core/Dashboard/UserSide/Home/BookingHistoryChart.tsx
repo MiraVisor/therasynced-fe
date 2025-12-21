@@ -26,7 +26,11 @@ interface SummaryStats {
 }
 
 const BookingHistoryChart = ({ className }: BookingHistoryChartProps) => {
-  const { data: bookingsData = [], isLoading: loading } = usePatientBookingHistory({
+  const {
+    data: bookingsData = [],
+    isLoading: loading,
+    error,
+  } = usePatientBookingHistory({
     page: 1,
     limit: 100,
   });

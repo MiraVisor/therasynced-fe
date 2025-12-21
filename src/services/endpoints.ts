@@ -70,7 +70,15 @@ export const ENDPOINTS = {
     favorite: '/freelancer/favorite',
     favoriteAll: '/freelancer/favorite/all',
     recentFavorite: '/freelancer/favorite/recent',
-    files: '/freelancer/files', // Get all uploaded files
+    files: '/freelancer/files', // Get all uploaded files (legacy)
+    // New file upload endpoints
+    filesUpload: '/freelancer/files/upload',
+    filesList: '/freelancer/files',
+    fileDownload: (fileId: string) => `/freelancer/files/${fileId}/download`,
+    fileSignedUrl: (fileId: string) => `/freelancer/files/${fileId}/signed-url`,
+    fileDelete: (fileId: string) => `/freelancer/files/${fileId}`,
+    // Form templates
+    formSignedUrl: (id: string) => `/freelancer/forms/${id}/signed-url`,
     stats: '/freelancer/admin/stats',
     analytics: '/freelancer/analytics',
     tierBronze: '/freelancer/tier/bronze',
@@ -209,6 +217,11 @@ export const ENDPOINTS = {
         `/freelancer/admin/first-aid-certificate/${freelancerId}/approve`,
       rejectCertificate: (freelancerId: string) =>
         `/freelancer/admin/first-aid-certificate/${freelancerId}/reject`,
+      // Admin file management endpoints
+      filesList: '/freelancer/admin/files',
+      fileDetails: (fileId: string) => `/freelancer/admin/files/${fileId}`,
+      fileDownload: (fileId: string) => `/freelancer/admin/files/${fileId}/download`,
+      fileSignedUrl: (fileId: string) => `/freelancer/admin/files/${fileId}/signed-url`,
     },
     // Complaint management
     complaint: {

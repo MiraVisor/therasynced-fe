@@ -91,7 +91,20 @@ export const useDeleteFormTemplate = () => {
 };
 
 /**
- * Admin: Hook to download a form template
+ * Admin: Hook to get signed URL for a form template
+ */
+export const useGetAdminFormTemplateSignedUrl = () => {
+  return useMutation({
+    mutationFn: (id: string) => formTemplateApi.getAdminFormTemplateSignedUrl(id),
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to get form template URL');
+    },
+  });
+};
+
+/**
+ * Admin: Hook to download a form template (legacy - use useGetAdminFormTemplateSignedUrl instead)
+ * @deprecated Use useGetAdminFormTemplateSignedUrl instead
  */
 export const useDownloadFormTemplate = () => {
   return useMutation({
@@ -117,16 +130,28 @@ export const useVisibleFormTemplates = () => {
 };
 
 /**
- * Freelancer: Hook to download a visible form template
+ * Freelancer: Hook to get signed URL for a visible form template
+ * Returns signed URL that can be opened directly in a new tab
+ */
+export const useGetFreelancerFormTemplateSignedUrl = () => {
+  return useMutation({
+    mutationFn: (id: string) => formTemplateApi.getFreelancerFormTemplateSignedUrl(id),
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to get form template URL');
+    },
+  });
+};
+
+/**
+ * Freelancer: Hook to download a visible form template (legacy - use useGetFreelancerFormTemplateSignedUrl instead)
+ * @deprecated Use useGetFreelancerFormTemplateSignedUrl instead
  */
 export const useDownloadFreelancerFormTemplate = () => {
   return useMutation({
-    mutationFn: ({ id, filename }: { id: string; filename: string }) =>
-      formTemplateApi.downloadFreelancerFormTemplate(id).then((blob) => {
-        formTemplateApi.downloadBlob(blob, filename);
-      }),
+    mutationFn: ({ id }: { id: string; filename: string }) =>
+      formTemplateApi.downloadFreelancerFormTemplate(id),
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error) || 'Failed to download form template');
+      toast.error(getApiErrorMessage(error) || 'Failed to open form template');
     },
   });
 };

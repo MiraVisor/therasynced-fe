@@ -1,12 +1,13 @@
 'use client';
 
-import { Download, FileText } from 'lucide-react';
+import { ExternalLink, FileText } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import {
-  useDownloadFreelancerFormTemplate,
+  useGetFreelancerFormTemplateSignedUrl,
   useVisibleFormTemplates,
 } from '@/hooks/queries/useFormTemplates';
 import { formatFileSize } from '@/services/formTemplateService';
@@ -16,8 +17,8 @@ const FreelancerFormsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const { data: templates, isLoading, isFetching } = useVisibleFormTemplates();
-  const downloadMutation = useDownloadFreelancerFormTemplate();
+  const { data: templates, isLoading } = useVisibleFormTemplates();
+  const signedUrlMutation = useGetFreelancerFormTemplateSignedUrl();
 
   // Filter templates based on search query
   const filteredTemplates =
@@ -27,19 +28,38 @@ const FreelancerFormsPage = () => {
         template.fileName.toLowerCase().includes(searchQuery.toLowerCase()),
     ) || [];
 
-  const handleDownload = (template: FormTemplate) => {
+  const handleOpenForm = async (template: FormTemplate) => {
     setDownloadingId(template.id);
-    downloadMutation.mutate(
-      {
-        id: template.id,
-        filename: template.fileName,
-      },
-      {
-        onSettled: () => {
-          setDownloadingId(null);
+    try {
+      const data = await signedUrlMutation.mutateAsync(template.id);
+
+      // Fetch the PDF as a blob to avoid CORS issues
+      const response = await fetch(data.signedUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/pdf',
         },
-      },
-    );
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Open the blob URL in a new tab
+      window.open(blobUrl, '_blank');
+
+      // Clean up the blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+      setDownloadingId(null);
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      toast.error('Failed to load PDF. Please try again.');
+      setDownloadingId(null);
+    }
   };
 
   return (
@@ -98,18 +118,18 @@ const FreelancerFormsPage = () => {
                 </div>
                 <Button
                   className="w-full"
-                  onClick={() => handleDownload(template)}
+                  onClick={() => handleOpenForm(template)}
                   disabled={downloadingId === template.id}
                 >
                   {downloadingId === template.id ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                      Downloading...
+                      Opening...
                     </>
                   ) : (
                     <>
-                      <Download className="h-4 w-4 mr-2" />
-                      Download PDF
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open Form
                     </>
                   )}
                 </Button>

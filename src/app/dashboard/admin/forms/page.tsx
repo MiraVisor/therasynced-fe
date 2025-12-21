@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Download, Edit, Eye, EyeOff, FileText, Plus, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
@@ -22,8 +23,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
   useDeleteFormTemplate,
-  useDownloadFormTemplate,
   useFormTemplates,
+  useGetAdminFormTemplateSignedUrl,
   useUpdateFormTemplate,
   useUploadFormTemplate,
 } from '@/hooks/queries/useFormTemplates';
@@ -55,7 +56,7 @@ const AdminFormsPage = () => {
   const uploadMutation = useUploadFormTemplate();
   const updateMutation = useUpdateFormTemplate();
   const deleteMutation = useDeleteFormTemplate();
-  const downloadMutation = useDownloadFormTemplate();
+  const signedUrlMutation = useGetAdminFormTemplateSignedUrl();
 
   // Filter templates based on search query
   const filteredTemplates =
@@ -169,19 +170,38 @@ const AdminFormsPage = () => {
     });
   };
 
-  const handleDownload = (template: FormTemplate) => {
+  const handleDownload = async (template: FormTemplate) => {
     setDownloadingId(template.id);
-    downloadMutation.mutate(
-      {
-        id: template.id,
-        filename: template.fileName,
-      },
-      {
-        onSettled: () => {
-          setDownloadingId(null);
+    try {
+      const data = await signedUrlMutation.mutateAsync(template.id);
+
+      // Fetch the PDF as a blob to avoid CORS issues
+      const response = await fetch(data.signedUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/pdf',
         },
-      },
-    );
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Open the blob URL in a new tab
+      window.open(blobUrl, '_blank');
+
+      // Clean up the blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+      setDownloadingId(null);
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      toast.error('Failed to load PDF. Please try again.');
+      setDownloadingId(null);
+    }
   };
 
   const columns: ColumnDef<FormTemplate>[] = [
@@ -309,7 +329,7 @@ const AdminFormsPage = () => {
 
         {/* Templates Table */}
         <DataTable
-          columns={columns}
+          columns={columns as any}
           data={filteredTemplates}
           title="All Templates"
           searchKey="title"

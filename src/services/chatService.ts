@@ -36,21 +36,34 @@ export interface ChatContact {
 
 export interface ChatMessage {
   id: string;
+  conversationId: string;
+  senderId?: string; // Optional for backward compatibility
   content: string;
+  encryptedContent?: string; // Optional for backward compatibility
+  messageType?: 'GENERAL' | 'INQUIRY' | 'APPOINTMENT_RELATED' | 'FOLLOW_UP'; // Optional for backward compatibility
+  bookingId?: string;
   createdAt: string;
+  updatedAt?: string; // Optional for backward compatibility
   isRead: boolean;
   users: {
     id: string;
     name: string;
     profilePicture: string;
   };
-  conversationId: string;
+  booking?: {
+    id: string;
+    status: string;
+  };
 }
 
 export interface SendMessageData {
   recipientId: string;
   content: string;
+  bookingId?: string;
+  messageType?: 'GENERAL' | 'INQUIRY' | 'APPOINTMENT_RELATED' | 'FOLLOW_UP';
 }
+
+export type ConversationContext = string | Record<string, unknown>;
 
 export interface SendMessageResponse {
   success: boolean;
@@ -204,6 +217,23 @@ class ChatService {
     this.socket.on('conversation_left', (data: { conversationId: string }) => {
       console.log('ChatService: Left conversation:', data);
       window.dispatchEvent(new CustomEvent('chat:conversation_left', { detail: data }));
+    });
+
+    // Listen for conversation context changes
+    this.socket.on(
+      'conversation_context_changed',
+      (data: { conversationId: string; context: string }) => {
+        console.log('ChatService: Conversation context changed:', data);
+        window.dispatchEvent(
+          new CustomEvent('chat:conversation_context_changed', { detail: data }),
+        );
+      },
+    );
+
+    // Listen for conversation archived
+    this.socket.on('conversation_archived', (data: { conversationId: string }) => {
+      console.log('ChatService: Conversation archived:', data);
+      window.dispatchEvent(new CustomEvent('chat:conversation_archived', { detail: data }));
     });
   }
 
@@ -368,6 +398,21 @@ class ChatService {
     const handler = (event: CustomEvent) => callback(event.detail);
     window.addEventListener('chat:conversation_left', handler as EventListener);
     return () => window.removeEventListener('chat:conversation_left', handler as EventListener);
+  }
+
+  public onConversationContextChanged(
+    callback: (data: { conversationId: string; context: string }) => void,
+  ) {
+    const handler = (event: CustomEvent) => callback(event.detail);
+    window.addEventListener('chat:conversation_context_changed', handler as EventListener);
+    return () =>
+      window.removeEventListener('chat:conversation_context_changed', handler as EventListener);
+  }
+
+  public onConversationArchived(callback: (data: { conversationId: string }) => void) {
+    const handler = (event: CustomEvent) => callback(event.detail);
+    window.addEventListener('chat:conversation_archived', handler as EventListener);
+    return () => window.removeEventListener('chat:conversation_archived', handler as EventListener);
   }
 
   // Utility Methods
