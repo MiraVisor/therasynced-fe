@@ -1,24 +1,14 @@
 'use client';
 
-import {
-  Award,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  HelpCircle,
-  Shield,
-  Trash2,
-  User,
-} from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { Award, CreditCard, HelpCircle, Shield, User } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { DataAccessLogsSection } from '@/components/core/Dashboard/Account/DataAccessLogsSection';
-import { DataRightsSection } from '@/components/core/Dashboard/Account/DataRightsSection';
 import { EmailSection } from '@/components/core/Dashboard/Account/EmailSection';
 import { HelpSection } from '@/components/core/Dashboard/Account/HelpSection';
 import { PasswordSection } from '@/components/core/Dashboard/Account/PasswordSection';
+import { PrivacyConsentSection } from '@/components/core/Dashboard/Account/PrivacyConsentSection';
 import { ProfileSection } from '@/components/core/Dashboard/Account/ProfileSection';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import SubscriptionManagement from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionManagement';
@@ -43,6 +33,7 @@ import { useAuth } from '@/hooks/useAuthZustand';
 import { ROLES } from '@/types/types';
 
 export default function AccountPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('profile');
   const [isSubscriptionLoading] = useState(false);
@@ -52,9 +43,25 @@ export default function AccountPage() {
   // Use React Query hooks
   const { data: profileData, isLoading: loading, isFetching: initialLoading } = useProfile();
 
+  // Determine active section from query params
   useEffect(() => {
-    const section = searchParams.get('section') || searchParams.get('tab');
-    if (section) {
+    // Check for tab or section query param, or direct param like ?profile
+    const tabParam = searchParams.get('tab') || searchParams.get('section');
+    const directParam = searchParams.get('profile')
+      ? 'profile'
+      : searchParams.get('account')
+        ? 'account'
+        : searchParams.get('subscription')
+          ? 'subscription'
+          : searchParams.get('stamps')
+            ? 'stamps'
+            : searchParams.get('help')
+              ? 'help'
+              : null;
+
+    const section = tabParam || directParam || 'profile';
+
+    if (section && section !== activeSection) {
       setActiveSection(section);
     }
 
@@ -68,12 +75,48 @@ export default function AccountPage() {
         toast.success('Subscription activated successfully!');
       }, 100);
     }
-  }, [searchParams]);
+  }, [searchParams, activeSection]);
 
   const handleSignOut = () => {
     setShowSignOutModal(false);
     logout();
     window.location.href = '/authentication/sign-in';
+  };
+
+  // Handle tab navigation with URL updates
+  const handleTabClick = (sectionId: string) => {
+    setActiveSection(sectionId);
+
+    // Build the new URL with query params
+    const basePath = '/dashboard/account';
+    const params = new URLSearchParams();
+
+    // Use tab=sectionId format
+    params.set('tab', sectionId);
+
+    // Preserve subscription view query param if navigating to subscription
+    if (sectionId === 'subscription') {
+      const currentView = searchParams.get('view');
+      if (currentView) {
+        params.set('view', currentView);
+      }
+    }
+
+    // Preserve other query params (like subscription success, upgrade, etc.)
+    const subscriptionSuccess = searchParams.get('subscription');
+    const upgradeParam = searchParams.get('upgrade');
+    if (subscriptionSuccess) {
+      params.set('subscription', subscriptionSuccess);
+    }
+    if (upgradeParam) {
+      params.set('upgrade', upgradeParam);
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${basePath}?${queryString}` : `${basePath}?tab=${sectionId}`;
+
+    // Navigate to new URL
+    router.push(newUrl, { scroll: false });
   };
 
   // Show billing only for freelancers and admins
@@ -84,12 +127,10 @@ export default function AccountPage() {
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Shield },
-    { id: 'data-rights', label: 'Data Rights', icon: FileText },
-    { id: 'logs', label: 'Data Access Logs', icon: ClipboardList },
     // { id: 'notifications', label: 'Notifications', icon: Bell },
     ...(showBilling ? [{ id: 'subscription', label: 'Subscription', icon: CreditCard }] : []),
     ...(showStamps ? [{ id: 'stamps', label: 'Stamps', icon: Award }] : []),
-    { id: 'help', label: 'Help & Support', icon: HelpCircle },
+    ...(role !== ROLES.ADMIN ? [{ id: 'help', label: 'Help & Support', icon: HelpCircle }] : []),
   ];
 
   const renderProfileSection = () => <ProfileSection />;
@@ -103,25 +144,7 @@ export default function AccountPage() {
       <div className="space-y-8">
         <EmailSection />
         <PasswordSection />
-        {/* Danger Zone */}
-        <div className="bg-white border border-red-200 rounded-xl p-6">
-          <h3 className="text-lg font-poppins font-semibold text-red-800 mb-4">Danger Zone</h3>
-          <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-            <h4 className="font-medium text-red-800 mb-2">Delete Account</h4>
-            <p className="text-sm text-red-600 mb-4">
-              Once you delete your account, there is no going back. Please be certain.
-            </p>
-            <Button
-              className="bg-destructive hover:bg-destructive/90 disabled:opacity-50 text-white h-11 px-6 w-full sm:w-auto"
-              variant="destructive"
-              size="sm"
-              onClick={() => toast.info('Account deletion coming soon')}
-            >
-              Delete Account
-              <Trash2 className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <PrivacyConsentSection />
       </div>
     );
   };
@@ -191,7 +214,7 @@ export default function AccountPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveSection(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                 activeSection === tab.id
                   ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
@@ -209,14 +232,12 @@ export default function AccountPage() {
       <div className="bg-gray-50 rounded-xl p-6">
         {activeSection === 'profile' && renderProfileSection()}
         {activeSection === 'account' && renderAccountSection()}
-        {activeSection === 'data-rights' && <DataRightsSection />}
-        {activeSection === 'logs' && <DataAccessLogsSection />}
         {activeSection === 'notifications' && renderNotificationsSection()}
         {activeSection === 'subscription' &&
           showBilling &&
           (isSubscriptionLoading ? <SubscriptionSectionSkeleton /> : <SubscriptionManagement />)}
         {activeSection === 'stamps' && showStamps && <StampsManagement />}
-        {activeSection === 'help' && renderHelpSection()}
+        {activeSection === 'help' && role !== ROLES.ADMIN && renderHelpSection()}
       </div>
 
       {/* Sign Out Confirmation Modal */}

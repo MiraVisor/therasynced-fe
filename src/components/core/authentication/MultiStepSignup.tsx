@@ -15,6 +15,7 @@ import { useSignupUIStore } from '@/stores/signupUIStore';
 
 import { AccountSetupStep } from './steps/AccountSetupStep';
 import { ClinicAddressStep } from './steps/ClinicAddressStep';
+import { ConsentStep } from './steps/ConsentStep';
 import { JobTitleStep } from './steps/JobTitleStep';
 import { PersonalDetailsStep } from './steps/PersonalDetailsStep';
 import { RoleSelectionStep } from './steps/RoleSelectionStep';
@@ -43,6 +44,9 @@ const signupSchema = z
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
     mainJobTitleId: z.string().optional(),
+    termsConsent: z.boolean().optional(),
+    privacyConsent: z.boolean().optional(),
+    gdprConsent: z.boolean().optional(),
   })
   .refine(
     (data) => {
@@ -229,16 +233,34 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,
       mainJobTitleId:
         selectedRole === 'freelancer' ? formValues.mainJobTitleId || undefined : undefined,
+      termsConsent: formValues.termsConsent,
+      privacyConsent: formValues.privacyConsent,
+      gdprConsent: formValues.gdprConsent,
     };
 
-    // Remove undefined values
+    // Remove undefined values (but keep consent booleans)
     Object.keys(transformedData).forEach((key) => {
-      if (transformedData[key as keyof typeof transformedData] === undefined) {
+      if (
+        transformedData[key as keyof typeof transformedData] === undefined &&
+        !['termsConsent', 'privacyConsent', 'gdprConsent'].includes(key)
+      ) {
         delete transformedData[key as keyof typeof transformedData];
       }
     });
 
     onSubmit(transformedData);
+  };
+
+  // Add this helper function before isStepValid
+  const areConsentsValid = (): boolean => {
+    return (
+      getValues('termsConsent') === true &&
+      getValues('privacyConsent') === true &&
+      getValues('gdprConsent') === true &&
+      !errors.termsConsent &&
+      !errors.privacyConsent &&
+      !errors.gdprConsent
+    );
   };
 
   const isStepValid = (): boolean => {
@@ -264,11 +286,23 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         const dob = getValues('dob');
         return !!dob && !errors.dob;
       case 4:
-        // Job title for freelancer (required)
-        return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
+        // Job title for freelancer OR Consent for patient
+        if (selectedRole === 'freelancer') {
+          return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
+        } else if (selectedRole === 'patient') {
+          // Consent step for patient
+          return areConsentsValid();
+        }
+        return true;
       case 5:
         // Clinic address for freelancer (optional)
         // Always allow proceeding from this step since clinic address is optional
+        return true;
+      case 6:
+        // Consent step for freelancer
+        if (selectedRole === 'freelancer') {
+          return areConsentsValid();
+        }
         return true;
       default:
         return true;
@@ -287,10 +321,23 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         return <PersonalDetailsStep />;
 
       case 4:
-        return <JobTitleStep />;
+        // Job title for freelancer OR Consent for patient
+        if (selectedRole === 'freelancer') {
+          return <JobTitleStep />;
+        } else if (selectedRole === 'patient') {
+          return <ConsentStep />;
+        }
+        return null;
 
       case 5:
         return <ClinicAddressStep />;
+
+      case 6:
+        // Consent step for freelancer
+        if (selectedRole === 'freelancer') {
+          return <ConsentStep />;
+        }
+        return null;
 
       default:
         return null;
@@ -300,7 +347,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   // Only show step indicator after role selection (step 1)
   const showStepIndicator = currentStep > 1;
   const displayStep = currentStep - 1; // Step number to display (starts from 1 after role selection)
-  const totalSteps = selectedRole === 'patient' ? 2 : selectedRole === 'freelancer' ? 4 : 2; // Total steps after role selection (account setup + personal details + job title + clinic address for freelancer)
+  const totalSteps = selectedRole === 'patient' ? 3 : selectedRole === 'freelancer' ? 5 : 2; // Total steps after role selection (account setup + personal details + job title + clinic address + consent for freelancer)
   const stepsToShow = steps.filter((step) => step.id > 1); // Steps to show in progress bar (exclude role selection)
 
   return (

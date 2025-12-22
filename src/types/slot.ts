@@ -75,11 +75,12 @@ export interface SlotStats {
 export interface CreateSlotDto {
   locationType?: LocationType; // Optional - acts as default fallback
   locationId?: string;
-  basePrice: number;
+  basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
   slots: Array<{
     startTime: string;
     endTime: string;
+    basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
     locationType?: LocationType; // Optional - per-slot location override
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
@@ -91,11 +92,12 @@ export interface CreateSlotDto {
 export interface CreateSlotsDto {
   locationType?: LocationType; // Optional - acts as default fallback
   locationId?: string; // Added to support location selection
-  basePrice: number;
+  basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
   slots: Array<{
     startTime: string;
     endTime: string;
+    basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
     locationType?: LocationType; // Optional - per-slot location override
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;

@@ -1,7 +1,6 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Calendar, Users, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -26,51 +25,30 @@ const statsConfig = [
   {
     key: 'totalBookingsAllTime' as keyof BookingStats,
     title: 'Total All Time',
-    icon: Calendar,
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary/10',
   },
   {
     key: 'todaysAppointments' as keyof BookingStats,
     title: "Today's Appointments",
-    icon: Calendar,
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary/10',
   },
   {
     key: 'canceledAppointments' as keyof BookingStats,
     title: 'Canceled Appointments',
-    icon: XCircle,
-    iconColor: 'text-error',
-    iconBg: 'bg-error/10',
   },
   {
     key: 'therapistsOnline' as keyof BookingStats,
     title: 'Therapists Online',
-    icon: Users,
-    iconColor: 'text-success',
-    iconBg: 'bg-success/10',
   },
   {
     key: 'totalBookingsThisMonth' as keyof BookingStats,
     title: 'Total This Month',
-    icon: Calendar,
-    iconColor: 'text-info',
-    iconBg: 'bg-info/10',
   },
   {
     key: 'completedBookingsThisMonth' as keyof BookingStats,
     title: 'Completed This Month',
-    icon: Users,
-    iconColor: 'text-success',
-    iconBg: 'bg-success/10',
   },
   {
     key: 'pendingBookings' as keyof BookingStats,
     title: 'Pending Bookings',
-    icon: Calendar,
-    iconColor: 'text-warning',
-    iconBg: 'bg-warning/10',
   },
 ];
 
@@ -259,9 +237,6 @@ const AdminBookingsPage = () => {
               key={config.key}
               title={config.title}
               value={stats[config.key].toString()}
-              icon={config.icon}
-              iconColor={config.iconColor}
-              iconBg={config.iconBg}
               loading={statsLoading && !statsData}
             />
           ))}

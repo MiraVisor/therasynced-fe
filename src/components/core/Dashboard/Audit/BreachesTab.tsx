@@ -256,24 +256,9 @@ export function BreachesTab() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <StatsCardsGrid>
-        <StatCard
-          title="Total Breaches"
-          value={stats.total}
-          icon={AlertTriangle}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Active Breaches"
-          value={stats.active}
-          icon={AlertTriangle}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Critical/High Risk"
-          value={stats.criticalHigh}
-          icon={AlertTriangle}
-          loading={initialLoading}
-        />
+        <StatCard title="Total Breaches" value={stats.total} loading={initialLoading} />
+        <StatCard title="Active Breaches" value={stats.active} loading={initialLoading} />
+        <StatCard title="Critical/High Risk" value={stats.criticalHigh} loading={initialLoading} />
       </StatsCardsGrid>
 
       {/* Filters */}

@@ -2,7 +2,7 @@
 
 import { Shield } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -25,6 +25,7 @@ const AuditDashboard = dynamic(
 
 export default function AdminAuditPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, role } = useAuthStore();
   const [isAuthorized, setIsAuthorized] = useState(false);
 
@@ -53,7 +54,7 @@ export default function AdminAuditPage() {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <Shield className="h-6 w-6" />
-            <h1 className="text-2xl font-bold">Audit & Compliance</h1>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Audit & Compliance</h1>
           </div>
         </div>
       }

@@ -211,7 +211,7 @@ const AdminFormsPage = () => {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{row.original.title}</span>
+          <span className="font-inter font-medium text-charcoal">{row.original.title}</span>
         </div>
       ),
     },
@@ -219,13 +219,17 @@ const AdminFormsPage = () => {
       accessorKey: 'fileName',
       header: 'File Name',
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.original.fileName}</span>
+        <span className="font-inter text-sm text-muted-foreground">{row.original.fileName}</span>
       ),
     },
     {
       accessorKey: 'fileSize',
       header: 'Size',
-      cell: ({ row }) => <span className="text-sm">{formatFileSize(row.original.fileSize)}</span>,
+      cell: ({ row }) => (
+        <span className="font-inter text-sm text-foreground">
+          {formatFileSize(row.original.fileSize)}
+        </span>
+      ),
     },
     {
       accessorKey: 'isVisible',
@@ -235,12 +239,12 @@ const AdminFormsPage = () => {
           {row.original.isVisible ? (
             <>
               <Eye className="h-4 w-4 text-green-600" />
-              <span className="text-sm text-green-600">Visible</span>
+              <span className="font-inter text-sm text-success">Visible</span>
             </>
           ) : (
             <>
-              <EyeOff className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-500">Hidden</span>
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
+              <span className="font-inter text-sm text-muted-foreground">Hidden</span>
             </>
           )}
         </div>
@@ -250,7 +254,7 @@ const AdminFormsPage = () => {
       accessorKey: 'createdAt',
       header: 'Created',
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
+        <span className="font-inter text-sm text-muted-foreground">
           {new Date(row.original.createdAt).toLocaleDateString()}
         </span>
       ),
@@ -300,31 +304,14 @@ const AdminFormsPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <EnhancedStatCard
             title="Total Templates"
             value={stats.total.toString()}
-            icon={FileText}
-            iconColor="text-blue-600"
-            iconBg="bg-blue-100"
             loading={isLoading}
           />
-          <EnhancedStatCard
-            title="Visible"
-            value={stats.visible.toString()}
-            icon={Eye}
-            iconColor="text-green-600"
-            iconBg="bg-green-100"
-            loading={isLoading}
-          />
-          <EnhancedStatCard
-            title="Hidden"
-            value={stats.hidden.toString()}
-            icon={EyeOff}
-            iconColor="text-gray-600"
-            iconBg="bg-gray-100"
-            loading={isLoading}
-          />
+          <EnhancedStatCard title="Visible" value={stats.visible.toString()} loading={isLoading} />
+          <EnhancedStatCard title="Hidden" value={stats.hidden.toString()} loading={isLoading} />
         </div>
 
         {/* Templates Table */}

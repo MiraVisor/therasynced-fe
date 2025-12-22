@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle, Edit, FileText, Plus, XCircle } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -211,31 +211,19 @@ const JobTitlesPage = () => {
     {
       title: 'Total Job Titles',
       value: stats?.totalJobTitles.toString() ?? '0',
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
     {
       title: 'Active',
       value: stats?.activeJobTitles.toString() ?? '0',
-      icon: CheckCircle,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/10',
     },
     {
       title: 'Inactive',
       value: stats?.inactiveJobTitles.toString() ?? '0',
-      icon: XCircle,
-      iconColor: 'text-error',
-      iconBg: 'bg-error/10',
     },
 
     {
       title: 'Most Popular',
       value: stats?.mostPopularJobTitle?.name ?? 'N/A',
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
   ];
 
@@ -259,15 +247,12 @@ const JobTitlesPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((card) => (
             <EnhancedStatCard
               key={card.title}
               title={card.title}
               value={card.value}
-              icon={card.icon}
-              iconColor={card.iconColor}
-              iconBg={card.iconBg}
               loading={statsLoading}
             />
           ))}
@@ -305,7 +290,7 @@ const JobTitlesPage = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="font-poppins font-semibold">Create Job Title</DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Add a new job title to the platform
               </DialogDescription>
             </DialogHeader>
@@ -319,7 +304,7 @@ const JobTitlesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Physiotherapy"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -332,7 +317,7 @@ const JobTitlesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Job title description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>
@@ -357,7 +342,7 @@ const JobTitlesPage = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="font-poppins font-semibold">Edit Job Title</DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Update job title information
               </DialogDescription>
             </DialogHeader>
@@ -371,7 +356,7 @@ const JobTitlesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Physiotherapy"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -384,7 +369,7 @@ const JobTitlesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Job title description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, FileDown, TrendingUp } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -382,24 +382,9 @@ export function ExportLogsTab() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <StatsCardsGrid>
-        <StatCard
-          title="Total Exports"
-          value={stats.total}
-          icon={FileDown}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Last 30 Days"
-          value={stats.last30d}
-          icon={TrendingUp}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Total Data Exported"
-          value={stats.totalSizeGB}
-          icon={Download}
-          loading={initialLoading}
-        />
+        <StatCard title="Total Exports" value={stats.total} loading={initialLoading} />
+        <StatCard title="Last 30 Days" value={stats.last30d} loading={initialLoading} />
+        <StatCard title="Total Data Exported" value={stats.totalSizeGB} loading={initialLoading} />
       </StatsCardsGrid>
 
       {/* Filters */}

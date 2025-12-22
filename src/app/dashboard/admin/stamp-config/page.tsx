@@ -115,8 +115,10 @@ const StampConfigPage = () => {
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Stamp Configuration</h1>
-            <p className="text-gray-600">Manage therapist stamp loyalty settings</p>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Stamp Configuration</h1>
+            <p className="font-inter text-sm text-muted-foreground">
+              Manage therapist stamp loyalty settings
+            </p>
           </div>
         }
       >
@@ -132,8 +134,10 @@ const StampConfigPage = () => {
       header={
         <div className="flex items-center justify-between w-full">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Stamp Configuration</h1>
-            <p className="text-gray-600">Manage therapist stamp loyalty settings</p>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Stamp Configuration</h1>
+            <p className="font-inter text-sm text-muted-foreground">
+              Manage therapist stamp loyalty settings
+            </p>
           </div>
           <Button onClick={() => setIsBulkDialogOpen(true)}>
             <Settings className="h-4 w-4 mr-2" />
@@ -142,11 +146,11 @@ const StampConfigPage = () => {
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-6 lg:space-y-8">
         {/* Info Card */}
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-4">
-            <p className="text-sm text-blue-800">
+            <p className="font-inter text-sm text-blue-800">
               <strong>Note:</strong> Therapists without custom configurations will use the default
               settings (5 stamps for 15% discount). Use bulk update to apply settings to all
               therapists at once.
@@ -158,8 +162,8 @@ const StampConfigPage = () => {
         {configs.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <p className="text-gray-500">No custom configurations found.</p>
-              <p className="text-sm text-gray-400 mt-2">
+              <p className="font-inter text-gray-500">No custom configurations found.</p>
+              <p className="font-inter text-sm text-gray-400 mt-2">
                 All therapists are using default settings.
               </p>
             </CardContent>
@@ -170,7 +174,7 @@ const StampConfigPage = () => {
               <Card key={config.therapistId} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">
+                    <CardTitle className="font-poppins text-lg font-semibold">
                       {config.therapist?.name || 'Unknown Therapist'}
                     </CardTitle>
                     <Badge variant={config.isActive ? 'default' : 'secondary'}>
@@ -180,19 +184,19 @@ const StampConfigPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-600">Stamp Target</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="font-inter text-sm text-muted-foreground">Stamp Target</p>
+                    <p className="font-poppins text-2xl font-bold text-charcoal">
                       {config.stampTarget || 'Default'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Discount Percentage</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="font-inter text-sm text-muted-foreground">Discount Percentage</p>
+                    <p className="font-poppins text-2xl font-bold text-success">
                       {config.discountPercentage || 'Default'}%
                     </p>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t">
-                    <span className="text-xs text-gray-500">
+                    <span className="font-inter text-xs text-muted-foreground">
                       Updated: {new Date(config.updatedAt).toLocaleDateString()}
                     </span>
                     <div className="flex gap-2">
@@ -219,15 +223,19 @@ const StampConfigPage = () => {
         <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Bulk Update All Therapists</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="font-poppins font-semibold">
+                Bulk Update All Therapists
+              </DialogTitle>
+              <DialogDescription className="font-inter">
                 Apply the same stamp configuration to all therapists. This will create or update
                 configurations for every therapist.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="bulk-stamp-target">Stamp Target</Label>
+                <Label htmlFor="bulk-stamp-target" className="font-inter font-medium">
+                  Stamp Target
+                </Label>
                 <Input
                   id="bulk-stamp-target"
                   type="number"
@@ -239,7 +247,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="bulk-discount">Discount Percentage</Label>
+                <Label htmlFor="bulk-discount" className="font-inter font-medium">
+                  Discount Percentage
+                </Label>
                 <Input
                   id="bulk-discount"
                   type="number"
@@ -255,7 +265,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="bulk-active">Active</Label>
+                <Label htmlFor="bulk-active" className="font-inter font-medium">
+                  Active
+                </Label>
                 <Switch
                   id="bulk-active"
                   checked={bulkForm.isActive}
@@ -288,14 +300,18 @@ const StampConfigPage = () => {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Configuration for {selectedConfig?.therapist?.name}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="font-poppins font-semibold">
+                Edit Configuration for {selectedConfig?.therapist?.name}
+              </DialogTitle>
+              <DialogDescription className="font-inter">
                 Update the stamp target and discount percentage for this therapist.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="edit-stamp-target">Stamp Target</Label>
+                <Label htmlFor="edit-stamp-target" className="font-inter font-medium">
+                  Stamp Target
+                </Label>
                 <Input
                   id="edit-stamp-target"
                   type="number"
@@ -310,7 +326,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-discount">Discount Percentage</Label>
+                <Label htmlFor="edit-discount" className="font-inter font-medium">
+                  Discount Percentage
+                </Label>
                 <Input
                   id="edit-discount"
                   type="number"
@@ -326,7 +344,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="edit-active">Active</Label>
+                <Label htmlFor="edit-active" className="font-inter font-medium">
+                  Active
+                </Label>
                 <Switch
                   id="edit-active"
                   checked={editForm.isActive}

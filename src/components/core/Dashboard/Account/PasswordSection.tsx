@@ -11,6 +11,8 @@ import { useChangePassword } from '@/hooks/queries/useProfile';
 
 export function PasswordSection() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { mutate: changePasswordMutation, isPending: isChangingPassword } = useChangePassword();
 
@@ -63,18 +65,44 @@ export function PasswordSection() {
       <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-6">Password Management</h3>
 
       <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
+            Current Password
+          </Label>
+          <div className="relative">
+            <Input
+              id="currentPassword"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter current password"
+              value={passwordData.currentPassword}
+              onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+              className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal pr-10"
+              disabled={isLoading || isChangingPassword}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
-              Current Password
+            <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
+              New Password
             </Label>
             <div className="relative">
               <Input
-                id="currentPassword"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter current password"
-                value={passwordData.currentPassword}
-                onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                id="newPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                placeholder="Enter new password"
+                value={passwordData.newPassword}
+                onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
                 className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal pr-10"
                 disabled={isLoading || isChangingPassword}
               />
@@ -83,42 +111,38 @@ export function PasswordSection() {
                 variant="ghost"
                 size="sm"
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowNewPassword(!showNewPassword)}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
-              New Password
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+              Confirm New Password
             </Label>
-            <Input
-              id="newPassword"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Enter new password"
-              value={passwordData.newPassword}
-              onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-              className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
-              disabled={isLoading || isChangingPassword}
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Confirm new password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal pr-10"
+                disabled={isLoading || isChangingPassword}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-            Confirm New Password
-          </Label>
-          <Input
-            id="confirmPassword"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Confirm new password"
-            value={passwordData.confirmPassword}
-            onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-            className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
-            disabled={isLoading || isChangingPassword}
-          />
         </div>
 
         <Button

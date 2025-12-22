@@ -1,7 +1,5 @@
 'use client';
 
-import { Calendar, DollarSign, TrendingUp, Users } from 'lucide-react';
-
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { AdminRevenueDto } from '@/services/adminFinanceService';
 
@@ -32,9 +30,6 @@ export function StatsCards({ revenueData, isLoading }: StatsCardsProps) {
             isUp: revenueData.totalRevenue.percentageChange >= 0,
             label: revenueData.totalRevenue.comparisonPeriod,
           },
-          icon: DollarSign,
-          iconColor: 'text-primary',
-          iconBg: 'bg-primary/10',
         },
         {
           title: 'Active Therapists',
@@ -44,9 +39,6 @@ export function StatsCards({ revenueData, isLoading }: StatsCardsProps) {
             isUp: revenueData.activeTherapists.percentageChange >= 0,
             label: revenueData.activeTherapists.comparisonPeriod,
           },
-          icon: Users,
-          iconColor: 'text-success',
-          iconBg: 'bg-success/10',
         },
         {
           title: 'Completed Sessions',
@@ -56,9 +48,6 @@ export function StatsCards({ revenueData, isLoading }: StatsCardsProps) {
             isUp: revenueData.completedSessions.percentageChange >= 0,
             label: revenueData.completedSessions.comparisonPeriod,
           },
-          icon: Calendar,
-          iconColor: 'text-info',
-          iconBg: 'bg-info/10',
         },
         {
           title: 'Average session price',
@@ -68,9 +57,6 @@ export function StatsCards({ revenueData, isLoading }: StatsCardsProps) {
             isUp: revenueData.averageSessionPrice.percentageChange >= 0,
             label: revenueData.averageSessionPrice.comparisonPeriod,
           },
-          icon: TrendingUp,
-          iconColor: 'text-warning',
-          iconBg: 'bg-warning/10',
         },
       ]
     : [
@@ -78,49 +64,33 @@ export function StatsCards({ revenueData, isLoading }: StatsCardsProps) {
           title: 'Total Revenue',
           value: 'EUR 0',
           trend: undefined,
-          icon: DollarSign,
-          iconColor: 'text-primary',
-          iconBg: 'bg-primary/10',
         },
         {
           title: 'Active Therapists',
           value: '0',
           trend: undefined,
-          icon: Users,
-          iconColor: 'text-success',
-          iconBg: 'bg-success/10',
         },
         {
           title: 'Completed Sessions',
           value: '0',
           trend: undefined,
-          icon: Calendar,
-          iconColor: 'text-info',
-          iconBg: 'bg-info/10',
         },
         {
           title: 'Average session price',
           value: 'EUR 0',
           trend: undefined,
-          icon: TrendingUp,
-          iconColor: 'text-warning',
-          iconBg: 'bg-warning/10',
         },
       ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {statsData.map((stat, index) => {
-        const Icon = stat.icon;
         return (
           <EnhancedStatCard
             key={index}
             title={stat.title}
             value={stat.value}
             trend={stat.trend}
-            icon={Icon}
-            iconColor={stat.iconColor}
-            iconBg={stat.iconBg}
             interactive
             loading={isLoading}
             onClick={() => {

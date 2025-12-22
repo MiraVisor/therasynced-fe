@@ -1,16 +1,7 @@
 'use client';
 
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  DollarSign,
-  Plus,
-  TrendingUp,
-  X,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -19,7 +10,7 @@ import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageW
 import { CreateSlotForm } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/CreateSlotForm';
 import { DaySlotSection } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/DaySlotSection';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
-import { UpgradeModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/UpgradeModal';
+import { EnhancedUpgradeModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/EnhancedUpgradeModal';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -242,12 +233,7 @@ const SlotsPage = () => {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    {currentSubscription?.canCreateSlots === false
-                      ? currentSubscription?.message ||
-                        "You've reached the trial limit of 5 slots. Upgrade to create more."
-                      : "You've reached your slot limit. Upgrade to create more."}
-                  </p>
+                  <p>You have reached your slot limit. Upgrade to create more slots.</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -286,141 +272,126 @@ const SlotsPage = () => {
           </Card>
         )}
 
-        {/* Subscription Info Section */}
-        {slotStats?.subscriptionInfo && (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-poppins font-semibold text-lg text-charcoal">
-                  Subscription & Slot Limits
-                </h3>
-                <p className="font-inter text-sm text-gray-500 mt-1">
-                  {slotStats.subscriptionInfo.planName
-                    ? `${slotStats.subscriptionInfo.planName} Plan`
-                    : 'No active subscription'}
-                </p>
-              </div>
-              {slotStats.subscriptionInfo.remainingSlots === 0 && (
-                <div className="px-3 py-1.5 bg-error/10 border border-error/20 rounded-lg">
-                  <span className="text-xs font-inter font-medium text-error">
-                    Slot limit reached
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {slotStats.subscriptionInfo.isUnlimited ? (
-              <div className="flex items-center gap-2 p-4 bg-success/5 rounded-lg border border-success/20">
-                <div className="flex-1">
-                  <div className="font-poppins text-2xl font-bold text-success mb-1">
-                    Unlimited Slots
-                  </div>
-                  <div className="font-inter text-sm text-gray-600">
-                    {slotStats.subscriptionInfo.activeSlotsCount} active slot
-                    {slotStats.subscriptionInfo.activeSlotsCount !== 1 ? 's' : ''}
-                  </div>
-                </div>
-              </div>
-            ) : slotStats.subscriptionInfo.planName ? (
-              <div className="space-y-3">
+        {/* Enhanced Subscription Banner - Only show when there's an active plan or trial */}
+        {currentSubscription &&
+          (currentSubscription.plan || currentSubscription.status === 'TRIALING') && (
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader>
                 <div className="flex items-center justify-between">
-                  <span className="font-inter text-sm font-medium text-gray-700">
-                    {slotStats.subscriptionInfo.activeSlotsCount} /{' '}
-                    {slotStats.subscriptionInfo.maxSlots} slots used
-                  </span>
-                  <span className="font-inter text-sm font-medium text-charcoal">
-                    {slotStats.subscriptionInfo.remainingSlots !== null
-                      ? `${slotStats.subscriptionInfo.remainingSlots} remaining`
-                      : 'Unlimited'}
-                  </span>
+                  <div>
+                    <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
+                      {currentSubscription.plan
+                        ? `${currentSubscription.plan.displayName} Plan`
+                        : 'Free Trial Active'}
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      {currentSubscription.plan
+                        ? `EUR ${currentSubscription.plan.price}/month`
+                        : 'Trial period active'}
+                    </CardDescription>
+                  </div>
+                  {currentSubscription.slotsLimit !== null &&
+                    currentSubscription.slotsUsed >= currentSubscription.slotsLimit && (
+                      <div className="px-3 py-1.5 bg-error/10 border border-error/20 rounded-lg">
+                        <span className="text-xs font-inter font-medium text-error">
+                          Limit reached
+                        </span>
+                      </div>
+                    )}
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      slotStats.subscriptionInfo.remainingSlots === 0
-                        ? 'bg-error'
-                        : slotStats.subscriptionInfo.remainingSlots !== null &&
-                            slotStats.subscriptionInfo.remainingSlots <= 2
-                          ? 'bg-warning'
-                          : 'bg-success'
-                    }`}
-                    style={{
-                      width: `${Math.min(
-                        (slotStats.subscriptionInfo.activeSlotsCount /
-                          (slotStats.subscriptionInfo.maxSlots || 1)) *
-                          100,
-                        100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-                {slotStats.subscriptionInfo.remainingSlots === 0 && (
-                  <div className="mt-3 p-3 bg-error/5 border border-error/20 rounded-lg">
-                    <p className="text-sm font-inter text-error">
-                      You&apos;ve reached your slot limit. Please upgrade your plan to create more
-                      slots.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2 border-primary text-primary hover:bg-primary hover:text-white"
-                      onClick={() => router.push('/dashboard/account?tab=subscription')}
-                    >
-                      Upgrade Plan
-                    </Button>
+              </CardHeader>
+              <CardContent>
+                {currentSubscription.slotsLimit === null ? (
+                  <div className="flex items-center gap-2 p-4 bg-success/5 rounded-lg border border-success/20">
+                    <div className="flex-1">
+                      <div className="font-poppins text-2xl font-bold text-success mb-1">
+                        Unlimited Slots
+                      </div>
+                      <div className="font-inter text-sm text-gray-600">
+                        {currentSubscription.slotsUsed} active slot
+                        {currentSubscription.slotsUsed !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-inter text-sm font-medium text-gray-700">
+                        {currentSubscription.slotsUsed} / {currentSubscription.slotsLimit} slots
+                        used
+                      </span>
+                      {currentSubscription.slotsLimit > 0 && (
+                        <span className="font-inter text-sm font-medium text-charcoal">
+                          {Math.max(
+                            0,
+                            currentSubscription.slotsLimit - currentSubscription.slotsUsed,
+                          )}{' '}
+                          remaining
+                        </span>
+                      )}
+                    </div>
+                    {currentSubscription.slotsLimit > 0 && (
+                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            currentSubscription.slotsUsed >= currentSubscription.slotsLimit
+                              ? 'bg-error'
+                              : currentSubscription.slotsLimit - currentSubscription.slotsUsed <= 2
+                                ? 'bg-warning'
+                                : 'bg-success'
+                          }`}
+                          style={{
+                            width: `${Math.min(
+                              (currentSubscription.slotsUsed / currentSubscription.slotsLimit) *
+                                100,
+                              100,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    )}
+                    {currentSubscription.slotsLimit > 0 &&
+                      currentSubscription.slotsUsed >= currentSubscription.slotsLimit && (
+                        <div className="mt-3 p-3 bg-error/5 border border-error/20 rounded-lg">
+                          <p className="text-sm font-inter text-error mb-2">
+                            You&apos;ve reached your slot limit. Upgrade to create more slots.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-primary text-primary hover:bg-primary hover:text-white"
+                            onClick={() => setShowUpgradeModal(true)}
+                          >
+                            Upgrade Plan
+                          </Button>
+                        </div>
+                      )}
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm font-inter text-gray-600 mb-3">
-                  Please subscribe to create slots and start accepting bookings.
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
-                  onClick={() => router.push('/dashboard/account?tab=subscription')}
-                >
-                  View Plans
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard
             title="Total Slots"
             value={displayStats.total.toString()}
-            icon={CalendarIcon}
-            iconColor="text-info"
-            iconBg="bg-info/10"
             loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Booked"
             value={displayStats.booked.toString()}
-            icon={Clock}
-            iconColor="text-success"
-            iconBg="bg-success/10"
             loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Available"
             value={displayStats.available.toString()}
-            icon={TrendingUp}
-            iconColor="text-primary"
-            iconBg="bg-primary/10"
             loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Revenue"
             value={`€${displayStats.revenue.toFixed(2)}`}
-            icon={DollarSign}
-            iconColor="text-warning"
-            iconBg="bg-warning/10"
             loading={isLoadingStats && !slotStats}
           />
         </div>
@@ -543,17 +514,18 @@ const SlotsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Upgrade Modal */}
-      {currentSubscription?.plan && (
-        <UpgradeModal
-          isOpen={showUpgradeModal}
-          onClose={handleUpgradeClose}
-          currentPlan={currentSubscription.plan}
-          availablePlans={plans}
-          currentSlots={slotStats?.totalSlots || 0}
-          maxSlots={currentSubscription.plan.maxSlots || 0}
-        />
-      )}
+      {/* Enhanced Upgrade Modal */}
+      <EnhancedUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={handleUpgradeClose}
+        plans={plans}
+        currentPlanName={currentSubscription?.plan?.name}
+        onSelectPlan={(planType) => {
+          router.push(`/dashboard/account?tab=subscription&upgrade=${planType}`);
+          handleUpgradeClose();
+        }}
+        isLoading={false}
+      />
     </DashboardPageWrapper>
   );
 };

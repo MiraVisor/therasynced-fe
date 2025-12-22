@@ -171,6 +171,10 @@ export const ENDPOINTS = {
     billingPortal: '/subscription/billing-portal',
     checkout: '/subscription/checkout',
     verifyCheckout: '/subscription/verify-checkout',
+    billingHistory: '/subscription/billing-history',
+    invoice: (invoiceId: string) => `/subscription/invoice/${invoiceId}`,
+    paymentMethods: '/subscription/payment-methods',
+    updatePaymentMethod: '/subscription/payment-method',
   },
   // Rating endpoints
   ratings: {
@@ -257,6 +261,11 @@ export const ENDPOINTS = {
     finance: {
       getRevenue: '/admin/finance/revenue',
       getSubscriptions: '/admin/finance/subscriptions',
+      getTransactions: '/admin/transactions',
+      getTransactionDetails: (id: string) => `/admin/transactions/${id}`,
+      getTransactionInvoice: (id: string) => `/admin/transactions/${id}/invoice`,
+      exportTransactions: '/admin/transactions/export/csv',
+      transactionStats: '/admin/transactions/stats/summary',
     },
     // User management
     users: {

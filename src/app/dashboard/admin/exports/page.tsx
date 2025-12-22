@@ -140,19 +140,19 @@ export default function AdminExportsPage() {
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-6 lg:space-y-8">
         {/* Security Warning */}
         <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
           <CardHeader>
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              <CardTitle className="text-amber-900 dark:text-amber-100">
+              <CardTitle className="font-poppins font-semibold text-amber-900 dark:text-amber-100">
                 Important Security Notice
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-amber-800 dark:text-amber-200">
+            <p className="font-inter text-sm text-amber-800 dark:text-amber-200">
               This feature allows you to export user data for DPC (Data Protection Commission)
               requests. All exports are logged for audit purposes. Encrypted exports are recommended
               for sensitive data. Ensure you have proper authorization before exporting.
@@ -163,11 +163,11 @@ export default function AdminExportsPage() {
         {/* Export Form */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="font-poppins font-semibold flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Export User Data
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="font-inter">
               Export user data for DPC investigation or data subject access requests
             </CardDescription>
           </CardHeader>

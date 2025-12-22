@@ -24,6 +24,7 @@ interface HealthDataConsentProps {
   compact?: boolean;
   showTitle?: boolean; // Add this prop
   disableApiCall?: boolean; // If true, never calls the API (for data rights page where data comes from status endpoint)
+  isLoading?: boolean; // External loading state (e.g., when fetching consent statuses)
 }
 
 const CONSENT_TYPE_INFO: Record<
@@ -73,6 +74,7 @@ export function HealthDataConsent({
   compact,
   showTitle,
   disableApiCall = false,
+  isLoading: externalLoading = false,
 }: HealthDataConsentProps) {
   const consentInfo = CONSENT_TYPE_INFO[consentType];
 
@@ -90,7 +92,8 @@ export function HealthDataConsent({
     initialConsentStatus?.granted ?? (disableApiCall ? false : (apiConsentGranted ?? false));
   const consentTimestamp =
     initialConsentStatus?.grantedAt || (disableApiCall ? null : consentFromApi?.grantedAt || null);
-  const isLoading = !initialConsentStatus && !disableApiCall && isLoadingConsent;
+  const isLoading =
+    externalLoading || (!initialConsentStatus && !disableApiCall && isLoadingConsent);
   const isSaving = updateConsentMutation.isPending;
 
   // Sync consent status when it changes
@@ -124,13 +127,7 @@ export function HealthDataConsent({
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={`flex items-center justify-center p-4 ${className}`}>
-        <LoadingSpinner size="sm" />
-      </div>
-    );
-  }
+  // Don't show full loader - instead show disabled radio buttons with small loader
 
   // Simple banner view for freelancers checking client consent (userId provided)
   if (userId) {
@@ -172,42 +169,60 @@ export function HealthDataConsent({
     <div className={`${className}`}>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <input
-            type="radio"
-            id={`consent-allow-${consentType}`}
-            name={`consent-${consentType}`}
-            checked={consentGranted === true}
-            onChange={() => handleConsentChange(true)}
-            disabled={isSaving}
-            className="h-4 w-4 text-primary cursor-pointer"
-          />
+          <div className="relative">
+            <input
+              type="radio"
+              id={`consent-allow-${consentType}`}
+              name={`consent-${consentType}`}
+              checked={consentGranted === true}
+              onChange={() => handleConsentChange(true)}
+              disabled={isSaving || isLoading}
+              className="h-4 w-4 text-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
           <Label
             htmlFor={`consent-allow-${consentType}`}
-            className="text-sm font-medium cursor-pointer"
+            className={`text-sm font-medium ${
+              isLoading || isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            }`}
           >
             I consent to data processing
           </Label>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            type="radio"
-            id={`consent-deny-${consentType}`}
-            name={`consent-${consentType}`}
-            checked={consentGranted === false}
-            onChange={() => handleConsentChange(false)}
-            disabled={isSaving}
-            className="h-4 w-4 text-primary cursor-pointer"
-          />
+          <div className="relative">
+            <input
+              type="radio"
+              id={`consent-deny-${consentType}`}
+              name={`consent-${consentType}`}
+              checked={consentGranted === false}
+              onChange={() => handleConsentChange(false)}
+              disabled={isSaving || isLoading}
+              className="h-4 w-4 text-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
           <Label
             htmlFor={`consent-deny-${consentType}`}
-            className="text-sm font-medium cursor-pointer"
+            className={`text-sm font-medium ${
+              isLoading || isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            }`}
           >
             I do not consent
           </Label>
         </div>
-        {isSaving && <LoadingSpinner size="sm" />}
+        {isSaving && !isLoading && <LoadingSpinner size="sm" />}
       </div>
-      {consentGranted && consentTimestamp && (
+      {consentGranted && consentTimestamp && !isLoading && (
         <p className="text-xs text-gray-500 mt-2">
           Consent granted on {new Date(consentTimestamp).toLocaleDateString()}
         </p>

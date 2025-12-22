@@ -31,7 +31,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-black text-left hover:bg-transparent p-0"
+          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
         >
           Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -51,7 +51,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
   {
     accessorKey: 'startTime',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Time</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Time</div>;
     },
     cell: ({ row }) => {
       const startTime = new Date(row.getValue('startTime'));
@@ -67,7 +67,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
   {
     accessorKey: 'locationType',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Location</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Location</div>;
     },
     cell: ({ row }) => {
       const locationType = row.getValue('locationType');
@@ -87,7 +87,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-black text-left hover:bg-transparent p-0"
+          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
         >
           Price
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -107,7 +107,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
   {
     accessorKey: 'duration',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Duration</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Duration</div>;
     },
     cell: ({ row }) => {
       const duration = row.getValue('duration');
@@ -119,7 +119,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
   {
     accessorKey: 'status',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Status</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Status</div>;
     },
     cell: ({ row }) => {
       const status = row.getValue('status');
@@ -177,7 +177,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
   {
     accessorKey: 'notes',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Notes</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Notes</div>;
     },
     cell: ({ row }) => {
       const notes = row.getValue('notes');
@@ -194,7 +194,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
   {
     id: 'actions',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Actions</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Actions</div>;
     },
     cell: ({ row }) => {
       const slot = row.original;

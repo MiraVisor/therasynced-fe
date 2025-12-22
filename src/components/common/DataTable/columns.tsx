@@ -360,7 +360,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     accessorKey: 'slot.freelancer.name',
     header: () => {
       return (
-        <div className="font-semibold text-sm text-black text-left">Healthcare Professional</div>
+        <div className="font-semibold text-sm text-charcoal text-left">Healthcare Professional</div>
       );
     },
     cell: ({ row }) => {
@@ -387,7 +387,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-black text-left hover:bg-transparent p-0"
+          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
         >
           <Calendar className="mr-2 h-4 w-4" />
           Date
@@ -408,7 +408,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     accessorKey: 'slot.startTime',
     header: () => {
       return (
-        <div className="font-semibold text-sm text-black text-left flex items-center gap-1">
+        <div className="font-semibold text-sm text-charcoal text-left flex items-center gap-1">
           <Clock className="h-4 w-4" />
           Time
         </div>
@@ -428,7 +428,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     accessorKey: 'slot.location.name',
     header: () => {
       return (
-        <div className="font-semibold text-sm text-black text-left flex items-center gap-1">
+        <div className="font-semibold text-sm text-charcoal text-left flex items-center gap-1">
           <MapPin className="h-4 w-4" />
           Location
         </div>
@@ -447,7 +447,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-black text-left hover:bg-transparent p-0"
+          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
         >
           Price
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -471,7 +471,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
   {
     accessorKey: 'status',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Status</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Status</div>;
     },
     cell: ({ row }) => {
       const status = row.getValue('status');
@@ -529,7 +529,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
   {
     id: 'actions',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Actions</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Actions</div>;
     },
     cell: ({ row }) => {
       const booking = row.original;

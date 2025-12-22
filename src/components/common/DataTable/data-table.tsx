@@ -162,16 +162,13 @@ export function DataTable<TData, TValue>({
     pageCount: totalPages,
     manualPagination: !!onExternalPageChange,
   });
-  const [firstWord, ...rest] = (title ?? '').split(' ');
-  const restTitle = rest.join(' ');
   return (
     <div className="border rounded-lg">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2">
         <div className="flex items-center space-x-2 px-2 py-4">
-          <h2 className="font-poppins text-[22px] font-bold tracking-tight">
-            <span className="text-black">{firstWord} </span>
-            <span className="text-primary">{restTitle}</span>
+          <h2 className="font-poppins text-[22px] font-bold tracking-tight text-charcoal">
+            {title}
           </h2>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
@@ -260,7 +257,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className="min-w-[150px] font-poppins  font-medium text-sm sm:text-base text-black py-1 sm:py-1 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-3 sm:last:pr-6 border-0"
+                      className="min-w-[150px] font-poppins font-medium text-sm sm:text-base text-charcoal py-1 sm:py-1 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-3 sm:last:pr-6 border-0"
                     >
                       {header.isPlaceholder
                         ? null

@@ -1,17 +1,14 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { AlertTriangle, CheckCircle, Eye, FileText, Shield, XCircle } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
-import {
-  StatusFilter,
-  StatusFilterOption,
-} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
+import { StatusFilterOption } from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
@@ -201,37 +198,22 @@ const ComplaintsPage = () => {
     {
       title: 'Total Complaints',
       value: stats.total.toString(),
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
     {
       title: 'Pending',
       value: stats.pending.toString(),
-      icon: AlertTriangle,
-      iconColor: 'text-warning',
-      iconBg: 'bg-warning/10',
     },
     {
       title: 'Under Review',
       value: stats.underReview.toString(),
-      icon: Shield,
-      iconColor: 'text-info',
-      iconBg: 'bg-info/10',
     },
     {
       title: 'Resolved',
       value: stats.resolved.toString(),
-      icon: CheckCircle,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/10',
     },
     {
       title: 'Dismissed',
       value: stats.dismissed.toString(),
-      icon: XCircle,
-      iconColor: 'text-error',
-      iconBg: 'bg-error/10',
     },
   ];
 
@@ -266,29 +248,14 @@ const ComplaintsPage = () => {
 
   // Render stat cards with responsive layout
   const renderStatCards = () => (
-    <div
-      className="grid gap-6 
-      grid-cols-1 
-      sm:grid-cols-2 
-      lg:grid-cols-3 
-      xl:grid-cols-5"
-    >
-      {statCards.map((card, index) => (
-        <div
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {statCards.map((card) => (
+        <EnhancedStatCard
           key={card.title}
-          className={`
-            ${index >= 3 ? 'lg:col-span-1 xl:col-span-1' : ''}
-          `}
-        >
-          <EnhancedStatCard
-            title={card.title}
-            value={card.value}
-            icon={card.icon}
-            iconColor={card.iconColor}
-            iconBg={card.iconBg}
-            loading={statsLoading && !statsData}
-          />
-        </div>
+          title={card.title}
+          value={card.value}
+          loading={statsLoading && !statsData}
+        />
       ))}
     </div>
   );
@@ -301,21 +268,11 @@ const ComplaintsPage = () => {
         {/* Stats Cards */}
         {renderStatCards()}
 
-        {/* Status Filter */}
-        <StatusFilter<ComplaintStatus | undefined>
-          options={statusFilterOptions}
-          selectedValue={statusFilter}
-          onChange={(value) => {
-            setStatusFilter(value);
-            setPage(1);
-          }}
-        />
-
         {/* Complaints Table */}
         <DataTable
           columns={columns}
           data={complaints}
-          title={`${statusFilter || 'All'} Complaints`}
+          title="All Complaints"
           searchKey="reason"
           searchPlaceholder="Search by name..."
           enableSorting={false}
@@ -334,6 +291,16 @@ const ComplaintsPage = () => {
           onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
           onExternalPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
+            setPage(1);
+          }}
+          filterOptions={statusFilterOptions.map((opt) => ({
+            label: opt.label,
+            value: opt.value ?? 'all',
+            color: opt.color,
+          }))}
+          selectedFilter={statusFilter ?? 'all'}
+          onFilterChange={(value) => {
+            setStatusFilter(value === 'all' ? undefined : (value as ComplaintStatus));
             setPage(1);
           }}
         />

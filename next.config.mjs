@@ -38,10 +38,10 @@ const nextConfig = {
       type: 'javascript/auto',
       resolve: {
         fullySpecified: false,
-            },
+      },
       parser: {
         sourceType: 'module',
-        },
+      },
     });
 
     return config;

@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, AlertTriangle, Ban, FileText, Shield } from 'lucide-react';
+import { AlertTriangle, Ban, FileText } from 'lucide-react';
 import { useState } from 'react';
 
 import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
@@ -113,33 +113,21 @@ export default function MyComplaintsPage() {
           <EnhancedStatCard
             title="Total"
             value={currentStats.total.toString()}
-            icon={FileText}
-            iconColor="text-primary"
-            iconBg="bg-primary/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.total)}
           />
           <EnhancedStatCard
             title="Pending"
             value={currentStats.pending.toString()}
-            icon={AlertCircle}
-            iconColor="text-warning"
-            iconBg="bg-warning/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.pending)}
           />
           <EnhancedStatCard
             title="Under Review"
             value={currentStats.underReview.toString()}
-            icon={Shield}
-            iconColor="text-info"
-            iconBg="bg-info/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.underReview)}
           />
           <EnhancedStatCard
             title="Resolved"
             value={currentStats.resolved.toString()}
-            icon={FileText}
-            iconColor="text-success"
-            iconBg="bg-success/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.resolved)}
           />
           {selectedTab === 'against' && (
@@ -147,17 +135,11 @@ export default function MyComplaintsPage() {
               <EnhancedStatCard
                 title="Warned"
                 value={currentStats.warned.toString()}
-                icon={AlertTriangle}
-                iconColor="text-warning"
-                iconBg="bg-warning/10"
                 sparklineData={Array.from({ length: 7 }, () => currentStats.warned)}
               />
               <EnhancedStatCard
                 title="Suspended"
                 value={currentStats.suspended.toString()}
-                icon={Ban}
-                iconColor="text-error"
-                iconBg="bg-error/10"
                 sparklineData={Array.from({ length: 7 }, () => currentStats.suspended)}
               />
             </>

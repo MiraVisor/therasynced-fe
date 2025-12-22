@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -50,45 +50,29 @@ const BookingStatsComponent = ({
     {
       title: 'Total Bookings',
       value: displayStats.totalBookings.toString(),
-      icon: CalendarIcon,
-      iconBg: 'bg-info/10',
-      iconColor: 'text-info',
     },
     {
       title: 'Upcoming',
       value: displayStats.upcomingBookings.toString(),
-      icon: Clock,
-      iconBg: 'bg-success/10',
-      iconColor: 'text-success',
     },
     {
       title: 'Completed',
       value: displayStats.completedBookings.toString(),
-      icon: User,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
     },
     {
       title: 'Cancelled',
       value: displayStats.cancelledBookings.toString(),
-      icon: CalendarIcon,
-      iconBg: 'bg-error/10',
-      iconColor: 'text-error',
     },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
       {statsData.map((stat, index) => {
-        const Icon = stat.icon;
         return (
           <EnhancedStatCard
             key={index}
             title={stat.title}
             value={stat.value}
-            icon={Icon}
-            iconColor={stat.iconColor}
-            iconBg={stat.iconBg}
             interactive
             loading={isLoading}
             bookingSkeleton={true}

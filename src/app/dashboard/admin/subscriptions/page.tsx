@@ -118,7 +118,7 @@ const SubscriptionsPage = () => {
         </div>
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-6 lg:space-y-8">
         {initialLoading || (loading && plans.length === 0) ? (
           <div className="grid gap-6 md:grid-cols-3">
             {[1, 2, 3].map((i) => (

@@ -1,15 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import {
-  CheckCircle,
-  ChevronDown,
-  Clock,
-  FileText,
-  MoreHorizontal,
-  Shield,
-  XCircle,
-} from 'lucide-react';
+import { CheckCircle, ChevronDown, FileText, MoreHorizontal, Shield, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -46,30 +38,18 @@ const statsConfig = [
   {
     key: 'total' as keyof VerificationStats,
     title: 'Total Verifications',
-    icon: Shield,
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary/10',
   },
   {
     key: 'pending' as keyof VerificationStats,
     title: 'Pending',
-    icon: Clock,
-    iconColor: 'text-warning',
-    iconBg: 'bg-warning/10',
   },
   {
     key: 'approved' as keyof VerificationStats,
     title: 'Approved',
-    icon: CheckCircle,
-    iconColor: 'text-success',
-    iconBg: 'bg-success/10',
   },
   {
     key: 'rejected' as keyof VerificationStats,
     title: 'Rejected',
-    icon: XCircle,
-    iconColor: 'text-error',
-    iconBg: 'bg-error/10',
   },
 ];
 
@@ -549,9 +529,6 @@ const VerificationsPage = () => {
               key={config.key}
               title={config.title}
               value={stats[config.key].toString()}
-              icon={config.icon}
-              iconColor={config.iconColor}
-              iconBg={config.iconBg}
               loading={statsLoading && !statsData}
             />
           ))}

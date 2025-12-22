@@ -90,6 +90,11 @@ export const useCreateSlots = () => {
 };
 
 /**
+ * Alias for useCreateSlots (for backward compatibility)
+ */
+export const useCreateSlot = useCreateSlots;
+
+/**
  * Hook to update a slot
  */
 export const useUpdateSlot = () => {

@@ -3,6 +3,7 @@ import {
   ApiResponse,
   BookingStats,
   CancelBookingDto,
+  CompleteBookingDto,
   CreateBookingDto,
   RescheduleBookingDto,
 } from '@/types/types';
@@ -40,6 +41,11 @@ export const getBookingById = async (bookingId: string) => {
 
 export const cancelBooking = async (data: CancelBookingDto) => {
   const response = await api.patch('/booking/cancel', data);
+  return response.data;
+};
+
+export const completeBooking = async (data: CompleteBookingDto) => {
+  const response = await api.patch('/booking/complete', data);
   return response.data;
 };
 

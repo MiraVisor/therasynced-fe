@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { FaArrowTrendDown, FaArrowTrendUp } from 'react-icons/fa6';
 
 interface StatsCardProps {
@@ -9,23 +9,13 @@ interface StatsCardProps {
     isUp: boolean;
     timeframe: string;
   };
-  icon?: ReactNode;
-  bgColor?: string;
 }
 
-export const StatsCard: React.FC<StatsCardProps> = ({ title, value, trend, icon, bgColor }) => {
+export const StatsCard: React.FC<StatsCardProps> = ({ title, value, trend }) => {
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col">
       <div className="flex items-center justify-between mb-2">
         <span className="text-gray-600 text-sm">{title}</span>
-        {icon && (
-          <div
-            className="w-10 h-10 flex items-center justify-center rounded-md "
-            style={{ backgroundColor: bgColor ?? '#f3f4f6' }}
-          >
-            {icon}
-          </div>
-        )}
       </div>
       <div className="font-semibold text-2xl mb-2">{value}</div>
       <div

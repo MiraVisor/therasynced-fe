@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, MapPin, Star, Users } from 'lucide-react';
+import { ArrowUpDown, Clock, MapPin, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -234,17 +234,11 @@ const RealFreelancersPage = () => {
               isUp: (freelancerStats.totalFreelancers.percentageChange || 0) >= 0,
               label: freelancerStats.totalFreelancers.comparisonPeriod || 'all time',
             },
-            icon: Users,
-            iconColor: 'text-info',
-            iconBg: 'bg-info/10',
           },
           {
             title: 'Active Freelancers',
             value: freelancerStats.activeFreelancers.value?.toString() || '0',
             trend: { value: 0, isUp: true, label: 'currently' },
-            icon: Clock,
-            iconColor: 'text-success',
-            iconBg: 'bg-success/10',
           },
         ]
       : [
@@ -252,17 +246,11 @@ const RealFreelancersPage = () => {
             title: 'Total Freelancers',
             value: '0',
             trend: undefined,
-            icon: Users,
-            iconColor: 'text-info',
-            iconBg: 'bg-info/10',
           },
           {
             title: 'Active Freelancers',
             value: '0',
             trend: undefined,
-            icon: Clock,
-            iconColor: 'text-success',
-            iconBg: 'bg-success/10',
           },
         ];
 
@@ -273,16 +261,12 @@ const RealFreelancersPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {stats.map((stat, index) => {
-          const Icon = stat.icon;
           return (
             <EnhancedStatCard
               key={index}
               title={stat.title}
               value={stat.value}
               trend={stat.trend}
-              icon={Icon}
-              iconColor={stat.iconColor}
-              iconBg={stat.iconBg}
               interactive
               loading={statsLoading}
               onClick={() => {

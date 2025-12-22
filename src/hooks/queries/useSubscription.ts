@@ -130,7 +130,13 @@ export const useBillingPortal = () => {
  */
 export const useCreateCheckoutSession = () => {
   return useMutation({
-    mutationFn: (planType: PlanType) => api.post(ENDPOINTS.subscription.checkout, { planType }),
+    mutationFn: async (planType: PlanType) => {
+      const response = await api.post<{
+        success: boolean;
+        data: { clientSecret?: string; sessionUrl?: string };
+      }>(ENDPOINTS.subscription.checkout, { planType });
+      return response.data;
+    },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to create checkout session');
     },
@@ -144,10 +150,15 @@ export const useVerifyCheckoutSession = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (sessionId: string) =>
-      api.get(ENDPOINTS.subscription.verifyCheckout, {
-        params: { session_id: sessionId },
-      }),
+    mutationFn: async (sessionId: string) => {
+      const response = await api.get<{ success: boolean; data: Subscription }>(
+        ENDPOINTS.subscription.verifyCheckout,
+        {
+          params: { session_id: sessionId },
+        },
+      );
+      return response.data;
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       toast.success('Payment verified successfully!');

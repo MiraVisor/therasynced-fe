@@ -569,11 +569,12 @@ export interface CreateBookingDto {
 export interface CreateSlotsDto {
   locationType?: LocationType; // Optional - acts as default fallback
   locationId?: string; // Added to support location selection
-  basePrice: number;
+  basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
   slots: Array<{
     startTime: string;
     endTime: string;
+    basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
     locationType?: LocationType; // Optional - per-slot location override
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
@@ -1330,7 +1331,7 @@ export interface SubscriptionPlan {
 
 export interface Subscription {
   id: string | null;
-  userId: string;
+  userId?: string;
   planId?: string;
   plan?: SubscriptionPlan;
   status: SubscriptionStatus;
@@ -1339,17 +1340,17 @@ export interface Subscription {
   cancelAtPeriodEnd?: boolean;
   trialStart?: string;
   trialEnd?: string;
-  trialEndsAt?: string; // New field from API
+  trialEndsAt: string | null; // Required field from API
   canceledAt?: string | null;
   createdAt?: string;
   subscription?: Subscription | null; // Nested subscription details if active
   isInTrial?: boolean;
   trialExpired?: boolean; // true if trial has expired
-  canCreateSlots?: boolean; // true if can create slots (trial: slotsUsed < 5, subscribed: true)
-  canAcceptBookings?: boolean; // true for active trial or subscribed freelancers
-  slotsUsed?: number; // Current active slots count (for trial: 0-5)
-  slotsLimit?: number; // Slot limit (for trial: 5, for subscribed: plan.maxSlots or unlimited)
-  message?: string; // Message from API when inactive
+  canCreateSlots: boolean; // Required field from API
+  canAcceptBookings: boolean; // Required field from API
+  slotsUsed: number; // Required field from API - Current active slots count
+  slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
+  message: string; // Required field from API - Status message
 }
 
 export interface SubscriptionCreationData {

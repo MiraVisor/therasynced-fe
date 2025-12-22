@@ -2,7 +2,6 @@
 
 import { ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
 import { HelpSectionSkeleton } from '@/components/ui/skeletons/HelpSectionSkeleton';
@@ -24,6 +23,33 @@ export function HelpSection() {
     });
   };
 
+  const handleContactAdmin = () => {
+    // Admin email address
+    const adminEmail = 'support@therasynced.com';
+
+    // Get user information for context - inline to avoid unused variable warning
+    const userName = profileData?.name || 'User';
+    const userEmail = profileData?.email || '';
+
+    // Create mailto link with pre-filled subject and body
+    const subject = encodeURIComponent(`Support Request from ${userName}`);
+    const body = encodeURIComponent(
+      `Hello TheraSynced Support Team,\n\n` +
+        `I need assistance with the following:\n\n` +
+        `[Please describe your issue or question here]\n\n` +
+        `---\n` +
+        `User Information:\n` +
+        `Name: ${userName}\n${
+          userEmail ? `Email: ${userEmail}\n` : ''
+        }\nThank you for your assistance.`,
+    );
+
+    const mailtoLink = `mailto:${adminEmail}?subject=${subject}&body=${body}${userEmail ? `&cc=${encodeURIComponent(userEmail)}` : ''}`;
+
+    // Open mailto link
+    window.location.href = mailtoLink;
+  };
+
   if ((initialLoading || loading) && !profileData) {
     return <HelpSectionSkeleton />;
   }
@@ -40,7 +66,7 @@ export function HelpSection() {
             <p className="text-gray-600 mb-6">Contact our admin team for personalized assistance</p>
             <Button
               className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-12 px-8"
-              onClick={() => toast.info('Contact admin functionality coming soon')}
+              onClick={handleContactAdmin}
             >
               Contact Admin
               <Mail className="h-4 w-4 ml-2" />

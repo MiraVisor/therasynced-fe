@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Shield } from 'lucide-react';
+import { Calendar, Download, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -19,8 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAllHealthDataLogs } from '@/hooks/queries/useDataRights';
+import { getAllHealthDataLogs } from '@/services/dataRightsService';
 import { useAuthStore } from '@/stores/authStore';
-import type { AdminHealthDataLogsFilters } from '@/types/dataRights';
+import type { AdminHealthDataLogsFilters, HealthDataAccessLog } from '@/types/dataRights';
 import { ROLES } from '@/types/types';
 
 export default function AdminHealthDataLogsPage() {
@@ -91,6 +92,117 @@ export default function AdminHealthDataLogsPage() {
     setPage(1);
   };
 
+  const handleExportLogs = async () => {
+    try {
+      // Export all logs matching current filters (without pagination)
+      const exportFilters: AdminHealthDataLogsFilters = {
+        skip: 0,
+        take: 10000, // Large number to get all matching records
+      };
+
+      if (startDate) {
+        const date = new Date(startDate);
+        date.setHours(0, 0, 0, 0);
+        exportFilters.startDate = date.toISOString();
+      }
+
+      if (endDate) {
+        const date = new Date(endDate);
+        date.setHours(23, 59, 59, 999);
+        exportFilters.endDate = date.toISOString();
+      }
+
+      if (dataType && dataType !== 'all') {
+        exportFilters.dataType = dataType as AdminHealthDataLogsFilters['dataType'];
+      }
+
+      if (action && action !== 'all') {
+        exportFilters.action = action as AdminHealthDataLogsFilters['action'];
+      }
+
+      if (userId) {
+        exportFilters.userId = userId;
+      }
+
+      if (accessedBy) {
+        exportFilters.accessedBy = accessedBy;
+      }
+
+      toast.info('Exporting logs... This may take a moment.');
+
+      const response = await getAllHealthDataLogs(exportFilters);
+      const allLogs = response.data || [];
+
+      // Convert logs to CSV format
+      const csvHeaders = [
+        'Timestamp',
+        'Data Owner (User ID)',
+        'Data Owner Name',
+        'Data Owner Email',
+        'Accessed By (User ID)',
+        'Accessed By Name',
+        'Accessed By Email',
+        'Accessed By Role',
+        'Data Type',
+        'Action',
+        'IP Address',
+        'User Agent',
+        'Purpose',
+        'Is Self Access',
+      ];
+
+      const csvRows = allLogs.map((log: HealthDataAccessLog) => [
+        log.accessedAt ? new Date(log.accessedAt).toISOString() : '',
+        log.user?.id || '',
+        log.user?.name || '',
+        log.user?.email || '',
+        log.accessedByUser?.id || '',
+        log.accessedByUser?.name || '',
+        log.accessedByUser?.email || '',
+        log.accessedByUser?.role || '',
+        log.dataType || '',
+        log.action || '',
+        log.ipAddress || '',
+        log.userAgent || '',
+        log.purpose || '',
+        log.isSelfAccess ? 'Yes' : 'No',
+      ]);
+
+      // Escape CSV values
+      const escapeCsvValue = (value: string | number | boolean) => {
+        const str = String(value);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      const csvContent = [
+        csvHeaders.map(escapeCsvValue).join(','),
+        ...csvRows.map((row) => row.map(escapeCsvValue).join(',')),
+      ].join('\n');
+
+      // Create and download CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const filename = `health-data-access-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Exported ${allLogs.length} log entries successfully`);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to export logs. Please try again.';
+      toast.error(errorMessage);
+      console.error('Export error:', error);
+    }
+  };
+
   if (role !== ROLES.ADMIN) {
     return null;
   }
@@ -100,16 +212,27 @@ export default function AdminHealthDataLogsPage() {
       header={
         <div className="flex items-center gap-2">
           <Shield className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">Health Data Access Logs</h1>
+          <h1 className="font-poppins font-bold text-2xl text-charcoal">Health Data Access Logs</h1>
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-6 lg:space-y-8">
+        {/* Header Actions */}
+        <div className="flex items-center justify-between">
+          <p className="font-inter text-sm text-muted-foreground">
+            View and export all health data access logs across the platform.
+          </p>
+          <Button onClick={handleExportLogs} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export Logs (CSV)
+          </Button>
+        </div>
+
         {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="startDate" className="text-sm font-medium">
+              <Label htmlFor="startDate" className="font-inter text-sm font-medium">
                 Start Date
               </Label>
               <Input

@@ -1,6 +1,5 @@
 'use client';
 
-import { AlertTriangle, Eye, TrendingUp } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -188,24 +187,9 @@ export function AccessLogsTab() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <StatsCardsGrid>
-        <StatCard
-          title="Total Access Events"
-          value={stats.total}
-          icon={Eye}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Third-Party Accesses"
-          value={stats.thirdParty}
-          icon={AlertTriangle}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Last 7 Days"
-          value={stats.last7d}
-          icon={TrendingUp}
-          loading={initialLoading}
-        />
+        <StatCard title="Total Access Events" value={stats.total} loading={initialLoading} />
+        <StatCard title="Third-Party Accesses" value={stats.thirdParty} loading={initialLoading} />
+        <StatCard title="Last 7 Days" value={stats.last7d} loading={initialLoading} />
       </StatsCardsGrid>
 
       {/* Filters */}

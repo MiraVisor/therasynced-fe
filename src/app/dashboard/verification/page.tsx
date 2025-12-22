@@ -389,28 +389,22 @@ export default function VerificationPage() {
         </Card>
 
         {/* Files Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Uploaded Files</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              columns={columns as any}
-              data={files}
-              title="All Files"
-              searchKey="title"
-              searchPlaceholder="Search by title or filename..."
-              enableSorting={true}
-              enableFiltering={true}
-              enableColumnVisibility={true}
-              enablePagination={true}
-              showSearch={true}
-              showSorting={false}
-              initialLoading={isLoading && files.length > 0}
-              loading={isLoading}
-            />
-          </CardContent>
-        </Card>
+
+        <DataTable
+          columns={columns as any}
+          data={files}
+          title="All Files"
+          searchKey="title"
+          searchPlaceholder="Search by title or filename..."
+          enableSorting={true}
+          enableFiltering={true}
+          enableColumnVisibility={true}
+          enablePagination={true}
+          showSearch={true}
+          showSorting={false}
+          initialLoading={isLoading && files.length > 0}
+          loading={isLoading}
+        />
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

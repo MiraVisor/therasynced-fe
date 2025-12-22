@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import * as bookingService from '@/services/bookingService';
 import { InvoiceGenerationDialog } from '@/components/core/Dashboard/FreelancerSide/Appointment/InvoiceGenerationDialog';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -30,7 +31,6 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { bookingService } from '@/services/bookingService';
 import { Appointment, LocationType, Slot } from '@/types/types';
 
 interface SlotDetailsDialogProps {
@@ -156,13 +156,12 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         toast.error(errorMessage);
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to complete booking';
       console.error('Booking completion error:', error);
       // Only show error toast if we haven't already shown success
       if (!successShown) {
         const errorMessage =
-          error?.response?.data?.message || error?.message || 'Failed to complete booking';
-        console.error('Error completing booking:', error);
+          (error as any)?.response?.data?.message ||
+          (error instanceof Error ? error.message : 'Failed to complete booking');
         toast.error(errorMessage);
       } else {
         // Log the error but don't show toast since we already showed success
@@ -341,29 +340,6 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                   </p>
                 )}
               </div>
-
-              {slot.location && (
-                <div>
-                  <Label className="font-inter text-xs text-muted-foreground mb-1">Address</Label>
-                  <p className="font-inter text-charcoal">{slot.location.address}</p>
-                  {slot.location.additionalFee > 0 && (
-                    <p className="font-inter text-sm text-muted-foreground mt-1">
-                      Additional Fee: EUR {slot.location.additionalFee}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {slot.reservedUntil && (
-                <div>
-                  <Label className="font-inter text-xs text-muted-foreground mb-1">
-                    Reserved Until
-                  </Label>
-                  <p className="font-poppins font-semibold text-charcoal">
-                    {safeFormatDate(slot.reservedUntil, 'MMM d, yyyy h:mm a')}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 

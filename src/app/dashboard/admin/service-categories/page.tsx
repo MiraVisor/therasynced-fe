@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle, Edit, FileText, Plus, XCircle } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -218,23 +218,14 @@ const ServiceCategoriesPage = () => {
     {
       title: 'Total Categories',
       value: stats?.totalServiceCategories?.toString() || '0',
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
     {
       title: 'Active',
       value: stats?.activeServiceCategories?.toString() || '0',
-      icon: CheckCircle,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/10',
     },
     {
       title: 'Inactive',
       value: stats?.inactiveServiceCategories?.toString() || '0',
-      icon: XCircle,
-      iconColor: 'text-error',
-      iconBg: 'bg-error/10',
     },
   ];
 
@@ -258,15 +249,12 @@ const ServiceCategoriesPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((card) => (
             <EnhancedStatCard
               key={card.title}
               title={card.title}
               value={card.value}
-              icon={card.icon}
-              iconColor={card.iconColor}
-              iconBg={card.iconBg}
               loading={categoriesInitialLoading}
             />
           ))}
@@ -305,7 +293,7 @@ const ServiceCategoriesPage = () => {
               <DialogTitle className="font-poppins font-semibold">
                 Create Service Category
               </DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Add a new service category to the platform
               </DialogDescription>
             </DialogHeader>
@@ -319,7 +307,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Sports massage"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -352,7 +340,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Category description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>
@@ -382,7 +370,7 @@ const ServiceCategoriesPage = () => {
               <DialogTitle className="font-poppins font-semibold">
                 Edit Service Category
               </DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Update service category information
               </DialogDescription>
             </DialogHeader>
@@ -396,7 +384,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Sports massage"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -429,7 +417,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Category description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>

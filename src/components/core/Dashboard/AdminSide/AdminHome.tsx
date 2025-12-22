@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, DollarSign, UserCheck, Users } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
@@ -10,8 +9,6 @@ import { useAuthStore } from '@/stores/authStore';
 
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
 import { AdminRevenueChart } from './Charts/AdminRevenueChart';
-
-type IconName = 'users' | 'clients' | 'calendar' | 'money';
 
 const AdminHome = () => {
   const { role } = useAuthStore();
@@ -30,22 +27,6 @@ const AdminHome = () => {
   });
 
   const initialLoading = isLoading && !overviewData;
-
-  // Map icons to Lucide icons for EnhancedStatCard
-  const iconMap = {
-    users: Users,
-    clients: UserCheck,
-    calendar: Calendar,
-    money: DollarSign,
-  };
-
-  // Map icon names to semantic colors
-  const iconColors: Record<IconName, { iconColor: string; iconBg: string }> = {
-    users: { iconColor: 'text-info', iconBg: 'bg-info/10' },
-    clients: { iconColor: 'text-warning', iconBg: 'bg-warning/10' },
-    calendar: { iconColor: 'text-error', iconBg: 'bg-error/10' },
-    money: { iconColor: 'text-primary', iconBg: 'bg-primary/10' },
-  };
 
   // Format currency value
   const formatCurrency = (value: number): string => {
@@ -80,9 +61,8 @@ const AdminHome = () => {
       trend: {
         value: Math.abs(overviewData?.totalUsers?.percentageChange || 0),
         isUp: (overviewData?.totalUsers?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.totalUsers?.comparisonPeriod || 'N/A',
+        label: overviewData?.totalUsers?.comparisonPeriod || 'N/A',
       },
-      iconName: 'users' as IconName,
     },
     {
       title: 'Active Clients',
@@ -90,9 +70,8 @@ const AdminHome = () => {
       trend: {
         value: Math.abs(overviewData?.activeClients?.percentageChange || 0),
         isUp: (overviewData?.activeClients?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.activeClients?.comparisonPeriod || 'N/A',
+        label: overviewData?.activeClients?.comparisonPeriod || 'N/A',
       },
-      iconName: 'clients' as IconName,
     },
     {
       title: 'Sessions This Month',
@@ -100,9 +79,8 @@ const AdminHome = () => {
       trend: {
         value: Math.abs(overviewData?.sessionsThisMonth?.percentageChange || 0),
         isUp: (overviewData?.sessionsThisMonth?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.sessionsThisMonth?.comparisonPeriod || 'N/A',
+        label: overviewData?.sessionsThisMonth?.comparisonPeriod || 'N/A',
       },
-      iconName: 'calendar' as IconName,
     },
     {
       title: 'Revenue',
@@ -110,9 +88,8 @@ const AdminHome = () => {
       trend: {
         value: Math.abs(overviewData?.revenue?.percentageChange || 0),
         isUp: (overviewData?.revenue?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.revenue?.comparisonPeriod || 'N/A',
+        label: overviewData?.revenue?.comparisonPeriod || 'N/A',
       },
-      iconName: 'money' as IconName,
     },
   ];
 
@@ -131,22 +108,12 @@ const AdminHome = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statsData.map((stat, index) => {
-            const Icon = iconMap[stat.iconName];
-            const colors = iconColors[stat.iconName];
-
             return (
               <EnhancedStatCard
                 key={index}
                 title={stat.title}
                 value={stat.value}
-                trend={{
-                  value: stat.trend.value,
-                  isUp: stat.trend.isUp,
-                  label: stat.trend.timeframe,
-                }}
-                icon={Icon}
-                iconColor={colors.iconColor}
-                iconBg={colors.iconBg}
+                trend={stat.trend}
                 interactive
                 onClick={() => {
                   // Navigate to details or show modal
