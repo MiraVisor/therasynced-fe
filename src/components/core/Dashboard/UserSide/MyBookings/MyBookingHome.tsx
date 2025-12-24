@@ -54,14 +54,14 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
         if (!isLoadingSlots && slots && slots.length > 0) {
           const firstSlot = slots[0];
           setFreelancer({
-            id: firstSlot.freelancerId,
-            name: firstSlot.freelancerName || 'Unknown',
+            id: firstSlot?.freelancerId || '',
+            name: firstSlot?.freelancerName || 'Unknown',
             specialty: 'Therapist',
-            rating: firstSlot.averageRating || 0,
-            reviews: firstSlot.numberOfRatings || 0,
+            rating: firstSlot?.averageRating || 0,
+            reviews: firstSlot?.numberOfRatings || 0,
             yearsOfExperience: '0+ years',
             description: '',
-            profilePicture: firstSlot.profilePicture,
+            profilePicture: firstSlot?.profilePicture,
           } as Expert);
         }
       }
@@ -70,14 +70,14 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
       if (!isLoadingSlots && slots && slots.length > 0) {
         const firstSlot = slots[0];
         setFreelancer({
-          id: firstSlot.freelancerId,
-          name: firstSlot.freelancerName || 'Unknown',
+          id: firstSlot?.freelancerId || '',
+          name: firstSlot?.freelancerName || 'Unknown',
           specialty: 'Therapist',
-          rating: firstSlot.averageRating || 0,
-          reviews: firstSlot.numberOfRatings || 0,
+          rating: firstSlot?.averageRating || 0,
+          reviews: firstSlot?.numberOfRatings || 0,
           yearsOfExperience: '0+ years',
           description: '',
-          profilePicture: firstSlot.profilePicture,
+          profilePicture: firstSlot?.profilePicture,
         } as Expert);
       }
     }

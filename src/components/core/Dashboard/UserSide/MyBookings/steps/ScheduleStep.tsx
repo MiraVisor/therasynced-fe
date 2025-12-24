@@ -25,20 +25,13 @@ interface ScheduleStepProps {
 export const ScheduleStep: React.FC<ScheduleStepProps> = ({
   therapistName,
   slotsByDate,
-  totalDatePages,
-  displayedDates,
   availableDates,
-  loadingMoreSlots,
   isSlotReserved,
   onDateSelect,
   onTimeSelect,
-  onDatePageChange,
-  onLoadMore,
   formatDateForAPI,
 }) => {
-  const { selectedDate, selectedTime, datePage } = useBookingStore();
-  const currentDatePage = Math.min(datePage, totalDatePages - 1);
-  const datesPerPage = 6;
+  const { selectedDate, selectedTime } = useBookingStore();
 
   // Convert selectedDate string to Date object for Calendar
   const selectedDateObj = selectedDate ? new Date(`${selectedDate}T00:00:00`) : undefined;
