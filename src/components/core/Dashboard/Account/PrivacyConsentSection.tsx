@@ -1,9 +1,10 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Download, Edit, FileText, Info, Shield, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { HealthDataConsent } from '@/components/common/HealthDataConsent';
@@ -22,6 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useHealthDataConsent } from '@/hooks/queries/useDataRights';
 import { useAuth } from '@/hooks/useAuthZustand';
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
@@ -30,6 +32,7 @@ import { ROLES } from '@/types/types';
 export function PrivacyConsentSection() {
   const router = useRouter();
   const { logout, role } = useAuth();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -49,35 +52,20 @@ export function PrivacyConsentSection() {
   const [termsConsent, setTermsConsent] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(false);
-  const [consentStatuses, setConsentStatuses] = useState<
-    Array<{ consentType: string; granted: boolean; grantedAt: string | null }>
-  >([]);
-  const [isLoadingConsents, setIsLoadingConsents] = useState(true);
 
-  // Load consent statuses
-  useEffect(() => {
-    const loadConsentStatuses = async () => {
-      try {
-        setIsLoadingConsents(true);
-        // Load general consents (Terms, Privacy, GDPR)
-        // TODO: Replace with actual API endpoint when backend is ready
-        // const response = await api.get(ENDPOINTS.consents?.status || '/user/consents/status');
-        // setTermsConsent(response.data.termsConsent || false);
-        // setPrivacyConsent(response.data.privacyConsent || false);
-        // setGdprConsent(response.data.gdprConsent || false);
+  // Use the specific health data consent endpoint that returns ALL consent types
+  // No userId parameter = gets the current logged-in user's own consent
+  // This works for both FREELANCER (their own consent) and PATIENT (their own consent)
+  const { data: healthDataConsentData, isLoading: isLoadingConsentsQuery } = useHealthDataConsent(
+    undefined, // undefined = current user's own consent (from JWT token)
+    true, // enabled
+  );
 
-        // Load health data consents
-        const response = await api.get(ENDPOINTS.dataRights?.status || '/user/data-rights/status');
-        setConsentStatuses(response.data.healthDataConsents || []);
-      } catch (error) {
-        console.error('Error loading consent statuses:', error);
-        toast.error('Failed to load consent statuses');
-      } finally {
-        setIsLoadingConsents(false);
-      }
-    };
-    loadConsentStatuses();
-  }, []);
+  // Extract consent statuses - this will include ALL types (even with granted: false)
+  const healthDataConsents = healthDataConsentData?.data?.consents;
+  const consentStatuses = useMemo(() => {
+    return healthDataConsents || [];
+  }, [healthDataConsents]);
 
   const handleConsentUpdate = async (
     consentType: 'terms' | 'privacy' | 'gdpr',
@@ -101,14 +89,12 @@ export function PrivacyConsentSection() {
     }
   };
 
-  const handleHealthDataConsentChange = async () => {
-    try {
-      const response = await api.get(ENDPOINTS.dataRights?.status || '/user/data-rights/status');
-      setConsentStatuses(response.data.healthDataConsents || []);
-    } catch (error) {
-      console.error('Error reloading consent statuses:', error);
-    }
-  };
+  const handleHealthDataConsentChange = useCallback(async () => {
+    // Invalidate both queries when consent changes
+    await queryClient.invalidateQueries({ queryKey: ['healthDataConsent'] });
+    // Also invalidate data rights status if it's used elsewhere
+    await queryClient.invalidateQueries({ queryKey: ['dataRights', 'status'] });
+  }, [queryClient]);
 
   const handleDataPortability = async () => {
     setLoading('portability');
@@ -192,6 +178,7 @@ export function PrivacyConsentSection() {
     router.push('/dashboard/account?tab=profile');
   };
 
+  // Update the useMemo hooks to use consentStatuses directly
   const soapNotesStatus = useMemo(
     () => consentStatuses.find((c) => c.consentType === 'SOAP_NOTES'),
     [consentStatuses],
@@ -290,7 +277,7 @@ export function PrivacyConsentSection() {
                     compact={true}
                     showTitle={false}
                     disableApiCall={true}
-                    isLoading={isLoadingConsents}
+                    isLoading={isLoadingConsentsQuery}
                   />
                 </div>
               )}
@@ -307,7 +294,7 @@ export function PrivacyConsentSection() {
                     compact={true}
                     showTitle={false}
                     disableApiCall={true}
-                    isLoading={isLoadingConsents}
+                    isLoading={isLoadingConsentsQuery}
                   />
                 </div>
               )}
@@ -324,7 +311,7 @@ export function PrivacyConsentSection() {
                     compact={true}
                     showTitle={false}
                     disableApiCall={true}
-                    isLoading={isLoadingConsents}
+                    isLoading={isLoadingConsentsQuery}
                   />
                 </div>
               )}

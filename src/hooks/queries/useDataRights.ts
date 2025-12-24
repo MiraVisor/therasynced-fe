@@ -21,6 +21,12 @@ export const useDataRightsStatus = () => {
   return useQuery({
     queryKey: ['dataRights', 'status'],
     queryFn: () => dataRightsService.getDataRightsStatus(),
+    staleTime: 5 * 60 * 1000, // 5 minutes - consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache for 10 minutes
+    refetchOnMount: false, // Don't refetch if data exists in cache
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnReconnect: false, // Don't refetch on reconnect
+    refetchInterval: false, // Don't auto-refetch
   });
 };
 
@@ -93,10 +99,17 @@ export const useObjectToProcessing = () => {
 };
 
 // Health Data Consent
-export const useHealthDataConsent = (userId?: string) => {
+// Backend endpoint is simplified - no role restrictions or booking verification
+// Returns consent for current user (if userId undefined) or specified userId
+export const useHealthDataConsent = (userId?: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['healthDataConsent', userId],
     queryFn: () => dataRightsService.getHealthDataConsent(userId),
+    enabled, // Only run query if enabled is true
+    staleTime: 5 * 60 * 1000, // 5 minutes - consider data fresh for 5 minutes
+    refetchOnMount: false, // Don't refetch if data exists in cache
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    retry: 1, // Retry once on failure
   });
 };
 

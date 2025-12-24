@@ -78,14 +78,17 @@ export function HealthDataConsent({
 }: HealthDataConsentProps) {
   const consentInfo = CONSENT_TYPE_INFO[consentType];
 
-  const { data: consentResponse, isLoading: isLoadingConsent } = useHealthDataConsent(
-    userId,
-    !disableApiCall && !initialConsentStatus,
-  );
+  const {
+    data: consentResponse,
+    isLoading: isLoadingConsent,
+    error: consentError,
+  } = useHealthDataConsent(userId, !disableApiCall && !initialConsentStatus);
 
   const updateConsentMutation = useUpdateHealthDataConsent();
 
-  const consentFromApi = consentResponse?.data.consents.find((c) => c.consentType === consentType);
+  const consentFromApi = consentResponse?.data?.consents?.find(
+    (c) => c.consentType === consentType,
+  );
   const apiConsentGranted = consentFromApi?.granted && !consentFromApi?.withdrawnAt;
 
   const consentGranted =
@@ -130,7 +133,25 @@ export function HealthDataConsent({
   // Don't show full loader - instead show disabled radio buttons with small loader
 
   // Simple banner view for freelancers checking client consent (userId provided)
+  // Backend no longer requires booking verification - simplified endpoint
   if (userId) {
+    // Handle any errors
+    if (consentError) {
+      return (
+        <div className={className}>
+          <Alert variant="destructive" role="alert">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Unable to Check Consent</AlertTitle>
+            <AlertDescription>
+              {consentError instanceof Error
+                ? consentError.message
+                : 'Failed to load consent information. Please try again.'}
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
+    }
+
     return (
       <div className={className}>
         {consentGranted ? (
