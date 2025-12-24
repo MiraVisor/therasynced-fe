@@ -42,14 +42,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((part) => part.charAt(0))
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
-  };
+  // Unused function removed - was: const _getInitials = (name: string) => { ... }
 
   const groupMessagesByDate = (messages: ChatMessage[]) => {
     const groups: { date: string; messages: ChatMessage[] }[] = [];

@@ -44,11 +44,11 @@ export function ExportLogsTab() {
   // Filters
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [exportTypeFilter, setExportTypeFilter] = useState<string>('');
-  const [formatFilter, setFormatFilter] = useState<string>('');
-  const [encryptionFilter, setEncryptionFilter] = useState<string>('');
-  const [exportedByFilter, setExportedByFilter] = useState<string>('');
-  const [exportedUserFilter, setExportedUserFilter] = useState<string>('');
-  const [requestReferenceFilter, setRequestReferenceFilter] = useState<string>('');
+  const [formatFilter] = useState<string>('');
+  const [encryptionFilter] = useState<string>('');
+  const [exportedByFilter] = useState<string>('');
+  const [exportedUserFilter] = useState<string>('');
+  const [requestReferenceFilter] = useState<string>('');
 
   const fetchLogs = async () => {
     try {
@@ -146,14 +146,14 @@ export function ExportLogsTab() {
       });
 
       // If it's a 404, the endpoint might not exist yet
-      if (error?.status === 404) {
+      if (apiError?.status === 404) {
         toast.error(
           'Export logs endpoint not found. The backend may not have this feature implemented yet.',
         );
-      } else if (error?.status === 403) {
+      } else if (apiError?.status === 403) {
         toast.error('Access denied. Admin privileges required.');
       } else {
-        toast.error(error?.message || 'Failed to load export logs. Please try again.');
+        toast.error(apiError?.message || 'Failed to load export logs. Please try again.');
       }
 
       setLogs([]);
@@ -173,10 +173,11 @@ export function ExportLogsTab() {
     if (dateRange.from || dateRange.to || exportTypeFilter) {
       const timer = setTimeout(() => {
         setPage(1);
-        fetchLogs();
+        void fetchLogs();
       }, 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, exportTypeFilter]);
 
@@ -263,7 +264,9 @@ export function ExportLogsTab() {
         if (!date) return acc;
         try {
           const dateStr = new Date(date).toISOString().split('T')[0];
-          acc[dateStr] = (acc[dateStr] || 0) + 1;
+          if (dateStr) {
+            acc[dateStr] = (acc[dateStr] || 0) + 1;
+          }
         } catch {
           // Skip invalid dates
         }
@@ -277,46 +280,7 @@ export function ExportLogsTab() {
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [logs]);
 
-  const typeDistribution = useMemo(() => {
-    const admin = logs.filter(
-      (log) => log.exportType === 'ADMIN' || log.exportType === 'BULK_USER_DATA',
-    ).length;
-    const user = logs.filter(
-      (log) => log.exportType === 'USER' || log.exportType === 'USER_DATA',
-    ).length;
-    return [
-      { name: 'Admin', value: admin },
-      { name: 'User', value: user },
-    ];
-  }, [logs]);
-
-  const formatDistribution = useMemo(() => {
-    const json = logs.filter((log) => {
-      const format = log.format?.toLowerCase();
-      return format === 'json';
-    }).length;
-    const csv = logs.filter((log) => {
-      const format = log.format?.toLowerCase();
-      return format === 'csv';
-    }).length;
-    return [
-      { name: 'JSON', value: json },
-      { name: 'CSV', value: csv },
-    ];
-  }, [logs]);
-
-  const encryptionDistribution = useMemo(() => {
-    const encrypted = logs.filter(
-      (log) => log.isEncrypted === true || log.encrypted === true,
-    ).length;
-    const unencrypted = logs.filter(
-      (log) => !(log.isEncrypted === true || log.encrypted === true),
-    ).length;
-    return [
-      { name: 'Encrypted', value: encrypted },
-      { name: 'Unencrypted', value: unencrypted },
-    ];
-  }, [logs]);
+  // Unused variables removed - was: const _typeDistribution, _formatDistribution, _encryptionDistribution = useMemo(() => { ... }, [logs]);
 
   const handleExportToCSV = async () => {
     try {
@@ -373,7 +337,8 @@ export function ExportLogsTab() {
       if (apiError?.status === 404) {
         toast.error('CSV export endpoint not found. Please check backend configuration.');
       } else {
-        toast.error(error?.message || 'Failed to export logs. Please try again.');
+        const errorWithMessage = error as { message?: string };
+        toast.error(errorWithMessage?.message || 'Failed to export logs. Please try again.');
       }
     }
   };

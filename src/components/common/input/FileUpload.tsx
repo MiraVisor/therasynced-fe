@@ -115,14 +115,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             const resultIndex = index - (prev.length - fileArray.length);
             const result = uploadResults[resultIndex];
 
-            if (result.success) {
+            if (result?.success) {
               return {
                 ...file,
                 uploading: false,
                 url: result.url,
                 progress: 100,
               };
-            } else {
+            } else if (result) {
               return {
                 ...file,
                 uploading: false,
@@ -130,6 +130,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 progress: 0,
               };
             }
+            return file;
           }),
         );
 
@@ -218,7 +219,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     [uploadedFiles, onRemove, onError],
   );
 
-  const canAddMoreFiles = uploadedFiles.length < maxFiles;
+  // Unused variable removed - was: const _canAddMoreFiles = uploadedFiles.length < maxFiles;
 
   return (
     <div className={cn('w-full', className)}>

@@ -2,11 +2,12 @@
 
 import { ExternalLink, Info } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useConsentManager } from '@/hooks/useConsentManager';
 
 interface PaymentConsentProps {
   onConsentChange: (hasConsent: boolean) => void;
@@ -19,10 +20,16 @@ export function PaymentConsent({
   required = true,
   className = '',
 }: PaymentConsentProps) {
-  const [hasConsent, setHasConsent] = useState(false);
+  const { hasConsent, updateConsent } = useConsentManager();
+  const paymentConsentGranted = hasConsent('PAYMENT_DATA');
 
-  const handleConsentChange = (checked: boolean) => {
-    setHasConsent(checked);
+  // Sync consent state with parent component
+  useEffect(() => {
+    onConsentChange(paymentConsentGranted);
+  }, [paymentConsentGranted, onConsentChange]);
+
+  const handleConsentChange = async (checked: boolean) => {
+    await updateConsent('PAYMENT_DATA', checked);
     onConsentChange(checked);
   };
 
@@ -64,7 +71,7 @@ export function PaymentConsent({
       <div className="flex items-start space-x-3 rounded-lg border p-4">
         <Checkbox
           id="payment-consent"
-          checked={hasConsent}
+          checked={paymentConsentGranted}
           onCheckedChange={(checked) => handleConsentChange(checked === true)}
           className="mt-1"
           required={required}
@@ -86,7 +93,7 @@ export function PaymentConsent({
         </div>
       </div>
 
-      {required && !hasConsent && (
+      {required && !paymentConsentGranted && (
         <p className="text-xs text-red-600 dark:text-red-400">
           Payment consent is required to proceed with checkout.
         </p>

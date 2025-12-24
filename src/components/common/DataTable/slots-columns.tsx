@@ -71,7 +71,7 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
     },
     cell: ({ row }) => {
       const locationType = row.getValue('locationType');
-      const config = getLocationTypeConfig(locationType);
+      const config = getLocationTypeConfig(locationType as any);
 
       return (
         <div className="flex items-center gap-1 text-sm text-gray-700 whitespace-nowrap text-left">
@@ -112,7 +112,9 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
     cell: ({ row }) => {
       const duration = row.getValue('duration');
       return (
-        <div className="text-sm text-gray-600 whitespace-nowrap text-left">{duration} min</div>
+        <div className="text-sm text-gray-600 whitespace-nowrap text-left">
+          {String(duration || 0)} min
+        </div>
       );
     },
   },
@@ -160,16 +162,17 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
           };
           break;
         default:
+          const statusStr = String(status || 'unknown');
           badgeProps = {
             variant: 'secondary',
             className: 'bg-red-100 text-red-800 hover:bg-red-100 text-sm',
-            label: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
+            label: statusStr.charAt(0).toUpperCase() + statusStr.slice(1).toLowerCase(),
           };
       }
 
       return (
         <Badge variant={badgeProps.variant} className={badgeProps.className}>
-          {badgeProps.label}
+          {String(badgeProps.label)}
         </Badge>
       );
     },
@@ -182,12 +185,15 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
     cell: ({ row }) => {
       const notes = row.getValue('notes');
 
-      if (!notes) {
+      const notesValue = notes;
+      if (!notesValue) {
         return <span className="text-gray-400 text-sm text-left">-</span>;
       }
 
       return (
-        <div className="max-w-xs text-sm text-gray-600 leading-relaxed text-left">{notes}</div>
+        <div className="max-w-xs text-sm text-gray-600 leading-relaxed text-left">
+          {String(notesValue)}
+        </div>
       );
     },
   },

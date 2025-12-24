@@ -7,89 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
-import { Expert, Freelancer } from '@/types/types';
+import { Expert } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import { DashboardPageWrapper } from '../../../components/core/Dashboard/DashboardPageWrapper';
 import { ExpertList } from '../../../components/core/Dashboard/UserSide/Overview/ExpertSection';
 import ExpertCardSkeleton from '../../../components/ui/skeletons/ExpertCardSkeleton';
 
-// Map freelancer data to Expert format (same as in UserExploreMain)
-const mapFreelancerToExpert = (freelancer: Freelancer): Expert => {
-  // Extract services and their location types
-  const services = freelancer.services || [];
-  const allLocationTypes = new Set<string>();
-
-  // Convert location types to session types
-  const sessionTypes = Array.from(allLocationTypes).map((type) => {
-    switch (type) {
-      case 'HOME':
-        return 'home';
-      case 'CLINIC':
-        return 'clinic';
-      default:
-        return 'home';
-    }
-  });
-
-  // Get primary service name
-  const primaryService = services.length > 0 ? services[0]?.name : undefined;
-
-  // Get location information
-  const locations = freelancer.locations || [];
-  const primaryLocation = locations.length > 0 ? locations[0]?.name : undefined;
-
-  // Calculate experience from creation date
-  const createdAt = freelancer.createdAt ? new Date(freelancer.createdAt) : null;
-
-  // Get rating and reviews from cardInfo
-  const cardInfo = freelancer.cardInfo || {};
-  const rating = cardInfo.averageRating || freelancer.averageRating;
-
-  // Only use rating if it's a valid number greater than 0
-  const validRating = rating && rating > 0 ? rating : undefined;
-
-  // Map API freelancer to Expert type for UI
-  return {
-    id: freelancer.id,
-    name: freelancer.name || cardInfo.name,
-    specialty: cardInfo.mainService || primaryService,
-    jobTitle: freelancer.mainJobTitle, // Add job title mapping
-    rating: validRating,
-    reviews: freelancer.favoritedBy?.length || 0,
-    description: freelancer.description || cardInfo.title,
-    isFavorite: freelancer.isFavorite ?? false,
-    // Additional data for profile dialog
-    profilePicture: freelancer.profilePicture,
-    services: Array.isArray(services) ? services.filter((service) => service?.isActive) : [],
-    location: primaryLocation,
-    sessionTypes: sessionTypes,
-    pricing: freelancer.pricing,
-    // Additional data from API
-    email: freelancer.email,
-    gender: freelancer.gender,
-    city: freelancer.city,
-    isEmailVerified: freelancer.isEmailVerified,
-    isActive: freelancer.isActive,
-    authProvider: freelancer.authProvider,
-    verificationStatus: freelancer.verificationStatus,
-    firstAidCertificateStatus: freelancer.firstAidCertificateStatus,
-    // Slot information
-    slots: freelancer.slots || [],
-    slotSummary: freelancer.slotSummary || {},
-    // Favorites information
-    favoritedBy: freelancer.favoritedBy || [],
-    // Card info
-    cardInfo: cardInfo,
-    // Available slots count
-    availableSlots: freelancer.slotSummary?.availableSlots || 0,
-    totalSlots: freelancer.slotSummary?.totalSlots || 0,
-    // Tier information
-    planFeatures: freelancer.planFeatures || null,
-    tier: freelancer.planFeatures?.planType || null,
-    // Stamp information (included in API response when user is authenticated)
-    stampInfo: freelancer.stampInfo || null,
-  };
-};
+// Use unified mapping function
+const mapFreelancerToExpert = mapOneFreelancerToExpert;
 
 // Enhanced Search Component
 const FavoritesSearchBar = ({
@@ -250,7 +176,9 @@ const FavoritesPage = () => {
             <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
               Unable to load favorites
             </h3>
-            <p className="font-inter text-muted-foreground mb-4">{error}</p>
+            <p className="font-inter text-muted-foreground mb-4">
+              {error instanceof Error ? error.message : String(error)}
+            </p>
             <Button
               onClick={() => window.location.reload()}
               className="bg-primary hover:bg-primary/90 text-white"

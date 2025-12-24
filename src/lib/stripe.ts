@@ -4,7 +4,7 @@ let stripePromise: Promise<Stripe | null>;
 
 export const getStripe = () => {
   if (stripePromise === undefined) {
-    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    const publishableKey = process.env['NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'];
 
     if (!publishableKey) {
       console.warn('Stripe publishable key is not set. Stripe functionality will be disabled.');

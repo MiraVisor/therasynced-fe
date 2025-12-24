@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Booking } from '@/types';
+import type { Booking } from '@/types/booking';
 
 export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Booking[] }> = ({
   bookings,
@@ -15,7 +15,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
   const router = useRouter();
   let booking: Booking | null = null;
   if (Array.isArray(bookings) && bookings.length > 0) {
-    booking = bookings[0];
+    booking = bookings[0] ?? null;
   }
 
   if (!Array.isArray(bookings)) {
@@ -85,7 +85,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
           <Avatar className="h-16 w-16">
             <AvatarImage
               src={
-                expert.avatarUrl ||
+                expert.profilePicture ||
                 `https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=faces&fit=crop&w=200&q=80`
               }
               className="w-full h-full object-cover"
@@ -100,7 +100,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
                 {expert.name || 'Unknown Expert'}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                {expert.specialty || 'N/A'}
+                {expert.cardInfo?.mainService || 'N/A'}
               </p>
             </div>
             <div className="flex items-center gap-1">
@@ -108,13 +108,13 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
                 <span
                   key={i}
                   className={`text-sm ${
-                    i < (expert.rating || 0) ? 'text-yellow-400' : 'text-gray-300'
+                    i < (expert.averageRating || 0) ? 'text-yellow-400' : 'text-gray-300'
                   }`}
                 >
                   ★
                 </span>
               ))}
-              <span className="text-xs text-gray-500 ml-1">({expert.rating || 0})</span>
+              <span className="text-xs text-gray-500 ml-1">({expert.averageRating || 0})</span>
             </div>
           </div>
         </div>

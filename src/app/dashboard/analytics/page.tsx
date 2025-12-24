@@ -15,7 +15,7 @@ const AnalyticsPage = () => {
   const {
     data: analyticsData,
     isLoading,
-    error,
+    error: _error,
   } = useQuery({
     queryKey: ['freelancerAnalytics'],
     queryFn: async () => {
@@ -315,37 +315,46 @@ const AnalyticsPage = () => {
               </div>
             ) : analyticsData && analyticsData.topClients.length > 0 ? (
               <div className="space-y-4">
-                {analyticsData.topClients.slice(0, 5).map((client) => (
-                  <div
-                    key={client.id}
-                    className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-emerald-600">
-                          {client.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-poppins font-medium text-charcoal">{client.name}</p>
-                        <p className="text-xs font-inter text-muted-foreground">
-                          {client.sessions} {client.sessions === 1 ? 'session' : 'sessions'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {client.averageRating !== undefined ? (
-                        <div className="flex items-center gap-1 mb-1">
-                          <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                          <span className="text-sm font-medium">
-                            {client.averageRating.toFixed(1)}
-                          </span>
+                {analyticsData.topClients
+                  .slice(0, 5)
+                  .map((client: { id: string; [key: string]: unknown }) => {
+                    const name = String(client['name'] || 'Unknown');
+                    const sessions = Number(client['sessions'] || 0);
+                    const averageRating = client['averageRating'] as number | null | undefined;
+                    const totalHours = Number(client['totalHours'] || 0);
+
+                    return (
+                      <div
+                        key={client.id}
+                        className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-emerald-600">
+                              {name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-poppins font-medium text-charcoal">{name}</p>
+                            <p className="text-xs font-inter text-muted-foreground">
+                              {sessions} {sessions === 1 ? 'session' : 'sessions'}
+                            </p>
+                          </div>
                         </div>
-                      ) : null}
-                      <p className="text-xs text-gray-500">{client.totalHours.toFixed(1)}h</p>
-                    </div>
-                  </div>
-                ))}
+                        <div className="text-right">
+                          {averageRating !== undefined && averageRating !== null ? (
+                            <div className="flex items-center gap-1 mb-1">
+                              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                              <span className="text-sm font-medium">
+                                {averageRating.toFixed(1)}
+                              </span>
+                            </div>
+                          ) : null}
+                          <p className="text-xs text-gray-500">{totalHours.toFixed(1)}h</p>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             ) : (
               <div className="text-center py-8">

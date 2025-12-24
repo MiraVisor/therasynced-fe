@@ -1,23 +1,54 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/useAuthZustand';
+import type { ConsentType } from '@/types/consent';
+import { CONSENT_INFO, getRequiredConsentsForRole } from '@/types/consent';
 
 import { SignupFormData } from '../MultiStepSignup';
 
 export function ConsentStep() {
   const {
-    watch,
     setValue,
+    watch: _watch,
     formState: { errors },
   } = useFormContext<SignupFormData>();
+  const { role } = useAuth();
 
-  const termsConsent = watch('termsConsent') || false;
-  const privacyConsent = watch('privacyConsent') || false;
-  const gdprConsent = watch('gdprConsent') || false;
+  // Local state for consents during signup (user not authenticated yet)
+  const [localConsents, setLocalConsents] = useState<Record<ConsentType, boolean>>({
+    TERMS_OF_SERVICE: false,
+    PRIVACY_POLICY: false,
+    GDPR_DATA_PROCESSING: false,
+    FIRST_AID_CERTIFICATE: false,
+    PAYMENT_DATA: false,
+    VERIFICATION_DOCUMENTS: false,
+  });
+
+  // Get required consents based on role (default to PATIENT if no role yet)
+  const requiredConsents = getRequiredConsentsForRole(
+    (role as 'PATIENT' | 'FREELANCER') || 'PATIENT',
+  );
+
+  // Sync local consent state with form state
+  useEffect(() => {
+    setValue('termsConsent', localConsents.TERMS_OF_SERVICE, { shouldValidate: true });
+    setValue('privacyConsent', localConsents.PRIVACY_POLICY, { shouldValidate: true });
+    setValue('gdprConsent', localConsents.GDPR_DATA_PROCESSING, { shouldValidate: true });
+  }, [localConsents, setValue]);
+
+  // Handle consent changes (local state only during signup)
+  const handleConsentChange = (type: ConsentType, granted: boolean) => {
+    setLocalConsents((prev) => ({
+      ...prev,
+      [type]: granted,
+    }));
+  };
 
   return (
     <div className="w-full space-y-4">
@@ -29,75 +60,58 @@ export function ConsentStep() {
         </p>
       </div>
 
-      {/* Terms of Service */}
-      <div className="flex items-start space-x-3 rounded-lg border p-3">
-        <Checkbox
-          id="terms-consent"
-          checked={termsConsent}
-          onCheckedChange={(checked) =>
-            setValue('termsConsent', checked === true, { shouldValidate: true })
-          }
-          className="mt-0.5"
-        />
-        <Label
-          htmlFor="terms-consent"
-          className="text-sm font-medium cursor-pointer flex-1 leading-tight"
-        >
-          I agree to the{' '}
-          <Link href="/terms" target="_blank" className="text-primary hover:underline">
-            Terms of Service
-          </Link>
-        </Label>
+      {/* Required Consents - using local state for signup */}
+      <div className="space-y-4">
+        {requiredConsents.map((type) => {
+          const info = CONSENT_INFO[type];
+          const isGranted = localConsents[type] || false;
+
+          return (
+            <div key={type} className="flex items-start space-x-3 rounded-lg border p-3">
+              <Checkbox
+                id={`consent-${type}`}
+                checked={isGranted}
+                onCheckedChange={(checked) => handleConsentChange(type, checked === true)}
+                className="mt-0.5"
+              />
+              <Label
+                htmlFor={`consent-${type}`}
+                className="text-sm font-medium cursor-pointer flex-1 leading-tight"
+              >
+                {type === 'TERMS_OF_SERVICE' ? (
+                  <>
+                    I agree to the{' '}
+                    <Link href="/terms" target="_blank" className="text-primary hover:underline">
+                      Terms of Service
+                    </Link>
+                  </>
+                ) : type === 'PRIVACY_POLICY' ? (
+                  <>
+                    I have read and agree to the{' '}
+                    <Link href="/privacy" target="_blank" className="text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </>
+                ) : (
+                  info.description
+                )}
+              </Label>
+            </div>
+          );
+        })}
       </div>
+
+      {/* Show form validation errors */}
       {errors.termsConsent && (
         <p className="text-red-500 text-xs font-inter mt-0.5" role="alert">
           {errors.termsConsent.message}
         </p>
       )}
-
-      {/* Privacy Policy */}
-      <div className="flex items-start space-x-3 rounded-lg border p-3">
-        <Checkbox
-          id="privacy-consent"
-          checked={privacyConsent}
-          onCheckedChange={(checked) =>
-            setValue('privacyConsent', checked === true, { shouldValidate: true })
-          }
-          className="mt-0.5"
-        />
-        <Label
-          htmlFor="privacy-consent"
-          className="text-sm font-medium cursor-pointer flex-1 leading-tight"
-        >
-          I have read and agree to the{' '}
-          <Link href="/privacy" target="_blank" className="text-primary hover:underline">
-            Privacy Policy
-          </Link>
-        </Label>
-      </div>
       {errors.privacyConsent && (
         <p className="text-red-500 text-xs font-inter mt-0.5" role="alert">
           {errors.privacyConsent.message}
         </p>
       )}
-
-      {/* GDPR Data Processing Consent */}
-      <div className="flex items-start space-x-3 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 p-3">
-        <Checkbox
-          id="gdpr-consent"
-          checked={gdprConsent}
-          onCheckedChange={(checked) =>
-            setValue('gdprConsent', checked === true, { shouldValidate: true })
-          }
-          className="mt-0.5"
-        />
-        <Label
-          htmlFor="gdpr-consent"
-          className="text-sm font-medium cursor-pointer flex-1 leading-tight"
-        >
-          I consent to the processing of my personal data in accordance with GDPR
-        </Label>
-      </div>
       {errors.gdprConsent && (
         <p className="text-red-500 text-xs font-inter mt-0.5" role="alert">
           {errors.gdprConsent.message}

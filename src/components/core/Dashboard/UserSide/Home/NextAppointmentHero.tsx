@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import type { Booking } from '@/types';
+import type { Booking } from '@/types/booking';
 
 interface NextAppointmentHeroProps {
   booking: Booking | null;
@@ -129,11 +129,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
     return 'border-gray-200 dark:border-gray-700';
   };
 
-  const getUrgencyText = () => {
-    if (isToday) return 'Today';
-    if (isTomorrow) return 'Tomorrow';
-    return bookingDate.toLocaleDateString('en', { weekday: 'short' });
-  };
+  // Unused function removed - was: const _getUrgencyText = () => { ... };
 
   const LocationIcon = getLocationIcon(booking);
   const freelancerName = getExpertName(booking);
@@ -168,15 +164,30 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
                   {freelancerName}
                 </h2>
                 <VerificationBadge
-                  status={booking?.slot?.freelancer?.verificationStatus}
+                  status={
+                    ((booking?.slot?.freelancer as { verificationStatus?: string })
+                      ?.verificationStatus || 'unverified') as
+                      | 'verified'
+                      | 'pending'
+                      | 'rejected'
+                      | 'unverified'
+                      | 'APPROVED'
+                      | 'PENDING'
+                      | 'REJECTED'
+                      | 'UNVERIFIED'
+                  }
                   size="sm"
                 />
               </div>
 
               {/* Job title or specialty */}
-              {booking?.slot?.freelancer?.mainJobTitle && (
+              {(booking?.slot?.freelancer as unknown as { mainJobTitle?: { name: string } })
+                ?.mainJobTitle && (
                 <p className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-3">
-                  {booking.slot.freelancer.mainJobTitle.name}
+                  {
+                    (booking.slot.freelancer as unknown as { mainJobTitle: { name: string } })
+                      .mainJobTitle.name
+                  }
                 </p>
               )}
             </div>

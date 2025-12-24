@@ -34,18 +34,8 @@ export const useChat = (currentUserId?: string) => {
   } = useChatStore();
 
   // Use React Query hooks
-  const {
-    data: contactsData,
-    isLoading: isLoadingContacts,
-    refetch: refetchContacts,
-  } = useChatContacts();
-  const {
-    data: messagesData,
-    isLoading: isLoadingMessages,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useChatMessages(activeConversationId, 1);
+  const { isLoading: isLoadingContacts, refetch: refetchContacts } = useChatContacts();
+  const { isLoading: isLoadingMessages } = useChatMessages(activeConversationId, 1);
   const { mutate: sendMessageMutation, isPending: isSending } = useSendMessage();
   const { mutate: markAsReadMutation } = useMarkMessagesAsRead();
   const { isConnected: connectionStatus } = useChatConnection();
@@ -69,7 +59,8 @@ export const useChat = (currentUserId?: string) => {
           // Determine if message is from current user using senderId if available, otherwise fallback to users.id
           const isFromMe =
             message.senderId === currentUserId ||
-            (message.users?.id && message.users.id === currentUserId);
+            (message.users?.id && message.users.id === currentUserId) ||
+            false;
           updateContact(contact.id, {
             lastMessage: {
               content: message.content || '',
@@ -233,14 +224,11 @@ export const useChat = (currentUserId?: string) => {
     [sendMessageMutation],
   );
 
-  const loadMoreMessages = useCallback(
-    (conversationId: string) => {
-      if (hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
-    [hasNextPage, isFetchingNextPage, fetchNextPage],
-  );
+  const loadMoreMessages = useCallback((_conversationId: string) => {
+    // Note: useChatMessages doesn't support infinite queries yet
+    // This function is a placeholder for future implementation
+    console.log('loadMoreMessages called for:', _conversationId);
+  }, []);
 
   const sendTypingIndicator = useCallback(
     (isTyping: boolean) => {
@@ -314,12 +302,11 @@ export const useChat = (currentUserId?: string) => {
     return typingUsers[activeConversationId] || [];
   }, [activeConversationId, typingUsers]);
 
-  const canLoadMoreMessages = useCallback(
-    (conversationId: string) => {
-      return hasNextPage && !isFetchingNextPage;
-    },
-    [hasNextPage, isFetchingNextPage],
-  );
+  const canLoadMoreMessages = useCallback((_conversationId: string) => {
+    // Note: useChatMessages doesn't support infinite queries yet
+    // This function always returns false as a placeholder
+    return false;
+  }, []);
 
   return {
     // State

@@ -157,11 +157,14 @@ export const useFreelancerAppointmentsByDate = (date: string | null) => {
         end: booking.slot.endTime,
         status: booking.status,
         clientName: booking.client.name,
-        description: booking.notes || '',
+        description:
+          (booking.formData?.['notes'] as string) ||
+          (booking.formData?.['description'] as string) ||
+          '',
         location: booking.slot.locationType,
-        notes: booking.notes || '',
+        notes: (booking.formData?.['notes'] as string) || '',
         locationType: booking.slot.locationType,
-        clientAddress: booking.clientAddress,
+        clientAddress: (booking.formData?.['clientAddress'] as string) || undefined,
         freelancer: booking.slot.freelancer,
         clientId: booking.clientId,
       }));
@@ -189,7 +192,7 @@ export const useUpdateBookingNotes = () => {
   return useMutation({
     mutationFn: ({ bookingId, notes }: { bookingId: string; notes: string }) =>
       bookingApi.updateBookingNotes(bookingId, notes),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['bookings', 'freelancer', 'by-date'] });
     },

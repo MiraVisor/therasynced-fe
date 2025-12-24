@@ -91,6 +91,10 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#fcfcfc',
   },
+  tableCell: {
+    fontSize: 10,
+    color: '#2c3e50',
+  },
   totalsSection: {
     marginTop: 20,
     alignItems: 'flex-end',

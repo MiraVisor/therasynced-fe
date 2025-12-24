@@ -37,6 +37,7 @@ export function StatusBadge({
 
       return () => clearInterval(interval);
     }
+    return undefined; // Explicit return for else case
   }, [trialEndsAt, status, showCountdown]);
 
   const getStatusConfig = () => {

@@ -24,9 +24,14 @@ interface PaymentFormProps {
 
 const stripePromise = getStripe();
 
-const PaymentForm = ({ clientSecret, planType, onSuccess, onCancel }: PaymentFormProps) => {
+const PaymentForm = ({
+  clientSecret: _clientSecret,
+  planType,
+  onSuccess,
+  onCancel,
+}: PaymentFormProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const router = useRouter();
+  useRouter(); // Required hook call, but router not used
 
   const handlePayment = async () => {
     try {

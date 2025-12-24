@@ -27,11 +27,11 @@ export function AccessLogsTab() {
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [dataTypeFilter, setDataTypeFilter] = useState<string>('');
   const [actionFilter, setActionFilter] = useState<string>('');
-  const [userIdFilter, setUserIdFilter] = useState<string>('');
-  const [accessedByFilter, setAccessedByFilter] = useState<string>('');
-  const [selfAccessFilter, setSelfAccessFilter] = useState<string>('');
-  const [ipAddressFilter, setIpAddressFilter] = useState<string>('');
-  const [purposeFilter, setPurposeFilter] = useState<string>('');
+  const [userIdFilter] = useState<string>('');
+  const [accessedByFilter] = useState<string>('');
+  const [selfAccessFilter] = useState<string>('');
+  const [ipAddressFilter] = useState<string>('');
+  const [purposeFilter] = useState<string>('');
 
   const filters: AdminHealthDataLogsFilters = {
     skip: (page - 1) * pageSize,
@@ -63,7 +63,11 @@ export function AccessLogsTab() {
     filters.accessedBy = accessedByFilter;
   }
 
-  const { data: logsResponse, isLoading: loading, isFetching } = useAllHealthDataLogs(filters);
+  const {
+    data: logsResponse,
+    isLoading: loading,
+    isFetching: _isFetching,
+  } = useAllHealthDataLogs(filters);
   const allLogs = logsResponse?.data || [];
   const pagination = logsResponse?.pagination || null;
   const initialLoading = loading && !logsResponse;
@@ -142,7 +146,9 @@ export function AccessLogsTab() {
     const grouped = logs.reduce(
       (acc, log) => {
         const date = new Date(log.accessedAt).toISOString().split('T')[0];
-        acc[date] = (acc[date] || 0) + 1;
+        if (date) {
+          acc[date] = (acc[date] || 0) + 1;
+        }
         return acc;
       },
       {} as Record<string, number>,
@@ -153,35 +159,9 @@ export function AccessLogsTab() {
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [logs]);
 
-  const dataTypeDistribution = useMemo(() => {
-    const grouped = logs.reduce(
-      (acc, log) => {
-        acc[log.dataType] = (acc[log.dataType] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
+  // Unused variable removed - was: const _dataTypeDistribution = useMemo(() => { ... }, [logs]);
 
-    return Object.entries(grouped).map(([name, value]) => ({
-      name: name.replace('-', ' '),
-      value,
-    }));
-  }, [logs]);
-
-  const actionDistribution = useMemo(() => {
-    const grouped = logs.reduce(
-      (acc, log) => {
-        acc[log.action] = (acc[log.action] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    return Object.entries(grouped).map(([name, value]) => ({
-      name,
-      value,
-    }));
-  }, [logs]);
+  // Unused variable removed - was: const _actionDistribution = useMemo(() => { ... }, [logs]);
 
   return (
     <div className="space-y-6">

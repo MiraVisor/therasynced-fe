@@ -70,7 +70,7 @@ const ComplaintsPage = () => {
     isLoading,
     isFetching,
     error,
-    refetch,
+    refetch: _refetch,
   } = useAdminComplaints({
     page,
     limit: pageSize,

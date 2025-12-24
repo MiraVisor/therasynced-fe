@@ -60,7 +60,7 @@ export const useSocketSlots = (freelancerId?: string) => {
     // Listen for socket events
     const handleSlotStatusUpdated = (event: CustomEvent) => {
       // Backend sends: { freelancerId, slot: { id, freelancerId, locationType, startTime, endTime, status, reservedUntil }, timestamp }
-      const { slot, freelancerId } = event.detail;
+      const { slot, freelancerId: _freelancerId } = event.detail;
       if (slot?.id) {
         updateSlotStatus(slot.id, {
           status: slot.status,
@@ -75,7 +75,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleMultipleSlotsUpdated = (event: CustomEvent) => {
       // Backend sends: { freelancerId, slots: SlotData[], timestamp }
-      const { slots, freelancerId } = event.detail;
+      const { slots, freelancerId: _freelancerId } = event.detail;
       if (Array.isArray(slots)) {
         const updates = slots.map((slot) => ({
           slotId: slot.id,
@@ -94,7 +94,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleSlotReserved = (event: CustomEvent) => {
       // Backend sends: { freelancerId, slot: SlotData, timestamp }
-      const { slot, freelancerId } = event.detail;
+      const { slot, freelancerId: _freelancerId } = event.detail;
       const slotId = slot?.id;
 
       if (!slotId) {
@@ -129,7 +129,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleSlotBooked = (event: CustomEvent) => {
       // Backend sends: { freelancerId, slot: SlotData, timestamp }
-      const { slot, freelancerId } = event.detail;
+      const { slot, freelancerId: _freelancerId } = event.detail;
       const slotId = slot?.id;
       if (slotId) {
         updateSlotStatus(slotId, {
@@ -145,7 +145,7 @@ export const useSocketSlots = (freelancerId?: string) => {
 
     const handleSlotRemoved = (event: CustomEvent) => {
       // Backend sends: { freelancerId, slotId, timestamp }
-      const { slotId, freelancerId } = event.detail;
+      const { slotId, freelancerId: _freelancerId } = event.detail;
       if (slotId) {
         updateSlotStatus(slotId, {
           status: 'BOOKED',
@@ -247,7 +247,7 @@ export const useSocketSlots = (freelancerId?: string) => {
     async (slotId: string, duration: number = 300000) => {
       try {
         // Call API to reserve slot
-        await api.post(ENDPOINTS.slots?.reserve ?? `/slots/${slotId}/reserve`, {
+        await api.post(ENDPOINTS.slots?.reserve?.(slotId) ?? `/slots/${slotId}/reserve`, {
           duration,
         });
 
@@ -277,7 +277,7 @@ export const useSocketSlots = (freelancerId?: string) => {
     async (slotId: string) => {
       try {
         // Call API to release slot
-        await api.post(ENDPOINTS.slots?.release ?? `/slots/${slotId}/release`);
+        await api.post(ENDPOINTS.slots?.release?.(slotId) ?? `/slots/${slotId}/release`);
 
         // Update local state
         releaseSlot(slotId);

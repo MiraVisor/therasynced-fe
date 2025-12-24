@@ -44,9 +44,15 @@ const signupSchema = z
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
     mainJobTitleId: z.string().optional(),
-    termsConsent: z.boolean().optional(),
-    privacyConsent: z.boolean().optional(),
-    gdprConsent: z.boolean().optional(),
+    termsConsent: z.boolean().refine((val) => val === true, {
+      message: 'You must agree to the Terms of Service',
+    }),
+    privacyConsent: z.boolean().refine((val) => val === true, {
+      message: 'You must agree to the Privacy Policy',
+    }),
+    gdprConsent: z.boolean().refine((val) => val === true, {
+      message: 'You must consent to GDPR data processing',
+    }),
   })
   .refine(
     (data) => {
@@ -93,7 +99,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const [currentStep, setCurrentStep] = useState(1);
 
   // Use signup UI store for UI state
-  const { authMethod, setIsGoogleLoading, setAuthMethod } = useSignupUIStore();
+  const { authMethod, setIsGoogleLoading, setAuthMethod: _setAuthMethod } = useSignupUIStore();
 
   const formMethods = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),

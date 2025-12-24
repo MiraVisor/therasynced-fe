@@ -9,7 +9,8 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { TierBadge } from '@/components/ui/tier-badge';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { freelancerService } from '@/services/freelancerService';
-import { Expert, Freelancer } from '@/types/types';
+import { Expert } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 interface SearchWithDropdownProps {
   onSearch: (query: string) => void;
@@ -26,30 +27,13 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [highlightedFreelancer, setHighlightedFreelancer] = useState<string | null>(null);
-  const router = useRouter();
+  useRouter(); // Required hook call, but router not used
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Map freelancer data to Expert format (simplified version)
-  const mapFreelancerToExpert = (freelancer: Freelancer): Expert => {
-    const cardInfo = freelancer.cardInfo || {};
-    return {
-      id: freelancer.id,
-      name: freelancer.name || cardInfo.name,
-      specialty: cardInfo.mainService || freelancer.services?.[0]?.name || '',
-      rating: cardInfo.averageRating || freelancer.averageRating,
-      reviews: cardInfo.totalRatings || 0,
-      description: freelancer.description || cardInfo.title || '',
-      isFavorite: freelancer.isFavorite ?? false,
-      profilePicture: freelancer.profilePicture,
-      cardInfo: cardInfo,
-      planFeatures: freelancer.planFeatures || null,
-      tier: freelancer.planFeatures?.planType || null,
-      verificationStatus: freelancer.verificationStatus || 'unverified',
-      subscriptionStatus: freelancer.subscriptionStatus || undefined,
-    };
-  };
+  // Use unified mapping function
+  const mapFreelancerToExpert = mapOneFreelancerToExpert;
 
   // Fetch autocomplete suggestions
   const fetchSuggestions = useCallback(async (query: string) => {
@@ -142,7 +126,11 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
         break;
       case 'Enter':
         e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+        if (
+          selectedIndex >= 0 &&
+          selectedIndex < suggestions.length &&
+          suggestions[selectedIndex]
+        ) {
           handleSuggestionClick(suggestions[selectedIndex]);
         } else if (searchQuery.trim()) {
           onSearch(searchQuery);

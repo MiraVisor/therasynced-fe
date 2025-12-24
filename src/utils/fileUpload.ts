@@ -136,6 +136,9 @@ export const uploadMultipleFiles = async (
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
+    if (!file) {
+      throw new Error('No file provided');
+    }
     const progressCallback = onProgress
       ? (progress: UploadProgress) => onProgress(i, progress)
       : undefined;

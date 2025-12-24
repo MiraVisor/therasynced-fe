@@ -25,7 +25,7 @@ const AuditDashboard = dynamic(
 
 export default function AdminAuditPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  useSearchParams(); // Required hook call, but params not used
   const { isAuthenticated, role } = useAuthStore();
   const [isAuthorized, setIsAuthorized] = useState(false);
 

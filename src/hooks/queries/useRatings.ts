@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 
 import * as ratingApi from '@/services/ratingService';
 import { getApiErrorMessage } from '@/types/common';
-import { CreateRatingDto, FreelancerRatingsResponse, RatingEligibility } from '@/types/types';
+import { CreateRatingDto } from '@/types/types';
 
 /**
  * Hook to fetch freelancer ratings
@@ -21,7 +21,6 @@ export const useFreelancerRatings = (
     queryKey: ['ratings', 'freelancer', freelancerId, params],
     queryFn: () => ratingApi.getFreelancerRatings(freelancerId!, params),
     enabled: !!freelancerId,
-    select: (data) => data.data as FreelancerRatingsResponse,
   });
 };
 
@@ -33,7 +32,6 @@ export const useRatingEligibility = (bookingId: string | null) => {
     queryKey: ['ratings', 'eligibility', bookingId],
     queryFn: () => ratingApi.checkRatingEligibility(bookingId!),
     enabled: !!bookingId,
-    select: (data) => data.data as RatingEligibility,
   });
 };
 
@@ -49,7 +47,6 @@ export const useMyRatings = (params?: {
   return useQuery({
     queryKey: ['ratings', 'my', params],
     queryFn: () => ratingApi.getMyRatings(params),
-    select: (data) => data.data as FreelancerRatingsResponse,
   });
 };
 
@@ -61,7 +58,7 @@ export const useCreateRating = () => {
 
   return useMutation({
     mutationFn: (data: CreateRatingDto) => ratingApi.createRating(data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['ratings'] });
       void queryClient.invalidateQueries({ queryKey: ['bookings'] });
       toast.success('Rating submitted successfully!');

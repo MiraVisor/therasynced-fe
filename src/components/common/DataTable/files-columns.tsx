@@ -89,8 +89,8 @@ export const createFilesColumns = (
       const fileType = row.getValue('fileType');
       return (
         <div className="flex items-center space-x-2">
-          {getFileTypeIconComponent(fileType)}
-          {getFileTypeBadge(fileType)}
+          {getFileTypeIconComponent(fileType as any)}
+          {getFileTypeBadge(fileType as any)}
         </div>
       );
     },
@@ -117,7 +117,8 @@ export const createFilesColumns = (
         return <Badge variant="outline">No Status</Badge>;
       }
 
-      switch (status.toUpperCase()) {
+      const statusStr = String(status || '');
+      switch (statusStr.toUpperCase()) {
         case 'APPROVED':
           return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
         case 'PENDING':
@@ -125,7 +126,7 @@ export const createFilesColumns = (
         case 'REJECTED':
           return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
         default:
-          return <Badge variant="outline">{status}</Badge>;
+          return <Badge variant="outline">{statusStr}</Badge>;
       }
     },
   },

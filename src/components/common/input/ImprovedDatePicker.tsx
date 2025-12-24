@@ -89,9 +89,13 @@ export function ImprovedDatePicker({
       if (cleanInput.length === 10) {
         const parts = cleanInput.split('/');
         if (parts.length === 3) {
-          const day = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
-          const year = parseInt(parts[2], 10);
+          const dayStr = parts[0];
+          const monthStr = parts[1];
+          const yearStr = parts[2];
+          if (!dayStr || !monthStr || !yearStr) return;
+          const day = parseInt(dayStr, 10);
+          const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed
+          const year = parseInt(yearStr, 10);
 
           if (
             !isNaN(day) &&

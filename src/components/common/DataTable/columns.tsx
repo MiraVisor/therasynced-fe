@@ -512,16 +512,17 @@ export const bookingColumns: ColumnDef<Booking>[] = [
           };
           break;
         default:
+          const statusStr = String(status || 'unknown');
           badgeProps = {
             variant: 'secondary',
             className: 'bg-gray-100 text-gray-800 hover:bg-gray-100 text-sm',
-            label: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
+            label: statusStr.charAt(0).toUpperCase() + statusStr.slice(1).toLowerCase(),
           };
       }
 
       return (
         <Badge variant={badgeProps.variant} className={badgeProps.className}>
-          {badgeProps.label}
+          {String(badgeProps.label)}
         </Badge>
       );
     },

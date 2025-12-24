@@ -213,7 +213,7 @@ export const SubscriptionInvoicePDF = ({ data }: { data: InvoiceGenerationData }
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, { width: '40%' }]}>
-              {data.transaction.planName} Plan Subscription
+              {data.transaction.plan} Plan Subscription
             </Text>
             <Text style={[styles.tableCell, { width: '20%', textAlign: 'right' }]}>
               {formatCurrency(data.transaction.amount)}
@@ -222,7 +222,7 @@ export const SubscriptionInvoicePDF = ({ data }: { data: InvoiceGenerationData }
               -{formatCurrency(data.transaction.commission)} ({commissionPercentage}%)
             </Text>
             <Text style={[styles.tableCell, { width: '20%', textAlign: 'right' }]}>
-              {formatCurrency(data.transaction.netRevenue)}
+              {formatCurrency(data.transaction.netAmount)}
             </Text>
           </View>
         </View>
@@ -239,9 +239,7 @@ export const SubscriptionInvoicePDF = ({ data }: { data: InvoiceGenerationData }
           </View>
           <View style={styles.grandTotal}>
             <Text style={styles.grandTotalLabel}>Net Revenue:</Text>
-            <Text style={styles.grandTotalValue}>
-              {formatCurrency(data.transaction.netRevenue)}
-            </Text>
+            <Text style={styles.grandTotalValue}>{formatCurrency(data.transaction.netAmount)}</Text>
           </View>
         </View>
 

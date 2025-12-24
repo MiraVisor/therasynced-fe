@@ -39,7 +39,7 @@ export function TimelineChart({
   description,
   dataKey = 'value',
   color,
-  height = 300,
+  height: _height = 300,
   loading,
 }: TimelineChartProps) {
   const chartConfig = color

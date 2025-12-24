@@ -18,7 +18,7 @@ interface ProfileCardProps {
 }
 
 export const ProfileCard: React.FC<ProfileCardProps> = ({
-  id,
+  id: _id, // Unused prop
   name,
   email,
   role,

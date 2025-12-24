@@ -19,9 +19,9 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const freelancerId = Array.isArray(params?.freelancerId)
-    ? params?.freelancerId[0]
-    : params?.freelancerId;
+  const freelancerId = Array.isArray(params?.['freelancerId'])
+    ? params?.['freelancerId'][0]
+    : params?.['freelancerId'];
 
   // Use React Query hook
   const { data: slots = [] } = useAvailableSlots(freelancerId || null);

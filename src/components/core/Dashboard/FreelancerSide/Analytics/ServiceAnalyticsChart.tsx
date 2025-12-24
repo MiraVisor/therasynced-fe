@@ -113,7 +113,7 @@ const ServiceAnalyticsChart = ({ data, isLoading = false }: ServiceAnalyticsChar
                 borderRadius: '8px',
                 padding: '8px',
               }}
-              formatter={(value: number, name: string, props: { dataKey?: string }) => {
+              formatter={(value: number, name: string) => {
                 if (name === 'bookings') {
                   return [`${value} bookings`, 'Bookings'];
                 }

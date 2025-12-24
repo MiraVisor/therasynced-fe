@@ -16,7 +16,7 @@ export function PaymentMethodCard() {
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
 
   const paymentMethods = paymentMethodsData?.paymentMethods || [];
-  const defaultMethod = paymentMethods.find((pm) => pm.isDefault);
+  // Unused variable removed - was: const _defaultMethod = paymentMethods.find((pm) => pm.isDefault);
 
   const handleManageBilling = async () => {
     try {

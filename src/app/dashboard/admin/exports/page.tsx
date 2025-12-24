@@ -64,7 +64,10 @@ export default function AdminExportsPage() {
     }
   }, [isAuthenticated, role, router]);
 
-  const handleInputChange = (field: keyof AdminExportFormData, value: string | boolean) => {
+  const handleInputChange = (
+    field: keyof AdminExportFormData,
+    value: string | boolean | undefined,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/carousel';
 import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
 import { Expert, Freelancer } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import FavoriteFreelancerCard from './FavoriteTherapistCard';
 
@@ -140,33 +141,13 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           className="w-full min-w-0"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
-            {favoriteFreelancers.map((freelancer: Freelancer) => {
-              // Map freelancer to Expert format
-              const expert: Expert = {
-                id: freelancer.id,
-                name: freelancer.name,
-                specialty:
-                  freelancer.mainJobTitle?.name ?? freelancer.cardInfo?.mainService ?? 'Therapist',
-                jobTitle: freelancer.mainJobTitle,
-                rating: freelancer.cardInfo?.averageRating ?? 0,
-                reviews: freelancer.cardInfo?.totalRatings ?? 0,
-                description: freelancer.cardInfo?.title ?? '',
-                isFavorite: freelancer.isFavorite,
-                profilePicture: freelancer.profilePicture,
-                verificationStatus: freelancer.verificationStatus ?? 'unverified',
-                availableSlots: freelancer.slotSummary?.totalSlots ?? 0,
-                slotSummary: freelancer.slotSummary,
-                slots: freelancer.slots ?? [],
-                // Include stampInfo from freelancer response (if available)
-                stampInfo:
-                  'stampInfo' in freelancer
-                    ? ((freelancer as { stampInfo?: Expert['stampInfo'] }).stampInfo ?? null)
-                    : null,
-              };
+            {favoriteFreelancers.map((freelancer: Freelancer | Expert) => {
+              // Use unified mapping function
+              const expert = mapOneFreelancerToExpert(freelancer);
 
               return (
                 <CarouselItem
-                  key={freelancer.id}
+                  key={expert.id}
                   className="basis-4/5 md:basis-3/5 lg:basis-2/5 min-w-[330px] pl-2 md:pl-4"
                 >
                   <div className="flex justify-center">

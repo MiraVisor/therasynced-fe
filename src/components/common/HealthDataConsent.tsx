@@ -27,56 +27,23 @@ interface HealthDataConsentProps {
   isLoading?: boolean; // External loading state (e.g., when fetching consent statuses)
 }
 
-const CONSENT_TYPE_INFO: Record<
-  ConsentType,
-  { title: string; description: string; dataTypes: string[] }
-> = {
-  MEDICAL_HISTORY: {
-    title: 'Medical History Data Consent',
-    description:
-      'By consenting, you allow us to collect and process your medical history information for healthcare service delivery.',
-    dataTypes: [
-      'Medical history forms',
-      'ROM Assessment forms',
-      'Health questionnaires',
-      'Pre-appointment information',
-    ],
-  },
-  SOAP_NOTES: {
-    title: 'SOAP Notes Data Consent',
-    description:
-      'By consenting, you allow healthcare professionals to create and store SOAP (Subjective, Objective, Assessment, Plan) notes documenting your appointments. This includes clinical documentation created by healthcare professionals during appointments.',
-    dataTypes: ['Clinical notes', 'Treatment plans', 'Assessment documentation'],
-  },
-  COMPLAINTS: {
-    title: 'Health-Related Complaints Data Consent',
-    description:
-      'By consenting, you allow us to process health-related information included in complaints for service quality and safety purposes.',
-    dataTypes: ['Complaint descriptions', 'Health-related concerns', 'Safety reports'],
-  },
-  FIRST_AID_CERTIFICATE: {
-    title: 'First Aid Certificate Data Consent',
-    description:
-      'By consenting, you allow us to store and process your first aid certificate for professional verification purposes. This consent is for healthcare professionals only.',
-    dataTypes: ['First aid certificates', 'Professional qualifications', 'Verification documents'],
-  },
-};
+// Unused constant removed - was: const CONSENT_TYPE_INFO: Record<ConsentType, {...}> = { ... };
 
 export function HealthDataConsent({
   consentType,
   onConsentChange,
-  required = true,
-  showDisclaimer = true,
+  required: _required = true,
+  showDisclaimer: _showDisclaimer = true,
   className,
   initialConsentStatus,
   userId,
-  description,
-  compact,
-  showTitle,
+  description: _description,
+  compact: _compact,
+  showTitle: _showTitle,
   disableApiCall = false,
   isLoading: externalLoading = false,
 }: HealthDataConsentProps) {
-  const consentInfo = CONSENT_TYPE_INFO[consentType];
+  // Unused variable removed - was: const _consentInfo = CONSENT_TYPE_INFO[consentType];
 
   const {
     data: consentResponse,

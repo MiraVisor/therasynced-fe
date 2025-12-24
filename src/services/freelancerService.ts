@@ -94,6 +94,32 @@ export const searchFreelancers = async (
       hasNext: false,
       hasPrev: false,
     },
+    meta: response.data.meta || {
+      timestamp: new Date().toISOString(),
+      path: ENDPOINTS.freelancer.search,
+    },
+  };
+};
+
+export const searchFreelancersAutocomplete = async (
+  query: string,
+  limit: number = 8,
+): Promise<ApiResponse<Expert[]>> => {
+  const response = await api.get(ENDPOINTS.freelancer.search, {
+    params: {
+      name: query,
+      limit,
+      page: 1,
+    },
+  });
+  return {
+    success: true,
+    data: response.data.data || [],
+    pagination: response.data.pagination,
+    meta: response.data.meta || {
+      timestamp: new Date().toISOString(),
+      path: ENDPOINTS.freelancer.search,
+    },
   };
 };
 
@@ -104,6 +130,7 @@ const freelancerService = {
   getAllFavoriteFreelancers,
   getStats,
   searchFreelancers,
+  searchFreelancersAutocomplete,
 };
 
 export { freelancerService };

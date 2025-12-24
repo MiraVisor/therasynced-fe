@@ -41,7 +41,7 @@ export function BreachesTab() {
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [riskLevelFilter, setRiskLevelFilter] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery] = useState<string>('');
 
   // Create breach dialog
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -82,7 +82,11 @@ export function BreachesTab() {
     filters.riskLevel = riskLevelFilter as BreachRiskLevel;
   }
 
-  const { data: breachesResponse, isLoading: loading, isFetching } = useBreaches(filters);
+  const {
+    data: breachesResponse,
+    isLoading: loading,
+    isFetching: _isFetching,
+  } = useBreaches(filters);
   const allBreaches = breachesResponse?.data || [];
   const pagination = breachesResponse?.pagination || null;
   const initialLoading = loading && !breachesResponse;
@@ -157,7 +161,9 @@ export function BreachesTab() {
     const grouped = breaches.reduce(
       (acc, breach) => {
         const date = new Date(breach.detectedAt).toISOString().split('T')[0];
-        acc[date] = (acc[date] || 0) + 1;
+        if (date) {
+          acc[date] = (acc[date] || 0) + 1;
+        }
         return acc;
       },
       {} as Record<string, number>,
@@ -191,20 +197,7 @@ export function BreachesTab() {
     }));
   }, [breaches]);
 
-  const riskDistribution = useMemo(() => {
-    const grouped = breaches.reduce(
-      (acc, breach) => {
-        acc[breach.riskLevel] = (acc[breach.riskLevel] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    return Object.entries(grouped).map(([name, value]) => ({
-      name,
-      value,
-    }));
-  }, [breaches]);
+  // Unused variable removed - was: const _riskDistribution = useMemo(() => { ... }, [breaches]);
 
   const handleAddCategory = () => {
     if (categoryInput.trim() && !formData.dataCategories.includes(categoryInput.trim())) {

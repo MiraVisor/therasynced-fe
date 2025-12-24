@@ -11,7 +11,7 @@ function AuthCallbackContent() {
   const [isProcessing, setIsProcessing] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { setToken, setUser } = useAuthStore();
+  const { login } = useAuthStore();
 
   useEffect(() => {
     const processCallback = async () => {
@@ -54,9 +54,8 @@ function AuthCallbackContent() {
           // For login flow, store token and redirect
           if (typeof window !== 'undefined') {
             setCookie('token', token);
-            setToken(token);
+            login(token, 'PATIENT');
             // User data will be fetched by API interceptor
-            setUser({ role: 'PATIENT' } as any);
           }
 
           // Redirect to the intended page or dashboard
@@ -84,7 +83,7 @@ function AuthCallbackContent() {
     };
 
     processCallback();
-  }, [searchParams, router, setToken, setUser]);
+  }, [searchParams, router, login]);
 
   if (isProcessing) {
     return (

@@ -11,11 +11,12 @@ const StatusSwitch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, disabled, ...props }, ref) => {
-  const tooltipClass = disabled
-    ? 'text-md bg-transparent border border-gray-400 text-gray-500'
-    : props.checked
-      ? 'text-md bg-transparent border border-red-500 text-red-700'
-      : 'text-md bg-transparent border border-green-500 text-green-700';
+  // Tooltip class for future use (currently unused)
+  // const tooltipClass = disabled
+  //   ? 'text-md bg-transparent border border-gray-400 text-gray-500'
+  //   : props.checked
+  //     ? 'text-md bg-transparent border border-red-500 text-red-700'
+  //     : 'text-md bg-transparent border border-green-500 text-green-700';
 
   return (
     <TooltipProvider delayDuration={300}>

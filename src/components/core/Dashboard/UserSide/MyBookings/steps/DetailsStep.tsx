@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useBookingStore } from '@/stores/bookingStore';
+import type { ServiceCategory } from '@/types/common';
 import type { Slot } from '@/types/slot';
 
 interface ServiceFormData {

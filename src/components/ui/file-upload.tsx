@@ -283,18 +283,9 @@ function FileUploadDropzone({
   );
 }
 
-interface FileUploadTriggerProps {
-  children: React.ReactNode;
-  asChild?: boolean;
-  onClick?: () => void;
-}
+// Unused interface removed - was: interface FileUploadTriggerProps { ... }
 
-function FileUploadTrigger({ children, asChild, onClick }: FileUploadTriggerProps) {
-  if (asChild) {
-    return <>{children}</>;
-  }
-  return <div onClick={onClick}>{children}</div>;
-}
+// Unused function removed - was: function _FileUploadTrigger({ children, asChild, onClick }: FileUploadTriggerProps) { ... }
 
 interface FileUploadListProps {
   children: React.ReactNode;
@@ -309,7 +300,7 @@ interface FileUploadItemProps {
   file: File;
 }
 
-function FileUploadItem({ children, file }: FileUploadItemProps) {
+function FileUploadItem({ children, file: _file }: FileUploadItemProps) {
   return <div className="flex items-start gap-3 rounded-lg border p-3 bg-card">{children}</div>;
 }
 

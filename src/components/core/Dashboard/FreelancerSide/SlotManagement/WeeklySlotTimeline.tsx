@@ -16,7 +16,7 @@ export const WeeklySlotTimeline = ({
   slots,
   weekStart,
   onDayClick,
-  selectedDate,
+  selectedDate: _selectedDate,
 }: WeeklySlotTimelineProps) => {
   const weekDays = useMemo(() => {
     const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
@@ -54,7 +54,7 @@ export const WeeklySlotTimeline = ({
       <div className="space-y-3 lg:space-y-4">
         {weekDays.map((date, index) => {
           const stats = getStatsForDay(date);
-          const isSelected = selectedDate && isSameDay(date, selectedDate);
+          // Unused variable removed - was: const _isSelected = selectedDate && isSameDay(date, selectedDate);
           const isToday = isSameDay(date, new Date());
 
           return (

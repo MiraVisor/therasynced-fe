@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import useChat from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
+import { ChatContactState } from '@/stores/chatStore';
 
 import ChatContactList from './ChatContactList';
 import ChatHeader from './ChatHeader';
@@ -19,7 +20,7 @@ interface ChatContainerProps {
 const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId }) => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showChat, setShowChat] = useState(false);
-  const [hasAutoSelected, setHasAutoSelected] = useState(false);
+  const [_hasAutoSelected, _setHasAutoSelected] = useState(false);
 
   const {
     contacts,
@@ -45,7 +46,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
     ? getContactByConversationId(activeConversationId)
     : null;
 
-  const handleContactSelect = (contact: { id: string; name: string; [key: string]: unknown }) => {
+  const handleContactSelect = (contact: ChatContactState) => {
     console.log('Contact selected:', contact);
     console.log('Conversation ID:', contact.conversationId);
 
@@ -59,7 +60,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
     } else {
       // Different contact selected - open/switch to new conversation
       console.log('Different contact clicked - opening chat');
-      selectConversation(contact.conversationId);
+      selectConversation(contact.conversationId || '');
       if (isMobile) {
         setShowChat(true);
       }
@@ -234,14 +235,24 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
       )}
 
       {/* Error Display */}
-      {(error.contacts || error.messages || error.sending) && (
-        <div className="absolute bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-sm z-10">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">
-            {error.contacts || error.messages || error.sending || 'An error occurred'}
-          </span>
-        </div>
-      )}
+      {error &&
+        typeof error === 'object' &&
+        error !== null &&
+        ('contacts' in error || 'messages' in error || 'sending' in error) && (
+          <div className="absolute bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-sm z-10">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">
+              {String(
+                (error as { contacts?: unknown; messages?: unknown; sending?: unknown }).contacts ||
+                  (error as { contacts?: unknown; messages?: unknown; sending?: unknown })
+                    .messages ||
+                  (error as { contacts?: unknown; messages?: unknown; sending?: unknown })
+                    .sending ||
+                  'An error occurred',
+              )}
+            </span>
+          </div>
+        )}
     </div>
   );
 };

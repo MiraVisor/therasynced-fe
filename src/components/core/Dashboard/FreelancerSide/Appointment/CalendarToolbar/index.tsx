@@ -12,6 +12,8 @@ import { DateSelector } from './DateSelector';
 import { FilterSelector } from './FilterSelector';
 import { ViewSelector } from './ViewSelector';
 
+const { setSelectedDate } = useCalendarStore.getState();
+
 interface CalendarToolbarProps {
   view: View;
   onView: (view: View) => void;
@@ -31,7 +33,12 @@ export const CalendarToolbar = ({
   filters,
   onFilterChange,
 }: CalendarToolbarProps) => {
-  const { selectedDate, navigateToPrev, navigateToNext, setSelectedDate } = useCalendarStore();
+  const {
+    selectedDate,
+    navigateToPrev,
+    navigateToNext,
+    setSelectedDate: _setSelectedDate,
+  } = useCalendarStore();
 
   const getViewLabel = () => {
     switch (view) {
@@ -80,7 +87,7 @@ export const CalendarToolbar = ({
               className="ml-2"
               onClick={() => {
                 const today = new Date();
-                dispatch(setSelectedDate(today));
+                setSelectedDate(today);
               }}
             >
               Today
@@ -95,7 +102,7 @@ export const CalendarToolbar = ({
               variant="outline"
               onClick={() => {
                 const today = new Date();
-                dispatch(setSelectedDate(today));
+                setSelectedDate(today);
               }}
             >
               Today

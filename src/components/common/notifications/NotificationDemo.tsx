@@ -140,7 +140,12 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
       roleNotifications[Math.floor(Math.random() * roleNotifications.length)];
 
     // Add to demo notifications
-    setDemoNotifications((prev) => [randomNotification, ...prev]);
+    setDemoNotifications((prev) => {
+      const newNotifications = [randomNotification, ...prev].filter(
+        (n): n is Notification => n !== undefined,
+      );
+      return newNotifications;
+    });
 
     // Simulate API delay
     setTimeout(() => {
@@ -197,7 +202,11 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           </Button>
 
           <Button
-            onClick={notifications.markAllAsRead}
+            onClick={() => {
+              if (typeof notifications.markAllAsRead === 'function') {
+                notifications.markAllAsRead();
+              }
+            }}
             variant="outline"
             size="sm"
             disabled={notifications.unreadCount === 0}

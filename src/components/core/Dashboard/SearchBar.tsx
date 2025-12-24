@@ -14,7 +14,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   location = 'Dublin, Ireland',
   onSearch,
   isLocationEnabled = false,
-  onLocationChange,
+  onLocationChange: _onLocationChange,
 }) => {
   return (
     <div className="flex items-center gap-4 w-full max-w-2xl">

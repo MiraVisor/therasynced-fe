@@ -95,7 +95,7 @@ const FreelancerAppointments = () => {
   );
 
   const calendarEvents = appointmentsData
-    .filter((event) => {
+    .filter((event: Appointment) => {
       if (filters.hideCompleted && event.status === 'COMPLETED') return false;
       if (filters.hideCancelled && event.status === 'CANCELLED') return false;
 
@@ -105,7 +105,7 @@ const FreelancerAppointments = () => {
 
       return true;
     })
-    .map((event) => ({
+    .map((event: Appointment) => ({
       ...event,
       start: new Date(event.start),
       end: new Date(event.end),
@@ -117,7 +117,7 @@ const FreelancerAppointments = () => {
         <div className="flex-none">
           <CalendarToolbar
             view={calendarView}
-            onView={(newView: View) => dispatch(setCalendarView(newView))}
+            onView={(newView: View) => setCalendarView(newView)}
             onNavigate={handleNavigateAction}
             filters={filters}
             onFilterChange={handleFilterChange}
@@ -126,7 +126,7 @@ const FreelancerAppointments = () => {
         <div className="flex-1 pb-12">
           {isMobile ? (
             <ListView
-              events={appointmentsData.filter((event) => {
+              events={appointmentsData.filter((event: Appointment) => {
                 if (filters.hideCompleted && event.status === 'COMPLETED') return false;
                 if (filters.hideCancelled && event.status === 'CANCELLED') return false;
 

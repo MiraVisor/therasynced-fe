@@ -14,61 +14,15 @@ import {
 } from '@/components/ui/select';
 import { useInfiniteSearchFreelancers } from '@/hooks/queries/useFreelancers';
 import { useJobTitles } from '@/hooks/queries/useJobTitles';
-import { Expert, Freelancer, SearchFilters } from '@/types/types';
+import { SearchFilters } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import { ExpertList } from './ExpertSection';
 import { FilterChips } from './FilterChips';
 
-const mapFreelancerToExpert = (freelancer: Freelancer): Expert => {
-  // Extract services and their location types
-  const services = freelancer.services || [];
-  const allLocationTypes = new Set<string>();
-
-  // Convert location types to session types
-
-  // Get primary service name
-  const primaryService = services.length > 0 ? services[0]?.name : undefined;
-
-  // Get location information
-  const locations = freelancer.locations || [];
-
-  // Calculate experience from creation date
-
-  // Get rating and reviews from cardInfo
-  const cardInfo = freelancer.cardInfo || {};
-  // Use cardInfo.averageRating as primary source (real calculated ratings from API)
-  const rating =
-    cardInfo.averageRating !== undefined && cardInfo.averageRating !== null
-      ? cardInfo.averageRating
-      : freelancer.averageRating;
-
-  // Only use rating if it's a valid number greater than 0
-  const validRating = rating !== undefined && rating !== null && rating > 0 ? rating : undefined;
-
-  // Map API freelancer to Expert type for UI
-  return {
-    id: freelancer.id,
-    name: freelancer.name || cardInfo.name,
-    specialty: cardInfo.mainService || primaryService,
-    jobTitle: freelancer.mainJobTitle,
-    rating: validRating,
-    reviews: cardInfo.totalRatings || freelancer.cardInfo?.patientStories || 0,
-    description: freelancer.description || cardInfo.title,
-    isFavorite: freelancer.isFavorite ?? false,
-    // Additional data for profile dialog
-    profilePicture: freelancer.profilePicture,
-    slots: freelancer.slots || [],
-    slotSummary: freelancer.slotSummary || {},
-    cardInfo: cardInfo,
-    availableSlots: freelancer.slotSummary?.availableSlots || 0,
-    totalSlots: freelancer.slotSummary?.totalSlots || 0,
-    planFeatures: freelancer.planFeatures || null,
-    tier: freelancer.planFeatures?.planType || null,
-    subscriptionStatus: freelancer.subscriptionStatus || undefined,
-    stampInfo: freelancer.stampInfo || null,
-  };
-};
+// Use unified mapping function
+const mapFreelancerToExpert = mapOneFreelancerToExpert;
 
 // Enhanced Loading Skeleton
 const ExpertCardSkeleton = () => (
@@ -197,8 +151,14 @@ const UserOverview = () => {
   }, [filters, sortBy, sortOrder]);
 
   // Fetch freelancers with infinite query
-  const { data, isLoading, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useInfiniteSearchFreelancers(searchParams);
+  const {
+    data,
+    isLoading,
+    isFetching: _isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteSearchFreelancers(searchParams);
 
   // Flatten all pages into a single array
   const freelancers = useMemo(() => {
@@ -210,7 +170,7 @@ const UserOverview = () => {
   const pagination = useMemo(() => {
     if (!data?.pages || data.pages.length === 0) return null;
     const lastPage = data.pages[data.pages.length - 1];
-    return lastPage.pagination;
+    return lastPage?.pagination;
   }, [data]);
 
   // Handle filter changes

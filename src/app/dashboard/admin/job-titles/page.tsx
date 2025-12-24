@@ -50,7 +50,7 @@ const JobTitlesPage = () => {
   const {
     data: jobTitlesResponse,
     isLoading: loading,
-    isFetching,
+    isFetching: _isFetching,
   } = useJobTitles({
     page,
     limit: pageSize,

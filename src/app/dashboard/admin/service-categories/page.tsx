@@ -60,7 +60,7 @@ const ServiceCategoriesPage = () => {
   const {
     data: categoriesResponse,
     isLoading: categoriesLoading,
-    isFetching,
+    isFetching: _isFetching,
   } = useServiceCategories({
     page,
     limit: pageSize,

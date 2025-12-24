@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useChangeEmail } from '@/hooks/queries/useProfile';
 
 export function EmailSection() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, _setIsLoading] = useState(false);
   const { mutate: changeEmailMutation, isPending: isChangingEmail } = useChangeEmail();
 
   const handleEmailChange = (newEmail: string) => {

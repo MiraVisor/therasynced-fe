@@ -13,7 +13,7 @@ export function PasswordSection() {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, _setIsLoading] = useState(false);
   const { mutate: changePasswordMutation, isPending: isChangingPassword } = useChangePassword();
 
   const [passwordData, setPasswordData] = useState({

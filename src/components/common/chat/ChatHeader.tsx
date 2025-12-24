@@ -30,14 +30,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   showBackButton = false,
   className,
 }) => {
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((part) => part.charAt(0))
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
-  };
+  // Unused function removed - was: const _getInitials = (name: string) => { ... }
 
   const getStatusText = () => {
     if (typingUsers.length > 0) {

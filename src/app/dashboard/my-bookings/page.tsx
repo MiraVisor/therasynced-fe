@@ -90,8 +90,8 @@ const BookingStatsComponent = ({
 
 export default function MyBookingsPage() {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [searchTerm, _setSearchTerm] = useState('');
+  const [statusFilter, _setStatusFilter] = useState('');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -220,7 +220,7 @@ export default function MyBookingsPage() {
           )) ||
         (booking.services &&
           booking.services.length > 0 &&
-          booking.services[0].name.toLowerCase().includes(searchTerm.toLowerCase()));
+          booking.services[0]?.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus = (() => {
         if (!statusFilter) return true;
@@ -279,7 +279,9 @@ export default function MyBookingsPage() {
           <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
             Error loading bookings
           </h3>
-          <p className="font-inter text-muted-foreground mb-4">{error}</p>
+          <p className="font-inter text-muted-foreground mb-4">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
           <Button
             variant="outline"
             onClick={() => queryClient.invalidateQueries({ queryKey: ['bookings'] })}
@@ -293,7 +295,7 @@ export default function MyBookingsPage() {
       {!error && (
         <div className="space-y-6">
           {/* Stats Section */}
-          <BookingStatsComponent stats={bookingStats} isLoading={isLoadingStats} />
+          <BookingStatsComponent stats={bookingStats || null} isLoading={isLoadingStats} />
 
           {/* Week Navigation */}
           <div className="flex items-center justify-between gap-4 w-full">

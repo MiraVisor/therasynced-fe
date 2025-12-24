@@ -77,13 +77,13 @@ export function TransactionTable({
       },
     };
 
-    const config = statusConfig[status] || statusConfig.PENDING;
+    const config = statusConfig[status] || statusConfig['PENDING'];
 
     return (
       <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${config.className}`}
+        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${config?.className || ''}`}
       >
-        {config.label}
+        {config?.label || status}
       </span>
     );
   };

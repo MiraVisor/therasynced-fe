@@ -16,7 +16,7 @@ interface InvoiceDownloadButtonProps {
 export function InvoiceDownloadButton({
   transactionId,
   invoiceId,
-  invoiceNumber,
+  invoiceNumber: _invoiceNumber,
 }: InvoiceDownloadButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 

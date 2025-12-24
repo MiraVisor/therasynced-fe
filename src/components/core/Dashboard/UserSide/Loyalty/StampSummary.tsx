@@ -29,7 +29,7 @@ export function StampSummary({ onViewDetail }: StampSummaryProps) {
       <Card>
         <CardContent className="p-8">
           <div className="text-center text-red-600">
-            <p>Error loading stamps: {error}</p>
+            <p>Error loading stamps: {error instanceof Error ? error.message : String(error)}</p>
           </div>
         </CardContent>
       </Card>

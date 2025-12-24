@@ -60,7 +60,7 @@ export function DataAccessLogsSection() {
   const {
     data: logsResponse,
     isLoading: loading,
-    isFetching,
+    isFetching: _isFetching,
   } = useMyHealthDataLogs(isAuthenticated ? filters : undefined);
   const allLogs = logsResponse?.data || [];
   const pagination = logsResponse?.pagination || null;

@@ -114,7 +114,7 @@ export default function LoyaltyPage() {
   const progressPercentage =
     profile.pointsToNextTier > 0 ? (profile.availablePoints / profile.pointsToNextTier) * 100 : 100;
 
-  const handleViewStampDetail = (therapistId: string) => {
+  const handleViewStampDetail = (_therapistId: string) => {
     setViewingStampDetail(true);
     setActiveTab('stamps');
   };

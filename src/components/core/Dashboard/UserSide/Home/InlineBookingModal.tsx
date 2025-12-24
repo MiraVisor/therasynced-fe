@@ -146,7 +146,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                             </div>
                           </div>
                           <div className="text-lg font-poppins font-semibold text-primary">
-                            EUR {slot.price}
+                            EUR {slot.basePrice}
                           </div>
                         </div>
                       </CardContent>
@@ -172,7 +172,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                 disabled={!selectedSlot}
                 className="flex-1 bg-primary hover:bg-primary/90 text-white"
               >
-                Book Session - €{selectedSlot?.price || 0}
+                Book Session - €{selectedSlot?.basePrice || 0}
               </Button>
               <Button onClick={onClose} variant="outline" className="px-6">
                 Cancel

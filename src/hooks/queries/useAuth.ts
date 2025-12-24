@@ -3,8 +3,10 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
 import * as authApi from '@/services/authService';
+import { updateMultipleConsents } from '@/services/consentService';
 import { useAuthStore } from '@/stores/authStore';
 import { getErrorMessage } from '@/types/common';
+import type { ConsentUpdateRequest } from '@/types/consent';
 import { registerUserTypes, RoleType } from '@/types/types';
 
 /**
@@ -38,12 +40,37 @@ export const useSignUp = () => {
 
   return useMutation({
     mutationFn: (credentials: registerUserTypes) => authApi.signUpUserApi(credentials),
-    onSuccess: (response) => {
+    onSuccess: async (response, variables) => {
       // If signup returns a token immediately, login the user
       if (response.data?.data?.token) {
         const { token } = response.data.data;
         const role = response.data.data.user.role as RoleType;
         login(token, role);
+
+        // Save consents to backend after successful signup
+        if (variables.termsConsent || variables.privacyConsent || variables.gdprConsent) {
+          try {
+            const consentUpdates: ConsentUpdateRequest[] = [];
+
+            if (variables.termsConsent) {
+              consentUpdates.push({ consentType: 'TERMS_OF_SERVICE', granted: true });
+            }
+            if (variables.privacyConsent) {
+              consentUpdates.push({ consentType: 'PRIVACY_POLICY', granted: true });
+            }
+            if (variables.gdprConsent) {
+              consentUpdates.push({ consentType: 'GDPR_DATA_PROCESSING', granted: true });
+            }
+
+            if (consentUpdates.length > 0) {
+              await updateMultipleConsents(consentUpdates);
+            }
+          } catch (error) {
+            // Log error but don't block signup flow
+            console.error('Failed to save consents after signup:', error);
+          }
+        }
+
         router.push(
           `/dashboard?login=success&message=${encodeURIComponent('Account created successfully!')}`,
         );

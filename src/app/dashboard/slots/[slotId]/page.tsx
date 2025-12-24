@@ -15,7 +15,7 @@ export default function SlotDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { role } = useAuthStore();
-  const slotId = params.slotId as string;
+  const slotId = params['slotId'] as string;
 
   // Use React Query hook
   const { data: slot, isLoading } = useSlot(slotId);

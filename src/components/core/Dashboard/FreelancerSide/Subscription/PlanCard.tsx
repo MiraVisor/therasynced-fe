@@ -68,7 +68,10 @@ export const PlanCard = ({
     if (!hasActiveSubscription || !currentPlanName || isCurrentPlan) return null;
 
     const planOrder: PlanType[] = ['BRONZE', 'SILVER', 'GOLD'];
-    const currentIndex = planOrder.indexOf(currentPlanName);
+    const currentIndex =
+      currentPlanName && planOrder.includes(currentPlanName as PlanType)
+        ? planOrder.indexOf(currentPlanName as PlanType)
+        : -1;
     const targetIndex = planOrder.indexOf(plan.name);
 
     if (targetIndex > currentIndex) {

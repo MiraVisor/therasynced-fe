@@ -26,10 +26,10 @@ const ChartTooltipContent = ({ active, payload, label }: ChartTooltipProps) => {
         <p className="text-sm font-medium text-charcoal mb-1">{label}</p>
         <div className="space-y-1">
           <p className="text-sm text-teal">
-            Current Week: <span className="font-medium">{payload[0].value}</span>
+            Current Week: <span className="font-medium">{payload[0]?.value ?? 0}</span>
           </p>
           <p className="text-sm text-primary">
-            Last Week: <span className="font-medium">{payload[1].value}</span>
+            Last Week: <span className="font-medium">{payload[1]?.value ?? 0}</span>
           </p>
         </div>
       </div>

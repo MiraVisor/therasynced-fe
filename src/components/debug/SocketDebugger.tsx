@@ -13,7 +13,7 @@ interface SocketEvent {
 const SocketDebugger = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [events, setEvents] = useState<SocketEvent[]>([]);
-  const [slotDetails, setSlotDetails] = useState<unknown>(null);
+  const [_slotDetails, _setSlotDetails] = useState<unknown>(null);
 
   useEffect(() => {
     // Listen for socket events

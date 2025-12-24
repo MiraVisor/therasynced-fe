@@ -97,7 +97,7 @@ const Appointments = () => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  const [viewType, setViewType] = useState<'day' | 'month'>('day');
+  const [_viewType, _setViewType] = useState<'day' | 'month'>('day');
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   const [, setIsMobile] = useState(false);
   const [editingNotes, setEditingNotes] = useState<string>('');
@@ -177,11 +177,11 @@ const Appointments = () => {
 
   const getAppointmentsForDate = (date: Date) => {
     return appointments
-      .filter((apt) => {
+      .filter((apt: Appointment) => {
         const aptDate = new Date(apt.start);
         return isSameDay(aptDate, date);
       })
-      .sort((a, b) => {
+      .sort((a: Appointment, b: Appointment) => {
         const aStart = new Date(a.start);
         const bStart = new Date(b.start);
         return aStart.getTime() - bStart.getTime();
@@ -201,8 +201,11 @@ const Appointments = () => {
 
     // Parse the time slot (e.g., "9:15 am" -> 9:15)
     const timeSlotParts = timeSlot.split(':');
-    const slotHour = parseInt(timeSlotParts[0]);
-    const slotMinutes = parseInt(timeSlotParts[1]?.split(' ')[0]) || 0;
+    const slotHourStr = timeSlotParts[0];
+    const slotMinutesStr = timeSlotParts[1]?.split(' ')[0];
+    if (!slotHourStr) return false;
+    const slotHour = parseInt(slotHourStr, 10);
+    const slotMinutes = slotMinutesStr ? parseInt(slotMinutesStr, 10) || 0 : 0;
     const isPM = timeSlot.toLowerCase().includes('pm') && slotHour !== 12;
     const adjustedSlotHour = isPM ? slotHour + 12 : slotHour === 12 ? 12 : slotHour;
 
@@ -220,7 +223,7 @@ const Appointments = () => {
 
   // Get appointments for a specific time slot and calculate their positions
   const getAppointmentsForTimeSlot = (timeSlot: string) => {
-    const slotAppointments = getDayAppointments().filter((appointment) =>
+    const slotAppointments = getDayAppointments().filter((appointment: Appointment) =>
       shouldShowAppointmentInTimeSlot(appointment, timeSlot),
     );
 
@@ -228,7 +231,7 @@ const Appointments = () => {
 
     const distinctColors = getDistinctColors(slotAppointments.length);
 
-    return slotAppointments.map((appointment, index) => {
+    return slotAppointments.map((appointment: Appointment, index: number) => {
       // For overlapping appointments, use a fixed width and stack them
       const width = slotAppointments.length > 1 ? '90%' : '95%';
       const left = slotAppointments.length > 1 ? `${5 + index * 5}%` : '2.5%';
@@ -240,8 +243,12 @@ const Appointments = () => {
 
       // Parse the time slot
       const timeSlotParts = timeSlot.split(':');
-      const slotHour = parseInt(timeSlotParts[0]);
-      const slotMinutes = parseInt(timeSlotParts[1]?.split(' ')[0]) || 0;
+      const slotHourStr = timeSlotParts[0];
+      const slotMinutesStr = timeSlotParts[1]?.split(' ')[0];
+      if (!slotHourStr)
+        return { ...appointment, width: '95%', left: '2.5%', top: 0, color: distinctColors[0] };
+      const slotHour = parseInt(slotHourStr, 10);
+      const slotMinutes = slotMinutesStr ? parseInt(slotMinutesStr, 10) || 0 : 0;
       const isPM = timeSlot.toLowerCase().includes('pm') && slotHour !== 12;
       const adjustedSlotHour = isPM ? slotHour + 12 : slotHour === 12 ? 12 : slotHour;
 
@@ -405,41 +412,51 @@ const Appointments = () => {
                         )}
 
                         {/* Appointment Blocks - Google Calendar Style */}
-                        {getAppointmentsForTimeSlot(time.start).map((appointmentSlot) => (
-                          <div
-                            key={appointmentSlot.appointment.id}
-                            className="absolute text-white rounded-lg p-2 cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm"
-                            style={{
-                              left: appointmentSlot.left,
-                              width: appointmentSlot.width,
-                              top: appointmentSlot.top,
-                              height: appointmentSlot.height,
-                              minHeight: '25px',
-                              backgroundColor: appointmentSlot.color,
-                              zIndex: appointmentSlot.zIndex,
-                              margin: '0 2px',
-                              boxShadow:
-                                '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                            }}
-                            onClick={() => setSelectedAppointment(appointmentSlot.appointment)}
-                          >
-                            <div className="flex flex-col h-full justify-start">
-                              <div className="text-xs font-medium leading-tight mb-1 truncate">
-                                {appointmentSlot.appointment.title}
-                              </div>
-                              <div className="text-xs leading-tight">
-                                {getAppointmentTimeRange(appointmentSlot.appointment)}
-                              </div>
-                              {appointmentSlot.appointment.location && (
-                                <div className="text-xs leading-tight truncate mt-1">
-                                  {appointmentSlot.appointment.location === LocationType.CLINIC
-                                    ? 'Clinic'
-                                    : 'Home'}
+                        {getAppointmentsForTimeSlot(time.start).map(
+                          (appointmentSlot: {
+                            appointment: Appointment;
+                            width: string;
+                            left: string;
+                            top: number;
+                            height: string;
+                            color: string;
+                            zIndex: number;
+                          }) => (
+                            <div
+                              key={appointmentSlot.appointment.id}
+                              className="absolute text-white rounded-lg p-2 cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm"
+                              style={{
+                                left: appointmentSlot.left,
+                                width: appointmentSlot.width,
+                                top: appointmentSlot.top,
+                                height: appointmentSlot.height,
+                                minHeight: '25px',
+                                backgroundColor: appointmentSlot.color,
+                                zIndex: appointmentSlot.zIndex,
+                                margin: '0 2px',
+                                boxShadow:
+                                  '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                              }}
+                              onClick={() => setSelectedAppointment(appointmentSlot.appointment)}
+                            >
+                              <div className="flex flex-col h-full justify-start">
+                                <div className="text-xs font-medium leading-tight mb-1 truncate">
+                                  {appointmentSlot.appointment.title}
                                 </div>
-                              )}
+                                <div className="text-xs leading-tight">
+                                  {getAppointmentTimeRange(appointmentSlot.appointment)}
+                                </div>
+                                {appointmentSlot.appointment.location && (
+                                  <div className="text-xs leading-tight truncate mt-1">
+                                    {appointmentSlot.appointment.location === LocationType.CLINIC
+                                      ? 'Clinic'
+                                      : 'Home'}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     </div>
                   ))}
@@ -526,7 +543,7 @@ const Appointments = () => {
               <h3 className="font-poppins text-lg font-bold text-charcoal">APPOINTMENTS</h3>
             </div>
             <div className="space-y-3">
-              {getDayAppointments().map((appointment) => {
+              {getDayAppointments().map((appointment: Appointment) => {
                 return (
                   <div
                     key={appointment.id}

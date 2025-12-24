@@ -2,16 +2,14 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Download, Edit, FileText, Info, Shield, Trash2 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { HealthDataConsent } from '@/components/common/HealthDataConsent';
+import { UnifiedConsentManager } from '@/components/common/UnifiedConsentManager';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -23,15 +21,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useHealthDataConsent } from '@/hooks/queries/useDataRights';
 import { useAuth } from '@/hooks/useAuthZustand';
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
-import { ROLES } from '@/types/types';
 
 export function PrivacyConsentSection() {
   const router = useRouter();
-  const { logout, role } = useAuth();
+  const { logout, role: _role } = useAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -48,50 +44,9 @@ export function PrivacyConsentSection() {
   const [exportPurpose, setExportPurpose] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
-  // Consent states
-  const [termsConsent, setTermsConsent] = useState(false);
-  const [privacyConsent, setPrivacyConsent] = useState(false);
-  const [gdprConsent, setGdprConsent] = useState(false);
-
-  // Use the specific health data consent endpoint that returns ALL consent types
-  // No userId parameter = gets the current logged-in user's own consent
-  // This works for both FREELANCER (their own consent) and PATIENT (their own consent)
-  const { data: healthDataConsentData, isLoading: isLoadingConsentsQuery } = useHealthDataConsent(
-    undefined, // undefined = current user's own consent (from JWT token)
-    true, // enabled
-  );
-
-  // Extract consent statuses - this will include ALL types (even with granted: false)
-  const healthDataConsents = healthDataConsentData?.data?.consents;
-  const consentStatuses = useMemo(() => {
-    return healthDataConsents || [];
-  }, [healthDataConsents]);
-
-  const handleConsentUpdate = async (
-    consentType: 'terms' | 'privacy' | 'gdpr',
-    granted: boolean,
-  ) => {
-    try {
-      // TODO: Replace with actual API endpoint when backend is ready
-      // await api.post(ENDPOINTS.consents?.update || '/user/consents/update', {
-      //   consentType,
-      //   granted,
-      // });
-
-      if (consentType === 'terms') setTermsConsent(granted);
-      if (consentType === 'privacy') setPrivacyConsent(granted);
-      if (consentType === 'gdpr') setGdprConsent(granted);
-
-      toast.success(`Consent ${granted ? 'granted' : 'withdrawn'} successfully`);
-    } catch (error) {
-      console.error('Error updating consent:', error);
-      toast.error('Failed to update consent');
-    }
-  };
-
   const handleHealthDataConsentChange = useCallback(async () => {
-    // Invalidate both queries when consent changes
-    await queryClient.invalidateQueries({ queryKey: ['healthDataConsent'] });
+    // Invalidate consent queries when consent changes
+    await queryClient.invalidateQueries({ queryKey: ['consents'] });
     // Also invalidate data rights status if it's used elsewhere
     await queryClient.invalidateQueries({ queryKey: ['dataRights', 'status'] });
   }, [queryClient]);
@@ -178,32 +133,6 @@ export function PrivacyConsentSection() {
     router.push('/dashboard/account?tab=profile');
   };
 
-  // Update the useMemo hooks to use consentStatuses directly
-  const soapNotesStatus = useMemo(
-    () => consentStatuses.find((c) => c.consentType === 'SOAP_NOTES'),
-    [consentStatuses],
-  );
-  const complaintsStatus = useMemo(
-    () => consentStatuses.find((c) => c.consentType === 'COMPLAINTS'),
-    [consentStatuses],
-  );
-  const firstAidStatus = useMemo(
-    () => consentStatuses.find((c) => c.consentType === 'FIRST_AID_CERTIFICATE'),
-    [consentStatuses],
-  );
-
-  const shouldShowConsent = (consentType: string) => {
-    // Medical History forms are not stored/processed (PDFs only), so no consent needed
-    if (consentType === 'MEDICAL_HISTORY') {
-      return false;
-    }
-    if (role === ROLES.FREELANCER) {
-      return consentType === 'FIRST_AID_CERTIFICATE' || consentType === 'COMPLAINTS';
-    }
-    // For patients: show SOAP_NOTES and COMPLAINTS
-    return consentType === 'SOAP_NOTES' || consentType === 'COMPLAINTS';
-  };
-
   return (
     <div className="space-y-6">
       {/* Consent Management */}
@@ -214,109 +143,12 @@ export function PrivacyConsentSection() {
             Consent Management
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Terms of Service */}
-          <div className="flex items-start space-x-3 rounded-lg border p-3">
-            <Checkbox
-              id="terms-consent"
-              checked={termsConsent}
-              onCheckedChange={(checked) => handleConsentUpdate('terms', checked === true)}
-              className="mt-0.5"
-            />
-            <Label htmlFor="terms-consent" className="text-sm font-medium cursor-pointer flex-1">
-              I agree to the{' '}
-              <Link href="/terms" target="_blank" className="text-primary hover:underline">
-                Terms of Service
-              </Link>
-            </Label>
-          </div>
-
-          {/* Privacy Policy */}
-          <div className="flex items-start space-x-3 rounded-lg border p-3">
-            <Checkbox
-              id="privacy-consent"
-              checked={privacyConsent}
-              onCheckedChange={(checked) => handleConsentUpdate('privacy', checked === true)}
-              className="mt-0.5"
-            />
-            <Label htmlFor="privacy-consent" className="text-sm font-medium cursor-pointer flex-1">
-              I agree to the{' '}
-              <Link href="/privacy" target="_blank" className="text-primary hover:underline">
-                Privacy Policy
-              </Link>
-            </Label>
-          </div>
-
-          {/* GDPR Data Processing Consent */}
-          <div className="flex items-start space-x-3 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 p-3">
-            <Checkbox
-              id="gdpr-consent"
-              checked={gdprConsent}
-              onCheckedChange={(checked) => handleConsentUpdate('gdpr', checked === true)}
-              className="mt-0.5"
-            />
-            <Label htmlFor="gdpr-consent" className="text-sm font-medium cursor-pointer flex-1">
-              I consent to GDPR data processing
-            </Label>
-          </div>
-
-          {/* Health Data Consents */}
-          {(shouldShowConsent('SOAP_NOTES') ||
-            shouldShowConsent('COMPLAINTS') ||
-            shouldShowConsent('FIRST_AID_CERTIFICATE')) && (
-            <div className="space-y-3 pt-4 border-t">
-              {shouldShowConsent('SOAP_NOTES') && (
-                <div className="border rounded-lg p-3">
-                  <h5 className="font-semibold text-sm mb-2">SOAP Notes</h5>
-                  <HealthDataConsent
-                    consentType="SOAP_NOTES"
-                    onConsentChange={handleHealthDataConsentChange}
-                    required={false}
-                    showDisclaimer={false}
-                    initialConsentStatus={soapNotesStatus}
-                    compact={true}
-                    showTitle={false}
-                    disableApiCall={true}
-                    isLoading={isLoadingConsentsQuery}
-                  />
-                </div>
-              )}
-
-              {shouldShowConsent('COMPLAINTS') && (
-                <div className="border rounded-lg p-3">
-                  <h5 className="font-semibold text-sm mb-2">Health-Related Complaints</h5>
-                  <HealthDataConsent
-                    consentType="COMPLAINTS"
-                    onConsentChange={handleHealthDataConsentChange}
-                    required={false}
-                    showDisclaimer={false}
-                    initialConsentStatus={complaintsStatus}
-                    compact={true}
-                    showTitle={false}
-                    disableApiCall={true}
-                    isLoading={isLoadingConsentsQuery}
-                  />
-                </div>
-              )}
-
-              {shouldShowConsent('FIRST_AID_CERTIFICATE') && (
-                <div className="border rounded-lg p-3">
-                  <h5 className="font-semibold text-sm mb-2">First Aid Certificate</h5>
-                  <HealthDataConsent
-                    consentType="FIRST_AID_CERTIFICATE"
-                    onConsentChange={handleHealthDataConsentChange}
-                    required={false}
-                    showDisclaimer={false}
-                    initialConsentStatus={firstAidStatus}
-                    compact={true}
-                    showTitle={false}
-                    disableApiCall={true}
-                    isLoading={isLoadingConsentsQuery}
-                  />
-                </div>
-              )}
-            </div>
-          )}
+        <CardContent>
+          <UnifiedConsentManager
+            requiredOnly={false}
+            compact={false}
+            onConsentChange={handleHealthDataConsentChange}
+          />
         </CardContent>
       </Card>
 

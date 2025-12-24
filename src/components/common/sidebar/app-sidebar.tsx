@@ -295,8 +295,9 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     // Handle query params for audit page
     if (subItem.url.includes('?')) {
       const [baseUrl, query] = subItem.url.split('?');
+      if (!query) return false;
       const [queryKey, queryValue] = query.split('=');
-      if (pathname === baseUrl) {
+      if (pathname === baseUrl && queryKey) {
         const currentTab = searchParams.get(queryKey);
         return currentTab === queryValue || (queryValue === 'breaches' && !currentTab);
       }

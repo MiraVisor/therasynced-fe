@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import type { Booking } from '@/types';
+import type { Booking } from '@/types/booking';
 
 interface UpcomingAppointmentCardProps {
   booking: Booking;
@@ -16,7 +16,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
   const router = useRouter();
 
   const getExpertName = (booking: Booking) => {
-    return booking?.slot?.freelancer?.name || booking?.expertName || 'Unknown Therapist';
+    return booking?.slot?.freelancer?.name || 'Unknown Therapist';
   };
 
   const getBookingTime = (booking: Booking) => {
@@ -95,7 +95,18 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
                   {getExpertName(booking)}
                 </h3>
                 <VerificationBadge
-                  status={booking?.slot?.freelancer?.verificationStatus}
+                  status={
+                    ((booking?.slot?.freelancer as { verificationStatus?: string })
+                      ?.verificationStatus || 'unverified') as
+                      | 'verified'
+                      | 'pending'
+                      | 'rejected'
+                      | 'unverified'
+                      | 'APPROVED'
+                      | 'PENDING'
+                      | 'REJECTED'
+                      | 'UNVERIFIED'
+                  }
                   size="sm"
                 />
               </div>

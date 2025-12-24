@@ -31,7 +31,7 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
   const {
     data: bookingsData = [],
     isLoading: loading,
-    isFetching,
+    isFetching: _isFetching,
   } = usePatientBookingHistory({
     page: 1,
     limit: 5,

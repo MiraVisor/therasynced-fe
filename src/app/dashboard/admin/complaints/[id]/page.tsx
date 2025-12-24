@@ -44,7 +44,7 @@ import { Complaint, ComplaintStatus } from '@/types/types';
 const ComplaintDetailPage = () => {
   const router = useRouter();
   const params = useParams();
-  const complaintId = params.id as string;
+  const complaintId = params['id'] as string;
 
   const [complaint, setComplaint] = useState<Complaint | null>(null);
   const [loading, setLoading] = useState(true);

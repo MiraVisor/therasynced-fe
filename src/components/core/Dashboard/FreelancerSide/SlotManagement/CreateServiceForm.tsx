@@ -26,7 +26,7 @@ interface CreateServiceFormProps {
 }
 
 export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
-  const { mutateAsync: createServiceMutation, isPending } = useCreateService();
+  const { mutateAsync: createServiceMutation, isPending: _isPending } = useCreateService();
   const [formData, setFormData] = useState<CreateServiceDto>({
     name: '',
     description: '',

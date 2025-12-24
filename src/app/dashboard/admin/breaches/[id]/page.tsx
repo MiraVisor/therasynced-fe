@@ -47,7 +47,7 @@ import { ROLES } from '@/types/types';
 const BreachDetailPage = () => {
   const router = useRouter();
   const params = useParams();
-  const breachId = params.id as string;
+  const breachId = params['id'] as string;
   const { isAuthenticated, role } = useAuthStore();
 
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -227,8 +227,10 @@ const BreachDetailPage = () => {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setStatus(nextStatusOptions[0]);
-                  setIsStatusDialogOpen(true);
+                  if (nextStatusOptions[0]) {
+                    setStatus(nextStatusOptions[0]);
+                    setIsStatusDialogOpen(true);
+                  }
                 }}
                 className="font-inter"
               >
@@ -531,7 +533,8 @@ const BreachDetailPage = () => {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Next status in workflow: {getStatusLabel(nextStatusOptions[0])}
+                  Next status in workflow:{' '}
+                  {nextStatusOptions[0] ? getStatusLabel(nextStatusOptions[0]) : 'N/A'}
                 </p>
               </div>
               <div>
@@ -555,7 +558,11 @@ const BreachDetailPage = () => {
                   setIsStatusDialogOpen(false);
                   setStatusNotes('');
                 }}
-                disabled={isSubmitting}
+                disabled={
+                  updateStatusMutation.isPending ||
+                  reportDpcMutation.isPending ||
+                  notifyUsersMutation.isPending
+                }
               >
                 Cancel
               </Button>

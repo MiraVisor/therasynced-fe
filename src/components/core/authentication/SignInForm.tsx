@@ -32,7 +32,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting: _isSubmitting },
   } = useForm<FormData>({
     mode: 'onBlur',
     resolver: zodResolver(formSchema),

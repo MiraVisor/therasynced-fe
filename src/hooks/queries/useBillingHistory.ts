@@ -10,7 +10,7 @@ export const useBillingHistory = (limit = 10) => {
     queryFn: async ({ pageParam }: { pageParam?: string }) => {
       const params: Record<string, string | number> = { limit };
       if (pageParam) {
-        params.starting_after = pageParam;
+        params['starting_after'] = pageParam;
       }
 
       const response = await api.get<{ success: boolean; data: BillingHistoryResponse }>(
@@ -20,9 +20,11 @@ export const useBillingHistory = (limit = 10) => {
       return response.data.data;
     },
     getNextPageParam: (lastPage) => {
-      return lastPage.hasMore && lastPage.items.length > 0
-        ? lastPage.items[lastPage.items.length - 1].invoiceId
-        : undefined;
+      if (lastPage.hasMore && lastPage.items.length > 0) {
+        const lastItem = lastPage.items[lastPage.items.length - 1];
+        return lastItem?.invoiceId;
+      }
+      return undefined;
     },
     initialPageParam: undefined as string | undefined,
     staleTime: 30 * 1000, // 30 seconds

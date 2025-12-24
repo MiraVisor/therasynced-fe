@@ -28,7 +28,7 @@ import { useBooking } from '@/hooks/queries/useBookings';
 export default function BookingDetailsPage() {
   const router = useRouter();
   const params = useParams();
-  const bookingId = params?.bookingId as string;
+  const bookingId = params?.['bookingId'] as string;
   const { data: booking, error, isLoading } = useBooking(bookingId);
 
   useEffect(() => {
@@ -42,9 +42,9 @@ export default function BookingDetailsPage() {
   };
 
   const handleReschedule = () => {
-    if (selectedBooking?.slot?.freelancer?.id) {
+    if (booking?.slot?.freelancer?.id) {
       router.push(
-        `/dashboard/doctors/${selectedBooking.slot.freelancer.id}?rescheduleBookingId=${selectedBooking.id}`,
+        `/dashboard/doctors/${booking.slot.freelancer.id}?rescheduleBookingId=${booking.id}`,
       );
     }
   };
@@ -181,22 +181,43 @@ export default function BookingDetailsPage() {
                             <h3 className="text-lg font-semibold text-gray-900">
                               {freelancer?.name}
                             </h3>
-                            {freelancer?.jobTitle?.name && (
-                              <p className="text-gray-600">{freelancer.jobTitle.name}</p>
+                            {(freelancer as unknown as { jobTitle?: { name: string } })?.jobTitle
+                              ?.name && (
+                              <p className="text-gray-600">
+                                {
+                                  (freelancer as unknown as { jobTitle: { name: string } }).jobTitle
+                                    .name
+                                }
+                              </p>
                             )}
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-500">
-                            {freelancer?.rating && (
+                            {(freelancer as unknown as { rating?: number })?.rating && (
                               <div className="flex items-center gap-1">
                                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                <span>{freelancer.rating}</span>
-                                {freelancer.numberOfRatings && (
-                                  <span>({freelancer.numberOfRatings} reviews)</span>
+                                <span>{(freelancer as unknown as { rating: number }).rating}</span>
+                                {(freelancer as unknown as { numberOfRatings?: number })
+                                  ?.numberOfRatings && (
+                                  <span>
+                                    (
+                                    {
+                                      (freelancer as unknown as { numberOfRatings: number })
+                                        .numberOfRatings
+                                    }{' '}
+                                    reviews)
+                                  </span>
                                 )}
                               </div>
                             )}
-                            {freelancer?.yearsOfExperience && (
-                              <span>{freelancer.yearsOfExperience}+ years experience</span>
+                            {(freelancer as unknown as { yearsOfExperience?: string })
+                              ?.yearsOfExperience && (
+                              <span>
+                                {
+                                  (freelancer as unknown as { yearsOfExperience: string })
+                                    .yearsOfExperience
+                                }
+                                + years experience
+                              </span>
                             )}
                           </div>
                         </div>
@@ -246,21 +267,26 @@ export default function BookingDetailsPage() {
                                 return <p className="font-medium">Online</p>;
                               } else if (
                                 slot?.locationType === 'CLINIC' &&
-                                freelancer?.clinicAddress
+                                (freelancer as { clinicAddress?: string })?.clinicAddress
                               ) {
                                 return (
                                   <>
                                     <p className="font-medium">Clinic</p>
                                     <p className="text-sm text-gray-600">
-                                      {freelancer.clinicAddress}
+                                      {(freelancer as { clinicAddress?: string })?.clinicAddress}
                                     </p>
                                   </>
                                 );
-                              } else if (slot?.locationType === 'HOME' && booking.clientAddress) {
+                              } else if (
+                                slot?.locationType === 'HOME' &&
+                                (booking.formData?.['clientAddress'] as string | undefined)
+                              ) {
                                 return (
                                   <>
                                     <p className="font-medium">Your Home</p>
-                                    <p className="text-sm text-gray-600">{booking.clientAddress}</p>
+                                    <p className="text-sm text-gray-600">
+                                      {booking.formData?.['clientAddress'] as string}
+                                    </p>
                                   </>
                                 );
                               } else if (location) {
@@ -319,7 +345,7 @@ export default function BookingDetailsPage() {
                                       <p className="text-sm text-gray-500">{service.duration}</p>
                                     )}
                                   </div>
-                                  <p className="font-medium">€{service.price || 0}</p>
+                                  <p className="font-medium">€{service.additionalPrice || 0}</p>
                                 </div>
                               ))}
                         </div>
@@ -328,7 +354,7 @@ export default function BookingDetailsPage() {
                   )}
 
                   {/* Notes */}
-                  {booking.notes && (
+                  {(booking.formData?.['notes'] as string | undefined) && (
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -337,7 +363,7 @@ export default function BookingDetailsPage() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-700">{booking.notes}</p>
+                        <p className="text-gray-700">{booking.formData?.['notes'] as string}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -390,7 +416,7 @@ export default function BookingDetailsPage() {
                                 className="flex justify-between items-center"
                               >
                                 <span className="text-gray-600">{service.name}</span>
-                                <span>€{service.price || 0}</span>
+                                <span>€{service.additionalPrice || 0}</span>
                               </div>
                             ))}
                         <Separator />
@@ -419,10 +445,12 @@ export default function BookingDetailsPage() {
                             <span className="text-sm">{freelancer.email}</span>
                           </div>
                         )}
-                        {freelancer.phone && (
+                        {(freelancer as unknown as { phone?: string })?.phone && (
                           <div className="flex items-center gap-3">
                             <Phone className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm">{freelancer.phone}</span>
+                            <span className="text-sm">
+                              {(freelancer as unknown as { phone: string }).phone}
+                            </span>
                           </div>
                         )}
                       </CardContent>

@@ -11,6 +11,7 @@ import { useFavoriteFreelancers, useFreelancers } from '@/hooks/queries/useFreel
 import { useAuth } from '@/hooks/useAuthZustand';
 import type { Booking } from '@/types/booking';
 import type { Expert, Freelancer } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import DashboardWidget from '../Home/DashboardWidget';
@@ -38,50 +39,8 @@ const getNextUpcomingAppointment = (bookings: Booking[]) => {
   return upcomingBookings.length > 0 ? upcomingBookings[0] : null;
 };
 
-// Map freelancer data to Expert format
-const mapFreelancerToExpert = (freelancer: Freelancer | Expert): Expert => {
-  // Extract services and their location types
-  const services = freelancer.services ?? [];
-  const allLocationTypes = new Set<string>();
-
-  // Convert location types to session types
-
-  // Get primary service name
-  const primaryService = services.length > 0 ? services[0]?.name : undefined;
-
-  // Get location information
-  const locations = freelancer.locations ?? [];
-
-  // Calculate experience from creation date
-
-  // Get rating and reviews from cardInfo
-  const cardInfo = freelancer.cardInfo ?? {};
-  const rating = cardInfo.averageRating ?? freelancer.averageRating;
-
-  // Only use rating if it's a valid number greater than 0
-  const validRating = rating && rating > 0 ? rating : undefined;
-
-  // Map API freelancer to Expert type for UI
-  return {
-    id: freelancer.id,
-    name: freelancer.name ?? cardInfo.name,
-    specialty: cardInfo.mainService ?? primaryService,
-    jobTitle: freelancer.mainJobTitle, // Add job title mapping
-    rating: validRating,
-    reviews: cardInfo.totalRatings ?? freelancer.cardInfo?.patientStories ?? 0,
-    description: freelancer.description ?? cardInfo.title,
-    isFavorite: freelancer.isFavorite ?? false,
-    profilePicture: freelancer.profilePicture,
-    slots: freelancer.slots ?? [],
-    slotSummary: freelancer.slotSummary ?? {},
-    cardInfo: cardInfo,
-    availableSlots: freelancer.slotSummary?.availableSlots ?? 0,
-    totalSlots: freelancer.slotSummary?.totalSlots ?? 0,
-    planFeatures: freelancer.planFeatures ?? null,
-    tier: freelancer.planFeatures?.planType ?? null,
-    subscriptionStatus: freelancer.subscriptionStatus ?? undefined,
-  };
-};
+// Use unified mapping function
+const mapFreelancerToExpert = mapOneFreelancerToExpert;
 
 const getRecommendedFreelancers = (freelancers: Freelancer[], favorites: Expert[]) => {
   if (!freelancers || freelancers.length === 0) return [];
@@ -116,14 +75,17 @@ const getUpcomingAppointments = (bookings: Booking[]) => {
 
 const UserExploreMain = () => {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated: _isAuthenticated } = useAuth();
   const [selectedFreelancer, setSelectedFreelancer] = useState<Expert | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   // Use React Query hooks
-  const { data: allExperts = [], isLoading: expertsLoading } = useFreelancers();
+  const { data: allExpertsData, isLoading: expertsLoading } = useFreelancers();
   const { data: favorites = [], isLoading: favoritesLoading } = useFavoriteFreelancers();
   const { data: bookings = [], isLoading: bookingsLoading } = useExplorePatientBookings();
+
+  // Extract freelancers array from response
+  const allExperts = allExpertsData?.freelancers || [];
 
   // Process data - map favorites through the same function as experts
   const favoritesList =
@@ -133,7 +95,12 @@ const UserExploreMain = () => {
   const loading = expertsLoading || favoritesLoading;
   const nextAppointment = getNextUpcomingAppointment(allTimeBookings);
   const upcomingAppointments = getUpcomingAppointments(allTimeBookings);
-  const recommendedFreelancers = getRecommendedFreelancers(allExperts, favoritesList);
+  // Map all experts to Expert format for display
+  // Unused variable removed - was: const _mappedExperts = allExperts.map(mapFreelancerToExpert);
+  const recommendedFreelancers = getRecommendedFreelancers(
+    allExperts as unknown as Freelancer[],
+    favoritesList,
+  );
 
   // Calculate stats
   const totalSessions = allTimeBookings?.length ?? 0;
@@ -206,7 +173,7 @@ const UserExploreMain = () => {
         </div>
 
         {/* Next Appointment Hero - Large, Prominent */}
-        <NextAppointmentHero booking={nextAppointment} loading={bookingsLoading} />
+        <NextAppointmentHero booking={nextAppointment ?? null} loading={bookingsLoading} />
 
         {/* Quick Booking Widget - Unique Inline Experience */}
         <QuickBookingWidget

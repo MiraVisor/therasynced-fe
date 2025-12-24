@@ -41,7 +41,7 @@ export function DistributionChart({
   title,
   description,
   colors = defaultColors,
-  height = 300,
+  height: _height = 300,
   loading,
 }: DistributionChartProps) {
   const chartConfig: ChartConfig = data.reduce((acc, item, index) => {

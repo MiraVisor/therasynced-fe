@@ -26,7 +26,7 @@ export default function VerificationStatusWidget({ className }: VerificationStat
   const isLoading = isLoadingVerification || isLoadingCertificate || isLoadingDocuments;
 
   const verificationStatus = verificationStatusData?.status || 'NOT_SUBMITTED';
-  const certificateStatus = certificateStatusData?.status || 'PENDING';
+  const certificateStatus = certificateStatusData?.firstAidCertificateStatus || 'PENDING';
 
   const getStatusBadge = (status: string) => {
     if (status === 'APPROVED') {
@@ -159,14 +159,16 @@ export default function VerificationStatusWidget({ className }: VerificationStat
         </Button>
 
         {/* Rejection Alert */}
-        {verificationStatus === 'REJECTED' && verificationState?.verificationRejectionReason && (
-          <Alert className="border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800 text-xs">
-              <strong>Rejection Reason:</strong> {verificationState.verificationRejectionReason}
-            </AlertDescription>
-          </Alert>
-        )}
+        {verificationStatus === 'REJECTED' &&
+          verificationStatusData?.verificationRejectionReason && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800 text-xs">
+                <strong>Rejection Reason:</strong>{' '}
+                {verificationStatusData.verificationRejectionReason}
+              </AlertDescription>
+            </Alert>
+          )}
       </CardContent>
     </Card>
   );

@@ -31,6 +31,8 @@ export const ENDPOINTS = {
     update: (id: string) => `/slot/${id}`,
     delete: (id: string) => `/slot/${id}`,
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
+    reserve: (slotId: string) => `/slots/${slotId}/reserve`,
+    release: (slotId: string) => `/slots/${slotId}/release`,
   },
   // Service management
   services: {
@@ -293,6 +295,7 @@ export const ENDPOINTS = {
   consent: {
     healthData: '/consent/health-data',
     cookies: '/consent/cookies',
+    all: '/consent/all', // Unified consent endpoint
   },
 };
 

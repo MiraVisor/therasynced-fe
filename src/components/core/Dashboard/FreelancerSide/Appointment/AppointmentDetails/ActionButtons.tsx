@@ -83,7 +83,7 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
       pauseOnHover: true,
       draggable: true,
     });
-    dispatch(closeEventDialog());
+    closeEventDialog();
   };
 
   return (

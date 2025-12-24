@@ -32,10 +32,9 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
   const { data: ratingsData, isLoading: loading } = useFreelancerRatings(freelancerId, {
     page,
     limit: 10,
-    enabled: true,
   });
 
-  const ratings = ratingsData?.ratings || initialRatings;
+  const ratings = ratingsData?.data || initialRatings;
   const pagination = ratingsData?.pagination || initialPagination;
 
   const loadRatings = (pageNum: number) => {
@@ -53,42 +52,47 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        {ratings.map((rating) => (
-          <div
-            key={rating.id}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
-          >
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">
-                    {rating.patient.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-poppins font-semibold text-charcoal text-sm">
-                      {rating.patient.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {format(new Date(rating.createdAt), 'MMM d, yyyy')}
-                    </p>
+        {ratings.map((rating) => {
+          const patient = (rating as { patient?: { name: string } })['patient'];
+          const createdAt = (rating as { createdAt?: string | Date })['createdAt'];
+          const ratingValue = (rating as { rating?: number })['rating'];
+          return (
+            <div
+              key={(rating as { id: string }).id}
+              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">
+                      {patient?.name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div>
+                      <p className="font-poppins font-semibold text-charcoal text-sm">
+                        {patient?.name || 'Anonymous'}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {createdAt ? format(new Date(createdAt), 'MMM d, yyyy') : 'Unknown date'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-4 h-4 ${
-                      star <= rating.rating
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600'
-                    }`}
-                  />
-                ))}
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-4 h-4 ${
+                        star <= (ratingValue || 0)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {pagination && pagination.totalPages > 1 && (

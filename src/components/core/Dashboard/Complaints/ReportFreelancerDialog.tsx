@@ -2,12 +2,10 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, AlertTriangle, Send } from 'lucide-react';
-import { useState } from 'react';
+// Unused imports removed: useState, toast
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
 import { z } from 'zod';
 
-import { HealthDataConsent } from '@/components/common/HealthDataConsent';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -63,7 +61,6 @@ export const ReportFreelancerDialog = ({
   freelancerName,
 }: ReportFreelancerDialogProps) => {
   const { mutate: createComplaintMutation, isPending: isSubmitting } = useCreateComplaint();
-  const [hasConsent, setHasConsent] = useState(false);
 
   const {
     register,
@@ -82,13 +79,6 @@ export const ReportFreelancerDialog = ({
   });
 
   const onSubmit = async (data: ComplaintFormData) => {
-    if (!hasConsent) {
-      toast.error(
-        'You must grant explicit consent for health data processing before submitting a complaint.',
-      );
-      return;
-    }
-
     createComplaintMutation(
       {
         reportedUserId: freelancerId,
@@ -100,14 +90,13 @@ export const ReportFreelancerDialog = ({
       {
         onSuccess: () => {
           reset();
-          setHasConsent(false);
           onClose();
         },
       },
     );
   };
 
-  const selectedCategory = watch('category');
+  // Unused variable removed - was: const _selectedCategory = watch('category');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -128,14 +117,6 @@ export const ReportFreelancerDialog = ({
           className="space-y-6"
           aria-label="Report freelancer form"
         >
-          {/* Health Data Consent */}
-          <HealthDataConsent
-            consentType="COMPLAINTS"
-            onConsentChange={setHasConsent}
-            required={true}
-            showDisclaimer={true}
-          />
-
           {/* Category Selection */}
           <div className="space-y-2">
             <Label htmlFor="category">
@@ -255,9 +236,9 @@ export const ReportFreelancerDialog = ({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !hasConsent}
+              disabled={isSubmitting}
               isLoading={isSubmitting}
-              aria-label={!hasConsent ? 'Consent required before submitting' : 'Submit complaint'}
+              aria-label="Submit complaint"
             >
               {isSubmitting ? (
                 <>Submitting...</>

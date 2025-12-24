@@ -73,7 +73,10 @@ export function StampDetail({ therapistId, onBack }: StampDetailProps) {
       <Card>
         <CardContent className="p-8">
           <div className="text-center text-red-600">
-            <p>Error loading stamp details: {error || 'Not found'}</p>
+            <p>
+              Error loading stamp details:{' '}
+              {error instanceof Error ? error.message : String(error) || 'Not found'}
+            </p>
             {onBack && (
               <Button variant="outline" onClick={onBack} className="mt-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />

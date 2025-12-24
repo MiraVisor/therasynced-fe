@@ -14,7 +14,7 @@ import { formatFileSize } from '@/services/formTemplateService';
 import type { FormTemplate } from '@/types/formTemplate';
 
 const FreelancerFormsPage = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, _setSearchQuery] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { data: templates, isLoading } = useVisibleFormTemplates();

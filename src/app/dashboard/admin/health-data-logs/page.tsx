@@ -83,7 +83,11 @@ export default function AdminHealthDataLogsPage() {
     filters.accessedBy = accessedBy;
   }
 
-  const { data: logsResponse, isLoading: loading, isFetching } = useAllHealthDataLogs(filters);
+  const {
+    data: logsResponse,
+    isLoading: loading,
+    isFetching: _isFetching,
+  } = useAllHealthDataLogs(filters);
   const logs = logsResponse?.data || [];
   const pagination = logsResponse?.pagination || null;
   const initialLoading = loading && !logsResponse;

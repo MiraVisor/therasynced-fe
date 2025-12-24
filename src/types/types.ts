@@ -148,6 +148,10 @@ export interface registerUserTypes {
   clinicAddress?: string;
   firstAidCertificateUrl?: string;
   verificationDocuments?: string[];
+  // Consent fields (for signup)
+  termsConsent?: boolean;
+  privacyConsent?: boolean;
+  gdprConsent?: boolean;
 }
 
 // New DTOs to match backend

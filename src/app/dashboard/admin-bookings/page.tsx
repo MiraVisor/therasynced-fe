@@ -91,7 +91,7 @@ const AdminBookingsPage = () => {
   const {
     data: statsData,
     isLoading: statsLoading,
-    isFetching: statsFetching,
+    isFetching: _statsFetching,
     error: statsError,
   } = useAdminBookingsStats();
 

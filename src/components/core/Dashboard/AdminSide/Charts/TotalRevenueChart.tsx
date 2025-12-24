@@ -65,8 +65,7 @@ export function TotalRevenueChart() {
   const [selectedYear, setSelectedYear] = useState('2025');
   const [chartData, setChartData] = useState(() => generateChartData());
 
-  // Value to display at the top of the chart
-  const currentValue = 220342123;
+  // Unused variable removed - was: const _currentValue = 220342123;
 
   function generateChartData() {
     const points = [];
@@ -86,22 +85,29 @@ export function TotalRevenueChart() {
 
       // Calculate interpolated values between control points with small variation
       let primary = primaryControlPoints[segment];
+      if (primary === undefined) primary = 0;
       if (segment < primaryControlPoints.length - 1) {
-        primary += progress * (primaryControlPoints[segment + 1] - primaryControlPoints[segment]);
+        const nextPrimary = primaryControlPoints[segment + 1];
+        if (nextPrimary !== undefined) {
+          primary += progress * (nextPrimary - primary);
+        }
       }
       primary += Math.random() * 10000 - 5000;
 
       let secondary = secondaryControlPoints[segment];
+      if (secondary === undefined) secondary = 0;
       if (segment < secondaryControlPoints.length - 1) {
-        secondary +=
-          progress * (secondaryControlPoints[segment + 1] - secondaryControlPoints[segment]);
+        const nextSecondary = secondaryControlPoints[segment + 1];
+        if (nextSecondary !== undefined) {
+          secondary += progress * (nextSecondary - secondary);
+        }
       }
       secondary += Math.random() * 8000 - 4000;
 
       points.push({
         day: i + 1,
-        primary: Math.round(primary),
-        secondary: Math.round(secondary),
+        primary: Math.round(primary || 0),
+        secondary: Math.round(secondary || 0),
       });
     }
 

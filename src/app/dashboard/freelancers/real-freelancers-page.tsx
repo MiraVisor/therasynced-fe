@@ -280,7 +280,7 @@ const RealFreelancersPage = () => {
       {/* Freelancers Table with built-in pagination */}
       <DataTable
         columns={freelancerColumns}
-        data={freelancers}
+        data={freelancers as unknown as Freelancer[]}
         title="All Freelancers"
         searchKey="name"
         searchPlaceholder="Search by name..."

@@ -83,7 +83,21 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     if (currentView === 'sign-up') {
       return (
         <MultiStepSignup
-          onSubmit={handleSignUpSubmit}
+          onSubmit={(data) => {
+            // Convert MultiStepSignup data format to SignUpDto
+            const signupData: SignUpDto = {
+              name: data.name,
+              email: data.email,
+              password: data.password || '',
+              role: data.role as any,
+              dob: data.dob,
+              gender: data.gender,
+              city: data.city,
+              clinicAddress: data.clinicAddress,
+              mainJobTitle: data.mainJobTitleId ? ({ id: data.mainJobTitleId } as any) : undefined,
+            };
+            handleSignUpSubmit(signupData);
+          }}
           onBack={handleBackToSignInFromSignup}
           isLoading={isSubmitting}
         />
@@ -96,11 +110,12 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
       return (
         <EmailVerificationForm
           onBack={handleBackToSignInFromSignup}
-          email={userEmail}
+          email={userEmail || ''}
           onResendEmail={handleResendEmail}
         />
       );
     }
+    return null;
   };
 
   return (

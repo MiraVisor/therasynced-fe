@@ -72,7 +72,11 @@ export function BillingHistoryTable() {
       },
     };
 
-    const config = statusConfig[statusLower] || statusConfig.pending;
+    const config = statusConfig[statusLower] || statusConfig['pending'];
+
+    if (!config) {
+      return <span className="text-xs text-gray-500">{status}</span>;
+    }
 
     return (
       <span

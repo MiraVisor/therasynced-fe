@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
@@ -15,18 +16,23 @@ const AdminHome = () => {
 
   const {
     data: overviewData,
-    isLoading,
-    isFetching,
+    isLoading: _isLoading,
+    isFetching: _isFetching,
+    error,
   } = useQuery({
     queryKey: ['adminOverview'],
     queryFn: () => adminOverviewService.getOverview(),
-    onError: (err) => {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load overview data';
-      toast.error(`Error loading overview data: ${errorMessage}`);
-    },
   });
 
-  const initialLoading = isLoading && !overviewData;
+  // Handle errors separately
+  useEffect(() => {
+    if (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load overview data';
+      toast.error(`Error loading overview data: ${errorMessage}`);
+    }
+  }, [error]);
+
+  // Unused variable removed - was: const _initialLoading = isLoading && !overviewData;
 
   // Format currency value
   const formatCurrency = (value: number): string => {
@@ -42,7 +48,8 @@ const AdminHome = () => {
   };
 
   // Transform chart data from API format to chart component format
-  const chartData = overviewData?.monthlyRevenueChart || [];
+  const overview = overviewData;
+  const chartData = overview?.monthlyRevenueChart || [];
   const xLabels =
     chartData.length > 0
       ? chartData.map((item) => {
@@ -50,45 +57,45 @@ const AdminHome = () => {
           return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         })
       : [];
-  const profitData = chartData.map((item) => item.profit || 0);
+  const profitData = chartData.map((item) => (item as { profit?: number }).profit || 0);
   const lossData = chartData.map((item) => item.loss || 0);
 
   // Prepare stats data from API
   const statsData = [
     {
       title: 'Total Users',
-      value: formatNumber(overviewData?.totalUsers?.value || 0),
+      value: formatNumber(overview?.totalUsers?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.totalUsers?.percentageChange || 0),
-        isUp: (overviewData?.totalUsers?.percentageChange || 0) >= 0,
-        label: overviewData?.totalUsers?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.totalUsers?.percentageChange || 0),
+        isUp: (overview?.totalUsers?.percentageChange || 0) >= 0,
+        label: overview?.totalUsers?.comparisonPeriod || 'N/A',
       },
     },
     {
       title: 'Active Clients',
-      value: formatNumber(overviewData?.activeClients?.value || 0),
+      value: formatNumber(overview?.activeClients?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.activeClients?.percentageChange || 0),
-        isUp: (overviewData?.activeClients?.percentageChange || 0) >= 0,
-        label: overviewData?.activeClients?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.activeClients?.percentageChange || 0),
+        isUp: (overview?.activeClients?.percentageChange || 0) >= 0,
+        label: overview?.activeClients?.comparisonPeriod || 'N/A',
       },
     },
     {
       title: 'Sessions This Month',
-      value: formatNumber(overviewData?.sessionsThisMonth?.value || 0),
+      value: formatNumber(overview?.sessionsThisMonth?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.sessionsThisMonth?.percentageChange || 0),
-        isUp: (overviewData?.sessionsThisMonth?.percentageChange || 0) >= 0,
-        label: overviewData?.sessionsThisMonth?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.sessionsThisMonth?.percentageChange || 0),
+        isUp: (overview?.sessionsThisMonth?.percentageChange || 0) >= 0,
+        label: overview?.sessionsThisMonth?.comparisonPeriod || 'N/A',
       },
     },
     {
       title: 'Revenue',
-      value: formatCurrency(overviewData?.revenue?.value || 0),
+      value: formatCurrency(overview?.revenue?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.revenue?.percentageChange || 0),
-        isUp: (overviewData?.revenue?.percentageChange || 0) >= 0,
-        label: overviewData?.revenue?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.revenue?.percentageChange || 0),
+        isUp: (overview?.revenue?.percentageChange || 0) >= 0,
+        label: overview?.revenue?.comparisonPeriod || 'N/A',
       },
     },
   ];

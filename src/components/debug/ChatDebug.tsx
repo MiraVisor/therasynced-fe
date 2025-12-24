@@ -126,7 +126,11 @@ const ChatDebug = () => {
             </div>
             <div className="flex justify-between">
               <span>Error:</span>
-              <span className="text-red-600">{error.contacts || 'None'}</span>
+              <span className="text-red-600">
+                {error && typeof error === 'object' && error !== null && 'contacts' in error
+                  ? String((error as { contacts?: unknown }).contacts || 'None')
+                  : 'None'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Total Unread:</span>

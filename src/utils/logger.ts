@@ -4,7 +4,7 @@ type LogLevel = 'log' | 'warn' | 'error' | 'debug' | 'info';
 class Logger {
   private isDevelopment = process.env.NODE_ENV === 'development';
 
-  private log(level: LogLevel, ...args: unknown[]): void {
+  private _log(level: LogLevel, ...args: unknown[]): void {
     if (!this.isDevelopment && level !== 'error') return;
 
     const prefix = `[${level.toUpperCase()}]`;
@@ -12,11 +12,11 @@ class Logger {
   }
 
   log(...args: unknown[]): void {
-    this.log('log', ...args);
+    this._log('log', ...args);
   }
 
   warn(...args: unknown[]): void {
-    this.log('warn', ...args);
+    this._log('warn', ...args);
   }
 
   error(...args: unknown[]): void {
@@ -25,11 +25,11 @@ class Logger {
   }
 
   debug(...args: unknown[]): void {
-    this.log('debug', ...args);
+    this._log('debug', ...args);
   }
 
   info(...args: unknown[]): void {
-    this.log('info', ...args);
+    this._log('info', ...args);
   }
 }
 
