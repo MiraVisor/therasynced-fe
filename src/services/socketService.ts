@@ -11,8 +11,6 @@ class SocketService {
   private isInitialized = false;
   private hasLoggedConnectionError = false;
   private isWebSocketDisabled = false;
-  private hasLoggedConnectionError = false;
-  private isWebSocketDisabled = false;
 
   constructor() {
     // Don't initialize immediately - wait for connect() call
@@ -113,7 +111,7 @@ class SocketService {
       }
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on('connect_error', () => {
       this.isConnected = false;
 
       // Only log the first connection error, then suppress subsequent attempts

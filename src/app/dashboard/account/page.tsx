@@ -2,7 +2,7 @@
 
 import { Award, CreditCard, HelpCircle, Shield, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { EmailSection } from '@/components/core/Dashboard/Account/EmailSection';
@@ -32,7 +32,7 @@ import { useProfile } from '@/hooks/queries/useProfile';
 import { useAuth } from '@/hooks/useAuthZustand';
 import { ROLES } from '@/types/types';
 
-export default function AccountPage() {
+function AccountPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('profile');
@@ -262,5 +262,33 @@ export default function AccountPage() {
         </AlertDialogContent>
       </AlertDialog>
     </DashboardPageWrapper>
+  );
+}
+
+function AccountPageSkeleton() {
+  return (
+    <DashboardPageWrapper
+      header={
+        <div className="space-y-1">
+          <h1 className="text-3xl font-poppins font-bold text-gray-900">Account Settings</h1>
+          <p className="text-gray-600 text-lg">Manage your account settings and preferences</p>
+        </div>
+      }
+    >
+      <div className="bg-gray-50 rounded-xl p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4" />
+          <div className="h-32 bg-gray-200 rounded" />
+        </div>
+      </div>
+    </DashboardPageWrapper>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<AccountPageSkeleton />}>
+      <AccountPageContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 
 import { Download, FileText, Filter, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { TransactionTable } from '@/components/core/Dashboard/AdminSide/Transactions/TransactionTable';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -23,7 +23,7 @@ import {
 } from '@/hooks/queries/useAdminTransactions';
 import { TransactionFilters } from '@/types/transaction';
 
-export default function AdminTransactionsPage() {
+function AdminTransactionsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -427,5 +427,41 @@ export default function AdminTransactionsPage() {
         </div>
       </div>
     </DashboardPageWrapper>
+  );
+}
+
+function AdminTransactionsPageSkeleton() {
+  return (
+    <DashboardPageWrapper
+      header={
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4">
+          <div>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Transaction History</h1>
+            <p className="font-inter text-sm text-muted-foreground mt-1">
+              View and manage all subscription transactions from freelancers
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <div className="space-y-6 lg:space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 bg-gray-200 rounded animate-pulse" />
+          ))}
+        </div>
+        <div className="border rounded-lg">
+          <div className="h-96 bg-gray-100 rounded animate-pulse" />
+        </div>
+      </div>
+    </DashboardPageWrapper>
+  );
+}
+
+export default function AdminTransactionsPage() {
+  return (
+    <Suspense fallback={<AdminTransactionsPageSkeleton />}>
+      <AdminTransactionsPageContent />
+    </Suspense>
   );
 }

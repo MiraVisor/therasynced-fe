@@ -3,7 +3,7 @@
 import { Shield } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
@@ -23,7 +23,7 @@ const AuditDashboard = dynamic(
   },
 );
 
-export default function AdminAuditPage() {
+function AdminAuditPageContent() {
   const router = useRouter();
   useSearchParams(); // Required hook call, but params not used
   const { isAuthenticated, role } = useAuthStore();
@@ -61,5 +61,13 @@ export default function AdminAuditPage() {
     >
       <AuditDashboard />
     </DashboardPageWrapper>
+  );
+}
+
+export default function AdminAuditPage() {
+  return (
+    <Suspense fallback={<AdminPageSkeleton />}>
+      <AdminAuditPageContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
@@ -10,7 +10,7 @@ import { SidebarSkeleton } from '@/components/common/sidebar/SidebarSkeleton';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuthZustand';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { role: userRole } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const searchParams = useSearchParams();
@@ -69,5 +69,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </SidebarProvider>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <SidebarProvider>
+          <div className="flex h-screen w-full">
+            <SidebarSkeleton />
+            <main className="flex-1 overflow-y-auto p-8 w-full bg-dashboard ml-[16rem]">
+              <AdminPageSkeleton />
+            </main>
+          </div>
+        </SidebarProvider>
+      }
+    >
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </Suspense>
   );
 }

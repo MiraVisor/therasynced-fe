@@ -3,7 +3,7 @@
 import { format } from 'date-fns';
 import { Check, CheckCheck, ChevronLeft, Search, Send, User } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -40,7 +40,7 @@ interface MessageType {
   type: 'text' | 'image' | 'file';
 }
 
-const MessagesPage = () => {
+const MessagesPageContent = () => {
   // Get current user ID for proper unread logic
   const currentUser = getDecodedToken();
   const currentUserId = currentUser?.sub;
@@ -514,4 +514,37 @@ const MessagesPage = () => {
   );
 };
 
-export default MessagesPage;
+function MessagesPageSkeleton() {
+  return (
+    <DashboardPageWrapper header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}>
+      <div className="h-[calc(100vh-200px)] flex flex-col">
+        <div className="flex flex-1 min-h-0">
+          <div className="flex flex-col w-full md:w-80 border-r">
+            <div className="p-4 border-b">
+              <div className="h-10 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="h-16 w-16 bg-gray-200 rounded-full mx-auto mb-4 animate-pulse" />
+              <div className="h-4 bg-gray-200 rounded w-32 mx-auto animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardPageWrapper>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<MessagesPageSkeleton />}>
+      <MessagesPageContent />
+    </Suspense>
+  );
+}
