@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Download, Edit, FileText, Info, Shield, Trash2 } from 'lucide-react';
+import { AlertCircle, Download, Edit, Info, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -136,29 +136,22 @@ export function PrivacyConsentSection() {
   return (
     <div className="space-y-6">
       {/* Consent Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
-            Consent Management
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <UnifiedConsentManager
-            requiredOnly={false}
-            compact={false}
-            onConsentChange={handleHealthDataConsentChange}
-          />
-        </CardContent>
-      </Card>
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-6">
+          Consent Management
+        </h3>
+        <UnifiedConsentManager
+          requiredOnly={false}
+          compact={false}
+          batchMode={true}
+          onConsentChange={handleHealthDataConsentChange}
+        />
+      </div>
 
       {/* Data Rights Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Your Data Rights
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2">Your Data Rights</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between p-3 border rounded-lg">

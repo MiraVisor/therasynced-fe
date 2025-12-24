@@ -15,8 +15,12 @@ import {
   updateMultipleConsents,
 } from '@/services/consentService';
 import { getApiErrorMessage } from '@/types/common';
-import type { ConsentStatus, ConsentType, ConsentUpdateRequest } from '@/types/consent';
-import { getRequiredConsentsForRole } from '@/types/consent';
+import {
+  type ConsentStatus,
+  type ConsentType,
+  type ConsentUpdateRequest,
+  getRequiredConsentsForRole,
+} from '@/types/consent';
 
 export interface ConsentManager {
   consents: ConsentStatus[];
@@ -46,16 +50,31 @@ export const useConsentManager = (): ConsentManager => {
   } = useQuery({
     queryKey: ['consents', 'all'],
     queryFn: () => getAllConsents(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 10 * 60 * 1000, // 10 minutes - consider data fresh for 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache for 30 minutes
+    refetchOnMount: false, // Don't refetch if data exists in cache
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnReconnect: false, // Don't refetch on reconnect
     retry: 1,
   });
 
   // Handle both response structures: data as array or data.consents
-  const consents: ConsentStatus[] = Array.isArray(consentsData?.data)
-    ? consentsData.data
-    : consentsData?.data?.consents || [];
+  const consents: ConsentStatus[] = (() => {
+    if (!consentsData) return [];
+    // If data is directly an array
+    if (Array.isArray(consentsData.data)) {
+      return consentsData.data;
+    }
+    // If data is an object with consents property
+    if (
+      consentsData.data &&
+      typeof consentsData.data === 'object' &&
+      'consents' in consentsData.data
+    ) {
+      return Array.isArray(consentsData.data.consents) ? consentsData.data.consents : [];
+    }
+    return [];
+  })();
 
   // Mutation for updating a single consent
   const updateConsentMutation = useMutation({
