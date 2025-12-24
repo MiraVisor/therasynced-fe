@@ -144,7 +144,7 @@ export interface registerUserTypes {
   dob?: string;
   city?: string;
   // New optional fields for freelancers
-  mainJobTitle?: JobTitle;
+  mainJobTitleId?: string;
   clinicAddress?: string;
   firstAidCertificateUrl?: string;
   verificationDocuments?: string[];
@@ -165,7 +165,7 @@ export interface SignUpDto {
   dob?: string;
   city?: string;
   // New optional fields for freelancers
-  mainJobTitle?: JobTitle;
+  mainJobTitleId?: string;
   clinicAddress?: string;
   firstAidCertificateUrl?: string;
   verificationDocuments?: string[];

@@ -94,7 +94,7 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
               gender: data.gender,
               city: data.city,
               clinicAddress: data.clinicAddress,
-              mainJobTitle: data.mainJobTitleId ? ({ id: data.mainJobTitleId } as any) : undefined,
+              mainJobTitleId: data.mainJobTitleId,
             };
             handleSignUpSubmit(signupData);
           }}

@@ -1,7 +1,6 @@
 /**
  * Authentication and authorization types
  */
-import type { JobTitle } from './freelancer';
 
 export interface SignUpDto {
   name: string;
@@ -13,7 +12,7 @@ export interface SignUpDto {
   dob?: string;
   city?: string;
   // New optional fields for freelancers
-  mainJobTitle?: JobTitle;
+  mainJobTitleId?: string;
   clinicAddress?: string;
   firstAidCertificateUrl?: string;
   verificationDocuments?: string[];
