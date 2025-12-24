@@ -419,7 +419,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
               <Button
                 onClick={() => {
                   logout();
-                  window.location.href = '/authentication/sign-in';
+                  router.replace('/');
                 }}
                 variant="ghost"
                 className="w-full gap-2"

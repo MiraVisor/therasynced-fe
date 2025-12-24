@@ -30,20 +30,6 @@ const Footer = () => {
             <ul className="space-y-2 text-base xs:text-lg text-gray-700 dark:text-neutral-300">
               <li>
                 <Link
-                  href="#about"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById('about');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else router.push('/#about');
-                  }}
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="#services"
                   onClick={(e) => {
                     e.preventDefault();
@@ -72,30 +58,10 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="#freelancers"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById('freelancers');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else router.push('/#freelancers');
-                  }}
+                  href="#how-it-works"
                   className="hover:text-primary dark:hover:text-primary/90 transition-colors"
                 >
-                  Experts
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#pricing"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById('pricing');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else router.push('/#pricing');
-                  }}
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-                >
-                  Pricing
+                  How It Works
                 </Link>
               </li>
             </ul>
@@ -107,22 +73,6 @@ const Footer = () => {
               Legal & Support
             </h3>
             <ul className="space-y-2 text-base xs:text-lg text-gray-700 dark:text-neutral-300">
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-                >
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-                >
-                  How it works
-                </Link>
-              </li>
               <li>
                 <Link
                   href="/privacy"

@@ -57,12 +57,13 @@ api.interceptors.response.use(
         // here as a safety measure in case the action hasn't run yet
         removeCookie('token');
 
-        // Only redirect if we're not already on an auth page
+        // Only redirect if we're not already on an auth page or landing page
         if (
           typeof window !== 'undefined' &&
-          !window.location.pathname.includes('/authentication')
+          !window.location.pathname.includes('/authentication') &&
+          window.location.pathname !== '/'
         ) {
-          window.location.href = '/authentication/sign-in';
+          window.location.href = '/';
         }
       }
     }

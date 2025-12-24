@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 4rem;

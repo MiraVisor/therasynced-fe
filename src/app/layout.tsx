@@ -96,6 +96,18 @@ export const metadata: Metadata = {
     yandex: 'your-yandex-verification-code',
     yahoo: 'your-yahoo-verification-code',
   },
+  icons: {
+    icon: [
+      { url: '/svgs/NewLogoLight.svg', type: 'image/svg+xml' },
+      {
+        url: '/svgs/NewLogoDark.svg',
+        type: 'image/svg+xml',
+        media: '(prefers-color-scheme: dark)',
+      },
+    ],
+    shortcut: '/svgs/NewLogoLight.svg',
+    apple: '/svgs/NewLogoLight.svg',
+  },
 };
 
 export default function RootLayout({

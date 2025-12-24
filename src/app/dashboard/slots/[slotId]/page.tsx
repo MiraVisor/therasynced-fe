@@ -102,6 +102,7 @@ export default function SlotDetailPage() {
     >
       <div className="space-y-6">
         <SlotInfoTab slot={slot} />
+        <SlotInfoTab slot={slot} />
       </div>
     </DashboardPageWrapper>
   );

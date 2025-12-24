@@ -1,9 +1,9 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Calendar, CheckCircle, FileText } from 'lucide-react';
+import { ArrowLeft, CalendarIcon, CheckCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
@@ -43,10 +43,7 @@ interface ModernBookingFlowProps {
   freelancerData?: Expert | null;
 }
 
-const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
-  rescheduleBookingId,
-  freelancerData,
-}) => {
+const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData }) => {
   const params = useParams();
   const router = useRouter();
 
@@ -61,8 +58,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   const { data: stampDetail } = useStampDetail(selectedTherapistId);
 
   // Use WebSocket hook for real-time slot updates
-  const { isConnected, reservedSlots, reserveSlot, releaseSlot, isSlotReserved } =
-    useSocketSlots(freelancerId);
+  const { reserveSlot, releaseSlot, isSlotReserved } = useSocketSlots(freelancerId);
 
   // Use booking store for state management
   const {
@@ -152,11 +148,20 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     setDatePage(datePage + 1);
   };
 
+  // Track if component is mounted to prevent cleanup during re-renders
+  const isMountedRef = useRef(true);
+  const selectedTimeRef = useRef(selectedTime);
+
   // Handle slot selection with reservation
   const handleSlotSelection = (slotId: string) => {
-    // Release previously selected slot if any
+    // Release previously selected slot if any (and it's different)
     if (selectedTime && selectedTime !== slotId) {
-      releaseSlot(selectedTime);
+      // Add a small delay to ensure previous reservation is processed
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          releaseSlot(selectedTime);
+        }
+      }, 100);
     }
 
     // Reserve the new slot
@@ -169,17 +174,23 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   };
 
   // Cleanup reservations on unmount - use useCallback to prevent infinite loops
-  const cleanupReservations = useCallback(() => {
-    if (selectedTime) {
-      releaseSlot(selectedTime);
-    }
-  }, [selectedTime, releaseSlot]);
 
   useEffect(() => {
+    selectedTimeRef.current = selectedTime;
+  }, [selectedTime]);
+
+  // Cleanup reservations only on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
     return () => {
-      cleanupReservations();
+      isMountedRef.current = false;
+      // Only cleanup if component is actually unmounting
+      if (selectedTimeRef.current) {
+        releaseSlot(selectedTimeRef.current);
+      }
     };
-  }, [cleanupReservations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount/unmount
 
   // Extract freelancer info from props or API data
   const firstSlot = slots && slots.length > 0 ? slots[0] : null;
@@ -292,9 +303,13 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   );
 
   const steps = [
-    { id: 1, title: 'Schedule', icon: Calendar, description: 'Pick your date & time' },
-    { id: 2, title: 'Details', icon: FileText, description: 'Add session details' },
-    { id: 3, title: 'Confirm', icon: CheckCircle, description: 'Review & book' },
+    {
+      id: 1,
+      title: 'Select Date & Time',
+      icon: CalendarIcon,
+      description: 'Choose your appointment',
+    },
+    { id: 2, title: 'Confirm', icon: CheckCircle, description: 'Review & book' },
   ];
 
   const isStepValid = () => {
@@ -302,9 +317,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       case 1:
         return selectedDate && selectedTime;
       case 2:
-        return true; // Details are optional
-      case 3:
-        return true;
+        return true; // Confirmation step
       default:
         return false;
     }
@@ -323,9 +336,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         }
         break;
       case 2:
-        isValid = await detailsForm.trigger();
-        break;
-      case 3:
         isValid = true;
         break;
       default:
@@ -362,11 +372,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     createBooking(bookingData, {
       onSuccess: (response) => {
         // Get the message from the response if available
-        const responseMessage =
-          (response as { message?: string })?.message ||
-          (rescheduleBookingId
-            ? 'Appointment rescheduled successfully!'
-            : 'Appointment booked successfully!');
+        const responseMessage = (response as { message?: string })?.message;
         toast.success(responseMessage, {
           autoClose: 5000, // Show for 5 seconds to read the stamp message
         });
@@ -553,8 +559,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           </summary>
           <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs space-y-2">
             <div className="grid grid-cols-4 gap-4">
-              <div>Socket: {isConnected ? '🟢 Connected' : '🔴 Disconnected'}</div>
-              <div>Reserved: {reservedSlots.length}</div>
+              <div>Socket: {'N/A' /* isConnected missing */}</div>
+              <div>Reserved: {'N/A' /* reservedSlots missing */}</div>
               <div>Slots: {slots?.length || 0}</div>
               <div>Selected: {selectedTime ? 'Yes' : 'No'}</div>
             </div>

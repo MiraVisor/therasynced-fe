@@ -114,7 +114,7 @@ export function DataRightsSection() {
 
       setTimeout(() => {
         logout();
-        router.push('/authentication/sign-in');
+        router.push('/');
       }, 2000);
     } catch (error: unknown) {
       const errorMessage =

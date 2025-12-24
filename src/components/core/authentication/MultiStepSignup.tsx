@@ -20,7 +20,7 @@ import { JobTitleStep } from './steps/JobTitleStep';
 import { PersonalDetailsStep } from './steps/PersonalDetailsStep';
 import { RoleSelectionStep } from './steps/RoleSelectionStep';
 
-// Updated Zod schema for form validation
+// Updated Zod schema with genderOther field
 const signupSchema = z
   .object({
     name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
@@ -40,6 +40,7 @@ const signupSchema = z
         { message: 'You must be at least 18 years old' },
       ),
     gender: z.string().optional(),
+    genderOther: z.string().optional(), // Free text for "Other" gender
     city: z.string().optional(),
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
@@ -76,6 +77,19 @@ const signupSchema = z
   }, 'Password is required')
   .refine(
     (data) => {
+      // Password must be at least 8 characters (consistent with login)
+      if (data.password && data.password.length < 8) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Password must be at least 8 characters',
+      path: ['password'],
+    },
+  )
+  .refine(
+    (data) => {
       if (data.password && data.password !== data.confirmPassword) {
         return false;
       }
@@ -84,6 +98,19 @@ const signupSchema = z
     {
       message: "Passwords don't match",
       path: ['confirmPassword'],
+    },
+  )
+  .refine(
+    (data) => {
+      // If gender is "other", genderOther should be provided
+      if (data.gender === 'other' && (!data.genderOther || data.genderOther.trim().length === 0)) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Please specify your gender identity',
+      path: ['genderOther'],
     },
   );
 
@@ -110,10 +137,14 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       confirmPassword: '',
       dob: undefined,
       gender: '',
+      genderOther: '',
       city: '',
       role: '',
       clinicAddress: '',
       mainJobTitleId: '',
+      termsConsent: false,
+      privacyConsent: false,
+      gdprConsent: false,
     },
     mode: 'onChange',
   });
@@ -127,24 +158,23 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const selectedRole = watch('role');
 
-  // Determine steps based on role
+  // Simplified steps - combined for minimal flow
   const getSteps = () => {
     if (selectedRole === 'patient') {
       return [
-        { id: 1, title: 'Role', description: "How you'll use the platform" },
-        { id: 2, title: 'Account Setup', description: 'Create your account' },
-        { id: 3, title: 'Personal Details', description: 'Additional information' },
+        { id: 1, title: 'Role' },
+        { id: 2, title: 'Account & Details' },
+        { id: 3, title: 'Consent & Agreements' },
       ];
     } else if (selectedRole === 'freelancer') {
       return [
-        { id: 1, title: 'Role', description: "How you'll use the platform" },
-        { id: 2, title: 'Account Setup', description: 'Create your account' },
-        { id: 3, title: 'Personal Details', description: 'Additional information' },
-        { id: 4, title: 'Job Title', description: 'Select your profession' },
-        { id: 5, title: 'Clinic Address', description: 'Add your clinic address' },
+        { id: 1, title: 'Role' },
+        { id: 2, title: 'Account & Details' },
+        { id: 3, title: 'Professional Info' },
+        { id: 4, title: 'Consent & Agreements' },
       ];
     }
-    return [{ id: 1, title: 'Role', description: "How you'll use the platform" }];
+    return [{ id: 1, title: 'Role' }];
   };
 
   const steps = getSteps();
@@ -155,24 +185,33 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       case 1:
         return await trigger('role');
       case 2:
-        // Account setup: name, email, password
-        return await trigger(['name', 'email', 'password', 'confirmPassword']);
-      case 3:
-        // Personal details: DOB, gender, city
+        // Combined account + personal details
         if (authMethod === 'email') {
-          return await trigger(['dob', 'gender', 'city']);
+          return await trigger([
+            'name',
+            'email',
+            'password',
+            'confirmPassword',
+            'dob',
+            'gender',
+            'genderOther',
+          ]);
         }
-        // For OAuth, only validate name and email were filled
-        return await trigger(['name', 'email']);
-      case 4:
-        // Job title for freelancer
+        // For OAuth, validate name, email, and dob
+        return await trigger(['name', 'email', 'dob', 'gender', 'genderOther']);
+      case 3:
+        // Professional info for freelancer, or consent for patient
         if (selectedRole === 'freelancer') {
           return await trigger('mainJobTitleId');
+        } else if (selectedRole === 'patient') {
+          return await trigger(['termsConsent', 'privacyConsent', 'gdprConsent']);
         }
         return true;
-      case 5:
-        // Clinic address for freelancer (optional)
-        // No validation needed since it's optional
+      case 4:
+        // Consent step for freelancer
+        if (selectedRole === 'freelancer') {
+          return await trigger(['termsConsent', 'privacyConsent', 'gdprConsent']);
+        }
         return true;
       default:
         return true;
@@ -183,21 +222,24 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     const isValid = await validateCurrentStep();
     if (!isValid) return;
 
-    // Handle OAuth - on step 2 (account setup)
+    // When moving from step 1 to step 2, reset authMethod
+    if (currentStep === 1) {
+      _setAuthMethod(null);
+    }
+
+    // Handle OAuth - on step 2
     if (currentStep === 2 && authMethod === 'oauth') {
       handleGoogleSignUp();
       return;
     }
 
-    // Special handling for completion
+    // Handle completion
     if (selectedRole === 'patient' && currentStep === 3) {
-      // Patient completes after personal details
       handleSubmit();
       return;
     }
 
-    if (selectedRole === 'freelancer' && currentStep === 5) {
-      // Freelancer completes after clinic address
+    if (selectedRole === 'freelancer' && currentStep === 4) {
       handleSubmit();
       return;
     }
@@ -209,6 +251,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const prevStep = () => {
     if (currentStep > 1) {
+      // If on step 2 and authMethod is set, reset authMethod
+      if (currentStep === 2 && authMethod !== null) {
+        _setAuthMethod(null);
+        return;
+      }
       setCurrentStep(currentStep - 1);
     }
   };
@@ -227,13 +274,20 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const handleSubmit = () => {
     const formValues = getValues();
+
+    // Handle gender - use genderOther if gender is "other"
+    const finalGender =
+      formValues.gender === 'other' && formValues.genderOther
+        ? formValues.genderOther.trim()
+        : formValues.gender || undefined;
+
     const transformedData = {
       name: formValues.name,
       email: formValues.email,
       password: formValues.password || undefined,
       role: formValues.role.toUpperCase(),
       dob: formValues.dob ? format(formValues.dob, 'yyyy-MM-dd') : undefined,
-      gender: formValues.gender || undefined,
+      gender: finalGender,
       city: formValues.city || undefined,
       clinicAddress:
         selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,
@@ -274,23 +328,35 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       case 1:
         return !!getValues('role') && !errors.role;
       case 2:
-        // Account setup: name, email, password
         const name = getValues('name');
         const email = getValues('email');
         const password = getValues('password');
-        return (
-          !!name &&
-          name.length >= 2 &&
-          !errors.name &&
-          !!email &&
-          email.includes('@') &&
-          !errors.email &&
-          (authMethod === 'oauth' || (!!password && !errors.password))
-        );
-      case 3:
-        // Personal details: DOB required, gender and city optional
         const dob = getValues('dob');
-        return !!dob && !errors.dob;
+        const gender = getValues('gender');
+        const genderOther = getValues('genderOther');
+
+        const hasValidName = !!name && name.length >= 2 && !errors.name;
+        const hasValidEmail = !!email && email.includes('@') && !errors.email;
+        const hasValidPassword = authMethod === 'oauth' || (!!password && !errors.password);
+        const hasValidDob = !!dob && !errors.dob;
+        const hasValidGender =
+          gender !== 'other' || (!!genderOther && genderOther.trim().length > 0);
+
+        return hasValidName && hasValidEmail && hasValidPassword && hasValidDob && hasValidGender;
+      case 3:
+        if (selectedRole === 'freelancer') {
+          return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
+        } else if (selectedRole === 'patient') {
+          return (
+            getValues('termsConsent') === true &&
+            getValues('privacyConsent') === true &&
+            getValues('gdprConsent') === true &&
+            !errors.termsConsent &&
+            !errors.privacyConsent &&
+            !errors.gdprConsent
+          );
+        }
+        return true;
       case 4:
         // Job title for freelancer OR Consent for patient
         if (selectedRole === 'freelancer') {

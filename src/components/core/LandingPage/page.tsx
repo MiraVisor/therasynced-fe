@@ -4,12 +4,10 @@ import { ChevronUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import Features from './features';
-import Feedback from './feedback';
 import Footer from './footer';
-import Freelancers from './freelancers';
 import Hero from './hero';
+import HowItWorks from './how-it-works';
 import Navbar from './navbar';
-import Pricing from './pricing';
 import Services from './services';
 
 const LandingPage = () => {
@@ -47,9 +45,7 @@ const LandingPage = () => {
         <div className="space-y-24 sm:space-y-32 lg:space-y-40">
           <Services />
           <Features />
-          <Freelancers />
-          <Pricing />
-          <Feedback />
+          <HowItWorks />
           <Footer />
         </div>
 
