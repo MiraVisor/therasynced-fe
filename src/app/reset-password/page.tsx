@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 
-export default function ResetPasswordRedirect() {
+function ResetPasswordRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -23,5 +23,21 @@ export default function ResetPasswordRedirect() {
         <p className="text-gray-600">Redirecting...</p>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <ResetPasswordRedirect />
+    </Suspense>
   );
 }
