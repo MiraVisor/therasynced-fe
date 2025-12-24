@@ -26,16 +26,7 @@ interface TrendChartProps {
   loading?: boolean;
 }
 
-const defaultConfig = {
-  current: {
-    label: 'Current',
-    color: 'hsl(var(--chart-1))',
-  },
-  previous: {
-    label: 'Previous',
-    color: 'hsl(var(--chart-2))',
-  },
-} satisfies ChartConfig;
+// Unused constant removed - was: const _defaultConfig = { ... };
 
 export function TrendChart({
   data,
@@ -43,7 +34,7 @@ export function TrendChart({
   description,
   currentLabel = 'Current',
   previousLabel = 'Previous',
-  height = 300,
+  height: _height = 300,
   loading,
 }: TrendChartProps) {
   const chartConfig = {

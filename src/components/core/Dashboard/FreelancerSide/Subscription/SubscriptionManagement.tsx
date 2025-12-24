@@ -1,422 +1,400 @@
 'use client';
 
-import { AlertTriangle, CreditCard, Crown, ExternalLink, Info } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertTriangle, Info } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-// Note: Skeleton import is correct - it's defined in src/components/ui/skeleton.tsx
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getDecodedToken } from '@/lib/utils';
 import {
-  cancelSubscription,
-  createCheckoutSession,
-  getBillingPortal,
-  getMySubscription,
-  getSubscriptionPlans,
-  resumeSubscription,
-  updateSubscription,
-} from '@/redux/api/subscriptionApi';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks/useAppHooks';
-import { PlanType } from '@/types/types';
+  useBillingPortal,
+  useCancelSubscription,
+  useCreateCheckoutSession,
+  useMySubscription,
+  useSubscriptionPlans,
+  useUpdateSubscription,
+} from '@/hooks/queries/useSubscription';
+import { getDecodedToken } from '@/lib/utils';
+import { PlanType, SubscriptionStatus } from '@/types/types';
 
+import { BillingTab } from './BillingTab';
+import { CancellationDialog } from './CancellationDialog';
 import { EmbeddedCheckout } from './EmbeddedCheckout';
+import { FeatureComparison } from './FeatureComparison';
+import { OverviewTab } from './OverviewTab';
+import { PaymentConsent } from './PaymentConsent';
 import { PlanCard } from './PlanCard';
+import { SubscriptionTabs } from './SubscriptionTabs';
 
 export default function SubscriptionManagement() {
-  const dispatch = useAppDispatch();
-
-  const [isLoadingPortal, setIsLoadingPortal] = useState(false);
-  const [isRedirectingToCheckout, setIsRedirectingToCheckout] = useState(false);
+  const searchParams = useSearchParams();
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isCancellationDialogOpen, setIsCancellationDialogOpen] = useState(false);
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanType | null>(null);
+  const [hasPaymentConsent, setHasPaymentConsent] = useState(false);
+  const [showPreCheckoutSummary, setShowPreCheckoutSummary] = useState(false);
 
-  const {
-    plans,
-    currentSubscription,
-    isLoading,
-    initialLoading,
-    isSubscribing,
-    isUpdating,
-    isCanceling,
-    error,
-  } = useAppSelector((state) => state.subscription);
+  // Get default tab from URL query param
+  const viewParam = searchParams.get('view');
+  const defaultTab: 'overview' | 'billing' | 'plans' =
+    viewParam === 'overview' || viewParam === 'billing' || viewParam === 'plans'
+      ? viewParam
+      : 'overview';
+
+  // Use React Query hooks
+  const { data: plans = [], isFetching: initialLoading } = useSubscriptionPlans();
+  const { data: currentSubscription, isFetching: isLoading } = useMySubscription();
+  const { mutate: createCheckout, isPending: isSubscribing } = useCreateCheckoutSession();
+  const { mutate: updateSubscriptionMutation, isPending: isUpdating } = useUpdateSubscription();
+  const { mutate: cancelSubscriptionMutation, isPending: isCanceling } = useCancelSubscription();
+
+  // For billing portal, we need to use query with enabled: false and refetch
+  const { refetch: refetchBillingPortal } = useBillingPortal();
 
   // Combine loading states - only show loader if no data exists
   const isLoadingPlans =
-    initialLoading ||
-    (isLoading && plans.length === 0 && !currentSubscription) ||
-    isRedirectingToCheckout;
-
-  useEffect(() => {
-    // Load plans and subscription on mount - use silent refresh if data exists
-    const hasPlans = plans.length > 0;
-    const hasSubscription = currentSubscription !== null;
-    dispatch(getSubscriptionPlans({ silent: hasPlans }));
-    dispatch(getMySubscription({ silent: hasSubscription }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]); // Only run once on mount, not when plans/subscription change
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
+    initialLoading || (isLoading && plans.length === 0 && !currentSubscription) || isSubscribing;
 
   const decodedToken = getDecodedToken();
   const subscriptionStatus = decodedToken?.subscriptionStatus;
 
   const handleSelectPlan = async (planType: PlanType) => {
     try {
-      // Decision logic based on guide:
-      // 1. Has active subscription (ACTIVE/TRIALING) → Use update endpoint
-      // 2. Has canceled subscription (cancelAtPeriodEnd: true) → Use update endpoint (removes cancellation)
-      // 3. No subscription → Use checkout endpoint
-
-      // Check subscription status - prioritize Redux state (most up-to-date) over token
       const statusFromState = currentSubscription?.status;
-
-      // Check if subscription exists
       const hasSubscription = !!currentSubscription;
-
-      // Check if user has a paid plan (not just a trial record)
-      // Trial users who never subscribed won't have a plan property
       const hasPlan = currentSubscription?.plan !== undefined;
-
-      // Determine if subscription is active
-      // Active means: ACTIVE/TRIALING status OR canceled but still active until period end
       const isCanceledButActive = currentSubscription?.cancelAtPeriodEnd === true;
 
-      // Decision: Use update endpoint if we have a subscription that appears active
-      // IMPORTANT: Trial users without a plan (never subscribed) should use checkout, not update
-      // We check statusFromState directly to avoid token staleness issues
-      // For ACTIVE status: always use update (they have a paid subscription)
-      // For TRIALING status: only use update if they have a plan (had subscription before)
-      // For canceled subscriptions: use update if they have a plan
       const shouldUseUpdate =
         hasSubscription &&
         hasPlan &&
         (statusFromState === 'ACTIVE' || statusFromState === 'TRIALING' || isCanceledButActive);
 
       if (shouldUseUpdate) {
-        const result = await dispatch(updateSubscription({ planType }));
-        if (updateSubscription.fulfilled.match(result)) {
-          toast.success('Subscription updated successfully!');
-          // Refresh subscription data silently
-          dispatch(getMySubscription({ silent: true }));
-          return; // Exit early on success
-        } else if (updateSubscription.rejected.match(result)) {
-          const errorMessage = (result.payload as string) || 'Failed to update subscription';
-          // If update fails with "No active subscription", try checkout instead
-          if (
-            errorMessage.includes('No active subscription') ||
-            errorMessage.includes('not found') ||
-            errorMessage.includes('does not exist')
-          ) {
-            toast.info('Creating new subscription...');
-            // Fall through to checkout flow
-          } else {
-            toast.error(errorMessage);
-            return;
-          }
-        } else {
-          return; // Update succeeded, exit early
-        }
+        updateSubscriptionMutation(
+          { planType },
+          {
+            onSuccess: () => {
+              toast.success('Subscription updated successfully!');
+            },
+            onError: (error: unknown) => {
+              const errorMessage =
+                error && typeof error === 'object' && 'response' in error
+                  ? (error as { response?: { data?: { message?: string } } }).response?.data
+                      ?.message || 'Failed to update subscription'
+                  : 'Failed to update subscription';
+              if (
+                errorMessage.includes('No active subscription') ||
+                errorMessage.includes('not found') ||
+                errorMessage.includes('does not exist')
+              ) {
+                toast.info('Creating new subscription...');
+                handleCheckout(planType);
+              } else {
+                toast.error(errorMessage);
+              }
+            },
+          },
+        );
+        return;
       }
 
-      // No active subscription or update failed - use checkout endpoint
-      setIsRedirectingToCheckout(true);
-      const result = await dispatch(createCheckoutSession(planType));
-      if (createCheckoutSession.fulfilled.match(result)) {
-        // Open embedded checkout with client secret
-        const checkoutData = result.payload as {
-          sessionUrl: string;
-          sessionId: string;
-          clientSecret?: string;
-        };
-        // Use clientSecret if available for embedded checkout
-        // Note: Backend needs to return clientSecret for embedded checkout to work
-        // If not available, fall back to redirect mode
-        if (checkoutData.clientSecret) {
-          setCheckoutClientSecret(checkoutData.clientSecret);
+      setSelectedPlanForCheckout(planType);
+      setShowPreCheckoutSummary(true);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process subscription';
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleProceedToCheckout = () => {
+    if (!hasPaymentConsent) {
+      toast.error('Please provide consent for payment data processing');
+      return;
+    }
+
+    if (!selectedPlanForCheckout) return;
+
+    setShowPreCheckoutSummary(false);
+    handleCheckout(selectedPlanForCheckout);
+  };
+
+  const handleCheckout = (planType: PlanType) => {
+    createCheckout(planType, {
+      onSuccess: (checkoutData: unknown) => {
+        const data =
+          checkoutData && typeof checkoutData === 'object' && 'data' in checkoutData
+            ? (checkoutData as { data: { clientSecret?: string; sessionUrl?: string } }).data
+            : (checkoutData as { clientSecret?: string; sessionUrl?: string });
+        if (data?.clientSecret) {
+          setCheckoutClientSecret(data.clientSecret);
           setIsCheckoutOpen(true);
-          setIsRedirectingToCheckout(false);
-        } else {
-          // Fallback to redirect if no client secret (backend doesn't support embedded yet)
-          window.location.href = checkoutData.sessionUrl;
-          setIsRedirectingToCheckout(false);
+        } else if (data?.sessionUrl) {
+          window.location.href = data.sessionUrl;
         }
-      } else {
-        // If checkout fails with "already have an active subscription" error, try update instead
-        const errorMessage = (result.payload as string) || '';
+      },
+      onError: (error: unknown) => {
+        const errorMessage =
+          error && typeof error === 'object' && 'response' in error
+            ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+              ''
+            : '';
         if (
           errorMessage.includes('already have an active subscription') ||
           errorMessage.includes('already subscribed')
         ) {
           toast.info('Updating existing subscription...');
-          const updateResult = await dispatch(updateSubscription({ planType }));
-          if (updateSubscription.fulfilled.match(updateResult)) {
-            toast.success('Subscription updated successfully!');
-            // Refresh subscription data
-            dispatch(getMySubscription({ silent: true }));
-          } else {
-            toast.error('Failed to update subscription');
-          }
+          updateSubscriptionMutation({ planType });
         } else {
           toast.error('Failed to create checkout session');
         }
-        setIsRedirectingToCheckout(false);
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to process subscription');
-      setIsRedirectingToCheckout(false);
-    }
+      },
+    });
   };
 
-  const handleCancel = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription?')) return;
-
-    const result = await dispatch(cancelSubscription({}));
-    if (cancelSubscription.fulfilled.match(result)) {
-      toast.success('Subscription will be cancelled at the end of the current period.');
-      // Refresh subscription data
-      dispatch(getMySubscription({ silent: true }));
-    }
-  };
-
-  const handleResume = async () => {
-    const result = await dispatch(resumeSubscription());
-    if (resumeSubscription.fulfilled.match(result)) {
-      toast.success('Subscription resumed successfully!');
-      // Refresh subscription data
-      dispatch(getMySubscription({ silent: true }));
-    }
+  const handleCancel = (reason?: string) => {
+    cancelSubscriptionMutation(
+      { reason },
+      {
+        onSuccess: () => {
+          toast.success('Subscription will be cancelled at the end of the current period.');
+          setIsCancellationDialogOpen(false);
+        },
+        onError: (error: unknown) => {
+          const errorMessage =
+            error && typeof error === 'object' && 'response' in error
+              ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+                'Failed to cancel subscription'
+              : 'Failed to cancel subscription';
+          toast.error(errorMessage);
+        },
+      },
+    );
   };
 
   const handleOpenBillingPortal = async () => {
     try {
-      setIsLoadingPortal(true);
-      const result = await dispatch(getBillingPortal());
-      if (getBillingPortal.fulfilled.match(result)) {
-        // Open billing portal in new tab
-        window.open(result.payload, '_blank', 'noopener,noreferrer');
+      const result = await refetchBillingPortal();
+      if (result.data) {
+        window.open(result.data, '_blank', 'noopener,noreferrer');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error('Failed to open billing portal');
-    } finally {
-      setIsLoadingPortal(false);
     }
   };
 
-  const getDaysInTrial = () => {
-    const endDate = currentSubscription?.trialEnd || currentSubscription?.trialEndsAt;
-    if (!endDate) return null;
-    const end = new Date(endDate);
-    const now = new Date();
-    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return diff;
-  };
-
-  // Use token status if available, otherwise fall back to currentSubscription
-  const status = subscriptionStatus || currentSubscription?.status;
+  const status: SubscriptionStatus =
+    (subscriptionStatus as SubscriptionStatus) || currentSubscription?.status || 'INACTIVE';
   const isTrial = status === 'TRIALING';
-  const isInactive = status === 'INACTIVE' || status === 'UNPAID';
-  const isCancelled = currentSubscription?.cancelAtPeriodEnd;
-  const hasPlan = currentSubscription?.plan !== undefined;
+  const isInactive = status === 'INACTIVE' || status === 'UNPAID' || status === 'TRIAL_EXPIRED';
   const userHasActiveSubscription = status === 'ACTIVE' && !!currentSubscription?.plan;
 
   if (isLoadingPlans) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
-        {isRedirectingToCheckout && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="rounded-lg bg-white p-6 dark:bg-gray-800">
-              <p className="text-center">Redirecting to Stripe Checkout...</p>
-            </div>
-          </div>
-        )}
+      <div className="space-y-8">
+        <div>
+          <Skeleton className="h-10 w-64 mb-2" />
+          <Skeleton className="h-6 w-96" />
+        </div>
+        <Skeleton className="h-48 w-full rounded-xl" />
+        <div className="grid gap-6 md:grid-cols-2">
+          <Skeleton className="h-64 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
+  const selectedPlan = selectedPlanForCheckout
+    ? plans.find((p) => p.name === selectedPlanForCheckout)
+    : null;
+
+  // Overview Tab Content
+  const overviewContent = (
+    <OverviewTab
+      subscription={currentSubscription || null}
+      plan={currentSubscription?.plan}
+      onUpgrade={() => handleSelectPlan('SILVER')}
+      onManageBilling={handleOpenBillingPortal}
+      onCancel={() => setIsCancellationDialogOpen(true)}
+      isLoading={isLoading}
+    />
+  );
+
+  // Billing Tab Content
+  const billingContent = <BillingTab />;
+
+  // Plans Tab Content
+  const plansContent = (
+    <div className="space-y-8">
+      {/* Plans Grid - Mobile Horizontal Scroll */}
       <div>
-        <h1 className="text-3xl font-poppins font-bold text-charcoal">Subscription</h1>
-        <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
-          Manage your subscription plan
+        <div className="mb-6">
+          <h3 className="text-2xl font-poppins font-bold text-charcoal mb-2">Choose Your Plan</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Select the plan that best fits your needs
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3 overflow-x-auto pb-4 md:pb-0 md:overflow-x-visible">
+          <div className="flex md:contents gap-6 min-w-full md:min-w-0">
+            {plans.map((plan) => (
+              <div key={plan.id} className="flex-shrink-0 w-full md:w-auto md:flex-1">
+                <PlanCard
+                  plan={plan}
+                  currentPlanName={currentSubscription?.plan?.name}
+                  isRecommended={plan.name === 'SILVER'}
+                  onSelectPlan={handleSelectPlan}
+                  isLoading={isSubscribing || isUpdating}
+                  hasActiveSubscription={userHasActiveSubscription}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Feature Comparison */}
+      {plans.length > 0 && (
+        <div>
+          <div className="mb-6">
+            <h3 className="text-2xl font-poppins font-bold text-charcoal mb-2">Plan Comparison</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Compare features across all plans
+            </p>
+          </div>
+          <FeatureComparison plans={plans} currentPlanName={currentSubscription?.plan?.name} />
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-8">
+      {/* Header - Simplified */}
+      <div>
+        <h1 className="text-3xl font-poppins font-bold text-charcoal mb-2">
+          Subscription Management
+        </h1>
+        <p className="text-base font-inter text-gray-600 dark:text-gray-400">
+          Manage your subscription plan, billing, and payment methods
         </p>
       </div>
 
-      {/* Current Subscription Status */}
-      {currentSubscription && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-poppins font-bold text-charcoal">
-                {hasPlan ? 'Current Plan' : 'Subscription Status'}
-              </CardTitle>
-              <Badge
-                variant={
-                  status === 'ACTIVE'
-                    ? 'default'
-                    : status === 'TRIALING'
-                      ? 'secondary'
-                      : status === 'INACTIVE' || status === 'UNPAID'
-                        ? 'destructive'
-                        : 'destructive'
-                }
-              >
-                {status}
-              </Badge>
+      {/* Inactive/Trial Alerts - More Integrated Design */}
+      {currentSubscription && isInactive && (
+        <Alert className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 shadow-sm">
+          <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+          <AlertTitle className="text-base font-poppins font-semibold text-orange-900 dark:text-orange-100">
+            Trial Expired
+          </AlertTitle>
+          <AlertDescription className="text-sm text-orange-800 dark:text-orange-200 space-y-3 mt-2">
+            <div>
+              {currentSubscription.message ||
+                'Your trial has expired. Please subscribe to continue creating slots.'}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Show plan info only if user has a plan */}
-            {hasPlan && currentSubscription.plan && (
-              <div className="flex items-center justify-between rounded-lg bg-primary/10 p-4">
-                <div>
-                  <h3 className="font-poppins font-semibold text-primary">
-                    {currentSubscription.plan.displayName}
-                  </h3>
-                  <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
-                    EUR {currentSubscription.plan.price}/month
-                  </p>
-                </div>
-                <Crown className="h-8 w-8 text-primary" />
-              </div>
-            )}
-
-            {/* Show inactive message or expired trial */}
-            {(isInactive || currentSubscription.trialExpired || status === 'TRIAL_EXPIRED') && (
-              <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-900/20">
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                <AlertTitle>Trial Expired</AlertTitle>
-                <AlertDescription className="space-y-2">
-                  <div>
-                    {currentSubscription.message ||
-                      'Your trial has expired. Please subscribe to continue accepting bookings and creating slots.'}
-                  </div>
-                  <Button onClick={() => handleSelectPlan('SILVER')} className="mt-3" size="sm">
-                    Subscribe Now
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Trial Banner */}
-            {isTrial && (
-              <Alert className="border-primary bg-primary/10">
-                <Info className="h-4 w-4 text-primary" />
-                <AlertTitle>Trial Period Active</AlertTitle>
-                <AlertDescription className="space-y-2">
-                  <div>
-                    {currentSubscription.message ||
-                      `You have ${getDaysInTrial()} days remaining in your trial period. Subscribe to a plan to continue using the platform.`}
-                  </div>
-                  {currentSubscription.slotsUsed !== undefined &&
-                    currentSubscription.slotsLimit !== undefined && (
-                      <div className="mt-2 text-sm">
-                        <strong>Slots:</strong> {currentSubscription.slotsUsed}/
-                        {currentSubscription.slotsLimit} active slots
-                        {currentSubscription.slotsUsed >= currentSubscription.slotsLimit && (
-                          <span className="ml-2 text-orange-600 dark:text-orange-400">
-                            (Limit reached - upgrade to create more)
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  <Button onClick={() => handleSelectPlan('SILVER')} className="mt-3" size="sm">
-                    Upgrade Now
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Cancelled Subscription Banner */}
-            {isCancelled && currentSubscription.currentPeriodEnd && (
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Subscription Cancelled</AlertTitle>
-                <AlertDescription>
-                  Your subscription will end on{' '}
-                  {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}. You will
-                  retain access until then.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Active Subscription Info */}
-            {hasPlan && !isTrial && !isCancelled && currentSubscription.currentPeriodEnd && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Next billing date:</span>
-                <span className="font-medium">
-                  {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}
-                </span>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            {hasPlan && (
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleOpenBillingPortal}
-                  variant="outline"
-                  disabled={isLoadingPortal}
-                  className="flex-1"
-                >
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Manage Billing
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-                {!isCancelled && (
-                  <Button
-                    onClick={handleCancel}
-                    variant="destructive"
-                    disabled={isCanceling}
-                    className="flex-1"
-                  >
-                    Cancel Subscription
-                  </Button>
-                )}
-                {isCancelled && (
-                  <Button onClick={handleResume} className="flex-1">
-                    Resume Subscription
-                  </Button>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <Button
+              onClick={() => handleSelectPlan('SILVER')}
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-white mt-2"
+            >
+              Subscribe Now
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
-      {/* Available Plans */}
-      <div>
-        <h2 className="mb-4 text-2xl font-poppins font-bold text-charcoal">
-          {currentSubscription && currentSubscription.plan
-            ? 'Upgrade or Change Plan'
-            : 'Choose a Plan'}
-        </h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {plans.map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              currentPlanName={currentSubscription?.plan?.name}
-              isRecommended={plan.name === 'SILVER'}
-              onSelectPlan={handleSelectPlan}
-              isLoading={isSubscribing || isUpdating || isRedirectingToCheckout}
-              hasActiveSubscription={userHasActiveSubscription}
-            />
-          ))}
+      {currentSubscription && isTrial && (
+        <Alert className="border-primary/30 dark:border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-sm">
+          <Info className="h-5 w-5 text-primary" />
+          <AlertTitle className="text-base font-poppins font-semibold text-charcoal">
+            Trial Period Active
+          </AlertTitle>
+          <AlertDescription className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+            {currentSubscription.message ||
+              'You are currently on a free trial. Subscribe to a plan to continue using the platform after your trial ends.'}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Tabbed Interface */}
+      <SubscriptionTabs
+        overviewContent={overviewContent}
+        billingContent={billingContent}
+        plansContent={plansContent}
+        defaultTab={defaultTab}
+      />
+
+      {/* Pre-Checkout Summary Dialog */}
+      {showPreCheckoutSummary && selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-lg">
+            <CardHeader>
+              <CardTitle className="text-xl font-poppins font-bold">
+                Review Your Selection
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border p-4">
+                <h3 className="font-poppins font-semibold text-lg">{selectedPlan.displayName}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedPlan.description}
+                </p>
+                <p className="mt-2 text-2xl font-poppins font-bold text-primary">
+                  EUR {selectedPlan.price}/month
+                </p>
+              </div>
+
+              <div>
+                <h4 className="mb-2 font-poppins font-semibold">Features included:</h4>
+                <ul className="space-y-1 text-sm">
+                  {selectedPlan.features.slice(0, 5).map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-2">
+                      <span className="text-primary">✓</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <PaymentConsent onConsentChange={setHasPaymentConsent} required={true} />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowPreCheckoutSummary(false);
+                    setSelectedPlanForCheckout(null);
+                    setHasPaymentConsent(false);
+                  }}
+                  className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleProceedToCheckout}
+                  disabled={!hasPaymentConsent || isSubscribing}
+                  className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {isSubscribing ? 'Processing...' : 'Proceed to Checkout'}
+                </button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      )}
+
+      {/* Cancellation Dialog */}
+      <CancellationDialog
+        isOpen={isCancellationDialogOpen}
+        onClose={() => setIsCancellationDialogOpen(false)}
+        onConfirm={handleCancel}
+        subscriptionEndDate={currentSubscription?.currentPeriodEnd}
+        currentPlan={currentSubscription?.plan}
+        isLoading={isCanceling}
+      />
 
       {/* Embedded Checkout Modal */}
       {checkoutClientSecret && (
@@ -426,14 +404,13 @@ export default function SubscriptionManagement() {
           onClose={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
+            setHasPaymentConsent(false);
           }}
-          onSuccess={async () => {
+          onSuccess={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            // Refresh subscription data
-            await dispatch(getMySubscription({ silent: true }));
+            setHasPaymentConsent(false);
             toast.success('Payment successful! Your subscription is now active.');
-            // Refresh to show updated status
             setTimeout(() => {
               window.location.reload();
             }, 1000);

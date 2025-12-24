@@ -26,7 +26,7 @@ interface UpgradeModalProps {
 export const UpgradeModal = ({
   isOpen,
   onClose,
-  currentPlan,
+  currentPlan: _currentPlan,
   availablePlans,
   currentSlots,
   maxSlots,

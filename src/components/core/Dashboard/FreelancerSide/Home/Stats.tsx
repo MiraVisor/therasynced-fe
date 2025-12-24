@@ -1,5 +1,3 @@
-import { Calendar, Coins, Star, Users } from 'lucide-react';
-
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { FreelancerDashboardOverview } from '@/types/types';
 
@@ -84,9 +82,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.totalAppointments.trendDirection === 'up',
             label: 'from last month',
           },
-          icon: Calendar,
-          iconBg: 'bg-info/10',
-          iconColor: 'text-info',
           sparklineData: dashboardData.totalAppointments.sparklineData,
         },
         {
@@ -97,9 +92,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.clientRating.trendDirection === 'up',
             label: 'from last month',
           },
-          icon: Star,
-          iconBg: 'bg-warning/10',
-          iconColor: 'text-warning',
           sparklineData: dashboardData.clientRating.sparklineData,
         },
         {
@@ -110,9 +102,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.newClients.trendDirection === 'up',
             label: 'this month',
           },
-          icon: Users,
-          iconBg: 'bg-success/10',
-          iconColor: 'text-success',
           sparklineData: dashboardData.newClients.sparklineData,
         },
         {
@@ -123,9 +112,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.weeklyRevenue.trendDirection === 'up',
             label: 'from last week',
           },
-          icon: Coins,
-          iconBg: 'bg-primary/10',
-          iconColor: 'text-primary',
           sparklineData: dashboardData.weeklyRevenue.sparklineData.map((val) => val / 100),
         },
       ]
@@ -134,36 +120,24 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
           title: 'Total Appointments',
           value: defaultData.totalAppointments.value,
           trend: defaultData.totalAppointments.trend,
-          icon: Calendar,
-          iconBg: 'bg-info/10',
-          iconColor: 'text-info',
           sparklineData: defaultData.totalAppointments.sparklineData,
         },
         {
           title: 'Client Rating',
           value: defaultData.clientRating.value,
           trend: defaultData.clientRating.trend,
-          icon: Star,
-          iconBg: 'bg-warning/10',
-          iconColor: 'text-warning',
           sparklineData: defaultData.clientRating.sparklineData,
         },
         {
           title: 'New Clients',
           value: defaultData.newClients.value,
           trend: defaultData.newClients.trend,
-          icon: Users,
-          iconBg: 'bg-success/10',
-          iconColor: 'text-success',
           sparklineData: defaultData.newClients.sparklineData,
         },
         {
           title: 'Weekly Revenue',
           value: defaultData.weeklyRevenue.value,
           trend: defaultData.weeklyRevenue.trend,
-          icon: Coins,
-          iconBg: 'bg-primary/10',
-          iconColor: 'text-primary',
           sparklineData: defaultData.weeklyRevenue.sparklineData,
         },
       ];
@@ -171,16 +145,12 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
       {cardsData.map((data, index) => {
-        const Icon = data.icon;
         return (
           <EnhancedStatCard
             key={index}
             title={data.title}
             value={data.value}
             trend={data.trend}
-            icon={Icon}
-            iconColor={data.iconColor}
-            iconBg={data.iconBg}
             sparklineData={data.sparklineData}
             interactive
             onClick={() => {

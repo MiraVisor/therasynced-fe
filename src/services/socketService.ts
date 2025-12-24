@@ -1,4 +1,4 @@
-import { Socket, io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 import { getCookie } from '@/lib/utils';
 
@@ -11,8 +11,6 @@ class SocketService {
   private isInitialized = false;
   private hasLoggedConnectionError = false;
   private isWebSocketDisabled = false;
-  private hasLoggedConnectionError = false;
-  private isWebSocketDisabled = false;
 
   constructor() {
     // Don't initialize immediately - wait for connect() call
@@ -22,7 +20,7 @@ class SocketService {
     if (this.isInitialized) return;
 
     const token = getCookie('token');
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
 
     // Check if we have the required configuration
     if (!backendUrl) {
@@ -38,7 +36,7 @@ class SocketService {
     // Convert https://backend.mehadnadeem.com/api/v1 to https://backend.mehadnadeem.com
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }
@@ -113,7 +111,7 @@ class SocketService {
       }
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on('connect_error', () => {
       this.isConnected = false;
 
       // Only log the first connection error, then suppress subsequent attempts
@@ -344,14 +342,14 @@ class SocketService {
 
   // Debug methods
   public getConnectionStatus() {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     let socketUrl = '';
 
     if (backendUrl) {
       // Extract the base domain from the API URL
       let baseUrl: string;
       if (backendUrl.includes('/api/v1')) {
-        baseUrl = backendUrl.split('/api/v1')[0];
+        baseUrl = backendUrl.split('/api/v1')[0] || '';
       } else {
         baseUrl = backendUrl;
       }
@@ -374,13 +372,13 @@ class SocketService {
       socketId: this.socket?.id,
       reconnectAttempts: this.reconnectAttempts,
       isInitialized: this.isInitialized,
-      backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+      backendUrl: process.env['NEXT_PUBLIC_BACKEND_URL'],
       socketUrl: socketUrl,
       hasToken: !!getCookie('token'),
     };
   }
 
-  public emitDebugEvent(eventName: string, data: any) {
+  public emitDebugEvent(eventName: string, data: unknown) {
     if (this.socket && this.isConnected) {
       this.socket.emit(eventName, data);
       console.log(`SocketService: Debug event emitted: ${eventName}`, data);
@@ -402,7 +400,7 @@ class SocketService {
   public testDifferentEndpoints() {
     console.log('SocketService: Testing different WebSocket endpoints...');
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -411,7 +409,7 @@ class SocketService {
     // Extract the base domain from the API URL
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }
@@ -430,17 +428,17 @@ class SocketService {
       // Try base URL (most likely to work based on Postman test)
       baseSocketUrl,
       // Try base URL with /slots namespace
-      baseSocketUrl + '/slots',
+      `${baseSocketUrl}/slots`,
       // Try base URL with /socket
-      baseSocketUrl + '/socket',
+      `${baseSocketUrl}/socket`,
       // Try base URL with /ws
-      baseSocketUrl + '/ws',
+      `${baseSocketUrl}/ws`,
       // Try base URL with /realtime
-      baseSocketUrl + '/realtime',
+      `${baseSocketUrl}/realtime`,
       // Try base URL with /api/v1 (in case it's needed)
-      baseSocketUrl + '/api/v1',
+      `${baseSocketUrl}/api/v1`,
       // Try base URL with /slots
-      baseSocketUrl + '/slots',
+      `${baseSocketUrl}/slots`,
     ];
 
     endpoints.forEach((endpoint, index) => {
@@ -455,7 +453,7 @@ class SocketService {
   public testNamespace(namespace: string) {
     console.log(`SocketService: Testing namespace: ${namespace}`);
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -504,7 +502,7 @@ class SocketService {
   public testBasicConnection() {
     console.log('SocketService: Testing basic WebSocket connectivity...');
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -513,7 +511,7 @@ class SocketService {
     // Extract the base domain from the API URL
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }

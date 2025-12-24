@@ -2,13 +2,11 @@
 
 import { Calendar, Clock, MapPin, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getPatientBookingHistory } from '@/redux/api/bookingApi';
+import { usePatientBookingHistory } from '@/hooks/queries/useBookings';
 
 interface RecentBookingActivityProps {
   className?: string;
@@ -30,53 +28,19 @@ interface Booking {
 
 const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
   const router = useRouter();
-  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: bookingsData = [],
+    isLoading: loading,
+    isFetching: _isFetching,
+  } = usePatientBookingHistory({
+    page: 1,
+    limit: 5,
+    sortBy: 'slot.startTime',
+    sortOrder: 'desc',
+  });
 
-  useEffect(() => {
-    const fetchRecentBookings = async () => {
-      const hasData = recentBookings.length > 0;
-      try {
-        if (!hasData) {
-          setInitialLoading(true);
-        } else {
-          setLoading(true);
-        }
-        const response = await getPatientBookingHistory({
-          page: 1,
-          limit: 5,
-          sortBy: 'slot.startTime',
-          sortOrder: 'desc',
-        });
-
-        if (response.success && Array.isArray(response.data)) {
-          setRecentBookings(response.data.slice(0, 5));
-        }
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load recent bookings';
-        setError(errorMessage);
-        // Don't clear data on error if we have existing data
-        if (!hasData) {
-          setRecentBookings([]);
-        }
-      } finally {
-        setLoading(false);
-        setInitialLoading(false);
-      }
-    };
-
-    fetchRecentBookings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show toast error only on initial load
-  useEffect(() => {
-    if (error && initialLoading) {
-      toast.error(`Failed to load recent bookings: ${error}`);
-    }
-  }, [error, initialLoading]);
+  const recentBookings = bookingsData.slice(0, 5) as Booking[];
+  const initialLoading = loading && recentBookings.length === 0;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -146,26 +110,26 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse"></div>
-                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse" />
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse" />
                   </div>
                   <div className="flex items-center gap-4">
                     {Array.from({ length: 3 }).map((_, j) => (
                       <div key={j} className="flex items-center gap-1">
-                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse"></div>
+                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse" />
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse" />
                       </div>
                     ))}
                   </div>
                   <div className="mt-2">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse" />
                   </div>
                 </div>
-                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4 animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4 animate-pulse" />
               </div>
             ))}
           </div>
-          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4 animate-pulse"></div>
+          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4 animate-pulse" />
         </CardContent>
       </Card>
     );

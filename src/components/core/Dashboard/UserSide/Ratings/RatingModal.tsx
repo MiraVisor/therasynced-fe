@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { StarRatingSelector } from '@/components/ui/star-rating-selector';
-import { checkRatingEligibility, createRating } from '@/redux/api/ratingApi';
+import { useCreateRating, useRatingEligibility } from '@/hooks/queries/useRatings';
 import { Booking } from '@/types/types';
 
 interface RatingModalProps {
@@ -32,92 +32,61 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   onSuccess,
 }) => {
   const [rating, setRating] = useState<number>(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCheckingEligibility, setIsCheckingEligibility] = useState(true);
-  const [eligibility, setEligibility] = useState<{
-    canBeRated: boolean;
-    hasRating: boolean;
-    reason: string | null;
-  } | null>(null);
+  const { mutate: createRatingMutation, isPending: isSubmitting } = useCreateRating();
+  const { data: eligibilityData, isLoading: isCheckingEligibility } = useRatingEligibility(
+    booking?.id ?? null,
+  );
+
+  const eligibility = eligibilityData
+    ? {
+        canBeRated: eligibilityData.canBeRated,
+        hasRating: eligibilityData.hasRating,
+        reason: eligibilityData.reason,
+      }
+    : null;
 
   useEffect(() => {
     if (open && booking) {
       // Use booking.canBeRated and booking.hasRating if available from API response
-      // Otherwise, check eligibility via API call
       if (booking.canBeRated !== undefined && booking.hasRating !== undefined) {
-        setEligibility({
-          canBeRated: booking.canBeRated,
-          hasRating: booking.hasRating,
-          reason: booking.hasRating ? 'Already rated' : null,
-        });
-        setIsCheckingEligibility(false);
-      } else {
-        checkEligibility();
+        // Eligibility is handled by React Query hook
+        if (booking.hasRating && booking.rating) {
+          setRating(booking.rating.rating);
+        }
+      } else if (eligibilityData?.hasRating && eligibilityData.rating) {
+        setRating(eligibilityData.rating.rating);
       }
     } else {
       setRating(0);
-      setEligibility(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, booking]);
+  }, [open, booking, eligibilityData]);
 
-  const checkEligibility = async () => {
-    if (!booking) return;
-
-    setIsCheckingEligibility(true);
-    try {
-      const result = await checkRatingEligibility(booking.id);
-      setEligibility({
-        canBeRated: result.canBeRated,
-        hasRating: result.hasRating,
-        reason: result.reason,
-      });
-      if (result.hasRating && result.rating) {
-        setRating(result.rating.rating);
-      }
-    } catch (error: any) {
-      console.error('Error checking rating eligibility:', error);
-      toast.error('Failed to check rating eligibility');
-      setEligibility({
-        canBeRated: false,
-        hasRating: false,
-        reason: 'Unable to check eligibility',
-      });
-    } finally {
-      setIsCheckingEligibility(false);
-    }
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!booking || rating === 0) {
       toast.error('Please select a rating');
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      await createRating({
+    createRatingMutation(
+      {
         bookingId: booking.id,
         rating: rating,
-      });
-      toast.success('Rating submitted successfully!');
-      onOpenChange(false);
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error: any) {
-      console.error('Error submitting rating:', error);
-      const errorMessage = error?.data?.message || error?.message || 'Failed to submit rating';
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          onOpenChange(false);
+          if (onSuccess) {
+            onSuccess();
+          }
+        },
+      },
+    );
   };
 
   if (!booking) return null;
 
   const freelancer = booking.slot?.freelancer;
-  const slot = booking.slot;
+  const { slot } = booking;
   const bookingDate = slot ? new Date(slot.startTime) : null;
 
   const canSubmit =

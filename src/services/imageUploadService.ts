@@ -7,7 +7,7 @@ import { ENDPOINTS } from './endpoints';
 
 // Create a separate axios instance for file uploads
 const uploadApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL: process.env['NEXT_PUBLIC_BACKEND_URL'],
   headers: {
     'Content-Type': 'multipart/form-data',
     'ngrok-skip-browser-warning': 'true',
@@ -126,13 +126,18 @@ export const uploadToCloudinary = async (
       publicId: data.public_id,
       success: true,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Cloudinary upload error:', error);
+    const errorMessage =
+      error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
+            ?.message || (error as { message?: string }).message
+        : undefined;
     return {
       url: '',
       publicId: '',
       success: false,
-      error: error.response?.data?.message || error.message || 'Upload failed',
+      error: errorMessage || 'Upload failed',
     };
   }
 };
@@ -144,11 +149,16 @@ export const deleteFromCloudinary = async (
   try {
     await uploadApi.delete(ENDPOINTS.image.deleteSingle(publicId));
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Cloudinary delete error:', error);
+    const errorMessage =
+      error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
+            ?.message || (error as { message?: string }).message
+        : undefined;
     return {
       success: false,
-      error: error.response?.data?.message || error.message || 'Delete failed',
+      error: errorMessage || 'Delete failed',
     };
   }
 };

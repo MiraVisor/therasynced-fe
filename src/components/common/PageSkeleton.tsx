@@ -119,40 +119,40 @@ export function UserPageSkeleton({ className }: { className?: string }) {
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-8 overflow-hidden relative">
         <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+          <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
           <div className="flex-1">
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-1/3"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-1/3" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
           </div>
-          <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+          <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-32" />
         </div>
       </div>
 
       {/* Booking History Chart Skeleton */}
       <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl overflow-hidden">
         <div className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-4">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/4 mb-2"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/4 mb-2" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
         </div>
         <div className="p-5">
           <div className="grid grid-cols-3 gap-4 mb-5">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="text-center">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-16 mx-auto mb-1"></div>
-                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mx-auto"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-16 mx-auto mb-1" />
+                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mx-auto" />
               </div>
             ))}
           </div>
-          <div className="h-[220px] bg-gray-100 dark:bg-gray-800/20 rounded"></div>
+          <div className="h-[220px] bg-gray-100 dark:bg-gray-800/20 rounded" />
         </div>
       </div>
 
       {/* Favorite Freelancers Carousel Skeleton */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <div className="border-b border-gray-100 px-6 py-4">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
         </div>
         <div className="p-6">
           <div className="flex gap-4 overflow-hidden">
@@ -163,17 +163,17 @@ export function UserPageSkeleton({ className }: { className?: string }) {
               >
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full" />
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3" />
                 </div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full" />
               </div>
             ))}
           </div>
@@ -183,8 +183,8 @@ export function UserPageSkeleton({ className }: { className?: string }) {
       {/* Recent Booking Activity Skeleton */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <div className="border-b border-gray-100 px-6 py-4">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
         </div>
         <div className="p-6">
           <div className="space-y-4">
@@ -196,26 +196,26 @@ export function UserPageSkeleton({ className }: { className?: string }) {
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16" />
                   </div>
                   <div className="flex items-center gap-4">
                     {Array.from({ length: 3 }).map((_, j) => (
                       <div key={j} className="flex items-center gap-1">
-                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12"></div>
+                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded" />
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12" />
                       </div>
                     ))}
                   </div>
                   <div className="mt-2">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" />
                   </div>
                 </div>
-                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4"></div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4" />
               </div>
             ))}
           </div>
-          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4"></div>
+          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4" />
         </div>
       </div>
     </div>
@@ -232,13 +232,13 @@ export function FreelancerPageSkeleton({ className }: { className?: string }) {
           <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
               <div className="flex-1">
-                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-1"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-64"></div>
+                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-1" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-64" />
               </div>
             </div>
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24" />
           </div>
         </div>
 
@@ -249,11 +249,11 @@ export function FreelancerPageSkeleton({ className }: { className?: string }) {
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                  <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" />
                 </div>
-                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mx-auto mb-1"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-8 mx-auto"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mx-auto mb-1" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-8 mx-auto" />
               </div>
             ))}
           </div>
@@ -284,11 +284,11 @@ export function FreelancerPageSkeleton({ className }: { className?: string }) {
           <div className="lg:col-span-2">
             <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl overflow-hidden">
               <div className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
               </div>
               <div className="p-5">
-                <div className="h-[300px] lg:h-[400px] bg-gray-100 dark:bg-gray-800/20 rounded"></div>
+                <div className="h-[300px] lg:h-[400px] bg-gray-100 dark:bg-gray-800/20 rounded" />
               </div>
             </div>
           </div>
@@ -297,8 +297,8 @@ export function FreelancerPageSkeleton({ className }: { className?: string }) {
           <div className="lg:col-span-1">
             <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl overflow-hidden">
               <div className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-2/3 mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-2/3 mb-2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
               </div>
               <div className="p-5">
                 <div className="space-y-3">
@@ -311,22 +311,22 @@ export function FreelancerPageSkeleton({ className }: { className?: string }) {
                       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                            <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
                           </div>
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded"></div>
-                            <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-16"></div>
+                            <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded" />
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-16" />
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded"></div>
-                            <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-12"></div>
+                            <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded" />
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-12" />
                           </div>
                         </div>
                         <div className="flex items-center justify-between lg:justify-end gap-2">
                           <div className="px-3 py-1 bg-gray-200 dark:bg-gray-700/30 rounded-lg overflow-hidden relative">
                             <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                            <div className="h-4 bg-gray-200 dark:bg-gray-700/30 rounded w-16"></div>
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700/30 rounded w-16" />
                           </div>
                         </div>
                       </div>

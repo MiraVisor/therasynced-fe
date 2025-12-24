@@ -32,6 +32,8 @@ export const ENDPOINTS = {
     update: (id: string) => `/slot/${id}`,
     delete: (id: string) => `/slot/${id}`,
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
+    reserve: (slotId: string) => `/slots/${slotId}/reserve`,
+    release: (slotId: string) => `/slots/${slotId}/release`,
   },
   // Service management
   services: {
@@ -71,7 +73,15 @@ export const ENDPOINTS = {
     favorite: '/freelancer/favorite',
     favoriteAll: '/freelancer/favorite/all',
     recentFavorite: '/freelancer/favorite/recent',
-    files: '/freelancer/files', // Get all uploaded files
+    files: '/freelancer/files', // Get all uploaded files (legacy)
+    // New file upload endpoints
+    filesUpload: '/freelancer/files/upload',
+    filesList: '/freelancer/files',
+    fileDownload: (fileId: string) => `/freelancer/files/${fileId}/download`,
+    fileSignedUrl: (fileId: string) => `/freelancer/files/${fileId}/signed-url`,
+    fileDelete: (fileId: string) => `/freelancer/files/${fileId}`,
+    // Form templates
+    formSignedUrl: (id: string) => `/freelancer/forms/${id}/signed-url`,
     stats: '/freelancer/admin/stats',
     analytics: '/freelancer/analytics',
     tierBronze: '/freelancer/tier/bronze',
@@ -82,6 +92,8 @@ export const ENDPOINTS = {
   // Dashboard endpoints
   dashboard: {
     freelancerOverview: '/dashboard/freelancer/overview',
+    freelancerStats: '/dashboard/freelancer/stats',
+    freelancerWeeklyAppointments: '/dashboard/freelancer/weekly-appointments',
   },
   // Chat/messaging endpoints
   chat: {
@@ -162,6 +174,10 @@ export const ENDPOINTS = {
     billingPortal: '/subscription/billing-portal',
     checkout: '/subscription/checkout',
     verifyCheckout: '/subscription/verify-checkout',
+    billingHistory: '/subscription/billing-history',
+    invoice: (invoiceId: string) => `/subscription/invoice/${invoiceId}`,
+    paymentMethods: '/subscription/payment-methods',
+    updatePaymentMethod: '/subscription/payment-method',
   },
   // Rating endpoints
   ratings: {
@@ -208,6 +224,11 @@ export const ENDPOINTS = {
         `/freelancer/admin/first-aid-certificate/${freelancerId}/approve`,
       rejectCertificate: (freelancerId: string) =>
         `/freelancer/admin/first-aid-certificate/${freelancerId}/reject`,
+      // Admin file management endpoints
+      filesList: '/freelancer/admin/files',
+      fileDetails: (fileId: string) => `/freelancer/admin/files/${fileId}`,
+      fileDownload: (fileId: string) => `/freelancer/admin/files/${fileId}/download`,
+      fileSignedUrl: (fileId: string) => `/freelancer/admin/files/${fileId}/signed-url`,
     },
     // Complaint management
     complaint: {
@@ -243,6 +264,11 @@ export const ENDPOINTS = {
     finance: {
       getRevenue: '/admin/finance/revenue',
       getSubscriptions: '/admin/finance/subscriptions',
+      getTransactions: '/admin/transactions',
+      getTransactionDetails: (id: string) => `/admin/transactions/${id}`,
+      getTransactionInvoice: (id: string) => `/admin/transactions/${id}/invoice`,
+      exportTransactions: '/admin/transactions/export/csv',
+      transactionStats: '/admin/transactions/stats/summary',
     },
     // User management
     users: {
@@ -270,7 +296,8 @@ export const ENDPOINTS = {
   consent: {
     healthData: '/consent/health-data',
     cookies: '/consent/cookies',
+    all: '/consent/all', // Unified consent endpoint
   },
 };
 
-export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+export const BACKEND_URL = process.env['NEXT_PUBLIC_BACKEND_URL'];

@@ -1,26 +1,16 @@
 'use client';
 
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  DollarSign,
-  Plus,
-  TrendingUp,
-  X,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { CreateSlotForm } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/CreateSlotForm';
 import { DaySlotSection } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/DaySlotSection';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
-import { UpgradeModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/UpgradeModal';
+import { EnhancedUpgradeModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/EnhancedUpgradeModal';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,90 +23,47 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getDecodedToken } from '@/lib/utils';
-import { getSubscriptionPlans } from '@/redux/api/subscriptionApi';
-import { useAppDispatch, useAppSelector, useAuth } from '@/redux/hooks/useAppHooks';
-import { deleteSlot, fetchMySlots, fetchMySlotsStats } from '@/redux/slices/slotSlice';
-import { RootState } from '@/redux/store';
+import { useDeleteSlot, useMySlots, useSlotStats } from '@/hooks/queries/useSlots';
+import { useMySubscription, useSubscriptionPlans } from '@/hooks/queries/useSubscription';
+import { useAuth } from '@/hooks/useAuthZustand';
 import { Slot } from '@/types/types';
 
 const SlotsPage = () => {
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const { role } = useAuth();
-  const { slots, isLoading, isCreating, slotStats, isLoadingStats, initialLoadingStats } =
-    useSelector((state: RootState) => state.slot);
-  const { currentSubscription, plans } = useAppSelector((state) => state.subscription);
+
+  // Calculate week date for query
+  const [currentWeekStart, setCurrentWeekStart] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 1 }),
+  );
+  const weekDate = currentWeekStart.toISOString().split('T')[0];
+
+  // Use React Query hooks
+  const { data: slots = [], isLoading } = useMySlots({
+    page: 1,
+    limit: 1000,
+    sortBy: 'startTime',
+    sortOrder: 'asc',
+    weekStart: weekDate,
+  });
+  const { data: slotStats, isLoading: isLoadingStats } = useSlotStats();
+  const { mutate: deleteSlotMutation } = useDeleteSlot();
+  const { data: plans = [] } = useSubscriptionPlans();
+  const { data: currentSubscription } = useMySubscription();
   const [showCreateSlotForm, setShowCreateSlotForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [currentWeekStart, setCurrentWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 }),
-  );
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
 
-  const fetchSlotsForWeek = async (weekStartDate: Date, resetSlots = false) => {
-    const decodedToken = getDecodedToken();
-    const freelancerId = decodedToken?.sub;
-
-    if (!freelancerId) return;
-
-    // Calculate week range (Monday 00:00 to Sunday 23:59:59)
-    const weekStart = new Date(weekStartDate);
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekEnd = new Date(weekStartDate);
-    weekEnd.setDate(weekStartDate.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
-    try {
-      const response = await dispatch(
-        fetchMySlots({
-          page: 1,
-          limit: 1000,
-          freelancerId,
-          weekStart: weekStart.toISOString(),
-          weekEnd: weekEnd.toISOString(),
-        }) as any,
-      ).unwrap();
-
-      if (resetSlots) {
-        // Replace slots on week change
-        dispatch({ type: 'slot/setSlots', payload: response.data });
-      } else {
-        // Append slots when loading more weeks
-        dispatch({ type: 'slot/appendSlots', payload: response.data });
-      }
-    } catch (error) {
-      console.error('Failed to fetch slots:', error);
-      toast.error('Failed to load slots for this week');
-    }
-  };
-
-  // Fetch subscription and stats on mount
-  useEffect(() => {
-    const hasStats = slotStats !== null;
-    const hasPlans = plans.length > 0;
-    dispatch(fetchMySlotsStats({ silent: hasStats }) as any);
-    dispatch(getSubscriptionPlans({ silent: hasPlans }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchSlotsForWeek(currentWeekStart, true);
-  }, [dispatch, currentWeekStart]);
-
   const handleSlotCreateSuccess = () => {
     setShowCreateSlotForm(false);
-    fetchSlotsForWeek(currentWeekStart, true);
-    dispatch(fetchMySlotsStats({ silent: true }) as any);
     // Scroll to top to see the new slots
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // React Query will automatically refetch slots
   };
 
   const handleCreateSlotClick = () => {
@@ -129,7 +76,7 @@ const SlotsPage = () => {
 
     // Check subscription limits before opening the form
     if (currentSubscription?.plan) {
-      const maxSlots = currentSubscription.plan.maxSlots;
+      const { maxSlots } = currentSubscription.plan;
       if (maxSlots !== null && slotStats && slotStats.totalSlots >= maxSlots) {
         // Show upgrade modal
         setShowUpgradeModal(true);
@@ -147,62 +94,45 @@ const SlotsPage = () => {
     router.push(`/dashboard/slots/${slot.id}`);
   };
 
-  const handleDeleteFromDialog = async (slotId: string) => {
+  const handleDeleteFromDialog = (slotId: string) => {
     setShowDetailsDialog(false);
     setSelectedSlot(null);
-    try {
-      await dispatch(deleteSlot(slotId) as any).unwrap();
-      toast.success('Slot deleted successfully');
-      // Update stats after successful deletion
-      dispatch(fetchMySlotsStats({ silent: true }) as any);
-      // Note: The slot is already removed from UI via optimistic update in the reducer
-      // We don't refresh the slots list here to avoid race conditions where the server
-      // might not have processed the delete yet and would restore the slot
-      // The optimistic update ensures immediate UI feedback
-    } catch (error: any) {
-      const errorMessage = error?.error || error?.message || 'Failed to delete slot';
-      toast.error(errorMessage);
-      // Refresh to restore the slot if deletion failed (optimistic update will be overwritten)
-      fetchSlotsForWeek(currentWeekStart, true);
-    }
+    deleteSlotMutation(slotId, {
+      onSuccess: () => {
+        // React Query will automatically refetch slots and stats
+      },
+    });
   };
 
-  const handleDeleteSlot = async () => {
+  const handleDeleteSlot = () => {
     if (!selectedSlot) return;
     setShowDeleteDialog(false);
-    setSelectedSlot(null);
-    try {
-      await dispatch(deleteSlot(selectedSlot.id) as any).unwrap();
-      toast.success('Slot deleted successfully');
-      dispatch(fetchMySlotsStats({ silent: true }) as any);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete slot');
-      fetchSlotsForWeek(currentWeekStart, true);
-    }
+    deleteSlotMutation(selectedSlot.id, {
+      onSuccess: () => {
+        setSelectedSlot(null);
+        // React Query will automatically refetch slots and stats
+      },
+    });
   };
 
-  const navigateWeek = async (direction: 'prev' | 'next') => {
+  const navigateWeek = (direction: 'prev' | 'next') => {
     setIsNavigatingWeek(true);
-    try {
-      if (direction === 'prev') {
-        const newWeekStart = addDays(currentWeekStart, -7);
-        setCurrentWeekStart(newWeekStart);
-        fetchSlotsForWeek(newWeekStart, true);
-      } else {
-        const newWeekStart = addDays(currentWeekStart, 7);
-        setCurrentWeekStart(newWeekStart);
-        fetchSlotsForWeek(newWeekStart, true);
-      }
-    } finally {
-      setIsNavigatingWeek(false);
+    if (direction === 'prev') {
+      const newWeekStart = addDays(currentWeekStart, -7);
+      setCurrentWeekStart(newWeekStart);
+    } else {
+      const newWeekStart = addDays(currentWeekStart, 7);
+      setCurrentWeekStart(newWeekStart);
     }
+    // React Query will automatically refetch when currentWeekStart changes
+    setTimeout(() => setIsNavigatingWeek(false), 500);
   };
 
   const handleDatePickerChange = (date: Date | undefined) => {
     if (date) {
       const newWeekStart = startOfWeek(date, { weekStartsOn: 1 });
       setCurrentWeekStart(newWeekStart);
-      fetchSlotsForWeek(newWeekStart, true);
+      // React Query will automatically refetch
     }
   };
 
@@ -222,29 +152,25 @@ const SlotsPage = () => {
     });
   };
 
-  // Use API stats when available, fallback to calculated stats
+  // Use API stats - these are global stats, not week-specific
   const displayStats = useMemo(() => {
     if (slotStats) {
       return {
-        total: slotStats.totalSlots,
-        booked: slotStats.bookedSlots,
-        available: slotStats.availableSlots,
-        revenue: slotStats.revenue,
+        total: slotStats.totalSlots || 0,
+        booked: slotStats.bookedSlots || 0,
+        available: slotStats.availableSlots || 0,
+        revenue: slotStats.revenue || 0,
       };
     }
 
-    // Fallback calculation
-    const bookedSlots = slots.filter((s) => s.status === 'BOOKED');
-    const availableSlots = slots.filter((s) => s.status === 'AVAILABLE');
-    const totalRevenue = bookedSlots.reduce((sum, slot) => sum + slot.basePrice, 0);
-
+    // Return zeros while loading - don't use week-specific slots for global stats
     return {
-      total: slots.length,
-      booked: bookedSlots.length,
-      available: availableSlots.length,
-      revenue: totalRevenue,
+      total: 0,
+      booked: 0,
+      available: 0,
+      revenue: 0,
     };
-  }, [slotStats, slots]);
+  }, [slotStats]);
 
   const weekDays = getWeekDays();
 
@@ -287,18 +213,9 @@ const SlotsPage = () => {
               </p>
             </div>
             {!isSlotLimitReached ? (
-              <Button onClick={handleCreateSlotClick} disabled={isCreating} className="h-11 px-6">
-                {isCreating ? (
-                  <>
-                    <LoadingSpinner size="sm" className="mr-2" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Availability
-                  </>
-                )}
+              <Button onClick={handleCreateSlotClick} className="h-11 px-6">
+                <Plus className="h-5 w-5 mr-2" />
+                Add Availability
               </Button>
             ) : (
               <Tooltip>
@@ -316,12 +233,7 @@ const SlotsPage = () => {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    {currentSubscription?.canCreateSlots === false
-                      ? currentSubscription?.message ||
-                        "You've reached the trial limit of 5 slots. Upgrade to create more."
-                      : "You've reached your slot limit. Upgrade to create more."}
-                  </p>
+                  <p>You have reached your slot limit. Upgrade to create more slots.</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -360,142 +272,127 @@ const SlotsPage = () => {
           </Card>
         )}
 
-        {/* Subscription Info Section */}
-        {slotStats?.subscriptionInfo && (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-poppins font-semibold text-lg text-charcoal">
-                  Subscription & Slot Limits
-                </h3>
-                <p className="font-inter text-sm text-gray-500 mt-1">
-                  {slotStats.subscriptionInfo.planName
-                    ? `${slotStats.subscriptionInfo.planName} Plan`
-                    : 'No active subscription'}
-                </p>
-              </div>
-              {slotStats.subscriptionInfo.remainingSlots === 0 && (
-                <div className="px-3 py-1.5 bg-error/10 border border-error/20 rounded-lg">
-                  <span className="text-xs font-inter font-medium text-error">
-                    Slot limit reached
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {slotStats.subscriptionInfo.isUnlimited ? (
-              <div className="flex items-center gap-2 p-4 bg-success/5 rounded-lg border border-success/20">
-                <div className="flex-1">
-                  <div className="font-poppins text-2xl font-bold text-success mb-1">
-                    Unlimited Slots
-                  </div>
-                  <div className="font-inter text-sm text-gray-600">
-                    {slotStats.subscriptionInfo.activeSlotsCount} active slot
-                    {slotStats.subscriptionInfo.activeSlotsCount !== 1 ? 's' : ''}
-                  </div>
-                </div>
-              </div>
-            ) : slotStats.subscriptionInfo.planName ? (
-              <div className="space-y-3">
+        {/* Enhanced Subscription Banner - Only show when there's an active plan or trial */}
+        {currentSubscription &&
+          (currentSubscription.plan || currentSubscription.status === 'TRIALING') && (
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader>
                 <div className="flex items-center justify-between">
-                  <span className="font-inter text-sm font-medium text-gray-700">
-                    {slotStats.subscriptionInfo.activeSlotsCount} /{' '}
-                    {slotStats.subscriptionInfo.maxSlots} slots used
-                  </span>
-                  <span className="font-inter text-sm font-medium text-charcoal">
-                    {slotStats.subscriptionInfo.remainingSlots !== null
-                      ? `${slotStats.subscriptionInfo.remainingSlots} remaining`
-                      : 'Unlimited'}
-                  </span>
+                  <div>
+                    <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
+                      {currentSubscription.plan
+                        ? `${currentSubscription.plan.displayName} Plan`
+                        : 'Free Trial Active'}
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      {currentSubscription.plan
+                        ? `EUR ${currentSubscription.plan.price}/month`
+                        : 'Trial period active'}
+                    </CardDescription>
+                  </div>
+                  {currentSubscription.slotsLimit !== null &&
+                    currentSubscription.slotsUsed >= currentSubscription.slotsLimit && (
+                      <div className="px-3 py-1.5 bg-error/10 border border-error/20 rounded-lg">
+                        <span className="text-xs font-inter font-medium text-error">
+                          Limit reached
+                        </span>
+                      </div>
+                    )}
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      slotStats.subscriptionInfo.remainingSlots === 0
-                        ? 'bg-error'
-                        : slotStats.subscriptionInfo.remainingSlots !== null &&
-                            slotStats.subscriptionInfo.remainingSlots <= 2
-                          ? 'bg-warning'
-                          : 'bg-success'
-                    }`}
-                    style={{
-                      width: `${Math.min(
-                        (slotStats.subscriptionInfo.activeSlotsCount /
-                          (slotStats.subscriptionInfo.maxSlots || 1)) *
-                          100,
-                        100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-                {slotStats.subscriptionInfo.remainingSlots === 0 && (
-                  <div className="mt-3 p-3 bg-error/5 border border-error/20 rounded-lg">
-                    <p className="text-sm font-inter text-error">
-                      You&apos;ve reached your slot limit. Please upgrade your plan to create more
-                      slots.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2 border-primary text-primary hover:bg-primary hover:text-white"
-                      onClick={() => router.push('/dashboard/account?tab=subscription')}
-                    >
-                      Upgrade Plan
-                    </Button>
+              </CardHeader>
+              <CardContent>
+                {currentSubscription.slotsLimit === null ? (
+                  <div className="flex items-center gap-2 p-4 bg-success/5 rounded-lg border border-success/20">
+                    <div className="flex-1">
+                      <div className="font-poppins text-2xl font-bold text-success mb-1">
+                        Unlimited Slots
+                      </div>
+                      <div className="font-inter text-sm text-gray-600">
+                        {currentSubscription.slotsUsed} active slot
+                        {currentSubscription.slotsUsed !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-inter text-sm font-medium text-gray-700">
+                        {currentSubscription.slotsUsed} / {currentSubscription.slotsLimit} slots
+                        used
+                      </span>
+                      {currentSubscription.slotsLimit > 0 && (
+                        <span className="font-inter text-sm font-medium text-charcoal">
+                          {Math.max(
+                            0,
+                            currentSubscription.slotsLimit - currentSubscription.slotsUsed,
+                          )}{' '}
+                          remaining
+                        </span>
+                      )}
+                    </div>
+                    {currentSubscription.slotsLimit > 0 && (
+                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            currentSubscription.slotsUsed >= currentSubscription.slotsLimit
+                              ? 'bg-error'
+                              : currentSubscription.slotsLimit - currentSubscription.slotsUsed <= 2
+                                ? 'bg-warning'
+                                : 'bg-success'
+                          }`}
+                          style={{
+                            width: `${Math.min(
+                              (currentSubscription.slotsUsed / currentSubscription.slotsLimit) *
+                                100,
+                              100,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    )}
+                    {currentSubscription.slotsLimit > 0 &&
+                      currentSubscription.slotsUsed >= currentSubscription.slotsLimit && (
+                        <div className="mt-3 p-3 bg-error/5 border border-error/20 rounded-lg">
+                          <p className="text-sm font-inter text-error mb-2">
+                            You&apos;ve reached your slot limit. Upgrade to create more slots.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-primary text-primary hover:bg-primary hover:text-white"
+                            onClick={() => setShowUpgradeModal(true)}
+                          >
+                            Upgrade Plan
+                          </Button>
+                        </div>
+                      )}
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm font-inter text-gray-600 mb-3">
-                  Please subscribe to create slots and start accepting bookings.
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
-                  onClick={() => router.push('/dashboard/account?tab=subscription')}
-                >
-                  View Plans
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard
             title="Total Slots"
             value={displayStats.total.toString()}
-            icon={CalendarIcon}
-            iconColor="text-info"
-            iconBg="bg-info/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Booked"
             value={displayStats.booked.toString()}
-            icon={Clock}
-            iconColor="text-success"
-            iconBg="bg-success/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Available"
             value={displayStats.available.toString()}
-            icon={TrendingUp}
-            iconColor="text-primary"
-            iconBg="bg-primary/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
           <EnhancedStatCard
             title="Revenue"
             value={`€${displayStats.revenue.toFixed(2)}`}
-            icon={DollarSign}
-            iconColor="text-warning"
-            iconBg="bg-warning/10"
-            loading={initialLoadingStats || (isLoadingStats && !slotStats)}
+            loading={isLoadingStats && !slotStats}
           />
         </div>
 
@@ -556,12 +453,12 @@ const SlotsPage = () => {
             {Array.from({ length: 7 }).map((_, index) => (
               <div key={index} className="bg-white rounded-lg border p-8 min-h-[300px]">
                 <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-32 mb-4" />
                   <div className="space-y-3 mt-3">
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full" />
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
                   </div>
                 </div>
               </div>
@@ -592,9 +489,7 @@ const SlotsPage = () => {
           }}
           onDelete={handleDeleteFromDialog}
           onComplete={() => {
-            // Refresh slots after completion
-            fetchSlotsForWeek(currentWeekStart, true);
-            fetchMySlotsStats({ silent: true });
+            // React Query will automatically refetch slots and stats
           }}
         />
       )}
@@ -619,17 +514,18 @@ const SlotsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Upgrade Modal */}
-      {currentSubscription?.plan && (
-        <UpgradeModal
-          isOpen={showUpgradeModal}
-          onClose={handleUpgradeClose}
-          currentPlan={currentSubscription.plan}
-          availablePlans={plans}
-          currentSlots={slotStats?.totalSlots || 0}
-          maxSlots={currentSubscription.plan.maxSlots || 0}
-        />
-      )}
+      {/* Enhanced Upgrade Modal */}
+      <EnhancedUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={handleUpgradeClose}
+        plans={plans}
+        currentPlanName={currentSubscription?.plan?.name}
+        onSelectPlan={(planType) => {
+          router.push(`/dashboard/account?tab=subscription&upgrade=${planType}`);
+          handleUpgradeClose();
+        }}
+        isLoading={false}
+      />
     </DashboardPageWrapper>
   );
 };

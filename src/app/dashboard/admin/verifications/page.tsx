@@ -1,24 +1,13 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import {
-  CheckCircle,
-  Clock,
-  ExternalLink,
-  FileText,
-  MoreHorizontal,
-  Shield,
-  XCircle,
-} from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { CheckCircle, ChevronDown, FileText, MoreHorizontal, Shield, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
-import {
-  StatusFilter,
-  StatusFilterOption,
-} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
+import { StatusFilterOption } from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,7 +20,9 @@ import {
 } from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
-import { useVerifications } from '@/hooks/useVerifications';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAdminVerifications, useAdminVerificationStats } from '@/hooks/queries/useAdmin';
+import { useAdminGetFileSignedUrl } from '@/hooks/queries/useFreelancerFiles';
 import adminVerificationService, {
   type PendingVerificationResponse,
 } from '@/services/adminVerificationService';
@@ -47,30 +38,18 @@ const statsConfig = [
   {
     key: 'total' as keyof VerificationStats,
     title: 'Total Verifications',
-    icon: Shield,
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary/10',
   },
   {
     key: 'pending' as keyof VerificationStats,
     title: 'Pending',
-    icon: Clock,
-    iconColor: 'text-warning',
-    iconBg: 'bg-warning/10',
   },
   {
     key: 'approved' as keyof VerificationStats,
     title: 'Approved',
-    icon: CheckCircle,
-    iconColor: 'text-success',
-    iconBg: 'bg-success/10',
   },
   {
     key: 'rejected' as keyof VerificationStats,
     title: 'Rejected',
-    icon: XCircle,
-    iconColor: 'text-error',
-    iconBg: 'bg-error/10',
   },
 ];
 
@@ -110,99 +89,62 @@ const VerificationsPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch verifications with pagination, search, and status filter
-  const { verifications, loading, initialLoading, error, pagination, refetch } = useVerifications({
+  const {
+    data: verificationsData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useAdminVerifications({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
     status: statusFilter,
   });
 
-  // Calculate stats - we'll need to fetch these separately or from the API
-  const [stats, setStats] = useState<VerificationStats>({
-    pending: 0,
-    approved: 0,
-    rejected: 0,
-    total: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
+  const verifications = verificationsData?.verifications || [];
+  const pagination = verificationsData?.pagination;
 
-  // Fetch stats separately
-  useEffect(() => {
-    let isMounted = true;
+  // Fetch stats
+  const {
+    data: statsData,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useAdminVerificationStats();
 
-    const fetchStats = async () => {
-      const hasStats = stats.total > 0 || stats.pending > 0 || stats.approved > 0;
-      try {
-        if (!hasStats) {
-          setInitialStatsLoading(true);
-        } else {
-          setStatsLoading(true);
-        }
-        const response = await adminVerificationService.getStatistics();
-
-        if (response.success && isMounted) {
-          const { total, pending, approved, rejected } = response.data;
-          setStats({
-            total,
-            pending,
-            approved,
-            rejected,
-          });
-        }
-      } catch (error) {
-        // Silently handle stats fetch errors to avoid spam
-        console.warn('Failed to fetch stats:', error);
-      } finally {
-        if (isMounted) {
-          setStatsLoading(false);
-          setInitialStatsLoading(false);
-        }
+  const stats: VerificationStats = statsData?.data
+    ? {
+        total: statsData.data.total || 0,
+        pending: statsData.data.pending || 0,
+        approved: statsData.data.approved || 0,
+        rejected: statsData.data.rejected || 0,
       }
-    };
+    : {
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        total: 0,
+      };
 
-    fetchStats();
-
-    return () => {
-      isMounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show error as toast when it occurs
+  // Show errors as toast when they occur
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load verifications: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load verifications';
+      toast.error(errorMessage);
     }
   }, [error]);
 
-  // Function to refetch stats with debouncing
-  const refetchStats = useCallback(async () => {
-    // Prevent multiple concurrent stats requests
-    if (statsLoading) return;
-
-    try {
-      setStatsLoading(true);
-      const response = await adminVerificationService.getStatistics();
-
-      if (response.success) {
-        const { total, pending, approved, rejected } = response.data;
-        setStats({
-          total,
-          pending,
-          approved,
-          rejected,
-        });
-      }
-    } catch (error) {
-      // Silently handle stats refetch errors to avoid spam
-      console.warn('Failed to refetch stats:', error);
-    } finally {
-      setStatsLoading(false);
+  useEffect(() => {
+    if (statsError) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load verification stats';
+      toast.error(errorMessage);
     }
-  }, [statsLoading]);
+  }, [statsError]);
 
-  // Handle action submission with improved error handling
+  // Handle action submission - admins can approve/reject at any time
+  // Backend handles clearing opposite status fields automatically
   const handleActionSubmit = async () => {
     if (!selectedFreelancer || !selectedActionType || !selectedAction) return;
 
@@ -281,10 +223,71 @@ const VerificationsPage = () => {
     setRejectionReason('');
   };
 
+  // Helper function to get status text
+  const getStatusText = (status: string | undefined) => {
+    if (status === 'APPROVED') return 'Yes';
+    if (status === 'REJECTED') return 'No';
+    return 'Pending';
+  };
+
+  // Helper function to extract document name from URL
+  const getDocumentName = (url: string, index: number) => {
+    try {
+      const urlParts = url.split('/');
+      const filename = urlParts[urlParts.length - 1];
+      if (!filename) {
+        return `Document ${index + 1}`;
+      }
+      const cleanName = filename.split('?')[0];
+      if (!cleanName) {
+        return `Document ${index + 1}`;
+      }
+      const decoded = decodeURIComponent(cleanName);
+      if (decoded.length < 3 || decoded.includes('%')) {
+        return `Document ${index + 1}`;
+      }
+      return decoded.length > 40 ? `${decoded.substring(0, 40)}...` : decoded;
+    } catch {
+      return `Document ${index + 1}`;
+    }
+  };
+
+  const signedUrlMutation = useAdminGetFileSignedUrl();
+
+  const handleFileView = async (fileId: string) => {
+    try {
+      const data = await signedUrlMutation.mutateAsync(fileId);
+
+      // Fetch the PDF as a blob to avoid CORS issues
+      const response = await fetch(data.signedUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/pdf',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Open the blob URL in a new tab
+      window.open(blobUrl, '_blank');
+
+      // Clean up the blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      toast.error('Failed to load PDF. Please try again.');
+    }
+  };
+
   const columns: ColumnDef<PendingVerificationResponse>[] = [
     {
       accessorKey: 'name',
-      header: 'Freelancer',
+      header: 'Name',
       cell: ({ row }) => (
         <div>
           <div className="font-inter font-medium text-charcoal">{row.original.name}</div>
@@ -293,85 +296,177 @@ const VerificationsPage = () => {
       ),
     },
     {
-      accessorKey: 'verificationStatus',
-      header: 'Verification Status',
-      cell: ({ row }) => <StatusBadge status={row.original.verificationStatus} size="sm" />,
-    },
-    {
-      id: 'verificationDocuments',
-      header: 'Verification Documents',
+      id: 'status',
+      header: 'Status',
       cell: ({ row }) => {
-        const documents = row.original.verificationDocuments;
-        if (!documents || documents.length === 0) {
-          return <span className="font-inter text-sm text-muted-foreground">Not uploaded</span>;
-        }
-
-        // Extract filename from URL for display
-        const getDocumentName = (url: string, index: number) => {
-          try {
-            const urlParts = url.split('/');
-            const filename = urlParts[urlParts.length - 1];
-            // Remove query parameters if any
-            const cleanName = filename.split('?')[0];
-            // Decode URL encoding
-            const decoded = decodeURIComponent(cleanName);
-            // If it's still a hash or unclear, use a generic name
-            if (decoded.length < 3 || decoded.includes('%')) {
-              return `Document ${index + 1}`;
-            }
-            return decoded.length > 30 ? `${decoded.substring(0, 30)}...` : decoded;
-          } catch {
-            return `Document ${index + 1}`;
-          }
-        };
+        const { verificationStatus } = row.original;
+        const certificateStatus = row.original.firstAidCertificateStatus;
+        const certificateUrl = row.original.firstAidCertificateUrl;
 
         return (
-          <div className="flex flex-col gap-1.5 max-w-xs">
-            <span className="font-inter text-xs text-muted-foreground mb-1">
-              {documents.length} {documents.length === 1 ? 'document' : 'documents'}
-            </span>
-            <div className="flex flex-col gap-1">
-              {documents.map((docUrl: string, index: number) => (
-                <a
-                  key={index}
-                  href={docUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-inter text-xs text-primary hover:underline flex items-center gap-1.5 truncate"
-                  title={getDocumentName(docUrl, index)}
-                >
-                  <FileText className="h-3 w-3 flex-shrink-0" />
-                  <span className="truncate">{getDocumentName(docUrl, index)}</span>
-                  <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                </a>
-              ))}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="font-inter text-xs text-muted-foreground min-w-[100px]">
+                Verification:
+              </span>
+              <span
+                className={`font-inter text-sm font-medium ${
+                  verificationStatus === 'APPROVED'
+                    ? 'text-green-600'
+                    : verificationStatus === 'REJECTED'
+                      ? 'text-red-600'
+                      : 'text-yellow-600'
+                }`}
+              >
+                {getStatusText(verificationStatus)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-inter text-xs text-muted-foreground min-w-[100px]">
+                First Aid Certificate:
+              </span>
+              <span
+                className={`font-inter text-sm font-medium ${
+                  !certificateUrl
+                    ? 'text-muted-foreground'
+                    : certificateStatus === 'APPROVED'
+                      ? 'text-green-600'
+                      : certificateStatus === 'REJECTED'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                }`}
+              >
+                {certificateUrl ? getStatusText(certificateStatus) : 'Not uploaded'}
+              </span>
             </div>
           </div>
         );
       },
     },
     {
-      id: 'firstAidCertificate',
-      header: 'First Aid Certificate',
+      id: 'docs',
+      header: 'Docs',
       cell: ({ row }) => {
+        // Use freelancerFiles if available (new API), otherwise fall back to verificationDocuments (legacy)
+        const freelancerFiles = row.original.freelancerFiles || [];
+        const legacyDocuments = row.original.verificationDocuments || [];
         const certificateUrl = row.original.firstAidCertificateUrl;
-        const certificateStatus = row.original.firstAidCertificateStatus;
-        if (!certificateUrl) {
-          return <span className="font-inter text-sm text-muted-foreground">Not uploaded</span>;
+
+        // When building allDocs, also store the file ID
+        const allDocs: Array<{ url: string; name: string; id?: string }> = [];
+
+        // Add files from freelancerFiles array (new API)
+        if (freelancerFiles.length > 0) {
+          freelancerFiles.forEach((file) => {
+            allDocs.push({
+              url: file.fileUrl,
+              name: file.title || file.fileName || 'Untitled',
+              id: file.id, // Store the ID
+            });
+          });
+        } else {
+          // Fallback to legacy verificationDocuments
+          legacyDocuments.forEach((docUrl: string, index: number) => {
+            allDocs.push({
+              url: docUrl,
+              name: getDocumentName(docUrl, index),
+            });
+          });
+
+          // Add first aid certificate if exists (legacy)
+          if (certificateUrl) {
+            allDocs.push({
+              url: certificateUrl,
+              name: 'First Aid Certificate',
+            });
+          }
         }
+
+        if (allDocs.length === 0) {
+          return <span className="font-inter text-sm text-muted-foreground">No documents</span>;
+        }
+
+        const visibleDocs = allDocs.slice(0, 3);
+        const remainingDocs = allDocs.slice(3);
+
         return (
-          <div className="flex items-center gap-2">
-            <StatusBadge status={certificateStatus || 'PENDING'} size="sm" />
-            <a
-              href={certificateUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-inter text-xs text-primary hover:underline flex items-center gap-1"
-            >
-              <FileText className="h-3 w-3" />
-              View
-              <ExternalLink className="h-3 w-3" />
-            </a>
+          <div className="flex flex-col gap-1 max-w-xs">
+            {visibleDocs.map((doc, index) =>
+              doc.id ? (
+                <button
+                  key={index}
+                  onClick={() => handleFileView(doc.id!)}
+                  className="font-inter text-xs text-primary hover:underline truncate text-left"
+                  title={doc.name}
+                >
+                  {doc.name}
+                </button>
+              ) : (
+                <a
+                  key={index}
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-inter text-xs text-primary hover:underline truncate"
+                  title={doc.name}
+                >
+                  {doc.name}
+                </a>
+              ),
+            )}
+            {remainingDocs.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-3 text-xs font-semibold border-dashed border-primary/50 text-primary flex items-center gap-1"
+                  >
+                    <ChevronDown className="h-3 w-3 mr-1" />
+                    Show all {allDocs.length} docs
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-3" align="start">
+                  <div className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                    <span>Documents</span>
+                    <span className="bg-accent text-accent-foreground rounded-full px-2 py-0.5 text-[11px] font-bold">
+                      {allDocs.length}
+                    </span>
+                  </div>
+                  <div className="max-h-[320px] overflow-y-auto bg-muted/40 rounded p-1">
+                    <ol className="pl-4 list-decimal text-xs space-y-1">
+                      {allDocs.map((doc, index) => (
+                        <li key={index}>
+                          {doc.id ? (
+                            <button
+                              onClick={() => handleFileView(doc.id!)}
+                              className="text-primary hover:underline truncate text-left w-full"
+                              title={doc.name}
+                            >
+                              {doc.name}
+                            </button>
+                          ) : (
+                            <a
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline truncate"
+                              title={doc.name}
+                            >
+                              {doc.name}
+                            </a>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground/70">
+                    <ChevronDown className="h-3 w-3" />
+                    Tip: Right-click and open in new tab to preview
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         );
       },
@@ -381,17 +476,6 @@ const VerificationsPage = () => {
       header: 'Actions',
       cell: ({ row }) => {
         const freelancer = row.original;
-        const verificationStatus = freelancer.verificationStatus;
-        const certificateStatus = freelancer.firstAidCertificateStatus;
-
-        // Show actions button if there are pending actions
-        const hasPendingActions =
-          verificationStatus === 'PENDING' ||
-          (freelancer.firstAidCertificateUrl && certificateStatus === 'PENDING');
-
-        if (!hasPendingActions) {
-          return <span className="text-muted-foreground text-sm">No actions available</span>;
-        }
 
         return (
           <Button
@@ -445,31 +529,16 @@ const VerificationsPage = () => {
               key={config.key}
               title={config.title}
               value={stats[config.key].toString()}
-              icon={config.icon}
-              iconColor={config.iconColor}
-              iconBg={config.iconBg}
-              loading={
-                initialStatsLoading || (statsLoading && stats.total === 0 && stats.pending === 0)
-              }
+              loading={statsLoading && !statsData}
             />
           ))}
         </div>
-
-        {/* Status Filter */}
-        <StatusFilter<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>
-          options={statusFilterOptions}
-          selectedValue={statusFilter}
-          onChange={(value) => {
-            setStatusFilter(value);
-            setPage(1);
-          }}
-        />
 
         {/* Verifications Table */}
         <DataTable
           columns={columns}
           data={verifications}
-          title={`${statusFilter || 'All'} Verifications`}
+          title="All Verifications"
           searchKey="name"
           searchPlaceholder="Search by Freelancer..."
           enableSorting={false}
@@ -478,8 +547,8 @@ const VerificationsPage = () => {
           enablePagination={true}
           showSearch={true}
           showSorting={false}
-          initialLoading={initialLoading}
-          loading={loading}
+          initialLoading={isLoading && !verifications.length}
+          loading={isFetching}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}
@@ -488,6 +557,18 @@ const VerificationsPage = () => {
           onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
           onExternalPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
+            setPage(1);
+          }}
+          filterOptions={statusFilterOptions.map((opt) => ({
+            label: opt.label,
+            value: opt.value ?? 'all',
+            color: opt.color,
+          }))}
+          selectedFilter={statusFilter ?? 'all'}
+          onFilterChange={(value) => {
+            setStatusFilter(
+              value === 'all' ? undefined : (value as 'PENDING' | 'APPROVED' | 'REJECTED'),
+            );
             setPage(1);
           }}
         />
@@ -510,37 +591,34 @@ const VerificationsPage = () => {
                 What would you like to act on?
               </div>
               <div className="space-y-2">
-                {selectedFreelancer?.verificationStatus === 'PENDING' && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setSelectedActionType('verification')}
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Freelancer Verification
+                  <StatusBadge
+                    status={selectedFreelancer?.verificationStatus || 'PENDING'}
+                    size="sm"
+                    className="ml-auto"
+                  />
+                </Button>
+                {selectedFreelancer?.firstAidCertificateUrl && (
                   <Button
                     variant="outline"
                     className="w-full justify-start"
-                    onClick={() => setSelectedActionType('verification')}
+                    onClick={() => setSelectedActionType('certificate')}
                   >
-                    <Shield className="h-4 w-4 mr-2" />
-                    Freelancer Verification
+                    <FileText className="h-4 w-4 mr-2" />
+                    First Aid Certificate
                     <StatusBadge
-                      status={selectedFreelancer.verificationStatus}
+                      status={selectedFreelancer.firstAidCertificateStatus || 'PENDING'}
                       size="sm"
                       className="ml-auto"
                     />
                   </Button>
                 )}
-                {selectedFreelancer?.firstAidCertificateUrl &&
-                  selectedFreelancer?.firstAidCertificateStatus === 'PENDING' && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => setSelectedActionType('certificate')}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      First Aid Certificate
-                      <StatusBadge
-                        status={selectedFreelancer.firstAidCertificateStatus || 'PENDING'}
-                        size="sm"
-                        className="ml-auto"
-                      />
-                    </Button>
-                  )}
               </div>
             </div>
           ) : !selectedAction ? (

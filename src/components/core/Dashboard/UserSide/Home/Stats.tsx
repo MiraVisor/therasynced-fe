@@ -1,5 +1,3 @@
-import { Calendar, Heart, MessageCircle, Star } from 'lucide-react';
-
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 
 const CardsData = [
@@ -11,9 +9,6 @@ const CardsData = [
       isUp: true,
       label: 'this year',
     },
-    icon: Calendar,
-    iconBg: 'bg-info/10',
-    iconColor: 'text-info',
     sparklineData: [5, 6, 8, 7, 9, 10, 8],
   },
   {
@@ -24,9 +19,6 @@ const CardsData = [
       isUp: true,
       label: 'this month',
     },
-    icon: Calendar,
-    iconBg: 'bg-primary/10',
-    iconColor: 'text-primary',
     sparklineData: [2, 3, 4, 3, 5, 5, 5],
   },
   {
@@ -37,9 +29,6 @@ const CardsData = [
       isUp: true,
       label: 'this month',
     },
-    icon: Heart,
-    iconBg: 'bg-error/10',
-    iconColor: 'text-error',
     sparklineData: [6, 7, 7, 8, 8, 8, 8],
   },
   {
@@ -50,9 +39,6 @@ const CardsData = [
       isUp: true,
       label: 'recent sessions',
     },
-    icon: Star,
-    iconBg: 'bg-warning/10',
-    iconColor: 'text-warning',
     sparklineData: [4.6, 4.7, 4.8, 4.8, 4.9, 4.9, 4.9],
   },
 ];
@@ -61,16 +47,12 @@ const Stats = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
       {CardsData.map((data, index) => {
-        const Icon = data.icon;
         return (
           <EnhancedStatCard
             key={index}
             title={data.title}
             value={data.value}
             trend={data.trend}
-            icon={Icon}
-            iconColor={data.iconColor}
-            iconBg={data.iconBg}
             sparklineData={data.sparklineData}
             interactive
             onClick={() => {

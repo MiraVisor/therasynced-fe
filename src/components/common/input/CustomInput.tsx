@@ -1,5 +1,5 @@
 import { Eye, EyeOff } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface CustomInputProps {
   name: string;

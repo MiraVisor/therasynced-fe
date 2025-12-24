@@ -2,98 +2,20 @@
 
 import { Search } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { fetchAllFavoriteFreelancers } from '@/redux/slices/exploreSlice';
-import type { AppDispatch, RootState } from '@/redux/store';
+import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
 import { Expert } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import { DashboardPageWrapper } from '../../../components/core/Dashboard/DashboardPageWrapper';
 import { ExpertList } from '../../../components/core/Dashboard/UserSide/Overview/ExpertSection';
 import ExpertCardSkeleton from '../../../components/ui/skeletons/ExpertCardSkeleton';
 
-// Map freelancer data to Expert format (same as in UserExploreMain)
-const mapFreelancerToExpert = (freelancer: any): Expert => {
-  // Extract services and their location types
-  const services = freelancer.services || [];
-  const allLocationTypes = new Set<string>();
-
-  // Convert location types to session types
-  const sessionTypes = Array.from(allLocationTypes).map((type) => {
-    switch (type) {
-      case 'HOME':
-        return 'home';
-      case 'CLINIC':
-        return 'clinic';
-      default:
-        return 'home';
-    }
-  });
-
-  // Get primary service name
-  const primaryService = services.length > 0 ? services[0]?.name : undefined;
-
-  // Get location information
-  const locations = freelancer.locations || [];
-  const primaryLocation = locations.length > 0 ? locations[0]?.name : undefined;
-
-  // Calculate experience from creation date
-  const createdAt = freelancer.createdAt ? new Date(freelancer.createdAt) : null;
-
-  // Get rating and reviews from cardInfo
-  const cardInfo = freelancer.cardInfo || {};
-  const rating = cardInfo.averageRating || freelancer.averageRating;
-
-  // Only use rating if it's a valid number greater than 0
-  const validRating = rating && rating > 0 ? rating : undefined;
-
-  // Map API freelancer to Expert type for UI
-  return {
-    id: freelancer.id,
-    name: freelancer.name || cardInfo.name,
-    specialty: cardInfo.mainService || primaryService,
-    jobTitle: freelancer.mainJobTitle, // Add job title mapping
-    rating: validRating,
-    reviews: freelancer.favoritedBy?.length || 0,
-    description: freelancer.description || cardInfo.title,
-    isFavorite: freelancer.isFavorite ?? false,
-    // Additional data for profile dialog
-    profilePicture: freelancer.profilePicture,
-    services: Array.isArray(services)
-      ? services.filter((service: any) => service && service.isActive)
-      : [],
-    location: primaryLocation,
-    sessionTypes: sessionTypes,
-    pricing: freelancer.pricing,
-    // Additional data from API
-    email: freelancer.email,
-    gender: freelancer.gender,
-    city: freelancer.city,
-    isEmailVerified: freelancer.isEmailVerified,
-    isActive: freelancer.isActive,
-    authProvider: freelancer.authProvider,
-    verificationStatus: freelancer.verificationStatus,
-    firstAidCertificateStatus: freelancer.firstAidCertificateStatus,
-    // Slot information
-    slots: freelancer.slots || [],
-    slotSummary: freelancer.slotSummary || {},
-    // Favorites information
-    favoritedBy: freelancer.favoritedBy || [],
-    // Card info
-    cardInfo: cardInfo,
-    // Available slots count
-    availableSlots: freelancer.slotSummary?.availableSlots || 0,
-    totalSlots: freelancer.slotSummary?.totalSlots || 0,
-    // Tier information
-    planFeatures: freelancer.planFeatures || null,
-    tier: freelancer.planFeatures?.planType || null,
-    // Stamp information (included in API response when user is authenticated)
-    stampInfo: freelancer.stampInfo || null,
-  };
-};
+// Use unified mapping function
+const mapFreelancerToExpert = mapOneFreelancerToExpert;
 
 // Enhanced Search Component
 const FavoritesSearchBar = ({
@@ -132,42 +54,42 @@ const FavoritesSearchBar = ({
 };
 
 const FavoritesPage = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { favorites, loading, error } = useSelector((state: RootState) => state.explore as any);
-  const [filteredFavorites, setFilteredFavorites] = useState<Expert[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const {
+    data: favorites = [],
+    isLoading: loading,
+    error,
+  } = useFavoriteFreelancers({
+    name: debouncedSearchQuery || undefined,
+  });
+
+  const [filteredFavorites, setFilteredFavorites] = useState<Expert[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   // Debounced search function
-  const debouncedSearch = useCallback(
-    (query: string) => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
+  const debouncedSearch = useCallback((query: string) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
 
-      setIsSearching(true);
+    setIsSearching(true);
 
-      debounceTimeoutRef.current = setTimeout(() => {
-        setSearchQuery(query);
-        // Trigger new fetch with search query
-        dispatch(fetchAllFavoriteFreelancers({ name: query || undefined }) as any);
-        setIsSearching(false);
-      }, 500);
-    },
-    [dispatch],
-  );
+    debounceTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(query);
+      setIsSearching(false);
+    }, 500);
+  }, []);
 
   const handleSearch = useCallback(
     (query: string) => {
+      setSearchQuery(query);
       debouncedSearch(query);
     },
     [debouncedSearch],
   );
-
-  useEffect(() => {
-    dispatch(fetchAllFavoriteFreelancers({}));
-  }, [dispatch]);
 
   useEffect(() => {
     if (!favorites || !Array.isArray(favorites)) {
@@ -254,9 +176,11 @@ const FavoritesPage = () => {
             <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
               Unable to load favorites
             </h3>
-            <p className="font-inter text-muted-foreground mb-4">{error}</p>
+            <p className="font-inter text-muted-foreground mb-4">
+              {error instanceof Error ? error.message : String(error)}
+            </p>
             <Button
-              onClick={() => dispatch(fetchAllFavoriteFreelancers({}))}
+              onClick={() => window.location.reload()}
               className="bg-primary hover:bg-primary/90 text-white"
             >
               Try Again
@@ -285,7 +209,7 @@ const FavoritesPage = () => {
                     if (debounceTimeoutRef.current) {
                       clearTimeout(debounceTimeoutRef.current);
                     }
-                    dispatch(fetchAllFavoriteFreelancers({}) as any);
+                    setDebouncedSearchQuery('');
                   }}
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary/5 hover:border-primary/40"

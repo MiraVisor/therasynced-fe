@@ -1,16 +1,18 @@
 'use client';
 
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { resetPasswordApi } from '@/redux/api/authApi';
+import { resetPasswordApi } from '@/services/authService';
 
 interface ResetPasswordFormProps {
   onBackToSignIn: () => void;
 }
 
 const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn }) => {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
 
   const [newPassword, setNewPassword] = useState('');
@@ -53,8 +55,13 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
     try {
       await resetPasswordApi(token, { newPassword });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to reset password. Please try again.');
+      // Navigate to sign-in with success parameter
+      setTimeout(() => {
+        router.push('/authentication/sign-in?reset=success');
+      }, 1500);
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError?.response?.data?.message || 'Failed to reset password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -188,7 +195,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
 
         {error && (
           <p className="text-red-500 text-sm font-inter flex items-center gap-1" role="alert">
-            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+            <span className="w-1 h-1 bg-red-500 rounded-full" />
             {error}
           </p>
         )}

@@ -1,55 +1,28 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { CheckCircle, Clock, Star, TrendingDown, TrendingUp, Users } from 'lucide-react';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import CategoryBreakdownChart from '@/components/core/Dashboard/FreelancerSide/Analytics/CategoryBreakdownChart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { fetchFreelancerAnalytics } from '@/redux/slices/analyticsSlice';
-import { RootState } from '@/redux/store';
+import api from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 
 const AnalyticsPage = () => {
-  const { role } = useAuth();
-  const dispatch = useDispatch();
+  const { role } = useAuthStore();
+
   const {
     data: analyticsData,
-    loading,
-    initialLoading,
-    error,
-  } = useSelector((state: RootState) => state.analytics);
-
-  // Fetch analytics data
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      try {
-        // If data exists, fetch silently in background
-        // If no data exists, show loading state
-        await dispatch(fetchFreelancerAnalytics({ silent: !!analyticsData }) as any);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load analytics data';
-        if (!analyticsData) {
-          toast.error(`Failed to load analytics: ${errorMessage}`);
-        }
-      }
-    };
-
-    loadAnalytics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]);
-
-  // Show error toast only on error (not during silent refresh)
-  useEffect(() => {
-    if (error && !analyticsData) {
-      toast.error(error);
-    }
-  }, [error, analyticsData]);
-
-  // Only show loader if no data exists (preserve state during refresh)
-  const isLoading = initialLoading || (loading && !analyticsData);
+    isLoading,
+    error: _error,
+  } = useQuery({
+    queryKey: ['freelancerAnalytics'],
+    queryFn: async () => {
+      const response = await api.get('/freelancer/analytics');
+      return response.data.data;
+    },
+  });
 
   // Format currency
   const formatCurrency = (amount: number): string => {
@@ -84,11 +57,11 @@ const AnalyticsPage = () => {
                   <div className="animate-pulse">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                        <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-32"></div>
+                        <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
+                        <div className="h-8 bg-gray-200 rounded w-16 mb-2" />
+                        <div className="h-3 bg-gray-200 rounded w-32" />
                       </div>
-                      <div className="w-12 h-12 bg-gray-200 rounded-2xl"></div>
+                      <div className="w-12 h-12 bg-gray-200 rounded-2xl" />
                     </div>
                   </div>
                 </CardContent>
@@ -208,28 +181,28 @@ const AnalyticsPage = () => {
             <div className="space-y-6">
               <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
                 <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+                  <div className="min-h-[300px] bg-gray-100 rounded" />
                 </div>
               </div>
               <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
                 <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+                  <div className="min-h-[300px] bg-gray-100 rounded" />
                 </div>
               </div>
             </div>
             <div className="space-y-6">
               <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
                 <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+                  <div className="min-h-[300px] bg-gray-100 rounded" />
                 </div>
               </div>
               <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
                 <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                  <div className="min-h-[300px] bg-gray-100 rounded"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+                  <div className="min-h-[300px] bg-gray-100 rounded" />
                 </div>
               </div>
             </div>
@@ -323,18 +296,18 @@ const AnalyticsPage = () => {
                   <div key={index} className="animate-pulse">
                     <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                        <div className="w-8 h-8 bg-gray-200 rounded-full" />
                         <div>
-                          <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-                          <div className="h-3 bg-gray-200 rounded w-16"></div>
+                          <div className="h-4 bg-gray-200 rounded w-24 mb-1" />
+                          <div className="h-3 bg-gray-200 rounded w-16" />
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-1 mb-1">
-                          <div className="w-3 h-3 bg-gray-200 rounded"></div>
-                          <div className="h-4 bg-gray-200 rounded w-8"></div>
+                          <div className="w-3 h-3 bg-gray-200 rounded" />
+                          <div className="h-4 bg-gray-200 rounded w-8" />
                         </div>
-                        <div className="h-3 bg-gray-200 rounded w-12"></div>
+                        <div className="h-3 bg-gray-200 rounded w-12" />
                       </div>
                     </div>
                   </div>
@@ -342,37 +315,46 @@ const AnalyticsPage = () => {
               </div>
             ) : analyticsData && analyticsData.topClients.length > 0 ? (
               <div className="space-y-4">
-                {analyticsData.topClients.slice(0, 5).map((client) => (
-                  <div
-                    key={client.id}
-                    className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-emerald-600">
-                          {client.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-poppins font-medium text-charcoal">{client.name}</p>
-                        <p className="text-xs font-inter text-muted-foreground">
-                          {client.sessions} {client.sessions === 1 ? 'session' : 'sessions'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {client.averageRating !== undefined ? (
-                        <div className="flex items-center gap-1 mb-1">
-                          <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                          <span className="text-sm font-medium">
-                            {client.averageRating.toFixed(1)}
-                          </span>
+                {analyticsData.topClients
+                  .slice(0, 5)
+                  .map((client: { id: string; [key: string]: unknown }) => {
+                    const name = String(client['name'] || 'Unknown');
+                    const sessions = Number(client['sessions'] || 0);
+                    const averageRating = client['averageRating'] as number | null | undefined;
+                    const totalHours = Number(client['totalHours'] || 0);
+
+                    return (
+                      <div
+                        key={client.id}
+                        className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-emerald-600">
+                              {name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-poppins font-medium text-charcoal">{name}</p>
+                            <p className="text-xs font-inter text-muted-foreground">
+                              {sessions} {sessions === 1 ? 'session' : 'sessions'}
+                            </p>
+                          </div>
                         </div>
-                      ) : null}
-                      <p className="text-xs text-gray-500">{client.totalHours.toFixed(1)}h</p>
-                    </div>
-                  </div>
-                ))}
+                        <div className="text-right">
+                          {averageRating !== undefined && averageRating !== null ? (
+                            <div className="flex items-center gap-1 mb-1">
+                              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                              <span className="text-sm font-medium">
+                                {averageRating.toFixed(1)}
+                              </span>
+                            </div>
+                          ) : null}
+                          <p className="text-xs text-gray-500">{totalHours.toFixed(1)}h</p>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             ) : (
               <div className="text-center py-8">

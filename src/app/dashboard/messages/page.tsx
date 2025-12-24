@@ -3,7 +3,7 @@
 import { format } from 'date-fns';
 import { Check, CheckCheck, ChevronLeft, Search, Send, User } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -16,9 +16,9 @@ import {
   ChatMessagesSkeleton,
 } from '@/components/ui/skeletons/ChatSkeletons';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useAuth } from '@/hooks/useAuthZustand';
 import useChat from '@/hooks/useChat';
 import { getDecodedToken } from '@/lib/utils';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 
 // Types
 interface Contact {
@@ -40,7 +40,7 @@ interface MessageType {
   type: 'text' | 'image' | 'file';
 }
 
-const MessagesPage = () => {
+const MessagesPageContent = () => {
   // Get current user ID for proper unread logic
   const currentUser = getDecodedToken();
   const currentUserId = currentUser?.sub;
@@ -98,14 +98,14 @@ const MessagesPage = () => {
   useEffect(() => {
     if (targetUserId && !hasHandledUserIdRef.current && !loading.contacts) {
       // Wait for contacts to load
-      if (contacts.length === 0 && loading.contacts) {
+      if ((!contacts || contacts.length === 0) && loading.contacts) {
         return;
       }
 
       hasHandledUserIdRef.current = true;
 
       // Find contact by userId
-      const contact = contacts.find((c) => c.id === targetUserId);
+      const contact = contacts?.find((c) => c.id === targetUserId);
 
       if (contact) {
         // Contact exists, select the conversation
@@ -126,9 +126,11 @@ const MessagesPage = () => {
           try {
             await sendMessage(targetUserId, 'Hello!');
             // The contact will appear via socket updates, handled in the next useEffect
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Failed to start conversation';
             console.error('Failed to start conversation:', error);
-            toast.error(error?.message || 'Failed to start conversation');
+            toast.error(errorMessage);
             hasHandledUserIdRef.current = false; // Allow retry
           }
         };
@@ -149,7 +151,7 @@ const MessagesPage = () => {
   // Handle new contact appearing after sending message (when conversation is created)
   useEffect(() => {
     if (targetUserId && hasHandledUserIdRef.current) {
-      const contact = contacts.find((c) => c.id === targetUserId);
+      const contact = contacts?.find((c) => c.id === targetUserId);
       if (contact) {
         // Contact appeared (either existed or was just created), select it if not already selected
         if (activeConversationId !== contact.conversationId) {
@@ -183,10 +185,11 @@ const MessagesPage = () => {
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [selectedContact, activeConversation, markConversationAsRead]);
 
   // Transform backend contacts to match original UI format
-  const transformedContacts: Contact[] = contacts.map((contact) => ({
+  const transformedContacts: Contact[] = (contacts || []).map((contact) => ({
     id: contact.id,
     name: contact.name,
     avatar: contact.profilePicture || '',
@@ -200,14 +203,16 @@ const MessagesPage = () => {
   const getCurrentMessages = (): MessageType[] => {
     if (!selectedContact) return [];
     const backendMessages = activeConversation || [];
-    return backendMessages.map((message) => ({
-      id: message.id,
-      content: message.content,
-      timestamp: message.createdAt,
-      isFromMe: message.users.id !== selectedContact.id,
-      isRead: message.isRead,
-      type: 'text' as const,
-    }));
+    return backendMessages
+      .filter((message) => message && message.users && message.id) // Filter out invalid messages
+      .map((message) => ({
+        id: message.id,
+        content: message.content || '',
+        timestamp: message.createdAt || new Date().toISOString(),
+        isFromMe: message.users?.id !== selectedContact.id,
+        isRead: message.isRead ?? false,
+        type: 'text' as const,
+      }));
   };
 
   const filteredContacts = transformedContacts.filter((contact) => {
@@ -217,7 +222,7 @@ const MessagesPage = () => {
 
   const handleContactSelect = (contact: Contact) => {
     // Find the backend contact
-    const backendContact = contacts.find((c) => c.id === contact.id);
+    const backendContact = contacts?.find((c) => c.id === contact.id);
     if (backendContact) {
       // If clicking the same contact that's already selected, toggle chat
       if (selectedContact?.id === contact.id) {
@@ -255,8 +260,10 @@ const MessagesPage = () => {
       setNewMessage('');
       // Scroll to bottom after sending message
       setTimeout(scrollToBottom, 100);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send message');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+      console.error('Failed to send message:', error);
+      toast.error(errorMessage);
     }
   };
 
@@ -306,17 +313,21 @@ const MessagesPage = () => {
   };
 
   // Show toast error for any errors but continue showing the interface
+  // Note: error is currently null in useChat, but keeping this for future error handling
   useEffect(() => {
-    if (error.contacts) {
-      toast.error('Failed to load conversations. Please try again.');
+    if (error && typeof error === 'object' && error !== null) {
+      const errorObj = error as Record<string, unknown>;
+      if (errorObj['contacts']) {
+        toast.error('Failed to load conversations. Please try again.');
+      }
+      if (errorObj['messages']) {
+        toast.error('Failed to load messages. Please try again.');
+      }
+      if (errorObj['sending']) {
+        toast.error('Failed to send message. Please try again.');
+      }
     }
-    if (error.messages) {
-      toast.error('Failed to load messages. Please try again.');
-    }
-    if (error.sending) {
-      toast.error('Failed to send message. Please try again.');
-    }
-  }, [error.contacts, error.messages, error.sending]);
+  }, [error]);
 
   return (
     <DashboardPageWrapper
@@ -479,7 +490,7 @@ const MessagesPage = () => {
                       disabled={!newMessage.trim() || !isConnected || loading.sending}
                     >
                       {loading.sending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                       ) : (
                         <Send className="h-4 w-4" />
                       )}
@@ -503,4 +514,37 @@ const MessagesPage = () => {
   );
 };
 
-export default MessagesPage;
+function MessagesPageSkeleton() {
+  return (
+    <DashboardPageWrapper header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}>
+      <div className="h-[calc(100vh-200px)] flex flex-col">
+        <div className="flex flex-1 min-h-0">
+          <div className="flex flex-col w-full md:w-80 border-r">
+            <div className="p-4 border-b">
+              <div className="h-10 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="h-16 w-16 bg-gray-200 rounded-full mx-auto mb-4 animate-pulse" />
+              <div className="h-4 bg-gray-200 rounded w-32 mx-auto animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardPageWrapper>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<MessagesPageSkeleton />}>
+      <MessagesPageContent />
+    </Suspense>
+  );
+}

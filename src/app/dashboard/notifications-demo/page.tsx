@@ -50,27 +50,27 @@ export default function NotificationsDemoPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full" />
               <span>Role-based notification filtering</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
               <span>Unread count badge</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-purple-500 rounded-full" />
               <span>Priority-based styling</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-orange-500 rounded-full" />
               <span>Action buttons</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-red-500 rounded-full" />
               <span>Mark as read functionality</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-indigo-500 rounded-full" />
               <span>Responsive design</span>
             </div>
           </CardContent>
@@ -83,37 +83,37 @@ export default function NotificationsDemoPage() {
           <CardContent className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-100 rounded flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded"></div>
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded" />
               </div>
               <span>Appointments</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-100 rounded flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded"></div>
+                <div className="w-1.5 h-1.5 bg-green-500 rounded" />
               </div>
               <span>Bookings</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-purple-100 rounded flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-purple-500 rounded"></div>
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded" />
               </div>
               <span>Payments</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-indigo-100 rounded flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded"></div>
+                <div className="w-1.5 h-1.5 bg-indigo-500 rounded" />
               </div>
               <span>Messages</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-yellow-100 rounded flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-yellow-500 rounded"></div>
+                <div className="w-1.5 h-1.5 bg-yellow-500 rounded" />
               </div>
               <span>Reviews</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-gray-100 rounded flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-gray-500 rounded"></div>
+                <div className="w-1.5 h-1.5 bg-gray-500 rounded" />
               </div>
               <span>System</span>
             </div>

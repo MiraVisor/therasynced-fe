@@ -1,20 +1,17 @@
 'use client';
 
 import { ArrowRight, Calendar, Heart, MessageCircle, User } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import {
-  fetchAllFavoriteFreelancers,
-  fetchExplorePatientBookings,
-} from '@/redux/slices/exploreSlice';
-import { fetchFreelancers } from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
-import { Expert } from '@/types/types';
+import { useExplorePatientBookings } from '@/hooks/queries/useExplore';
+import { useFavoriteFreelancers, useFreelancers } from '@/hooks/queries/useFreelancers';
+import { useAuth } from '@/hooks/useAuthZustand';
+import type { Booking } from '@/types/booking';
+import type { Expert, Freelancer } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import DashboardWidget from '../Home/DashboardWidget';
@@ -25,69 +22,27 @@ import QuickBookingWidget from '../Home/QuickBookingWidget';
 import UpcomingAppointmentCard from '../Home/UpcomingAppointmentCard';
 
 // Helper functions for data processing
-const getNextUpcomingAppointment = (bookings: any[]) => {
+const getNextUpcomingAppointment = (bookings: Booking[]) => {
   if (!bookings || bookings.length === 0) return null;
 
   const now = new Date();
   const upcomingBookings = bookings
-    .filter((booking: any) => {
+    .filter((booking: Booking) => {
       if (!booking?.slot?.startTime) return false;
       const bookingDate = new Date(booking.slot.startTime);
       return bookingDate > now;
     })
-    .sort((a: any, b: any) => {
+    .sort((a: Booking, b: Booking) => {
       return new Date(a.slot.startTime).getTime() - new Date(b.slot.startTime).getTime();
     });
 
   return upcomingBookings.length > 0 ? upcomingBookings[0] : null;
 };
 
-// Map freelancer data to Expert format
-const mapFreelancerToExpert = (freelancer: any): Expert => {
-  // Extract services and their location types
-  const services = freelancer.services || [];
-  const allLocationTypes = new Set<string>();
+// Use unified mapping function
+const mapFreelancerToExpert = mapOneFreelancerToExpert;
 
-  // Convert location types to session types
-
-  // Get primary service name
-  const primaryService = services.length > 0 ? services[0]?.name : undefined;
-
-  // Get location information
-  const locations = freelancer.locations || [];
-
-  // Calculate experience from creation date
-
-  // Get rating and reviews from cardInfo
-  const cardInfo = freelancer.cardInfo || {};
-  const rating = cardInfo.averageRating || freelancer.averageRating;
-
-  // Only use rating if it's a valid number greater than 0
-  const validRating = rating && rating > 0 ? rating : undefined;
-
-  // Map API freelancer to Expert type for UI
-  return {
-    id: freelancer.id,
-    name: freelancer.name || cardInfo.name,
-    specialty: cardInfo.mainService || primaryService,
-    jobTitle: freelancer.mainJobTitle, // Add job title mapping
-    rating: validRating,
-    reviews: cardInfo.totalRatings || freelancer.cardInfo?.patientStories || 0,
-    description: freelancer.description || cardInfo.title,
-    isFavorite: freelancer.isFavorite ?? false,
-    profilePicture: freelancer.profilePicture,
-    slots: freelancer.slots || [],
-    slotSummary: freelancer.slotSummary || {},
-    cardInfo: cardInfo,
-    availableSlots: freelancer.slotSummary?.availableSlots || 0,
-    totalSlots: freelancer.slotSummary?.totalSlots || 0,
-    planFeatures: freelancer.planFeatures || null,
-    tier: freelancer.planFeatures?.planType || null,
-    subscriptionStatus: freelancer.subscriptionStatus || undefined,
-  };
-};
-
-const getRecommendedFreelancers = (freelancers: any[], favorites: Expert[]) => {
+const getRecommendedFreelancers = (freelancers: Freelancer[], favorites: Expert[]) => {
   if (!freelancers || freelancers.length === 0) return [];
 
   // Map freelancers to Expert format
@@ -101,17 +56,17 @@ const getRecommendedFreelancers = (freelancers: any[], favorites: Expert[]) => {
   return available.sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
 };
 
-const getUpcomingAppointments = (bookings: any[]) => {
+const getUpcomingAppointments = (bookings: Booking[]) => {
   if (!bookings || bookings.length === 0) return [];
 
   const now = new Date();
   const upcomingBookings = bookings
-    .filter((booking: any) => {
+    .filter((booking: Booking) => {
       if (!booking?.slot?.startTime) return false;
       const bookingDate = new Date(booking.slot.startTime);
       return bookingDate > now;
     })
-    .sort((a: any, b: any) => {
+    .sort((a: Booking, b: Booking) => {
       return new Date(a.slot.startTime).getTime() - new Date(b.slot.startTime).getTime();
     });
 
@@ -120,162 +75,42 @@ const getUpcomingAppointments = (bookings: any[]) => {
 
 const UserExploreMain = () => {
   const router = useRouter();
-  const pathname = usePathname();
-  const dispatch = useDispatch();
-  const { isAuthenticated } = useAuth();
-  const { favorites, loading, bookings, bookingsLoading } = useSelector(
-    (state: RootState) => state.explore as any,
-  );
-  const { experts: allExperts, loading: expertsLoading } = useSelector(
-    (state: RootState) => state.overview,
-  );
+  const { isAuthenticated: _isAuthenticated } = useAuth();
   const [selectedFreelancer, setSelectedFreelancer] = useState<Expert | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  // Track if this is the initial mount
-  const isInitialMount = useRef(true);
-  const lastRefreshTime = useRef(0);
-  const prevPathnameRef = useRef(pathname);
-  const REFRESH_THROTTLE = 30000; // 30 seconds
+  // Use React Query hooks
+  const { data: allExpertsData, isLoading: expertsLoading } = useFreelancers();
+  const { data: favorites = [], isLoading: favoritesLoading } = useFavoriteFreelancers();
+  const { data: bookings = [], isLoading: bookingsLoading } = useExplorePatientBookings();
 
-  // Use refs to track current values without causing re-renders
-  const bookingsRef = useRef(bookings);
-  const favoritesRef = useRef(favorites);
-  const expertsRef = useRef(allExperts);
-
-  // Update refs when values change
-  useEffect(() => {
-    bookingsRef.current = bookings;
-    favoritesRef.current = favorites;
-    expertsRef.current = allExperts;
-  }, [bookings, favorites, allExperts]);
-
-  // Initial fetch - only if no data exists
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    // Only fetch on initial mount if no data exists
-    if (isInitialMount.current) {
-      const hasBookings = bookings && bookings.length > 0;
-      const hasFavorites = favorites && favorites.length > 0;
-      const hasExperts = allExperts && allExperts.length > 0;
-
-      // Fetch only what's missing
-      if (!hasBookings) {
-        dispatch(fetchExplorePatientBookings({ silent: false }) as any);
-      }
-      if (!hasFavorites) {
-        dispatch(fetchAllFavoriteFreelancers({ silent: false }) as any);
-      }
-      if (!hasExperts) {
-        dispatch(fetchFreelancers({ silent: false }) as any);
-      }
-
-      isInitialMount.current = false;
-    }
-  }, [dispatch, isAuthenticated]);
-
-  // Background refresh when page becomes visible or user navigates back
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        const now = Date.now();
-        // Throttle refreshing to prevent excessive API calls
-        if (now - lastRefreshTime.current < REFRESH_THROTTLE) {
-          return;
-        }
-
-        lastRefreshTime.current = now;
-
-        // Get current state from refs (don't use dependencies)
-        const currentBookings = bookingsRef.current && bookingsRef.current.length > 0;
-        const currentFavorites = favoritesRef.current && favoritesRef.current.length > 0;
-        const currentExperts = expertsRef.current && expertsRef.current.length > 0;
-
-        // Only refresh if data exists (silent background refresh)
-        if (currentBookings) {
-          dispatch(fetchExplorePatientBookings({ silent: true }) as any);
-        }
-        if (currentFavorites) {
-          dispatch(fetchAllFavoriteFreelancers({ silent: true }) as any);
-        }
-        if (currentExperts) {
-          dispatch(fetchFreelancers({ silent: true }) as any);
-        }
-      }
-    };
-
-    // Listen for visibility changes and focus events
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleVisibilityChange);
-    };
-    // Remove array length dependencies - only depend on dispatch and isAuthenticated
-  }, [dispatch, isAuthenticated]);
-
-  // Background refresh when navigating back to this page (dashboard home)
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    // Track pathname changes
-    const pathnameChanged = prevPathnameRef.current !== pathname;
-    prevPathnameRef.current = pathname;
-
-    if (isInitialMount.current) {
-      return; // Skip on initial mount
-    }
-
-    // Only refresh when pathname actually changes TO /dashboard
-    if (pathnameChanged && pathname === '/dashboard') {
-      const now = Date.now();
-      // Throttle refreshing
-      if (now - lastRefreshTime.current < REFRESH_THROTTLE) {
-        return;
-      }
-
-      lastRefreshTime.current = now;
-
-      // Get current state from refs (don't use dependencies)
-      const currentBookings = bookingsRef.current && bookingsRef.current.length > 0;
-      const currentFavorites = favoritesRef.current && favoritesRef.current.length > 0;
-      const currentExperts = expertsRef.current && expertsRef.current.length > 0;
-
-      // Only refresh if data exists (silent background refresh)
-      if (currentBookings) {
-        dispatch(fetchExplorePatientBookings({ silent: true }) as any);
-      }
-      if (currentFavorites) {
-        dispatch(fetchAllFavoriteFreelancers({ silent: true }) as any);
-      }
-      if (currentExperts) {
-        dispatch(fetchFreelancers({ silent: true }) as any);
-      }
-    }
-    // Only depend on pathname and dispatch - not on data arrays
-  }, [pathname, dispatch, isAuthenticated]);
+  // Extract freelancers array from response
+  const allExperts = allExpertsData?.freelancers || [];
 
   // Process data - map favorites through the same function as experts
-  const favoritesList = favorites?.map((favorite: any) => mapFreelancerToExpert(favorite)) || [];
+  const favoritesList =
+    favorites?.map((favorite: Freelancer | Expert) => mapFreelancerToExpert(favorite)) ?? [];
 
-  const allTimeBookings = bookings || [];
+  const allTimeBookings = bookings ?? [];
+  const loading = expertsLoading || favoritesLoading;
   const nextAppointment = getNextUpcomingAppointment(allTimeBookings);
   const upcomingAppointments = getUpcomingAppointments(allTimeBookings);
-  const recommendedFreelancers = getRecommendedFreelancers(allExperts, favoritesList);
+  // Map all experts to Expert format for display
+  // Unused variable removed - was: const _mappedExperts = allExperts.map(mapFreelancerToExpert);
+  const recommendedFreelancers = getRecommendedFreelancers(
+    allExperts as unknown as Freelancer[],
+    favoritesList,
+  );
 
   // Calculate stats
-  const totalSessions = allTimeBookings?.length || 0;
+  const totalSessions = allTimeBookings?.length ?? 0;
   const upcomingSessions =
-    allTimeBookings?.filter((booking: any) => {
+    allTimeBookings?.filter((booking: Booking) => {
       const bookingDate = new Date(booking.slot?.startTime);
       const now = new Date();
       return bookingDate > now;
-    }).length || 0;
-  const favoriteFreelancers = favoritesList?.length || 0;
+    }).length ?? 0;
+  const favoriteFreelancers = favoritesList?.length ?? 0;
 
   // Calculate actual unread messages from others (not from user)
   const unreadMessages = 0; // TODO: Implement real unread message count from API
@@ -291,7 +126,7 @@ const UserExploreMain = () => {
     setSelectedFreelancer(null);
   };
 
-  if (loading || expertsLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <LoadingSpinner />
@@ -338,7 +173,7 @@ const UserExploreMain = () => {
         </div>
 
         {/* Next Appointment Hero - Large, Prominent */}
-        <NextAppointmentHero booking={nextAppointment} loading={bookingsLoading} />
+        <NextAppointmentHero booking={nextAppointment ?? null} loading={bookingsLoading} />
 
         {/* Quick Booking Widget - Unique Inline Experience */}
         <QuickBookingWidget
@@ -412,7 +247,7 @@ const UserExploreMain = () => {
           </div>
           {upcomingAppointments && upcomingAppointments.length > 1 ? (
             <div className="space-y-3">
-              {upcomingAppointments.slice(1, 4).map((booking: any) => (
+              {upcomingAppointments.slice(1, 4).map((booking: Booking) => (
                 <UpcomingAppointmentCard key={booking.id} booking={booking} />
               ))}
             </div>

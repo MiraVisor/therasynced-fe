@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, MapPin, Star, Users } from 'lucide-react';
+import { ArrowUpDown, Clock, MapPin, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -11,8 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import { useFreelancers } from '@/hooks/useFreelancers';
-import freelancerService, { FreelancerStatsDto } from '@/services/freelancerService';
+import { useFreelancers, useFreelancerStats } from '@/hooks/queries/useFreelancers';
 import { Freelancer } from '@/types/types';
 
 // Column definitions for freelancers table
@@ -136,7 +135,7 @@ const freelancerColumns: ColumnDef<Freelancer>[] = [
     accessorKey: 'isActive',
     header: 'Status',
     cell: ({ row }) => {
-      const isActive = row.original.isActive;
+      const { isActive } = row.original;
 
       return (
         <Badge
@@ -170,8 +169,6 @@ const RealFreelancersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [freelancerStats, setFreelancerStats] = useState<FreelancerStatsDto | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
 
   // Debounce search query
   useEffect(() => {
@@ -188,40 +185,46 @@ const RealFreelancersPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch freelancer stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setStatsLoading(true);
-        const stats = await freelancerService.getStats();
-        setFreelancerStats(stats);
-      } catch (err) {
-        toast.error(
-          `Failed to load freelancer stats: ${err instanceof Error ? err.message : 'Unknown error'}`,
-        );
-      } finally {
-        setStatsLoading(false);
-      }
-    };
+  const {
+    data: freelancerStats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useFreelancerStats();
 
-    fetchStats();
-  }, []);
+  // Show stats error as toast
+  useEffect(() => {
+    if (statsError) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load freelancer stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError]);
 
   // Fetch freelancers with pagination and search
-  const { freelancers, loading, initialLoading, error, pagination } = useFreelancers({
+  const {
+    data: freelancersData,
+    isLoading,
+    isFetching,
+    error,
+  } = useFreelancers({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
   });
 
+  const freelancers = freelancersData?.freelancers || [];
+  const pagination = freelancersData?.pagination;
+
   // Show error as toast when it occurs
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load freelancers: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load freelancers';
+      toast.error(errorMessage);
     }
   }, [error]);
 
   const stats =
-    freelancerStats && freelancerStats.totalFreelancers && freelancerStats.activeFreelancers
+    freelancerStats?.totalFreelancers?.value && freelancerStats.activeFreelancers?.value
       ? [
           {
             title: 'Total Freelancers',
@@ -231,17 +234,11 @@ const RealFreelancersPage = () => {
               isUp: (freelancerStats.totalFreelancers.percentageChange || 0) >= 0,
               label: freelancerStats.totalFreelancers.comparisonPeriod || 'all time',
             },
-            icon: Users,
-            iconColor: 'text-info',
-            iconBg: 'bg-info/10',
           },
           {
             title: 'Active Freelancers',
             value: freelancerStats.activeFreelancers.value?.toString() || '0',
             trend: { value: 0, isUp: true, label: 'currently' },
-            icon: Clock,
-            iconColor: 'text-success',
-            iconBg: 'bg-success/10',
           },
         ]
       : [
@@ -249,17 +246,11 @@ const RealFreelancersPage = () => {
             title: 'Total Freelancers',
             value: '0',
             trend: undefined,
-            icon: Users,
-            iconColor: 'text-info',
-            iconBg: 'bg-info/10',
           },
           {
             title: 'Active Freelancers',
             value: '0',
             trend: undefined,
-            icon: Clock,
-            iconColor: 'text-success',
-            iconBg: 'bg-success/10',
           },
         ];
 
@@ -270,16 +261,12 @@ const RealFreelancersPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {stats.map((stat, index) => {
-          const Icon = stat.icon;
           return (
             <EnhancedStatCard
               key={index}
               title={stat.title}
               value={stat.value}
               trend={stat.trend}
-              icon={Icon}
-              iconColor={stat.iconColor}
-              iconBg={stat.iconBg}
               interactive
               loading={statsLoading}
               onClick={() => {
@@ -293,7 +280,7 @@ const RealFreelancersPage = () => {
       {/* Freelancers Table with built-in pagination */}
       <DataTable
         columns={freelancerColumns}
-        data={freelancers}
+        data={freelancers as unknown as Freelancer[]}
         title="All Freelancers"
         searchKey="name"
         searchPlaceholder="Search by name..."
@@ -303,8 +290,8 @@ const RealFreelancersPage = () => {
         enablePagination={true}
         showSearch={true}
         showSorting={false}
-        initialLoading={initialLoading}
-        loading={loading}
+        initialLoading={isLoading && !freelancers.length}
+        loading={isFetching}
         externalSearchValue={searchQuery}
         onExternalSearchChange={(value) => setSearchQuery(value)}
         externalPageIndex={page - 1}

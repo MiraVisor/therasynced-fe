@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { SelectGroup, SelectLabel } from '@/components/ui/select';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuthStore } from '@/stores/authStore';
 
 // Mock service categories grouped by job title
 const mockCategories = [
@@ -35,7 +35,7 @@ const mockCategories = [
 ];
 
 export default function TestSelectPage() {
-  const { role } = useAuth();
+  const { role } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 

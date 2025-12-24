@@ -14,7 +14,6 @@ import {
 } from 'date-fns';
 import { Calendar, ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -33,11 +32,10 @@ import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  cancelAppointment,
-  fetchFreelancerAppointmentsByDate,
-  updateAppointmentNotes,
-} from '@/redux/slices/appointmentSlice';
-import { RootState } from '@/redux/store';
+  useCancelBooking,
+  useFreelancerAppointmentsByDate,
+  useUpdateBookingNotes,
+} from '@/hooks/queries/useBookings';
 import { Appointment, LocationType } from '@/types/types';
 
 import { InvoiceGenerationDialog } from './InvoiceGenerationDialog';
@@ -86,21 +84,25 @@ const getDistinctColors = (count: number) => {
 };
 
 const Appointments = () => {
-  const dispatch = useDispatch();
-  const { appointments, isLoading } = useSelector((state: RootState) => state.appointment);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const {
+    data: appointments = [],
+    isLoading,
+    refetch,
+  } = useFreelancerAppointmentsByDate(format(currentDate, 'yyyy-MM-dd'));
+  const { mutate: cancelBookingMutation } = useCancelBooking();
+  const { mutate: updateNotesMutation } = useUpdateBookingNotes();
 
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  const [currentDate, setCurrentDate] = useState(new Date()); // Reset to current date
-  const [viewType, setViewType] = useState<'day' | 'month'>('day');
+  const [_viewType, _setViewType] = useState<'day' | 'month'>('day');
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   const [, setIsMobile] = useState(false);
   const [editingNotes, setEditingNotes] = useState<string>('');
 
   useEffect(() => {
-    loadAppointments(); // Restore API call
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
@@ -118,66 +120,68 @@ const Appointments = () => {
     setEditingNotes(value);
   };
 
-  const handleSaveNotes = async () => {
+  const handleSaveNotes = () => {
     if (!selectedAppointment) return;
 
-    try {
-      // Dispatch the async thunk to update notes via API
-      await dispatch(
-        updateAppointmentNotes({
-          appointmentId: selectedAppointment.id,
-          notes: editingNotes,
-        }) as any,
-      ).unwrap();
-
-      // Update the local appointment state
-      const updatedAppointment = {
-        ...selectedAppointment,
+    updateNotesMutation(
+      {
+        bookingId: selectedAppointment.id,
         notes: editingNotes,
-      };
-      setSelectedAppointment(updatedAppointment);
-
-      toast.success('Notes updated successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update notes');
-    }
+      },
+      {
+        onSuccess: () => {
+          const updatedAppointment = {
+            ...selectedAppointment,
+            notes: editingNotes,
+          };
+          setSelectedAppointment(updatedAppointment);
+          toast.success('Notes updated successfully');
+          refetch();
+        },
+        onError: (error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to update notes';
+          toast.error(errorMessage);
+        },
+      },
+    );
   };
 
   const checkMobile = () => {
     setIsMobile(window.innerWidth < 768);
   };
 
-  const loadAppointments = () => {
-    dispatch(fetchFreelancerAppointmentsByDate(format(currentDate, 'yyyy-MM-dd')) as any); // Restore API call
-  };
-
-  const handleCancelAppointment = async () => {
+  const handleCancelAppointment = () => {
     if (!selectedAppointment) return;
 
-    try {
-      await dispatch(
-        cancelAppointment({
-          bookingId: selectedAppointment.id,
-          reason: cancelReason,
-        }) as any,
-      ).unwrap();
-      toast.success('Appointment cancelled successfully');
-      setShowCancelDialog(false);
-      setCancelReason('');
-      setSelectedAppointment(null);
-      loadAppointments();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to cancel appointment');
-    }
+    cancelBookingMutation(
+      {
+        bookingId: selectedAppointment.id,
+        reason: cancelReason,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Appointment cancelled successfully');
+          setShowCancelDialog(false);
+          setCancelReason('');
+          setSelectedAppointment(null);
+          refetch();
+        },
+        onError: (error: unknown) => {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Failed to cancel appointment';
+          toast.error(errorMessage);
+        },
+      },
+    );
   };
 
   const getAppointmentsForDate = (date: Date) => {
     return appointments
-      .filter((apt) => {
+      .filter((apt: Appointment) => {
         const aptDate = new Date(apt.start);
         return isSameDay(aptDate, date);
       })
-      .sort((a, b) => {
+      .sort((a: Appointment, b: Appointment) => {
         const aStart = new Date(a.start);
         const bStart = new Date(b.start);
         return aStart.getTime() - bStart.getTime();
@@ -197,8 +201,11 @@ const Appointments = () => {
 
     // Parse the time slot (e.g., "9:15 am" -> 9:15)
     const timeSlotParts = timeSlot.split(':');
-    const slotHour = parseInt(timeSlotParts[0]);
-    const slotMinutes = parseInt(timeSlotParts[1]?.split(' ')[0]) || 0;
+    const slotHourStr = timeSlotParts[0];
+    const slotMinutesStr = timeSlotParts[1]?.split(' ')[0];
+    if (!slotHourStr) return false;
+    const slotHour = parseInt(slotHourStr, 10);
+    const slotMinutes = slotMinutesStr ? parseInt(slotMinutesStr, 10) || 0 : 0;
     const isPM = timeSlot.toLowerCase().includes('pm') && slotHour !== 12;
     const adjustedSlotHour = isPM ? slotHour + 12 : slotHour === 12 ? 12 : slotHour;
 
@@ -216,7 +223,7 @@ const Appointments = () => {
 
   // Get appointments for a specific time slot and calculate their positions
   const getAppointmentsForTimeSlot = (timeSlot: string) => {
-    const slotAppointments = getDayAppointments().filter((appointment) =>
+    const slotAppointments = getDayAppointments().filter((appointment: Appointment) =>
       shouldShowAppointmentInTimeSlot(appointment, timeSlot),
     );
 
@@ -224,7 +231,7 @@ const Appointments = () => {
 
     const distinctColors = getDistinctColors(slotAppointments.length);
 
-    return slotAppointments.map((appointment, index) => {
+    return slotAppointments.map((appointment: Appointment, index: number) => {
       // For overlapping appointments, use a fixed width and stack them
       const width = slotAppointments.length > 1 ? '90%' : '95%';
       const left = slotAppointments.length > 1 ? `${5 + index * 5}%` : '2.5%';
@@ -236,8 +243,12 @@ const Appointments = () => {
 
       // Parse the time slot
       const timeSlotParts = timeSlot.split(':');
-      const slotHour = parseInt(timeSlotParts[0]);
-      const slotMinutes = parseInt(timeSlotParts[1]?.split(' ')[0]) || 0;
+      const slotHourStr = timeSlotParts[0];
+      const slotMinutesStr = timeSlotParts[1]?.split(' ')[0];
+      if (!slotHourStr)
+        return { ...appointment, width: '95%', left: '2.5%', top: 0, color: distinctColors[0] };
+      const slotHour = parseInt(slotHourStr, 10);
+      const slotMinutes = slotMinutesStr ? parseInt(slotMinutesStr, 10) || 0 : 0;
       const isPM = timeSlot.toLowerCase().includes('pm') && slotHour !== 12;
       const adjustedSlotHour = isPM ? slotHour + 12 : slotHour === 12 ? 12 : slotHour;
 
@@ -360,7 +371,7 @@ const Appointments = () => {
                 </div>
                 <div className="flex items-center justify-between w-full sm:w-auto gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
                     <span className="text-sm font-inter font-medium text-muted-foreground">
                       {getDayAppointments().length} appointment
                       {getDayAppointments().length !== 1 ? 's' : ''}
@@ -394,48 +405,58 @@ const Appointments = () => {
                       {/* Time Slot Area - Google Calendar Style */}
                       <div className="flex-1 relative bg-white hover:bg-gray-50 transition-colors duration-150">
                         {/* Grid line positioned at the same level as time label */}
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gray-200"></div>
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gray-200" />
                         {/* Alternate row shading for better visual separation */}
                         {index % 2 === 0 && (
-                          <div className="absolute inset-0 bg-gray-50/30 pointer-events-none"></div>
+                          <div className="absolute inset-0 bg-gray-50/30 pointer-events-none" />
                         )}
 
                         {/* Appointment Blocks - Google Calendar Style */}
-                        {getAppointmentsForTimeSlot(time.start).map((appointmentSlot) => (
-                          <div
-                            key={appointmentSlot.appointment.id}
-                            className="absolute text-white rounded-lg p-2 cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm"
-                            style={{
-                              left: appointmentSlot.left,
-                              width: appointmentSlot.width,
-                              top: appointmentSlot.top,
-                              height: appointmentSlot.height,
-                              minHeight: '25px',
-                              backgroundColor: appointmentSlot.color,
-                              zIndex: appointmentSlot.zIndex,
-                              margin: '0 2px',
-                              boxShadow:
-                                '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                            }}
-                            onClick={() => setSelectedAppointment(appointmentSlot.appointment)}
-                          >
-                            <div className="flex flex-col h-full justify-start">
-                              <div className="text-xs font-medium leading-tight mb-1 truncate">
-                                {appointmentSlot.appointment.title}
-                              </div>
-                              <div className="text-xs leading-tight">
-                                {getAppointmentTimeRange(appointmentSlot.appointment)}
-                              </div>
-                              {appointmentSlot.appointment.location && (
-                                <div className="text-xs leading-tight truncate mt-1">
-                                  {appointmentSlot.appointment.location === LocationType.CLINIC
-                                    ? 'Clinic'
-                                    : 'Home'}
+                        {getAppointmentsForTimeSlot(time.start).map(
+                          (appointmentSlot: {
+                            appointment: Appointment;
+                            width: string;
+                            left: string;
+                            top: number;
+                            height: string;
+                            color: string;
+                            zIndex: number;
+                          }) => (
+                            <div
+                              key={appointmentSlot.appointment.id}
+                              className="absolute text-white rounded-lg p-2 cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm"
+                              style={{
+                                left: appointmentSlot.left,
+                                width: appointmentSlot.width,
+                                top: appointmentSlot.top,
+                                height: appointmentSlot.height,
+                                minHeight: '25px',
+                                backgroundColor: appointmentSlot.color,
+                                zIndex: appointmentSlot.zIndex,
+                                margin: '0 2px',
+                                boxShadow:
+                                  '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                              }}
+                              onClick={() => setSelectedAppointment(appointmentSlot.appointment)}
+                            >
+                              <div className="flex flex-col h-full justify-start">
+                                <div className="text-xs font-medium leading-tight mb-1 truncate">
+                                  {appointmentSlot.appointment.title}
                                 </div>
-                              )}
+                                <div className="text-xs leading-tight">
+                                  {getAppointmentTimeRange(appointmentSlot.appointment)}
+                                </div>
+                                {appointmentSlot.appointment.location && (
+                                  <div className="text-xs leading-tight truncate mt-1">
+                                    {appointmentSlot.appointment.location === LocationType.CLINIC
+                                      ? 'Clinic'
+                                      : 'Home'}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     </div>
                   ))}
@@ -507,7 +528,7 @@ const Appointments = () => {
                     >
                       {getDate(date)}
                       {hasAppointments && (
-                        <div className="absolute bottom-1 w-2 h-2 bg-blue-500 rounded-full shadow-sm"></div>
+                        <div className="absolute bottom-1 w-2 h-2 bg-blue-500 rounded-full shadow-sm" />
                       )}
                     </button>
                   );
@@ -522,7 +543,7 @@ const Appointments = () => {
               <h3 className="font-poppins text-lg font-bold text-charcoal">APPOINTMENTS</h3>
             </div>
             <div className="space-y-3">
-              {getDayAppointments().map((appointment) => {
+              {getDayAppointments().map((appointment: Appointment) => {
                 return (
                   <div
                     key={appointment.id}

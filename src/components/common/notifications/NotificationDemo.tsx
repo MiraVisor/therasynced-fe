@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotificationsWithCount } from '@/hooks/queries/useNotifications';
 import { Notification, NotificationPriority, NotificationType, RoleType } from '@/types/types';
 
 import { NotificationPopover } from './NotificationPopover';
@@ -16,7 +16,7 @@ interface NotificationDemoProps {
 }
 
 export function NotificationDemo({ userRole, className }: NotificationDemoProps) {
-  const notifications = useNotifications();
+  const notifications = useNotificationsWithCount();
   const [isAddingNotification, setIsAddingNotification] = useState(false);
   const [demoNotifications, setDemoNotifications] = useState<Notification[]>([]);
 
@@ -140,7 +140,12 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
       roleNotifications[Math.floor(Math.random() * roleNotifications.length)];
 
     // Add to demo notifications
-    setDemoNotifications((prev) => [randomNotification, ...prev]);
+    setDemoNotifications((prev) => {
+      const newNotifications = [randomNotification, ...prev].filter(
+        (n): n is Notification => n !== undefined,
+      );
+      return newNotifications;
+    });
 
     // Simulate API delay
     setTimeout(() => {
@@ -197,7 +202,11 @@ export function NotificationDemo({ userRole, className }: NotificationDemoProps)
           </Button>
 
           <Button
-            onClick={notifications.markAllAsRead}
+            onClick={() => {
+              if (typeof notifications.markAllAsRead === 'function') {
+                notifications.markAllAsRead();
+              }
+            }}
             variant="outline"
             size="sm"
             disabled={notifications.unreadCount === 0}

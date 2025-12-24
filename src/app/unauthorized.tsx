@@ -2,10 +2,10 @@ import { ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuthStore } from '@/stores/authStore';
 
 const Unauthorized = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
   const router = useRouter();
 
   if (!isAuthenticated) {

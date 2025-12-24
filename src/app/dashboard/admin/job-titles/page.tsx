@@ -1,11 +1,8 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle, FileText, XCircle } from 'lucide-react';
 import { Edit, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -25,23 +22,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  createJobTitle,
-  fetchJobTitles,
-  fetchJobTitlesStats,
-  updateJobTitle,
-} from '@/redux/slices';
-import type { AppDispatch, RootState } from '@/redux/store';
-import {
+  useCreateJobTitle,
+  useJobTitles,
+  useJobTitlesStats,
+  useUpdateJobTitle,
+} from '@/hooks/queries/useAdmin';
+import type {
   CreateJobTitleDto,
   JobTitleResponse,
   UpdateJobTitleDto,
 } from '@/services/adminJobTitleService';
 
 const JobTitlesPage = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { jobTitles, loading, initialLoading, error, pagination, stats, statsLoading } =
-    useSelector((state: RootState) => state.jobTitles);
-
   // State for pagination and search
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -53,8 +45,26 @@ const JobTitlesPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedJobTitle, setSelectedJobTitle] = useState<JobTitleResponse | null>(null);
   const [formData, setFormData] = useState<CreateJobTitleDto>({ name: '', description: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [updatingJobTitles, setUpdatingJobTitles] = useState<Set<string>>(new Set());
+
+  const {
+    data: jobTitlesResponse,
+    isLoading: loading,
+    isFetching: _isFetching,
+  } = useJobTitles({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+  });
+  const jobTitles = jobTitlesResponse?.data || [];
+  const pagination = jobTitlesResponse?.pagination || null;
+  const initialLoading = loading && !jobTitlesResponse;
+
+  const { data: statsResponse, isLoading: statsLoading } = useJobTitlesStats();
+  const stats = statsResponse?.data || null;
+
+  const createMutation = useCreateJobTitle();
+  const updateMutation = useUpdateJobTitle();
 
   // Debounce search query
   useEffect(() => {
@@ -69,68 +79,41 @@ const JobTitlesPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedSearch]);
 
-  // Fetch job titles with pagination and search
-  useEffect(() => {
-    dispatch(
-      fetchJobTitles({
-        page,
-        limit: pageSize,
-        name: debouncedSearch || undefined,
-      }),
-    );
-  }, [dispatch, page, pageSize, debouncedSearch]);
-
-  // Fetch stats separately
-  useEffect(() => {
-    dispatch(fetchJobTitlesStats());
-  }, [dispatch]);
-
   const handleCreate = async () => {
     try {
-      setIsSubmitting(true);
-      await dispatch(createJobTitle(formData)).unwrap();
-      toast.success('Job title created successfully');
+      await createMutation.mutateAsync(formData);
       setIsCreateDialogOpen(false);
       setFormData({ name: '', description: '' });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create job title');
-    } finally {
-      setIsSubmitting(false);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
   const handleUpdate = async () => {
     if (!selectedJobTitle) return;
     try {
-      setIsSubmitting(true);
       const updateData: UpdateJobTitleDto = {
         name: formData.name,
         description: formData.description,
       };
-      await dispatch(updateJobTitle({ id: selectedJobTitle.id, data: updateData })).unwrap();
-      toast.success('Job title updated successfully');
+      await updateMutation.mutateAsync({ id: selectedJobTitle.id, data: updateData });
       setIsEditDialogOpen(false);
       setSelectedJobTitle(null);
       setFormData({ name: '', description: '' });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update job title');
-    } finally {
-      setIsSubmitting(false);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
   const handleToggleActive = async (jobTitle: JobTitleResponse) => {
     try {
       setUpdatingJobTitles((prev) => new Set(prev).add(jobTitle.id));
-      await dispatch(
-        updateJobTitle({
-          id: jobTitle.id,
-          data: { isActive: !jobTitle.isActive },
-        }),
-      ).unwrap();
-      toast.success(`Job title ${!jobTitle.isActive ? 'activated' : 'deactivated'} successfully`);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update job title status');
+      await updateMutation.mutateAsync({
+        id: jobTitle.id,
+        data: { isActive: !jobTitle.isActive },
+      });
+    } catch (error) {
+      // Error handled by mutation
     } finally {
       setUpdatingJobTitles((prev) => {
         const newSet = new Set(prev);
@@ -228,59 +211,21 @@ const JobTitlesPage = () => {
     {
       title: 'Total Job Titles',
       value: stats?.totalJobTitles.toString() ?? '0',
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
     {
       title: 'Active',
       value: stats?.activeJobTitles.toString() ?? '0',
-      icon: CheckCircle,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/10',
     },
     {
       title: 'Inactive',
       value: stats?.inactiveJobTitles.toString() ?? '0',
-      icon: XCircle,
-      iconColor: 'text-error',
-      iconBg: 'bg-error/10',
     },
 
     {
       title: 'Most Popular',
       value: stats?.mostPopularJobTitle?.name ?? 'N/A',
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
   ];
-
-  if (error) {
-    return (
-      <DashboardPageWrapper
-        header={
-          <div className="flex items-center justify-between w-full">
-            <h1 className="font-poppins font-bold text-2xl text-charcoal">Job Titles</h1>
-            <Button
-              onClick={() => {
-                setFormData({ name: '', description: '' });
-                setIsCreateDialogOpen(true);
-              }}
-              className="font-inter"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Job Title
-            </Button>
-          </div>
-        }
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="font-open-sans text-lg text-error">Error: {error}</div>
-        </div>
-      </DashboardPageWrapper>
-    );
-  }
 
   return (
     <DashboardPageWrapper
@@ -302,15 +247,12 @@ const JobTitlesPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((card) => (
             <EnhancedStatCard
               key={card.title}
               title={card.title}
               value={card.value}
-              icon={card.icon}
-              iconColor={card.iconColor}
-              iconBg={card.iconBg}
               loading={statsLoading}
             />
           ))}
@@ -348,7 +290,7 @@ const JobTitlesPage = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="font-poppins font-semibold">Create Job Title</DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Add a new job title to the platform
               </DialogDescription>
             </DialogHeader>
@@ -362,7 +304,7 @@ const JobTitlesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Physiotherapy"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -375,7 +317,7 @@ const JobTitlesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Job title description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>
@@ -384,12 +326,12 @@ const JobTitlesPage = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsCreateDialogOpen(false)}
-                disabled={isSubmitting}
+                disabled={createMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button onClick={handleCreate} disabled={isSubmitting || !formData.name}>
-                {isSubmitting ? 'Creating...' : 'Create'}
+              <Button onClick={handleCreate} disabled={createMutation.isPending || !formData.name}>
+                {createMutation.isPending ? 'Creating...' : 'Create'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -400,7 +342,7 @@ const JobTitlesPage = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="font-poppins font-semibold">Edit Job Title</DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Update job title information
               </DialogDescription>
             </DialogHeader>
@@ -414,7 +356,7 @@ const JobTitlesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Physiotherapy"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -427,7 +369,7 @@ const JobTitlesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Job title description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>
@@ -436,12 +378,16 @@ const JobTitlesPage = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsEditDialogOpen(false)}
-                disabled={isSubmitting}
+                disabled={updateMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button onClick={handleUpdate} disabled={isSubmitting || !formData.name}>
-                {isSubmitting ? 'Updating...' : 'Update'}
+              <Button
+                onClick={handleUpdate}
+                disabled={updateMutation.isPending || !formData.name}
+                isLoading={updateMutation.isPending}
+              >
+                {updateMutation.isPending ? 'Updating...' : 'Update'}
               </Button>
             </DialogFooter>
           </DialogContent>

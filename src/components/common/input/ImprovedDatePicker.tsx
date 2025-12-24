@@ -1,10 +1,9 @@
 'use client';
 
+import * as React from 'react';
 import { format, getMonth, getYear, setDate, setMonth, setYear } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -79,9 +78,9 @@ export function ImprovedDatePicker({
     // Auto-format as user types (DD/MM/YYYY)
     if (cleanInput.length <= 10) {
       if (cleanInput.length === 2 && !cleanInput.includes('/')) {
-        cleanInput = cleanInput + '/';
+        cleanInput = `${cleanInput}/`;
       } else if (cleanInput.length === 5 && cleanInput.split('/').length === 2) {
-        cleanInput = cleanInput + '/';
+        cleanInput = `${cleanInput}/`;
       }
 
       setTextInput(cleanInput);
@@ -90,9 +89,13 @@ export function ImprovedDatePicker({
       if (cleanInput.length === 10) {
         const parts = cleanInput.split('/');
         if (parts.length === 3) {
-          const day = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
-          const year = parseInt(parts[2], 10);
+          const dayStr = parts[0];
+          const monthStr = parts[1];
+          const yearStr = parts[2];
+          if (!dayStr || !monthStr || !yearStr) return;
+          const day = parseInt(dayStr, 10);
+          const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed
+          const year = parseInt(yearStr, 10);
 
           if (
             !isNaN(day) &&

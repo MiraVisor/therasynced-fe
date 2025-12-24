@@ -1,16 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import EmailVerificationForm from '@/components/core/authentication/EmailVerificationForm';
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
 import SignInForm from '@/components/core/authentication/SignInForm';
-import { sendVerificationEmailApi } from '@/redux/api/authApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { signUpUser } from '@/redux/slices/authSlice';
+import { useResendVerificationEmail, useSignUp } from '@/hooks/queries/useAuth';
+import type { SignUpDto } from '@/types';
 
 import MultiStepSignup from './MultiStepSignup';
 
@@ -23,11 +22,26 @@ type AuthView = 'sign-in' | 'sign-up' | 'forgot-password' | 'email-verification'
 const validAuthTypes = ['sign-up', 'sign-in'];
 
 export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
-  const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<AuthView>(authtype as AuthView);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+
+  const { mutate: signup, isPending: isSubmitting } = useSignUp();
+  const { mutate: resendEmail } = useResendVerificationEmail();
+
+  // Show password reset success toast
+  useEffect(() => {
+    const resetSuccess = searchParams.get('reset');
+    if (resetSuccess === 'success' && currentView === 'sign-in') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('reset');
+      router.replace(url.pathname + url.search, { scroll: false });
+      setTimeout(() => {
+        toast.success('Password reset successful! You can now sign in with your new password.');
+      }, 100);
+    }
+  }, [searchParams, currentView, router]);
 
   if (!validAuthTypes.includes(authtype)) {
     return notFound();
@@ -43,25 +57,13 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     setCurrentView('sign-in');
   };
 
-  const handleSignUpSubmit = (data: any) => {
-    setIsSubmitting(true);
+  const handleSignUpSubmit = (data: SignUpDto) => {
     setUserEmail(data.email);
-
-    dispatch(signUpUser(data))
-      .unwrap()
-      .then((res) => {
-        toast.success(
-          'Account created successfully! Please check your email for the verification link.',
-        );
-        // Show email verification page instead of redirecting to dashboard
+    signup(data, {
+      onSuccess: () => {
         setCurrentView('email-verification');
-      })
-      .catch((err) => {
-        toast.error(err?.message || 'Sign-Up Failed');
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+      },
+    });
   };
 
   const handleBackToSignInFromSignup = () => {
@@ -69,25 +71,33 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     window.history.pushState({}, '', '/authentication/sign-in');
   };
 
-  const handleResendEmail = async () => {
+  const handleResendEmail = () => {
     if (!userEmail) {
       toast.error('Email address not found');
       return;
     }
-
-    try {
-      await sendVerificationEmailApi({ email: userEmail });
-      toast.success('Verification email resent to your inbox');
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to resend verification email');
-    }
+    resendEmail({ email: userEmail });
   };
 
   const renderAuthForm = () => {
     if (currentView === 'sign-up') {
       return (
         <MultiStepSignup
-          onSubmit={handleSignUpSubmit}
+          onSubmit={(data) => {
+            // Convert MultiStepSignup data format to SignUpDto
+            const signupData: SignUpDto = {
+              name: data.name,
+              email: data.email,
+              password: data.password || '',
+              role: data.role as any,
+              dob: data.dob,
+              gender: data.gender,
+              city: data.city,
+              clinicAddress: data.clinicAddress,
+              mainJobTitle: data.mainJobTitleId ? ({ id: data.mainJobTitleId } as any) : undefined,
+            };
+            handleSignUpSubmit(signupData);
+          }}
           onBack={handleBackToSignInFromSignup}
           isLoading={isSubmitting}
         />
@@ -100,11 +110,12 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
       return (
         <EmailVerificationForm
           onBack={handleBackToSignInFromSignup}
-          email={userEmail}
+          email={userEmail || ''}
           onResendEmail={handleResendEmail}
         />
       );
     }
+    return null;
   };
 
   return (

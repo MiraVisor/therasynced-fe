@@ -72,15 +72,26 @@ export function UserSearchSelect({
 
           if (Array.isArray(usersData)) {
             // Map the response to our User interface
-            const mappedUsers: User[] = usersData.map((user: any) => ({
-              id: user.id || user.userId,
+            type ApiUser = {
+              id?: string;
+              userId?: string;
+              name?: string;
+              fullName?: string;
+              firstName?: string;
+              lastName?: string;
+              email?: string;
+              role?: string;
+              userRole?: string;
+            };
+            const mappedUsers: User[] = usersData.map((user: ApiUser) => ({
+              id: user.id || user.userId || '',
               name:
                 user.name ||
                 user.fullName ||
                 `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
                 'Unknown',
               email: user.email || '',
-              role: user.role || user.userRole,
+              role: user.role || user.userRole || undefined,
             }));
             setUsers(mappedUsers);
           } else {
@@ -89,10 +100,11 @@ export function UserSearchSelect({
         } else {
           setUsers([]);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const apiError = error as { status?: number };
         console.error('Error fetching users:', error);
         // If endpoint doesn't exist (404), try alternative endpoint
-        if (error?.status === 404 || error?.status === 501) {
+        if (apiError?.status === 404 || apiError?.status === 501) {
           try {
             // Try alternative endpoint pattern
             const altResponse = await api.get('/admin/users', {
@@ -104,34 +116,50 @@ export function UserSearchSelect({
 
             const usersData = altResponse.data?.data || altResponse.data;
             if (Array.isArray(usersData)) {
-              const mappedUsers: User[] = usersData.map((user: any) => ({
-                id: user.id || user.userId,
-                name:
-                  user.name ||
-                  user.fullName ||
-                  `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
-                  'Unknown',
-                email: user.email || '',
-                role: user.role || user.userRole,
-              }));
+              const mappedUsers: User[] = usersData.map(
+                (user: {
+                  id?: string;
+                  userId?: string;
+                  name?: string;
+                  fullName?: string;
+                  firstName?: string;
+                  lastName?: string;
+                  email?: string;
+                  role?: string;
+                  userRole?: string;
+                }) => ({
+                  id: user.id || user.userId || '',
+                  name:
+                    user.name ||
+                    user.fullName ||
+                    `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+                    'Unknown',
+                  email: user.email || '',
+                  role: user.role || user.userRole || undefined,
+                }),
+              );
               setUsers(mappedUsers);
             } else {
               setUsers([]);
             }
-          } catch (altError: any) {
+          } catch (altError: unknown) {
             console.error('Alternative endpoint also failed:', altError);
             setUsers([]);
             // Only show error if both endpoints fail and it's not a 404
-            if (altError?.status !== 404 && altError?.status !== 501) {
+            const altErrorStatus = (altError as { status?: number })?.status;
+            if (altErrorStatus !== 404 && altErrorStatus !== 501) {
               setError('Failed to search users. Please check backend configuration.');
             }
           }
-        } else if (error?.status !== 401 && error?.status !== 403) {
-          // Don't show error for auth issues, those are handled elsewhere
-          setError('Failed to search users. Please try again.');
-          setUsers([]);
         } else {
-          setUsers([]);
+          const errorStatus = (error as { status?: number })?.status;
+          if (errorStatus !== 401 && errorStatus !== 403) {
+            // Don't show error for auth issues, those are handled elsewhere
+            setError('Failed to search users. Please try again.');
+            setUsers([]);
+          } else {
+            setUsers([]);
+          }
         }
       } finally {
         setLoading(false);

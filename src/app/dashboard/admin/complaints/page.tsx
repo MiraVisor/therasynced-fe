@@ -1,23 +1,18 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Shield } from 'lucide-react';
-import { AlertTriangle, CheckCircle, FileText, XCircle } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
-import {
-  StatusFilter,
-  StatusFilterOption,
-} from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
+import { StatusFilterOption } from '@/components/core/Dashboard/AdminSide/Components/StatusFilter';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { useComplaints } from '@/hooks/useComplaints';
-import adminComplaintService from '@/services/adminComplaintService';
+import { useAdminComplaints, useAdminComplaintStats } from '@/hooks/queries/useComplaints';
 import { ComplaintStatus } from '@/types/types';
 
 interface ComplaintStats {
@@ -70,64 +65,56 @@ const ComplaintsPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch complaints with pagination, search, and status filter
-  const { complaints, loading, initialLoading, error, pagination, refetch } = useComplaints({
+  const {
+    data: complaintsData,
+    isLoading,
+    isFetching,
+    error,
+    refetch: _refetch,
+  } = useAdminComplaints({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
     status: statusFilter,
   });
 
-  // Calculate stats - we'll need to fetch these separately or from the API
-  const [stats, setStats] = useState<ComplaintStats>({
-    total: 0,
-    pending: 0,
-    underReview: 0,
-    resolved: 0,
-    dismissed: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
+  const complaints = complaintsData?.complaints || [];
+  const pagination = complaintsData?.pagination;
 
-  // Fetch stats separately
-  useEffect(() => {
-    const fetchStats = async () => {
-      const hasStats = stats.total > 0 || stats.pending > 0 || stats.resolved > 0;
-      try {
-        if (!hasStats) {
-          setInitialStatsLoading(true);
-        } else {
-          setStatsLoading(true);
-        }
-        const response = await adminComplaintService.getStatistics();
+  // Fetch stats
+  const { data: statsData, isLoading: statsLoading, error: statsError } = useAdminComplaintStats();
 
-        if (response.success) {
-          const { total, pending, underReview, resolved, dismissed } = response.data;
-          setStats({
-            total,
-            pending,
-            underReview,
-            resolved,
-            dismissed,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setStatsLoading(false);
-        setInitialStatsLoading(false);
+  const stats: ComplaintStats = statsData?.data
+    ? {
+        total: statsData.data.total || 0,
+        pending: statsData.data.pending || 0,
+        underReview: statsData.data.underReview || 0,
+        resolved: statsData.data.resolved || 0,
+        dismissed: statsData.data.dismissed || 0,
       }
-    };
+    : {
+        total: 0,
+        pending: 0,
+        underReview: 0,
+        resolved: 0,
+        dismissed: 0,
+      };
 
-    fetchStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show error as toast when it occurs
+  // Show errors as toast when they occur
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load complaints: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load complaints';
+      toast.error(errorMessage);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (statsError) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load complaint stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError]);
 
   const handleViewDetails = (complaintId: string) => {
     router.push(`/dashboard/admin/complaints/${complaintId}`);
@@ -211,37 +198,22 @@ const ComplaintsPage = () => {
     {
       title: 'Total Complaints',
       value: stats.total.toString(),
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
     {
       title: 'Pending',
       value: stats.pending.toString(),
-      icon: AlertTriangle,
-      iconColor: 'text-warning',
-      iconBg: 'bg-warning/10',
     },
     {
       title: 'Under Review',
       value: stats.underReview.toString(),
-      icon: Shield,
-      iconColor: 'text-info',
-      iconBg: 'bg-info/10',
     },
     {
       title: 'Resolved',
       value: stats.resolved.toString(),
-      icon: CheckCircle,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/10',
     },
     {
       title: 'Dismissed',
       value: stats.dismissed.toString(),
-      icon: XCircle,
-      iconColor: 'text-error',
-      iconBg: 'bg-error/10',
     },
   ];
 
@@ -276,31 +248,14 @@ const ComplaintsPage = () => {
 
   // Render stat cards with responsive layout
   const renderStatCards = () => (
-    <div
-      className="grid gap-6 
-      grid-cols-1 
-      sm:grid-cols-2 
-      lg:grid-cols-3 
-      xl:grid-cols-5"
-    >
-      {statCards.map((card, index) => (
-        <div
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {statCards.map((card) => (
+        <EnhancedStatCard
           key={card.title}
-          className={`
-            ${index >= 3 ? 'lg:col-span-1 xl:col-span-1' : ''}
-          `}
-        >
-          <EnhancedStatCard
-            title={card.title}
-            value={card.value}
-            icon={card.icon}
-            iconColor={card.iconColor}
-            iconBg={card.iconBg}
-            loading={
-              initialStatsLoading || (statsLoading && stats.total === 0 && stats.pending === 0)
-            }
-          />
-        </div>
+          title={card.title}
+          value={card.value}
+          loading={statsLoading && !statsData}
+        />
       ))}
     </div>
   );
@@ -313,21 +268,11 @@ const ComplaintsPage = () => {
         {/* Stats Cards */}
         {renderStatCards()}
 
-        {/* Status Filter */}
-        <StatusFilter<ComplaintStatus | undefined>
-          options={statusFilterOptions}
-          selectedValue={statusFilter}
-          onChange={(value) => {
-            setStatusFilter(value);
-            setPage(1);
-          }}
-        />
-
         {/* Complaints Table */}
         <DataTable
           columns={columns}
           data={complaints}
-          title={`${statusFilter || 'All'} Complaints`}
+          title="All Complaints"
           searchKey="reason"
           searchPlaceholder="Search by name..."
           enableSorting={false}
@@ -336,8 +281,8 @@ const ComplaintsPage = () => {
           enablePagination={true}
           showSearch={true}
           showSorting={false}
-          initialLoading={initialLoading}
-          loading={loading}
+          initialLoading={isLoading && !complaints.length}
+          loading={isFetching}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}
@@ -346,6 +291,16 @@ const ComplaintsPage = () => {
           onExternalPageChange={(pageIndex) => setPage(pageIndex + 1)}
           onExternalPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
+            setPage(1);
+          }}
+          filterOptions={statusFilterOptions.map((opt) => ({
+            label: opt.label,
+            value: opt.value ?? 'all',
+            color: opt.color,
+          }))}
+          selectedFilter={statusFilter ?? 'all'}
+          onFilterChange={(value) => {
+            setStatusFilter(value === 'all' ? undefined : (value as ComplaintStatus));
             setPage(1);
           }}
         />

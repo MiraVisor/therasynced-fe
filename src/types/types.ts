@@ -1,3 +1,27 @@
+// Re-export data rights types
+export * from './dataRights';
+
+// Re-export from organized domain files
+export * from './analytics';
+export * from './api';
+export * from './appointment';
+export * from './auth';
+export * from './booking';
+export * from './chat';
+export * from './common';
+export * from './complaint';
+export * from './enums';
+export * from './formTemplate';
+export * from './freelancer';
+export * from './location';
+export * from './loyalty';
+export * from './notification';
+export * from './rating';
+export * from './service';
+export * from './slot';
+export * from './subscription';
+export * from './user';
+
 // Job Title interface for freelancers
 export interface JobTitle {
   id: string;
@@ -124,6 +148,10 @@ export interface registerUserTypes {
   clinicAddress?: string;
   firstAidCertificateUrl?: string;
   verificationDocuments?: string[];
+  // Consent fields (for signup)
+  termsConsent?: boolean;
+  privacyConsent?: boolean;
+  gdprConsent?: boolean;
 }
 
 // New DTOs to match backend
@@ -178,13 +206,14 @@ export interface UpdateProfileDto {
   city?: string;
   gender?: string;
   dob?: string;
+  description?: string; // Bio/description field
   // New fields for freelancers
-  mainJobTitleId?: string; // Updated to match backend DTO
+  mainJobTitleId?: string | null; // Allow null to clear selection
   clinicAddress?: string;
 }
 
 // Backend response types
-export interface BackendResponse<T = any> {
+export interface BackendResponse<T> {
   success: boolean;
   message: string;
   data: T;
@@ -225,7 +254,7 @@ export interface BackendProfileResponse {
       firstAidCertificateRejectedAt?: Date | null;
       firstAidCertificateRejectionReason?: string | null;
     };
-    freelancerData?: any;
+    freelancerData?: Record<string, unknown>;
   };
   meta: {
     timestamp: string;
@@ -271,7 +300,13 @@ export interface Expert {
   isFavorite?: boolean;
   // Additional properties for profile dialog
   profilePicture?: string;
-  services?: any[];
+  services?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    additionalPrice?: number;
+    duration?: number;
+  }>;
   location?: string;
   sessionTypes?: string[];
   pricing?: {
@@ -304,10 +339,14 @@ export interface Expert {
   // First aid certificate information
   firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   // Slot information
-  slots?: any[];
-  slotSummary?: any;
+  slots?: Array<{ id: string; startTime: string; endTime: string; status: string }>;
+  slotSummary?: {
+    nextAvailable: { id: string; startTime: string; endTime: string; status: string } | null;
+    totalSlots: number;
+    availableSlots: number;
+  };
   // Favorites information
-  favoritedBy?: any[];
+  favoritedBy?: Array<{ id: string; name: string; email: string }>;
   // Card info
   cardInfo?: CardInfo;
   // Available slots count
@@ -376,7 +415,7 @@ export interface Appointment {
   clientAddress?: string | null;
   freelancer?: {
     clinicAddress?: string | null;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -444,7 +483,6 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
-  formType?: import('./formTypes').FormType;
   availableServices?: Service[]; // Legacy: Services available for this slot
   availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
   booking?: {
@@ -462,7 +500,13 @@ export interface Slot {
     };
     discountAmount?: number;
     discountPercentage?: number;
-    services?: any[]; // Legacy: Services for backward compatibility
+    services?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      additionalPrice?: number;
+      duration?: number;
+    }>; // Legacy: Services for backward compatibility
     serviceCategories?: Array<{
       id: string;
       name: string;
@@ -507,7 +551,6 @@ export interface CreateSlotDto {
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
-  formType?: import('./formTypes').FormType;
 }
 
 export interface CreateServiceDto {
@@ -530,11 +573,12 @@ export interface CreateBookingDto {
 export interface CreateSlotsDto {
   locationType?: LocationType; // Optional - acts as default fallback
   locationId?: string; // Added to support location selection
-  basePrice: number;
+  basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
   slots: Array<{
     startTime: string;
     endTime: string;
+    basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
     locationType?: LocationType; // Optional - per-slot location override
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
@@ -568,7 +612,7 @@ export interface PaginationDto {
   name?: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
   data: T;
@@ -587,7 +631,7 @@ export interface ApiResponse<T = any> {
 }
 
 // Updated to match backend response structure
-export interface BackendApiResponse<T = any> {
+export interface BackendApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data: T;
@@ -865,7 +909,7 @@ export interface Booking {
   canBeRated?: boolean; // From backend API - indicates if booking can be rated
   hasRating?: boolean; // From backend API - indicates if booking already has a rating
   rating?: BookingRating | null; // The rating object if the booking has been rated
-  formData?: Record<string, any> | null;
+  formData?: Record<string, unknown> | null;
   slot: {
     id: string;
     startTime: string;
@@ -1016,7 +1060,7 @@ export interface Notification {
     slotId?: string;
     startTime?: string;
     amount?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -1291,7 +1335,7 @@ export interface SubscriptionPlan {
 
 export interface Subscription {
   id: string | null;
-  userId: string;
+  userId?: string;
   planId?: string;
   plan?: SubscriptionPlan;
   status: SubscriptionStatus;
@@ -1300,17 +1344,17 @@ export interface Subscription {
   cancelAtPeriodEnd?: boolean;
   trialStart?: string;
   trialEnd?: string;
-  trialEndsAt?: string; // New field from API
+  trialEndsAt: string | null; // Required field from API
   canceledAt?: string | null;
   createdAt?: string;
   subscription?: Subscription | null; // Nested subscription details if active
   isInTrial?: boolean;
   trialExpired?: boolean; // true if trial has expired
-  canCreateSlots?: boolean; // true if can create slots (trial: slotsUsed < 5, subscribed: true)
-  canAcceptBookings?: boolean; // true for active trial or subscribed freelancers
-  slotsUsed?: number; // Current active slots count (for trial: 0-5)
-  slotsLimit?: number; // Slot limit (for trial: 5, for subscribed: plan.maxSlots or unlimited)
-  message?: string; // Message from API when inactive
+  canCreateSlots: boolean; // Required field from API
+  canAcceptBookings: boolean; // Required field from API
+  slotsUsed: number; // Required field from API - Current active slots count
+  slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
+  message: string; // Required field from API - Status message
 }
 
 export interface SubscriptionCreationData {
@@ -1347,7 +1391,7 @@ export interface RotationInfo {
 export interface TierFreelancerResponse {
   success: boolean;
   message: string;
-  data: any[]; // Freelancer objects
+  data: Expert[]; // Freelancer objects
   pagination: {
     page: number;
     limit: number;

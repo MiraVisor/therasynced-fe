@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -8,9 +7,8 @@ import SlideArrowButton from '@/components/ui/SlideArrowButton';
 import { isTokenValid } from '@/lib/utils';
 
 const Hero = () => {
-  const router = useRouter();
   const [hasValidToken, setHasValidToken] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     setHasValidToken(isTokenValid());
   }, []);
@@ -27,7 +25,7 @@ const Hero = () => {
     <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-white dark:bg-black">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,119,69,0.1),transparent_50%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,119,69,0.1),transparent_50%)]" />
       </div>
 
       {/* Content */}
@@ -59,7 +57,7 @@ const Hero = () => {
       </div>
 
       {/* Bottom decorative line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
     </section>
   );
 };

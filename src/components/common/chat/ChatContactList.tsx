@@ -56,15 +56,15 @@ const ChatContactList: React.FC<ChatContactListProps> = ({
     return (
       <div className={cn('flex flex-col h-full', className)}>
         <div className="p-4 border-b border-gray-200">
-          <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-10 bg-gray-200 rounded animate-pulse" />
         </div>
         <div className="flex-1 p-4 space-y-4">
           {[...Array(5)].map((_, index) => (
             <div key={index} className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-3 bg-gray-100 rounded animate-pulse w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                <div className="h-3 bg-gray-100 rounded animate-pulse w-3/4" />
               </div>
             </div>
           ))}

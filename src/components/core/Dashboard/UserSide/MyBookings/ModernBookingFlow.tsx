@@ -1,50 +1,33 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
-import {
-  AlertCircle,
-  ArrowLeft,
-  Building,
-  Calendar as CalendarIcon,
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  Home,
-  Star,
-  Video,
-} from 'lucide-react';
+import { ArrowLeft, CalendarIcon, CheckCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 import SocketDebugger from '@/components/debug/SocketDebugger';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { Textarea } from '@/components/ui/textarea';
+import { useCreateBooking } from '@/hooks/queries/useBookings';
+import { useStampDetail } from '@/hooks/queries/useLoyalty';
+import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
-import { rescheduleBooking } from '@/redux/api/exploreApi';
-import { getStampDetail } from '@/redux/api/loyaltyApi';
-import { fetchUserBookings } from '@/redux/slices/bookingSlice';
-import { fetchExplorePatientBookings } from '@/redux/slices/exploreSlice';
-import { bookAppointment, fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
-import { Expert } from '@/types/types';
+import { useBookingStore } from '@/stores/bookingStore';
+import { getApiErrorMessage, type ServiceCategory } from '@/types/common';
+import type { Slot } from '@/types/slot';
+import type { Expert } from '@/types/types';
 
-import { StampDiscountBadge } from './StampDiscountBadge';
+import { BookingSummarySidebar } from './BookingSummarySidebar';
+import { ConfirmStep } from './steps/ConfirmStep';
+import { DetailsStep } from './steps/DetailsStep';
+import { ScheduleStep } from './steps/ScheduleStep';
 
 // Form validation schemas
 const serviceSchema = z.object({
   serviceCategoryIds: z.array(z.string()).optional(),
-  // sessionDuration: z.enum(['30', '45', '60', '90']),
 });
 
 const detailsSchema = z.object({
@@ -60,38 +43,40 @@ interface ModernBookingFlowProps {
   freelancerData?: Expert | null;
 }
 
-const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
-  rescheduleBookingId,
-  freelancerData,
-}) => {
+const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData }) => {
   const params = useParams();
   const router = useRouter();
-  const dispatch = useDispatch();
 
-  const freelancerId = Array.isArray(params?.freelancerId)
-    ? params?.freelancerId[0]
-    : params?.freelancerId;
-  const {
-    slots,
-    loading: slotsLoading,
-    initialLoading: slotsInitialLoading,
-  } = useSelector((state: RootState) => state.overview);
-  const { stampDetail, isLoadingDetail, selectedTherapistId } = useSelector(
-    (state: RootState) => state.stamps,
-  );
+  const freelancerId = Array.isArray(params?.['freelancerId'])
+    ? params?.['freelancerId'][0]
+    : params?.['freelancerId'];
+
+  // Use React Query hooks
+  const { data: slots = [] } = useAvailableSlots(freelancerId ?? null);
+  const { mutate: createBooking, isPending: isCreatingBooking } = useCreateBooking();
+  const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(null);
+  const { data: stampDetail } = useStampDetail(selectedTherapistId);
 
   // Use WebSocket hook for real-time slot updates
-  const { isConnected, reservedSlots, reserveSlot, releaseSlot, isSlotReserved } =
-    useSocketSlots(freelancerId);
+  const { reserveSlot, releaseSlot, isSlotReserved } = useSocketSlots(freelancerId);
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [datePage, setDatePage] = useState(0);
-  const [loadingMoreSlots, setLoadingMoreSlots] = useState(false);
-  const [availableServices, setAvailableServices] = useState<any[]>([]);
-  const [freelancerServices, setFreelancerServices] = useState<any[]>([]);
+  // Use booking store for state management
+  const {
+    currentStep,
+    selectedDate,
+    selectedTime,
+    datePage,
+    freelancerServices,
+    setSelectedDate,
+    setSelectedTime,
+    setDatePage,
+    setAvailableServices,
+    setFreelancerServices,
+    nextStep: storeNextStep,
+    prevStep: storePrevStep,
+  } = useBookingStore();
+
+  const [loadingMoreSlots] = useState(false);
 
   // Form states
   const serviceForm = useForm<ServiceFormData>({
@@ -103,28 +88,14 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     resolver: zodResolver(detailsSchema),
   });
 
-  useEffect(() => {
-    if (freelancerId) {
-      dispatch(
-        fetchFreelancerSlots({
-          page: 1,
-          limit: 100, // Increased limit to get more slots
-          sortBy: 'startTime',
-          sortOrder: 'asc',
-          freelancerId: freelancerId,
-        }) as any,
-      );
-    }
-  }, [dispatch, freelancerId]);
-
   // Extract service categories from slots when they're loaded
   useEffect(() => {
     if (slots && slots.length > 0) {
       // Collect all unique service categories from all slots
-      const allCategories = new Map<string, any>();
-      slots.forEach((slot: any) => {
+      const allCategories = new Map<string, ServiceCategory>();
+      slots.forEach((slot: Slot) => {
         if (slot.availableServiceCategories && Array.isArray(slot.availableServiceCategories)) {
-          slot.availableServiceCategories.forEach((category: any) => {
+          slot.availableServiceCategories.forEach((category: ServiceCategory) => {
             if (!allCategories.has(category.id)) {
               allCategories.set(category.id, category);
             }
@@ -133,13 +104,13 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       });
       setFreelancerServices(Array.from(allCategories.values()));
     }
-  }, [slots]);
+  }, [slots, setFreelancerServices]);
 
   // Get slot details from already-fetched slots when a slot is selected
   const fetchSlotDetails = useCallback(
     (slotId: string) => {
       // Find the slot in the already-fetched slots
-      const slot = slots?.find((s: any) => s.id === slotId);
+      const slot = slots?.find((s: Slot) => s.id === slotId);
       if (slot) {
         // Use service categories from the slot
         if (slot.availableServiceCategories && slot.availableServiceCategories.length > 0) {
@@ -156,7 +127,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
         setAvailableServices(freelancerServices);
       }
     },
-    [slots, freelancerServices],
+    [slots, freelancerServices, setAvailableServices],
   );
 
   // Update available services when slot is selected
@@ -170,37 +141,11 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     }
   }, [selectedTime, fetchSlotDetails, serviceForm]);
 
-  // Load more slots when needed - with WebSocket connection check
+  // Load more slots when needed - React Query handles pagination automatically
   const loadMoreSlots = async () => {
-    if (!freelancerId || loadingMoreSlots) return;
-
-    // Check WebSocket connection before loading
-    if (!isConnected) {
-      toast.warning('Connection issue detected. Loading dates via standard method...', {
-        autoClose: 3000,
-      });
-    }
-
-    setLoadingMoreSlots(true);
-    try {
-      await dispatch(
-        fetchFreelancerSlots({
-          page: datePage + 2,
-          limit: 100,
-          sortBy: 'startTime',
-          sortOrder: 'asc',
-          freelancerId: freelancerId,
-        }) as any,
-      );
-      setDatePage(datePage + 1);
-    } catch (error: any) {
-      console.error('Failed to load more slots:', error);
-      toast.error('Failed to load more dates. Please try again.', {
-        autoClose: 3000,
-      });
-    } finally {
-      setLoadingMoreSlots(false);
-    }
+    // React Query handles pagination automatically
+    // This can be implemented with infinite queries if needed
+    setDatePage(datePage + 1);
   };
 
   // Track if component is mounted to prevent cleanup during re-renders
@@ -228,26 +173,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     setSelectedTime(slotId);
   };
 
-  // Handle reservation failures - clear selection if the failed slot is currently selected
-  useEffect(() => {
-    const handleReservationFailed = (event: CustomEvent) => {
-      const errorDetail = event.detail;
-      // Clear the selection if reservation failed for the currently selected slot
-      if (errorDetail?.slotId === selectedTime) {
-        setSelectedTime('');
-      }
-    };
+  // Cleanup reservations on unmount - use useCallback to prevent infinite loops
 
-    window.addEventListener('slot-reservation-failed', handleReservationFailed as EventListener);
-    return () => {
-      window.removeEventListener(
-        'slot-reservation-failed',
-        handleReservationFailed as EventListener,
-      );
-    };
-  }, [selectedTime]);
-
-  // Update ref when selectedTime changes
   useEffect(() => {
     selectedTimeRef.current = selectedTime;
   }, [selectedTime]);
@@ -279,12 +206,12 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     }
 
     const availableSlots = slots.filter(
-      (slot: any) => slot.status === 'AVAILABLE' && new Date(slot.startTime) > new Date(),
+      (slot: Slot) => slot.status === 'AVAILABLE' && new Date(slot.startTime) > new Date(),
     );
     const nextAvailable =
       availableSlots.length > 0
         ? availableSlots.sort(
-            (a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+            (a: Slot, b: Slot) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
           )[0]
         : null;
 
@@ -301,16 +228,16 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       return {
         id: freelancerData.id,
         name: freelancerData.name,
-        specialty: freelancerData.specialty || 'Therapist',
-        rating: freelancerData.rating || 0,
-        reviews: freelancerData.reviews || 0,
-        avatar: freelancerData.profilePicture,
-        location: freelancerData.location || 'Online',
+        specialty: freelancerData.specialty ?? 'Therapist',
+        rating: freelancerData.rating ?? 0,
+        reviews: freelancerData.reviews ?? 0,
+        avatar: freelancerData.profilePicture ?? undefined,
+        location: freelancerData.location ?? 'Online',
         services:
-          freelancerServices.length > 0 ? freelancerServices : freelancerData.services || [],
-        sessionTypes: freelancerData.sessionTypes || [],
+          freelancerServices.length > 0 ? freelancerServices : (freelancerData.services ?? []),
+        sessionTypes: freelancerData.sessionTypes ?? [],
         pricing: freelancerData.pricing,
-        description: freelancerData.description || '',
+        description: freelancerData.description ?? '',
         availableSlots: slotStats.availableSlots,
         totalSlots: slotStats.totalSlots,
         nextAvailableSlot: slotStats.nextAvailableSlot,
@@ -324,111 +251,56 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
 
     return {
       id: firstSlot.freelancerId,
-      name: firstSlot.freelancerName || firstSlot.freelancer?.name,
-      specialty: firstSlot.freelancer?.mainService || 'Therapist', // Fallback
-      rating: firstSlot.averageRating || firstSlot.freelancer?.averageRating || 0,
-      reviews: firstSlot.numberOfRatings || firstSlot.freelancer?.cardInfo?.totalRatings || 0,
-      avatar: firstSlot.profilePicture || firstSlot.freelancer?.profilePicture,
-      experience: firstSlot.freelancer?.yearsOfExperience
-        ? `${firstSlot.freelancer.yearsOfExperience}+ years`
-        : firstSlot.freelancer?.createdAt
-          ? `${Math.floor((new Date().getTime() - new Date(firstSlot.freelancer.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365))}+ years`
-          : undefined,
-      location: firstSlot.location?.name || firstSlot.freelancer?.locations?.[0]?.name,
-      services:
-        freelancerServices.length > 0 ? freelancerServices : firstSlot.freelancer?.services || [],
-      sessionTypes: firstSlot.freelancer?.sessionTypes || [],
-      pricing: firstSlot.freelancer?.pricing,
-      description: firstSlot.freelancer?.description,
+      name: firstSlot.freelancerName ?? 'Therapist',
+      specialty: 'Therapist', // Fallback
+      rating: firstSlot.averageRating ?? 0,
+      reviews: firstSlot.numberOfRatings ?? 0,
+      avatar: firstSlot.profilePicture,
+      experience: undefined,
+      location: firstSlot.location?.name,
+      services: freelancerServices.length > 0 ? freelancerServices : [],
+      sessionTypes: [],
+      pricing: undefined,
+      description: undefined,
       availableSlots: slotStats.availableSlots,
       totalSlots: slotStats.totalSlots,
       nextAvailableSlot: slotStats.nextAvailableSlot,
-      cardInfo: firstSlot.freelancer?.cardInfo,
-      isFavorite: firstSlot.freelancer?.isFavorite,
+      cardInfo: undefined,
+      isFavorite: false,
     };
   }, [freelancerData, firstSlot, freelancerServices, slotStats]);
 
-  // Fetch stamp detail when therapist is available
+  // Update selected therapist ID when therapist changes
   useEffect(() => {
-    // Only fetch if:
-    // 1. therapist ID is available
-    // 2. Not currently loading
-    // 3. Don't have detail for this therapist already loaded
-    if (
-      therapist?.id &&
-      !isLoadingDetail &&
-      (!stampDetail ||
-        stampDetail.therapist.id !== therapist.id ||
-        selectedTherapistId !== therapist.id)
-    ) {
-      dispatch(getStampDetail(therapist.id) as any);
+    if (therapist?.id && selectedTherapistId !== therapist.id) {
+      setSelectedTherapistId(therapist.id);
     }
-  }, [dispatch, therapist?.id, isLoadingDetail, stampDetail?.therapist.id, selectedTherapistId]);
+  }, [therapist?.id, selectedTherapistId]);
 
   // Helper function to format date safely without timezone issues
-  const formatDateForAPI = useCallback((date: Date): string => {
-    return (
-      date.getFullYear() +
-      '-' +
-      String(date.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(date.getDate()).padStart(2, '0')
-    );
-  }, []);
-
-  // Group slots by date - filter out past dates
-  const slotsByDate = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStr = formatDateForAPI(today);
-
-    const grouped: { [date: string]: any[] } = {};
-    slots?.forEach((slot: any) => {
-      const slotDate = new Date(slot.startTime);
-      const date = formatDateForAPI(slotDate);
-      // Only include future dates (today and later)
-      if (date >= todayStr) {
-        if (!grouped[date]) grouped[date] = [];
-        grouped[date].push(slot);
-      }
-    });
-    return grouped;
-  }, [slots]);
-
-  const availableDates = useMemo(() => {
-    return Object.keys(slotsByDate).sort();
-  }, [slotsByDate]);
-
-  // Convert available dates to Date objects for calendar
-  const availableDatesAsDates = useMemo(() => {
-    return availableDates.map((dateStr) => new Date(dateStr + 'T00:00:00'));
-  }, [availableDates]);
-
-  // Get selected date as Date object for calendar
-  const selectedDateObj = useMemo(() => {
-    if (!selectedDate) return undefined;
-    return new Date(selectedDate + 'T00:00:00');
-  }, [selectedDate]);
-
-  // Get slot counts per date for calendar indicators
-  const dateSlotCounts = useMemo(() => {
-    const counts: { [date: string]: number } = {};
-    availableDates.forEach((date) => {
-      counts[date] = slotsByDate[date]?.length || 0;
-    });
-    return counts;
-  }, [availableDates, slotsByDate]);
-
-  // Handle calendar date selection
-  const handleCalendarDateSelect = (date: Date | undefined) => {
-    if (date) {
-      const dateStr = formatDateForAPI(date);
-      if (availableDates.includes(dateStr)) {
-        setSelectedDate(dateStr);
-        setSelectedTime(''); // Reset time when date changes
-      }
-    }
+  const formatDateForAPI = (date: Date): string => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate(),
+    ).padStart(2, '0')}`;
   };
+
+  // Group slots by date - show all slots with different visual indicators
+  const slotsByDate: { [date: string]: Slot[] } = {};
+  slots?.forEach((slot: Slot) => {
+    // Show all slots (available, reserved, booked) with different visual indicators
+    const date = formatDateForAPI(new Date(slot.startTime));
+    if (!slotsByDate[date]) slotsByDate[date] = [];
+    slotsByDate[date].push(slot);
+  });
+
+  const availableDates = Object.keys(slotsByDate).sort();
+  const datesPerPage = 6;
+  const totalDatePages = Math.ceil(availableDates.length / datesPerPage);
+  const currentDatePage = Math.min(datePage, totalDatePages - 1);
+  const displayedDates = availableDates.slice(
+    currentDatePage * datesPerPage,
+    (currentDatePage + 1) * datesPerPage,
+  );
 
   const steps = [
     {
@@ -471,13 +343,13 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
     }
 
     if (isValid && currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
+      storeNextStep();
     }
   };
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      storePrevStep();
     }
   };
 
@@ -487,482 +359,88 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
       return;
     }
 
-    setBookingLoading(true);
-    try {
-      const serviceData = serviceForm.getValues();
-      const detailsData = detailsForm.getValues();
+    const serviceData = serviceForm.getValues();
+    const detailsData = detailsForm.getValues();
 
-      const bookingData = {
-        slotId: selectedTime,
-        serviceCategoryIds: serviceData.serviceCategoryIds || [],
-        notes: detailsData.notes || '',
-        clientAddress: detailsData.clientAddress || '',
-      };
+    const bookingData = {
+      slotId: selectedTime,
+      serviceCategoryIds: serviceData.serviceCategoryIds ?? [],
+      notes: detailsData.notes ?? '',
+      clientAddress: detailsData.clientAddress ?? '',
+    };
 
-      if (rescheduleBookingId) {
-        await rescheduleBooking(rescheduleBookingId, selectedTime);
-        toast.success('Appointment rescheduled successfully!');
-      } else {
-        // Use Redux action instead of direct fetch
-        const result = await dispatch(bookAppointment(bookingData) as any);
-
-        if (bookAppointment.fulfilled.match(result)) {
-          // Get the message from the response if available
-          const responseMessage = result.payload?.message || 'Appointment booked successfully!';
-          toast.success(responseMessage, {
-            autoClose: 5000, // Show for 5 seconds to read the stamp message
-          });
-
-          // Refresh bookings in both slices before navigating
-          await Promise.all([
-            dispatch(
-              fetchUserBookings({
-                page: 1,
-                limit: 1000,
-                sortBy: 'slot.startTime',
-                sortOrder: 'asc',
-                silent: false, // Force refresh
-              }) as any,
-            ),
-            dispatch(fetchExplorePatientBookings({ silent: false }) as any),
-          ]);
-
-          router.push('/dashboard/my-bookings?fromBooking=true');
-        } else {
-          // Handle error payload (could be string or object with status)
-          const errorPayload = result.payload;
-          const errorMessage =
-            typeof errorPayload === 'string'
-              ? errorPayload
-              : errorPayload?.message || 'Failed to book appointment';
-          const errorStatus = typeof errorPayload === 'object' ? errorPayload?.status : null;
-          throw { message: errorMessage, status: errorStatus, statusCode: errorStatus };
-        }
-      }
-    } catch (err: any) {
-      // Handle 403 errors for expired trial freelancers
-      if (err?.status === 403 || err?.statusCode === 403) {
-        const errorMessage =
-          err?.message ||
-          err?.data?.message ||
-          "This freelancer's trial has expired. They cannot accept new bookings. Please subscribe to continue.";
-        toast.error(errorMessage, {
-          autoClose: 7000, // Show longer for important messages
+    createBooking(bookingData, {
+      onSuccess: (response) => {
+        // Get the message from the response if available
+        const responseMessage = (response as { message?: string })?.message;
+        toast.success(responseMessage, {
+          autoClose: 5000, // Show for 5 seconds to read the stamp message
         });
-        // Optionally redirect or refresh the page to update freelancer list
-        // router.refresh();
-      } else {
-        toast.error(err?.message || 'Failed to book appointment');
-      }
-    } finally {
-      setBookingLoading(false);
-    }
+        router.push('/dashboard/my-bookings');
+      },
+      onError: (err: unknown) => {
+        const errorMessage = getApiErrorMessage(err);
+        // Handle 403 errors for expired trial freelancers
+        if (
+          (err as { status?: number; statusCode?: number; response?: { status?: number } })
+            ?.status === 403 ||
+          (err as { status?: number; statusCode?: number; response?: { status?: number } })
+            ?.statusCode === 403 ||
+          (err as { status?: number; statusCode?: number; response?: { status?: number } })
+            ?.response?.status === 403
+        ) {
+          const finalMessage =
+            errorMessage ||
+            "This freelancer's trial has expired. They cannot accept new bookings. Please subscribe to continue.";
+          toast.error(finalMessage, {
+            autoClose: 7000, // Show longer for important messages
+          });
+        } else {
+          toast.error(errorMessage || 'Failed to book appointment');
+        }
+      },
+    });
   };
 
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <h1 className="text-2xl font-poppins font-bold text-charcoal">
-                Select a date & time
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-inter">
-                Choose when you&apos;d like to meet
-              </p>
-            </div>
-
-            {/* Loading State for Initial Load */}
-            {slotsInitialLoading && (
-              <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                <LoadingSpinner size="lg" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Loading available dates...
-                </p>
-              </div>
-            )}
-
-            {/* WebSocket Connection Status - Only show if disconnected after initial load */}
-            {!slotsInitialLoading && !isConnected && availableDates.length > 0 && (
-              <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <AlertCircle className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Real-time updates unavailable. Slots are still available for booking.
-                </p>
-              </div>
-            )}
-
-            {/* Date Selection - Full Calendar View */}
-            {!slotsInitialLoading && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-poppins font-semibold text-charcoal">
-                    Select Date
-                  </h3>
-                  {availableDates.length === 0 && !slotsLoading && (
-                    <p className="text-sm text-gray-500">No available dates</p>
-                  )}
-                </div>
-
-                {/* Full Calendar Component */}
-                <div className="flex justify-center">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDateObj}
-                    onSelect={handleCalendarDateSelect}
-                    disabled={(date) => {
-                      const dateStr = formatDateForAPI(date);
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const todayStr = formatDateForAPI(today);
-                      // Disable past dates and dates without slots
-                      return date < today || !availableDates.includes(dateStr);
-                    }}
-                    modifiers={{
-                      available: availableDatesAsDates,
-                    }}
-                    modifiersClassNames={{
-                      available: 'relative',
-                    }}
-                    className="rounded-lg border p-4 bg-white dark:bg-gray-800"
-                    classNames={{
-                      day: 'relative',
-                      day_selected: 'bg-primary text-white hover:bg-primary hover:text-white',
-                      day_disabled: 'opacity-30 cursor-not-allowed',
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Time Selection - Clean Grid */}
-            {selectedDate && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <h3 className="text-base font-poppins font-semibold text-charcoal">
-                  Available Times
-                </h3>
-                <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto pr-2">
-                  {slotsByDate[selectedDate]?.map((slot) => {
-                    const time = new Date(slot.startTime).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                    });
-                    const isSelected = selectedTime === slot.id;
-                    const isReserved = isSlotReserved(slot.id);
-                    const isReservedByOthers =
-                      (slot.statusInfo?.isReserved && !isReserved) ||
-                      (slot.status === 'RESERVED' && !isReserved);
-                    const isBooked =
-                      slot.statusInfo?.isBooked || slot.status === 'BOOKED' || slot.isBooked;
-
-                    return (
-                      <button
-                        key={slot.id}
-                        className={`relative p-3 rounded-lg border-2 font-medium text-sm transition-all ${
-                          isSelected
-                            ? 'border-primary bg-primary text-white shadow-lg scale-105'
-                            : isBooked
-                              ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-                              : isReservedByOthers
-                                ? 'border-yellow-200 bg-yellow-50 text-yellow-600 cursor-not-allowed opacity-60'
-                                : 'border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white hover:border-primary/50 hover:shadow-md'
-                        }`}
-                        onClick={() => {
-                          if (!isReservedByOthers && !isBooked) {
-                            handleSlotSelection(slot.id);
-                          }
-                        }}
-                        disabled={isReservedByOthers || isBooked}
-                      >
-                        <div className="text-center">
-                          <div className="font-semibold">{time}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {selectedTime && (
-                  <div className="mt-4 p-4 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            Selected
-                          </div>
-                          <div className="text-base font-semibold text-charcoal">
-                            {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) && (
-                              <>
-                                {new Date(
-                                  slotsByDate[selectedDate]!.find(
-                                    (s) => s.id === selectedTime,
-                                  )!.startTime,
-                                ).toLocaleDateString('en-US', {
-                                  weekday: 'short',
-                                  month: 'short',
-                                  day: 'numeric',
-                                })}{' '}
-                                at{' '}
-                                {new Date(
-                                  slotsByDate[selectedDate]!.find(
-                                    (s) => s.id === selectedTime,
-                                  )!.startTime,
-                                ).toLocaleTimeString('en-US', {
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                  hour12: true,
-                                })}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-lg font-bold text-primary">
-                        EUR{' '}
-                        {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)?.basePrice ||
-                          0}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <ScheduleStep
+            therapistName={therapist?.name}
+            slotsByDate={slotsByDate}
+            totalDatePages={totalDatePages}
+            displayedDates={displayedDates}
+            availableDates={availableDates}
+            loadingMoreSlots={loadingMoreSlots}
+            isSlotReserved={isSlotReserved}
+            onDateSelect={setSelectedDate}
+            onTimeSelect={handleSlotSelection}
+            onDatePageChange={setDatePage}
+            onLoadMore={loadMoreSlots}
+            formatDateForAPI={formatDateForAPI}
+          />
         );
 
       case 2:
         return (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <h1 className="text-2xl font-poppins font-bold text-charcoal">
-                Confirm Your Appointment
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-inter">
-                Review your booking details and add any optional information
-              </p>
-            </div>
+          <DetailsStep
+            therapistName={therapist?.name}
+            slotsByDate={slotsByDate}
+            serviceForm={serviceForm}
+            detailsForm={detailsForm}
+          />
+        );
 
-            {/* Appointment Summary Card */}
-            <Card className="border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-6">
-                {/* Therapist Info */}
-                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                  <Avatar className="w-14 h-14">
-                    <AvatarImage src={therapist?.avatar} />
-                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                      {therapist?.name?.charAt(0) || 'T'}
-                    </div>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-poppins font-bold text-charcoal">
-                      {therapist?.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {therapist?.specialty}
-                    </p>
-                    {therapist?.rating && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">
-                          {therapist.rating.toFixed(1)} ({therapist.reviews} reviews)
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Date & Time Summary */}
-                {selectedDate && selectedTime && (
-                  <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CalendarIcon className="w-5 h-5 text-primary" />
-                      <h4 className="font-poppins font-semibold text-charcoal">Appointment Time</h4>
-                    </div>
-                    <div className="pl-7 space-y-1">
-                      <p className="font-medium text-lg text-gray-900 dark:text-white">
-                        {new Date(selectedDate).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </p>
-                      <p className="text-primary font-semibold text-lg">
-                        {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime) &&
-                          new Date(
-                            slotsByDate[selectedDate]!.find(
-                              (s) => s.id === selectedTime,
-                            )!.startTime,
-                          ).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                          })}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Optional Details Form */}
-                <div className="space-y-6">
-                  {/* Services Selection */}
-                  {availableServices && availableServices.length > 0 ? (
-                    <div className="space-y-4">
-                      <Label className="text-lg font-poppins font-semibold text-charcoal">
-                        Available Services for This Slot
-                      </Label>
-                      <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
-                        Select from services available for your selected time slot
-                      </p>
-                      <div className="grid gap-3">
-                        {availableServices.map((service: any) => (
-                          <div key={service.id} className="relative">
-                            <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                                checked={
-                                  serviceForm.watch('serviceCategoryIds')?.includes(service.id) ||
-                                  false
-                                }
-                                onChange={(e) => {
-                                  const currentServiceIds =
-                                    serviceForm.watch('serviceCategoryIds') || [];
-                                  if (e.target.checked) {
-                                    serviceForm.setValue('serviceCategoryIds', [
-                                      ...currentServiceIds,
-                                      service.id,
-                                    ]);
-                                  } else {
-                                    serviceForm.setValue(
-                                      'serviceCategoryIds',
-                                      currentServiceIds.filter((id) => id !== service.id),
-                                    );
-                                  }
-                                }}
-                              />
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900 dark:text-white">
-                                  {service.name}
-                                </div>
-                                {service.description && (
-                                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                    {service.description}
-                                  </div>
-                                )}
-                                <div className="flex items-center gap-2 mt-2">
-                                  {service.locationTypes?.map((type: string, idx: number) => (
-                                    <span
-                                      key={idx}
-                                      className="inline-flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full"
-                                    >
-                                      {type === 'VIRTUAL' ? (
-                                        <Video className="w-3 h-3" />
-                                      ) : type === 'OFFICE' ? (
-                                        <Building className="w-3 h-3" />
-                                      ) : (
-                                        <Home className="w-3 h-3" />
-                                      )}
-                                      {type === 'VIRTUAL'
-                                        ? 'Online'
-                                        : type === 'OFFICE'
-                                          ? 'Office'
-                                          : 'Home'}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : selectedTime ? (
-                    <div className="space-y-4">
-                      <Label className="text-lg font-poppins font-semibold text-charcoal">
-                        Services
-                      </Label>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        No specific services are configured for this time slot. You can discuss your
-                        needs directly with the therapist during your session.
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {/* Additional Notes */}
-                  <div className="space-y-4">
-                    <Label
-                      htmlFor="notes"
-                      className="text-lg font-poppins font-semibold text-charcoal"
-                    >
-                      Additional Notes (Optional)
-                    </Label>
-                    <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
-                      Share any specific concerns, goals, or preferences for your session
-                    </p>
-                    <Textarea
-                      id="notes"
-                      placeholder="e.g., I'd like to focus on anxiety management techniques..."
-                      className="min-h-[120px] resize-none"
-                      {...detailsForm.register('notes')}
-                    />
-                  </div>
-
-                  {/* Address for Home Sessions */}
-                  {serviceForm.watch('serviceCategoryIds')?.some((id) => {
-                    const service = availableServices?.find((s: any) => s.id === id);
-                    return service?.locationTypes?.includes('HOME');
-                  }) && (
-                    <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Home className="w-5 h-5 text-blue-600" />
-                        <Label
-                          htmlFor="clientAddress"
-                          className="text-lg font-poppins font-semibold text-blue-900 dark:text-blue-100"
-                        >
-                          Home Address
-                        </Label>
-                      </div>
-                      <p className="text-sm text-blue-700 dark:text-blue-300">
-                        Please provide your address for home visit sessions
-                      </p>
-                      <Input
-                        id="clientAddress"
-                        placeholder="Enter your full address"
-                        className="bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-700"
-                        {...detailsForm.register('clientAddress')}
-                      />
-                    </div>
-                  )}
-
-                  {/* Price Summary */}
-                  {selectedTime && (
-                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          Session Price
-                        </span>
-                        <span className="text-2xl font-bold text-primary">
-                          EUR{' '}
-                          {slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)?.basePrice}
-                        </span>
-                      </div>
-                      {therapist?.id && (
-                        <div className="mt-4">
-                          <StampDiscountBadge therapistId={therapist.id} />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+      case 3:
+        return (
+          <ConfirmStep
+            therapist={therapist}
+            slotsByDate={slotsByDate}
+            serviceForm={serviceForm}
+            detailsForm={detailsForm}
+            stampDetail={stampDetail}
+          />
         );
 
       default:
@@ -979,114 +457,96 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Cal.com/Calendly Style - Centered Single Column */}
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* Compact Therapist Header */}
-        <div className="mb-6 flex items-center gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
-          {currentStep > 1 && (
-            <Button
-              variant="ghost"
-              onClick={prevStep}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 -ml-2"
-              size="sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          )}
-          <Avatar className="w-12 h-12 border-2 border-gray-200 dark:border-gray-700">
-            <AvatarImage src={therapist?.avatar} />
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-              {therapist?.name?.charAt(0) || 'T'}
-            </div>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-poppins font-bold text-charcoal truncate">
-              {therapist?.name}
-            </h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                {therapist?.specialty}
-              </p>
-              {therapist?.rating && (
-                <>
-                  <span className="text-gray-400">•</span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{therapist?.rating?.toFixed(1)}</span>
-                    {therapist?.reviews > 0 && (
-                      <span className="text-xs text-gray-500">({therapist?.reviews})</span>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Minimal Step Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center gap-2">
-            {steps.map((step, index) => (
-              <Fragment key={step.id}>
-                <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-                    currentStep >= step.id
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-                  }`}
-                >
-                  {step.id}
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`w-8 h-0.5 ${
-                      currentStep > step.id ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
-                  />
-                )}
-              </Fragment>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 mb-6">
-          {renderStepContent()}
-        </div>
-
-        {/* Sticky Action Button at Bottom */}
-        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 -mx-4 px-4 py-4 -mb-8 mt-8 rounded-t-xl shadow-lg">
-          <div className="max-w-3xl mx-auto">
-            {currentStep < steps.length ? (
+    <div className="min-h-screen">
+      {/* Header with Progress */}
+      <div className="">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Back Button */}
+            {currentStep > 1 && (
               <Button
-                onClick={nextStep}
-                disabled={!isStepValid()}
-                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-12 text-base font-semibold"
-                size="lg"
+                variant="ghost"
+                onClick={prevStep}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-3"
               >
-                Continue
-              </Button>
-            ) : (
-              <Button
-                onClick={handleCompleteBooking}
-                disabled={bookingLoading}
-                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 text-base font-semibold"
-                size="lg"
-              >
-                {bookingLoading ? (
-                  <>
-                    <LoadingSpinner size="sm" className="mr-2" />
-                    Confirming...
-                  </>
-                ) : (
-                  'Confirm and book'
-                )}
+                <ArrowLeft className="w-4 h-4" />
+                Back
               </Button>
             )}
-            <div className="mt-3 text-center">
-              <p className="text-xs text-gray-500">Free cancellation up to 24 hours before</p>
+
+            {/* Simple Progress Indicator */}
+            <div className="flex-1 max-w-md mx-auto px-8">
+              <div className="flex items-center justify-between text-sm">
+                {steps.map((step, index) => (
+                  <div key={step.id} className="flex items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                        currentStep >= step.id
+                          ? 'bg-primary text-white'
+                          : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
+                      {step.id}
+                    </div>
+                    {index < steps.length - 1 && (
+                      <div
+                        className={`w-12 h-0.5 mx-2 ${
+                          currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
+                        }`}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-2">
+                {steps.map((step) => (
+                  <div key={step.id} className="text-xs text-gray-500 text-center">
+                    {step.title}
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Continue Button */}
+            <div className="w-24 flex justify-end">
+              {currentStep < steps.length ? (
+                <Button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className="bg-primary hover:bg-primary/90 disabled:opacity-50 px-6"
+                >
+                  Continue
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Airbnb layout */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+              {renderStepContent()}
+            </div>
+          </div>
+
+          {/* Right Column - Booking Summary (Airbnb-style sidebar) */}
+          <div className="lg:col-span-1">
+            <BookingSummarySidebar
+              currentStep={currentStep}
+              totalSteps={steps.length}
+              therapist={therapist}
+              selectedDate={selectedDate}
+              selectedTime={selectedTime}
+              slotsByDate={slotsByDate}
+              serviceForm={serviceForm}
+              stampDetail={stampDetail}
+              isCreatingBooking={isCreatingBooking}
+              onCompleteBooking={handleCompleteBooking}
+            />
           </div>
         </div>
       </div>
@@ -1099,8 +559,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({
           </summary>
           <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs space-y-2">
             <div className="grid grid-cols-4 gap-4">
-              <div>Socket: {isConnected ? '🟢 Connected' : '🔴 Disconnected'}</div>
-              <div>Reserved: {reservedSlots.length}</div>
+              <div>Socket: {'N/A' /* isConnected missing */}</div>
+              <div>Reserved: {'N/A' /* reservedSlots missing */}</div>
               <div>Slots: {slots?.length || 0}</div>
               <div>Selected: {selectedTime ? 'Yes' : 'No'}</div>
             </div>

@@ -13,8 +13,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { useFavoriteFreelancers } from '@/hooks/useFreelancers';
+import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
 import { Expert, Freelancer } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import FavoriteFreelancerCard from './FavoriteTherapistCard';
 
@@ -24,7 +25,7 @@ interface FavoriteFreelancersCarouselProps {
 
 const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselProps) => {
   const router = useRouter();
-  const { favoriteFreelancers, loading, initialLoading, error } = useFavoriteFreelancers();
+  const { data: favoriteFreelancers = [], isLoading, error } = useFavoriteFreelancers();
   const handleBook = useCallback(
     (freelancer: Expert) => {
       // Pass freelancer data through route state to avoid loading issues
@@ -54,11 +55,11 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
   // Show toast error when error occurs
   useEffect(() => {
     if (error) {
-      toast.error(`Failed to load favorite freelancers: ${error}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to load favorite freelancers';
+      toast.error(errorMessage);
     }
   }, [error]);
-
-  const isLoading = initialLoading || (loading && favoriteFreelancers.length === 0);
   if (isLoading) {
     return (
       <Card className={className}>
@@ -79,17 +80,17 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
               >
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1 animate-pulse"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1 animate-pulse" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2 animate-pulse" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full animate-pulse"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full animate-pulse" />
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3 animate-pulse" />
                 </div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full animate-pulse"></div>
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full animate-pulse" />
               </div>
             ))}
           </div>
@@ -140,30 +141,13 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           className="w-full min-w-0"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
-            {favoriteFreelancers.map((freelancer: Freelancer) => {
-              // Map freelancer to Expert format
-              const expert: Expert = {
-                id: freelancer.id,
-                name: freelancer.name,
-                specialty:
-                  freelancer.mainJobTitle?.name || freelancer.cardInfo?.mainService || 'Therapist',
-                jobTitle: freelancer.mainJobTitle,
-                rating: freelancer.cardInfo?.averageRating || 0,
-                reviews: freelancer.cardInfo?.totalRatings || 0,
-                description: freelancer.cardInfo?.title || '',
-                isFavorite: freelancer.isFavorite,
-                profilePicture: freelancer.profilePicture,
-                verificationStatus: freelancer.verificationStatus || 'unverified',
-                availableSlots: freelancer.slotSummary?.totalSlots || 0,
-                slotSummary: freelancer.slotSummary,
-                slots: freelancer.slots || [],
-                // Include stampInfo from freelancer response (if available)
-                stampInfo: (freelancer as any).stampInfo || null,
-              };
+            {favoriteFreelancers.map((freelancer: Freelancer | Expert) => {
+              // Use unified mapping function
+              const expert = mapOneFreelancerToExpert(freelancer);
 
               return (
                 <CarouselItem
-                  key={freelancer.id}
+                  key={expert.id}
                   className="basis-4/5 md:basis-3/5 lg:basis-2/5 min-w-[330px] pl-2 md:pl-4"
                 >
                   <div className="flex justify-center">

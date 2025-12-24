@@ -1,8 +1,8 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { useAuth } from '@/hooks/useAuthZustand';
 import { getCookie, getDecodedToken } from '@/lib/utils';
-import { useAuth } from '@/redux/hooks/useAppHooks';
 
 export const useAuthGuard = () => {
   const { isAuthenticated, role } = useAuth();

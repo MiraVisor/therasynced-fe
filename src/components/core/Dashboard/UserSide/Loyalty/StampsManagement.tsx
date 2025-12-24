@@ -1,28 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-
-import { Card, CardContent } from '@/components/ui/card';
-import { setSelectedTherapistId } from '@/redux/slices/stampSlice';
-import { RootState } from '@/redux/store';
 
 import { StampDetail } from './StampDetail';
 import { StampSummary } from './StampSummary';
 
 export default function StampsManagement() {
-  const dispatch = useDispatch();
-  const { selectedTherapistId } = useSelector((state: RootState) => state.stamps);
+  const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(null);
   const [viewingStampDetail, setViewingStampDetail] = useState(false);
 
   const handleViewStampDetail = (therapistId: string) => {
-    dispatch(setSelectedTherapistId(therapistId));
+    setSelectedTherapistId(therapistId);
     setViewingStampDetail(true);
   };
 
   const handleBackToStamps = () => {
     setViewingStampDetail(false);
-    dispatch(setSelectedTherapistId(null));
+    setSelectedTherapistId(null);
   };
 
   // If viewing stamp detail, show detail view

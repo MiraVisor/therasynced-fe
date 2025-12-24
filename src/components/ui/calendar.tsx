@@ -1,7 +1,7 @@
 'use client';
 
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import * as React from 'react';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -147,8 +147,8 @@ function CalendarDayButton({
 
   const ref = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
-    if (modifiers.focused) ref.current?.focus();
-  }, [modifiers.focused]);
+    if (modifiers['focused']) ref.current?.focus();
+  }, [modifiers['focused']]);
 
   return (
     <Button
@@ -157,14 +157,14 @@ function CalendarDayButton({
       size="icon"
       data-day={day.date.toLocaleDateString()}
       data-selected-single={
-        modifiers.selected &&
-        !modifiers.range_start &&
-        !modifiers.range_end &&
-        !modifiers.range_middle
+        modifiers['selected'] &&
+        !modifiers['range_start'] &&
+        !modifiers['range_end'] &&
+        !modifiers['range_middle']
       }
-      data-range-start={modifiers.range_start}
-      data-range-end={modifiers.range_end}
-      data-range-middle={modifiers.range_middle}
+      data-range-start={modifiers['range_start']}
+      data-range-end={modifiers['range_end']}
+      data-range-middle={modifiers['range_middle']}
       className={cn(
         'data-[selected-single=true]:bg-primary data-[selected-single=true]:text-white data-[selected-single=true]:font-semibold data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-white data-[range-start=true]:font-semibold data-[range-end=true]:bg-primary data-[range-end=true]:text-white data-[range-end=true]:font-semibold group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] [&>span]:text-xs [&>span]:opacity-70',
         defaultClassNames.day,

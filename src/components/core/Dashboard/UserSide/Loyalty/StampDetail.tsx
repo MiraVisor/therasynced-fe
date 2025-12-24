@@ -1,18 +1,6 @@
 'use client';
 
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  Gift,
-  History,
-  Sparkles,
-  Stamp,
-  User,
-} from 'lucide-react';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { ArrowLeft, CheckCircle2, Gift, History, Sparkles, Stamp, User } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -20,9 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
-import { getStampDetail } from '@/redux/api/loyaltyApi';
-import { setSelectedTherapistId } from '@/redux/slices/stampSlice';
-import { RootState } from '@/redux/store';
+import { useStampDetail } from '@/hooks/queries/useLoyalty';
 import { StampHistory } from '@/types/types';
 
 interface StampDetailProps {
@@ -69,21 +55,8 @@ const getEventIcon = (eventType: StampHistory['eventType']) => {
 };
 
 export function StampDetail({ therapistId, onBack }: StampDetailProps) {
-  const dispatch = useDispatch();
-  const { stampDetail, isLoadingDetail, error } = useSelector((state: RootState) => state.stamps);
-
-  useEffect(() => {
-    const fetchDetail = async () => {
-      try {
-        dispatch(setSelectedTherapistId(therapistId));
-        await dispatch(getStampDetail(therapistId) as any);
-      } catch (error) {
-        toast.error('Failed to load stamp details. Please try again.');
-      }
-    };
-
-    fetchDetail();
-  }, [dispatch, therapistId]);
+  // Use React Query hook
+  const { data: stampDetail, isLoading: isLoadingDetail, error } = useStampDetail(therapistId);
 
   if (isLoadingDetail) {
     return (
@@ -100,7 +73,10 @@ export function StampDetail({ therapistId, onBack }: StampDetailProps) {
       <Card>
         <CardContent className="p-8">
           <div className="text-center text-red-600">
-            <p>Error loading stamp details: {error || 'Not found'}</p>
+            <p>
+              Error loading stamp details:{' '}
+              {error instanceof Error ? error.message : String(error) || 'Not found'}
+            </p>
             {onBack && (
               <Button variant="outline" onClick={onBack} className="mt-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -276,7 +252,7 @@ export function StampDetail({ therapistId, onBack }: StampDetailProps) {
                   if (history.eventType === 'REWARD_RESERVED' && history.notes) {
                     // Extract reservation reference from notes (format: "Reward reserved with reference XXX" or "Reservation XXX attached to booking")
                     const match = history.notes.match(/(?:reference|Reservation)\s+([a-f0-9-]+)/i);
-                    if (match && match[1]) {
+                    if (match?.[1]) {
                       const ref = match[1];
                       if (seenReservations.has(ref)) {
                         return false; // Skip duplicate

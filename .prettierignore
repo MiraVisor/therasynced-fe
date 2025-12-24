@@ -1,5 +1,12 @@
-.next
 node_modules
-dist
+.next
 build
+dist
 coverage
+*.min.js
+*.min.css
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.env*
+!.prettierrc

@@ -1,6 +1,6 @@
 'use client';
 
-import { Award, MessageCircle, Shield, Star, Users } from 'lucide-react';
+import { Award, MessageCircle, Shield, Star } from 'lucide-react';
 
 const trustData = [
   {

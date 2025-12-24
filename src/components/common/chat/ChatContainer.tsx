@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import useChat from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
+import { ChatContactState } from '@/stores/chatStore';
 
 import ChatContactList from './ChatContactList';
 import ChatHeader from './ChatHeader';
@@ -19,7 +20,7 @@ interface ChatContainerProps {
 const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId }) => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showChat, setShowChat] = useState(false);
-  const [hasAutoSelected, setHasAutoSelected] = useState(false);
+  const [_hasAutoSelected, _setHasAutoSelected] = useState(false);
 
   const {
     contacts,
@@ -45,7 +46,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
     ? getContactByConversationId(activeConversationId)
     : null;
 
-  const handleContactSelect = (contact: any) => {
+  const handleContactSelect = (contact: ChatContactState) => {
     console.log('Contact selected:', contact);
     console.log('Conversation ID:', contact.conversationId);
 
@@ -59,7 +60,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
     } else {
       // Different contact selected - open/switch to new conversation
       console.log('Different contact clicked - opening chat');
-      selectConversation(contact.conversationId);
+      selectConversation(contact.conversationId || '');
       if (isMobile) {
         setShowChat(true);
       }
@@ -221,12 +222,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
                 r="10"
                 stroke="currentColor"
                 strokeWidth="4"
-              ></circle>
+              />
               <path
                 className="opacity-75"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
+              />
             </svg>
             Syncing
           </div>
@@ -234,14 +235,24 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
       )}
 
       {/* Error Display */}
-      {(error.contacts || error.messages || error.sending) && (
-        <div className="absolute bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-sm z-10">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">
-            {error.contacts || error.messages || error.sending || 'An error occurred'}
-          </span>
-        </div>
-      )}
+      {error &&
+        typeof error === 'object' &&
+        error !== null &&
+        ('contacts' in error || 'messages' in error || 'sending' in error) && (
+          <div className="absolute bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-sm z-10">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">
+              {String(
+                (error as { contacts?: unknown; messages?: unknown; sending?: unknown }).contacts ||
+                  (error as { contacts?: unknown; messages?: unknown; sending?: unknown })
+                    .messages ||
+                  (error as { contacts?: unknown; messages?: unknown; sending?: unknown })
+                    .sending ||
+                  'An error occurred',
+              )}
+            </span>
+          </div>
+        )}
     </div>
   );
 };

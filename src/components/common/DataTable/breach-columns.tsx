@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { BreachRiskLevel, BreachStatus, DataBreach } from '@/redux/api/dataRightsApi';
+import { BreachRiskLevel, BreachStatus, type DataBreach } from '@/types/dataRights';
 
 export const formatBreachDate = (dateString: string) => {
   const date = new Date(dateString);

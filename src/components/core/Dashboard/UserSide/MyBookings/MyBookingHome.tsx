@@ -2,11 +2,9 @@
 
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
-import { fetchFreelancerSlots } from '@/redux/slices/overviewSlice';
-import { RootState } from '@/redux/store';
+import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { Expert } from '@/types/types';
 
 import ModernBookingFlow from './ModernBookingFlow';
@@ -20,28 +18,15 @@ interface MyBookingHomeProps {
 const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) => {
   const params = useParams();
   const searchParams = useSearchParams();
-  const dispatch = useDispatch();
 
-  const freelancerId = Array.isArray(params?.freelancerId)
-    ? params?.freelancerId[0]
-    : params?.freelancerId;
-  const { slots } = useSelector((state: RootState) => state.overview);
+  const freelancerId = Array.isArray(params?.['freelancerId'])
+    ? params?.['freelancerId'][0]
+    : params?.['freelancerId'];
+
+  // Use React Query hook
+  const { data: slots = [] } = useAvailableSlots(freelancerId || null);
   const [showModernFlow, setShowModernFlow] = useState(true);
   const [freelancer, setFreelancer] = useState<Expert | null>(null);
-
-  useEffect(() => {
-    if (freelancerId) {
-      dispatch(
-        fetchFreelancerSlots({
-          page: 1,
-          limit: 50,
-          sortBy: 'startTime',
-          sortOrder: 'asc',
-          freelancerId: freelancerId,
-        }) as any,
-      );
-    }
-  }, [dispatch, freelancerId]);
 
   // Get freelancer data from URL params or fallback to slot data
   useEffect(() => {

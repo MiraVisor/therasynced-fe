@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import { HealthDataConsent } from '@/components/common/HealthDataConsent';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
-import { updateAppointment } from '@/redux/slices/appointmentSlice';
 import { Appointment } from '@/types/types';
-import { checkHealthDataConsent } from '@/utils/healthDataConsent';
 
 const SAVE_DELAY = 1000;
 
@@ -25,37 +20,11 @@ interface AppointmentNotesProps {
 }
 
 export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNotesProps) => {
-  const dispatch = useDispatch();
   const [notes, setNotes] = useState(appointment.notes || '');
   const [, setIsEditing] = useState(false);
-  const [hasConsent, setHasConsent] = useState(false);
-  const [isCheckingConsent, setIsCheckingConsent] = useState(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSavedNotesRef = useRef(appointment.notes || '');
   const saveToastRef = useRef<string | number | null>(null);
-  const clientId = appointment.clientId;
-
-  // Check consent on mount
-  useEffect(() => {
-    const checkConsent = async () => {
-      setIsCheckingConsent(true);
-      try {
-        const consent = await checkHealthDataConsent('SOAP_NOTES', clientId);
-        setHasConsent(consent);
-      } catch (error) {
-        console.error('Error checking consent:', error);
-        setHasConsent(false);
-      } finally {
-        setIsCheckingConsent(false);
-      }
-    };
-    if (clientId) {
-      checkConsent();
-    } else {
-      setHasConsent(false);
-      setIsCheckingConsent(false);
-    }
-  }, [clientId]);
 
   // Update local state when appointment changes
   useEffect(() => {
@@ -74,13 +43,6 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
   const saveToServer = useCallback(async () => {
     if (appointment.status !== 'PENDING') return;
 
-    if (!hasConsent) {
-      toast.error(
-        'You must grant explicit consent for SOAP notes before saving. Please grant consent below.',
-      );
-      return;
-    }
-
     if (notes === lastSavedNotesRef.current) return;
 
     if (saveToastRef.current) {
@@ -96,10 +58,7 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
     });
 
     try {
-      // Update Redux state first
-      dispatch(updateAppointment({ ...appointment, notes }));
-
-      // Then save to server
+      // Save to server
       await updateNotesOnServer(appointment.id, notes);
       lastSavedNotesRef.current = notes;
 
@@ -114,8 +73,8 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
         saveToastRef.current = null;
       }
     } catch (error) {
-      // Revert Redux state on error
-      dispatch(updateAppointment({ ...appointment, notes: lastSavedNotesRef.current }));
+      // Revert notes on error
+      setNotes(lastSavedNotesRef.current);
 
       if (saveToastRef.current) {
         toast.update(saveToastRef.current, {
@@ -128,7 +87,7 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
         saveToastRef.current = null;
       }
     }
-  }, [appointment, dispatch, notes, hasConsent]);
+  }, [appointment, notes]);
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newNotes = e.target.value;
@@ -165,22 +124,10 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
     }
   };
 
-  const isDisabled = appointment.status !== 'PENDING' || !hasConsent || isCheckingConsent;
+  const isDisabled = appointment.status !== 'PENDING';
 
   return (
     <div className="space-y-4">
-      {/* Health Data Consent */}
-      {appointment.status === 'PENDING' && clientId && (
-        <HealthDataConsent
-          consentType="SOAP_NOTES"
-          description="The client must grant consent for TheraSynced to process these appointment notes (SOAP notes) as part of their health record. This consent is required before notes can be saved."
-          onConsentChange={setHasConsent}
-          required={true}
-          showDisclaimer={true}
-          userId={clientId}
-        />
-      )}
-
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-muted-foreground">Notes</p>
@@ -191,33 +138,16 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
             onChange={handleNotesChange}
             onBlur={handleNotesBlur}
             onFocus={handleNotesFocus}
-            placeholder={
-              !hasConsent && appointment.status === 'PENDING'
-                ? 'Grant consent above to add notes...'
-                : 'Add notes about this appointment...'
-            }
+            placeholder="Add notes about this appointment..."
             className={`min-h-[100px] ${isDisabled ? 'bg-muted cursor-not-allowed' : ''}`}
             disabled={isDisabled}
-            aria-label="Appointment notes (SOAP notes)"
+            aria-label="Appointment notes"
             aria-describedby={
-              !hasConsent && appointment.status === 'PENDING'
-                ? 'notes-consent-required'
-                : appointment.status !== 'PENDING'
-                  ? 'notes-disabled-reason'
-                  : 'notes-helper'
+              appointment.status !== 'PENDING' ? 'notes-disabled-reason' : 'notes-helper'
             }
             aria-required="false"
           />
         </div>
-        {!hasConsent && appointment.status === 'PENDING' && (
-          <Alert variant="destructive" className="mt-2" role="alert" id="notes-consent-required">
-            <AlertDescription>
-              {clientId
-                ? `The client must grant consent for SOAP notes before you can add or edit notes. Please ask the client to grant consent in their account settings.`
-                : `You must grant explicit consent for SOAP notes before you can add or edit notes.`}
-            </AlertDescription>
-          </Alert>
-        )}
         {appointment.status !== 'PENDING' && (
           <p
             className="text-sm text-muted-foreground"
@@ -228,7 +158,7 @@ export const AppointmentNotes = ({ appointment, onTypingChange }: AppointmentNot
             Notes cannot be edited for {appointment.status.toLowerCase()} appointments
           </p>
         )}
-        {hasConsent && appointment.status === 'PENDING' && (
+        {appointment.status === 'PENDING' && (
           <p className="text-xs text-muted-foreground" id="notes-helper">
             Notes are automatically saved. These notes may contain health information and will be
             retained for 7 years as required by law.

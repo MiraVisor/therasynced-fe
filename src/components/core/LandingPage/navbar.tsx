@@ -29,14 +29,6 @@ const Navbar = () => {
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
 
-  const handleCTAClick = () => {
-    if (hasValidToken) {
-      router.push('/dashboard');
-    } else {
-      router.push('/authentication/sign-in');
-    }
-  };
-
   return (
     <header className="w-full z-50 px-4 sm:px-6 lg:px-8 py-2.5 border-b border-muted/10">
       <div className=" max-w-screen-xl mx-auto flex items-center justify-between">
@@ -66,7 +58,7 @@ const Navbar = () => {
                       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     } else {
                       // If the element isn't on this page, navigate to the anchor on the home page
-                      router.push('/' + link.href);
+                      router.push(`/${link.href}`);
                     }
                   }
                 }}
@@ -80,11 +72,16 @@ const Navbar = () => {
 
         {/* CTA + Theme Toggle */}
         <div className="flex items-center gap-4">
-          <SlideArrowButton
-            text={hasValidToken ? 'Dashboard' : 'Get Started'}
-            className="hidden sm:flex lg:w-52 lg:h-12"
-            onClick={handleCTAClick}
-          />
+          <Link
+            href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}
+            prefetch={true}
+            className="hidden sm:flex"
+          >
+            <SlideArrowButton
+              text={hasValidToken ? 'Dashboard' : 'Get Started'}
+              className="lg:w-52 lg:h-12"
+            />
+          </Link>
 
           {/* Mobile Hamburger */}
           <button
@@ -117,7 +114,7 @@ const Navbar = () => {
                   if (el) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   } else {
-                    router.push('/' + link.href);
+                    router.push(`/${link.href}`);
                   }
                 } else {
                   closeMenu();
@@ -129,23 +126,23 @@ const Navbar = () => {
             </Link>
           ))}
 
-          <SlideArrowButton
-            text={hasValidToken ? 'Dashboard' : 'Get Started'}
-            className="w-full lg:w-52 lg:h-12"
-            onClick={() => {
-              closeMenu();
-              handleCTAClick();
-            }}
-          />
+          <Link
+            href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}
+            prefetch={true}
+            onClick={closeMenu}
+            className="w-full"
+          >
+            <SlideArrowButton
+              text={hasValidToken ? 'Dashboard' : 'Get Started'}
+              className="w-full lg:w-52 lg:h-12"
+            />
+          </Link>
         </div>
       </div>
 
       {/* Overlay when menu is open */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black bg-opacity-40 md:hidden"
-          onClick={closeMenu}
-        ></div>
+        <div className="fixed inset-0 z-30 bg-black bg-opacity-40 md:hidden" onClick={closeMenu} />
       )}
     </header>
   );

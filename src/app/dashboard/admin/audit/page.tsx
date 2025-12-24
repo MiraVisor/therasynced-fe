@@ -1,18 +1,32 @@
 'use client';
 
 import { Shield } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { AuditDashboard } from '@/components/core/Dashboard/Audit/AuditDashboard';
+import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuthStore } from '@/stores/authStore';
 import { ROLES } from '@/types/types';
 
-export default function AdminAuditPage() {
+// Dynamically import heavy audit dashboard component
+const AuditDashboard = dynamic(
+  () =>
+    import('@/components/core/Dashboard/Audit/AuditDashboard').then((mod) => ({
+      default: mod.AuditDashboard,
+    })),
+  {
+    loading: () => <AdminPageSkeleton />,
+    ssr: false,
+  },
+);
+
+function AdminAuditPageContent() {
   const router = useRouter();
-  const { isAuthenticated, role } = useAuth();
+  useSearchParams(); // Required hook call, but params not used
+  const { isAuthenticated, role } = useAuthStore();
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
@@ -40,12 +54,20 @@ export default function AdminAuditPage() {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <Shield className="h-6 w-6" />
-            <h1 className="text-2xl font-bold">Audit & Compliance</h1>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Audit & Compliance</h1>
           </div>
         </div>
       }
     >
       <AuditDashboard />
     </DashboardPageWrapper>
+  );
+}
+
+export default function AdminAuditPage() {
+  return (
+    <Suspense fallback={<AdminPageSkeleton />}>
+      <AdminAuditPageContent />
+    </Suspense>
   );
 }

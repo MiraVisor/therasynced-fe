@@ -1,10 +1,8 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle, FileText, XCircle } from 'lucide-react';
 import { Edit, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -31,13 +29,11 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  createServiceCategory,
-  fetchServiceCategories,
-  fetchServiceCategoriesStats,
-  updateServiceCategory,
-} from '@/redux/slices';
-import { clearError } from '@/redux/slices/serviceCategoriesSlice';
-import type { AppDispatch, RootState } from '@/redux/store';
+  useCreateServiceCategory,
+  useServiceCategories,
+  useServiceCategoriesStats,
+  useUpdateServiceCategory,
+} from '@/hooks/queries/useAdmin';
 import adminJobTitleService, { type JobTitleResponse } from '@/services/adminJobTitleService';
 import {
   CreateServiceCategoryDto,
@@ -46,17 +42,6 @@ import {
 } from '@/services/adminServiceCategoryService';
 
 const ServiceCategoriesPage = () => {
-  const dispatch = useDispatch<AppDispatch>();
-
-  const {
-    serviceCategories,
-    loading: categoriesLoading,
-    initialLoading: categoriesInitialLoading,
-    error,
-    pagination,
-    stats,
-  } = useSelector((state: RootState) => state.serviceCategories);
-
   const [jobTitles, setJobTitles] = useState<JobTitleResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -70,10 +55,28 @@ const ServiceCategoriesPage = () => {
     description: '',
     jobTitleId: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [updatingCategories, setUpdatingCategories] = useState<Set<string>>(new Set());
 
-  // Fetch job titles and stats
+  const {
+    data: categoriesResponse,
+    isLoading: categoriesLoading,
+    isFetching: _isFetching,
+  } = useServiceCategories({
+    page,
+    limit: pageSize,
+    name: debouncedSearch || undefined,
+  });
+  const serviceCategories = categoriesResponse?.data || [];
+  const pagination = categoriesResponse?.pagination || null;
+  const categoriesInitialLoading = categoriesLoading && !categoriesResponse;
+
+  const { data: statsResponse } = useServiceCategoriesStats();
+  const stats = statsResponse?.data || null;
+
+  const createMutation = useCreateServiceCategory();
+  const updateMutation = useUpdateServiceCategory();
+
+  // Fetch job titles
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -81,32 +84,13 @@ const ServiceCategoriesPage = () => {
         if (jobTitlesResponse.success) {
           setJobTitles(jobTitlesResponse.data || []);
         }
-        dispatch(fetchServiceCategoriesStats());
       } catch (error) {
         // Handle error silently or show toast
       }
     };
 
     fetchData();
-  }, [dispatch]);
-
-  // Fetch service categories when params change
-  useEffect(() => {
-    const params = {
-      page,
-      limit: pageSize,
-      name: debouncedSearch || undefined,
-    };
-    dispatch(fetchServiceCategories(params));
-  }, [dispatch, page, pageSize, debouncedSearch]);
-
-  // Show error as toast when it occurs
-  useEffect(() => {
-    if (error) {
-      toast.error(`Failed to load service categories: ${error}`);
-      dispatch(clearError());
-    }
-  }, [error, dispatch]);
+  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -128,38 +112,28 @@ const ServiceCategoriesPage = () => {
       return;
     }
     try {
-      setIsSubmitting(true);
-      await dispatch(createServiceCategory(formData)).unwrap();
-      toast.success('Service category created successfully');
+      await createMutation.mutateAsync(formData);
       setIsCreateDialogOpen(false);
       setFormData({ name: '', description: '', jobTitleId: '' });
-    } catch (error: unknown) {
-      const err = error as string;
-      toast.error(err || 'Failed to create service category');
-    } finally {
-      setIsSubmitting(false);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
   const handleUpdate = async () => {
     if (!selectedCategory) return;
     try {
-      setIsSubmitting(true);
       const updateData: UpdateServiceCategoryDto = {
         name: formData.name,
         description: formData.description,
         jobTitleId: formData.jobTitleId,
       };
-      await dispatch(updateServiceCategory({ id: selectedCategory.id, data: updateData })).unwrap();
-      toast.success('Service category updated successfully');
+      await updateMutation.mutateAsync({ id: selectedCategory.id, data: updateData });
       setIsEditDialogOpen(false);
       setSelectedCategory(null);
       setFormData({ name: '', description: '', jobTitleId: '' });
-    } catch (error: unknown) {
-      const err = error as string;
-      toast.error(err || 'Failed to update service category');
-    } finally {
-      setIsSubmitting(false);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -169,13 +143,9 @@ const ServiceCategoriesPage = () => {
       const updateData: UpdateServiceCategoryDto = {
         isActive: !category.isActive,
       };
-      await dispatch(updateServiceCategory({ id: category.id, data: updateData })).unwrap();
-      toast.success(
-        `Service category ${category.isActive ? 'deactivated' : 'activated'} successfully`,
-      );
-    } catch (error: unknown) {
-      const err = error as string;
-      toast.error(err || 'Failed to update service category status');
+      await updateMutation.mutateAsync({ id: category.id, data: updateData });
+    } catch (error) {
+      // Error handled by mutation
     } finally {
       setUpdatingCategories((prev) => {
         const newSet = new Set(prev);
@@ -248,23 +218,14 @@ const ServiceCategoriesPage = () => {
     {
       title: 'Total Categories',
       value: stats?.totalServiceCategories?.toString() || '0',
-      icon: FileText,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/10',
     },
     {
       title: 'Active',
       value: stats?.activeServiceCategories?.toString() || '0',
-      icon: CheckCircle,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/10',
     },
     {
       title: 'Inactive',
       value: stats?.inactiveServiceCategories?.toString() || '0',
-      icon: XCircle,
-      iconColor: 'text-error',
-      iconBg: 'bg-error/10',
     },
   ];
 
@@ -288,15 +249,12 @@ const ServiceCategoriesPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((card) => (
             <EnhancedStatCard
               key={card.title}
               title={card.title}
               value={card.value}
-              icon={card.icon}
-              iconColor={card.iconColor}
-              iconBg={card.iconBg}
               loading={categoriesInitialLoading}
             />
           ))}
@@ -335,7 +293,7 @@ const ServiceCategoriesPage = () => {
               <DialogTitle className="font-poppins font-semibold">
                 Create Service Category
               </DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Add a new service category to the platform
               </DialogDescription>
             </DialogHeader>
@@ -349,7 +307,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Sports massage"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -382,7 +340,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Category description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>
@@ -391,15 +349,15 @@ const ServiceCategoriesPage = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsCreateDialogOpen(false)}
-                disabled={isSubmitting}
+                disabled={createMutation.isPending}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreate}
-                disabled={isSubmitting || !formData.name || !formData.jobTitleId}
+                disabled={createMutation.isPending || !formData.name || !formData.jobTitleId}
               >
-                {isSubmitting ? 'Creating...' : 'Create'}
+                {createMutation.isPending ? 'Creating...' : 'Create'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -412,7 +370,7 @@ const ServiceCategoriesPage = () => {
               <DialogTitle className="font-poppins font-semibold">
                 Edit Service Category
               </DialogTitle>
-              <DialogDescription className="font-open-sans">
+              <DialogDescription className="font-inter">
                 Update service category information
               </DialogDescription>
             </DialogHeader>
@@ -426,7 +384,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Sports massage"
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   required
                 />
               </div>
@@ -459,7 +417,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Category description..."
-                  className="font-open-sans mt-2"
+                  className="font-inter mt-2"
                   rows={3}
                 />
               </div>
@@ -468,15 +426,15 @@ const ServiceCategoriesPage = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsEditDialogOpen(false)}
-                disabled={isSubmitting}
+                disabled={updateMutation.isPending}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdate}
-                disabled={isSubmitting || !formData.name || !formData.jobTitleId}
+                disabled={updateMutation.isPending || !formData.name || !formData.jobTitleId}
               >
-                {isSubmitting ? 'Updating...' : 'Update'}
+                {updateMutation.isPending ? 'Updating...' : 'Update'}
               </Button>
             </DialogFooter>
           </DialogContent>

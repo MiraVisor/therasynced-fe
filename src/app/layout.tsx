@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 
 import CookieConsent from '@/components/common/CookieConsent';
 import { ThemeProvider } from '@/components/theme-provider';
-import { StoreProvider } from '@/redux/StoreProvider';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 import './globals.css';
 
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://therasynced.com'),
+  metadataBase: new URL(process.env['NEXT_PUBLIC_APP_URL'] || 'https://therasynced.com'),
   alternates: {
     canonical: '/',
   },
@@ -129,7 +129,7 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <StoreProvider>
+        <QueryProvider>
           <ToastContainer />
           {/* <SocketConnectionTest /> */}
           <ThemeProvider>
@@ -138,7 +138,7 @@ export default function RootLayout({
             </main>
             <CookieConsent />
           </ThemeProvider>
-        </StoreProvider>
+        </QueryProvider>
       </body>
     </html>
   );

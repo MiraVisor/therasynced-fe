@@ -1,10 +1,7 @@
-import { useDispatch, useSelector } from 'react-redux';
-
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { closeEventDialog } from '@/redux/slices/calendarSlice';
-import { RootState } from '@/redux/store';
+import { useCalendarStore } from '@/stores/calendarStore';
 
 import { AppointmentDetails } from '../AppointmentDetails';
 
@@ -14,11 +11,10 @@ interface EventDialogProps {
 
 export const EventDialog = ({ onTypingChange }: EventDialogProps) => {
   const isMobile = useMediaQuery('(max-width: 1024px)');
-  const dispatch = useDispatch();
-  const { selectedEvent, isEventDialogOpen } = useSelector((state: RootState) => state.calendar);
+  const { selectedEvent, isEventDialogOpen, closeEventDialog } = useCalendarStore();
 
   const handleClose = async () => {
-    dispatch(closeEventDialog());
+    closeEventDialog();
   };
 
   const content = selectedEvent && (

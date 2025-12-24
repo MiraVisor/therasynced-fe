@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { slotNoteService } from '@/services/draftStorage.service';
@@ -61,8 +60,9 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
       try {
         await slotNoteService.saveNote(slot.id, { content: notes });
         setLastSaved(new Date());
-      } catch (error: any) {
-        if (error.response?.status === 429) {
+      } catch (error: unknown) {
+        const apiError = error as { response?: { status?: number } };
+        if (apiError.response?.status === 429) {
           // Rate limit - don't show error
           console.warn('Rate limited - skipping auto-save');
         } else {
@@ -83,7 +83,7 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
       setIsEditingNotes(false);
       setLastSaved(new Date());
       toast.success('Notes saved successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to save notes:', error);
       toast.error('Failed to save notes. Please try again.');
     } finally {

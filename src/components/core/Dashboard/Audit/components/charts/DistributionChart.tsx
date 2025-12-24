@@ -1,6 +1,6 @@
 'use client';
 
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { Cell, Pie, PieChart } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -41,7 +41,7 @@ export function DistributionChart({
   title,
   description,
   colors = defaultColors,
-  height = 300,
+  height: _height = 300,
   loading,
 }: DistributionChartProps) {
   const chartConfig: ChartConfig = data.reduce((acc, item, index) => {

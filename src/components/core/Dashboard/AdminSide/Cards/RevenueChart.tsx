@@ -85,11 +85,11 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
       {/* Legend below chart */}
       <div className="flex items-center justify-center mt-8 gap-8">
         <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full mr-2" style={{ background: '#ffa58b' }}></span>
+          <span className="w-3 h-3 rounded-full mr-2" style={{ background: '#ffa58b' }} />
           <span className="text-xs">Loss</span>
         </div>
         <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full mr-2" style={{ background: '#e3b9ff' }}></span>
+          <span className="w-3 h-3 rounded-full mr-2" style={{ background: '#e3b9ff' }} />
           <span className="text-xs">Profit</span>
         </div>
       </div>

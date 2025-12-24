@@ -2,15 +2,12 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { loginUser } from '@/redux/slices/authSlice';
+import { useLogin } from '@/hooks/queries/useAuth';
 
 import GoogleSignInButton from './GoogleSignInButton';
 
@@ -35,25 +32,15 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting: _isSubmitting },
   } = useForm<FormData>({
     mode: 'onBlur',
     resolver: zodResolver(formSchema),
   });
-  const dispatch = useAppDispatch();
-  const router = useRouter();
+  const { mutate: login, isPending } = useLogin();
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
-    try {
-      const res = await dispatch(loginUser(data)).unwrap();
-      toast.success(res?.message || 'Login Successful');
-      // Navigate immediately - Redux state updates synchronously
-      // Use replace to prevent back navigation to login page
-      router.replace('/dashboard');
-    } catch (err) {
-      const error = err as { message?: string };
-      toast.error(error.message || 'Login Failed');
-    }
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    login(data);
   };
 
   return (
@@ -71,9 +58,9 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 
         <div className="relative">
           <div className="flex items-center">
-            <div className="flex-1 border-t border-gray-200"></div>
+            <div className="flex-1 border-t border-gray-200" />
             <span className="px-3 text-xs text-gray-500 font-inter">or continue with email</span>
-            <div className="flex-1 border-t border-gray-200"></div>
+            <div className="flex-1 border-t border-gray-200" />
           </div>
         </div>
 
@@ -126,8 +113,8 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 
           <Button
             type="submit"
-            disabled={isSubmitting}
-            isLoading={isSubmitting}
+            disabled={isPending}
+            isLoading={isPending}
             className="w-full h-10 font-inter font-semibold rounded-lg transition-all duration-200 bg-primary text-white hover:bg-primary/90 text-sm"
           >
             Sign In
