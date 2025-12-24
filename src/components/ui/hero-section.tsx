@@ -82,7 +82,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {stat.label}
               </div>
               <div className="text-xl font-poppins font-semibold text-foreground">{stat.value}</div>
-              {stat.icon && <div className="mt-2">{stat.icon}</div>}
             </div>
           ))}
         </div>

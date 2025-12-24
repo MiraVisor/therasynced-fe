@@ -52,7 +52,10 @@ export const useConsentManager = (): ConsentManager => {
     retry: 1,
   });
 
-  const consents: ConsentStatus[] = consentsData?.data?.consents || [];
+  // Handle both response structures: data as array or data.consents
+  const consents: ConsentStatus[] = Array.isArray(consentsData?.data)
+    ? consentsData.data
+    : consentsData?.data?.consents || [];
 
   // Mutation for updating a single consent
   const updateConsentMutation = useMutation({

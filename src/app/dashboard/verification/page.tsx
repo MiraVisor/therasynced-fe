@@ -6,7 +6,7 @@ import {
   Award,
   CheckCircle,
   Clock,
-  Download,
+  ExternalLink,
   Shield,
   Trash2,
   XCircle,
@@ -252,7 +252,7 @@ export default function VerificationPage() {
               {downloadingId === file.id ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
               ) : (
-                <Download className="h-4 w-4" />
+                <ExternalLink className="h-4 w-4" />
               )}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => handleDelete(file)}>

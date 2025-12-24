@@ -149,11 +149,6 @@ export function UnifiedConsentManager({
                       info.description
                     )}
                   </Label>
-                  {status?.grantedAt && (
-                    <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
-                      {new Date(status.grantedAt).toLocaleDateString()}
-                    </span>
-                  )}
                 </div>
               );
             })}
@@ -203,13 +198,6 @@ export function UnifiedConsentManager({
                         {info.description}
                       </p>
                     )}
-                    {status?.grantedAt && (
-                      <p
-                        className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}
-                      >
-                        Granted on {new Date(status.grantedAt).toLocaleDateString()}
-                      </p>
-                    )}
                   </div>
                 </div>
               );
@@ -256,13 +244,6 @@ export function UnifiedConsentManager({
                         className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}
                       >
                         {info.description}
-                      </p>
-                    )}
-                    {status?.grantedAt && (
-                      <p
-                        className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}
-                      >
-                        Granted on {new Date(status.grantedAt).toLocaleDateString()}
                       </p>
                     )}
                   </div>

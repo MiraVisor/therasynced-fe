@@ -459,9 +459,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   return (
     <div className="min-h-screen">
       {/* Header with Progress */}
-      <div className="">
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
             {/* Back Button */}
             {currentStep > 1 && (
               <Button
@@ -474,67 +474,73 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
               </Button>
             )}
 
-            {/* Simple Progress Indicator */}
-            <div className="flex-1 max-w-md mx-auto px-8">
-              <div className="flex items-center justify-between text-sm">
-                {steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center">
+            {/* Improved Progress Indicator */}
+            <div className="flex-1 flex items-center gap-4">
+              {steps.map((step, index) => (
+                <React.Fragment key={step.id}>
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                         currentStep >= step.id
-                          ? 'bg-primary text-white'
-                          : 'bg-gray-200 text-gray-500'
+                          ? 'bg-primary text-white shadow-md'
+                          : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
                       }`}
                     >
-                      {step.id}
+                      {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : step.id}
                     </div>
-                    {index < steps.length - 1 && (
+                    <div className="hidden sm:block">
                       <div
-                        className={`w-12 h-0.5 mx-2 ${
-                          currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
+                        className={`text-sm font-medium ${
+                          currentStep >= step.id
+                            ? 'text-charcoal dark:text-white'
+                            : 'text-gray-400 dark:text-gray-500'
                         }`}
-                      />
-                    )}
+                      >
+                        {step.title}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {step.description}
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-2">
-                {steps.map((step) => (
-                  <div key={step.id} className="text-xs text-gray-500 text-center">
-                    {step.title}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Continue Button */}
-            <div className="w-24 flex justify-end">
-              {currentStep < steps.length ? (
-                <Button
-                  onClick={nextStep}
-                  disabled={!isStepValid()}
-                  className="bg-primary hover:bg-primary/90 disabled:opacity-50 px-6"
-                >
-                  Continue
-                </Button>
-              ) : null}
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-0.5 mx-2 transition-all ${
+                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content - Airbnb layout */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-              {renderStepContent()}
-            </div>
+        <div className="space-y-8">
+          {/* Main Content Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+            {renderStepContent()}
+
+            {/* Continue Button - Moved to bottom of content */}
+            {currentStep < steps.length && (
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                <Button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className="bg-primary hover:bg-primary/90 disabled:opacity-50 px-8 py-2.5 text-base font-semibold"
+                  size="lg"
+                >
+                  Continue
+                </Button>
+              </div>
+            )}
           </div>
 
-          {/* Right Column - Booking Summary (Airbnb-style sidebar) */}
-          <div className="lg:col-span-1">
+          {/* Booking Summary - Moved to bottom */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <BookingSummarySidebar
               currentStep={currentStep}
               totalSteps={steps.length}

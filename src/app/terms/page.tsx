@@ -9,419 +9,335 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-black py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Terms of Service</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">Last Updated: January 2025</p>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
+          Terms & Conditions
+        </h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">Last updated: [DATE]</p>
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              1. Acceptance of Terms
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
+              TERMS & CONDITIONS (USERS)
             </h2>
+
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8">
+              1. Platform Role
+            </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              By accessing or using TheraSynced (&quot;the Platform&quot;, &quot;we&quot;,
-              &quot;our&quot;, or &quot;us&quot;), you agree to be bound by these Terms of Service
-              (&quot;Terms&quot;). If you do not agree to these Terms, you may not use our services.
+              The Platform operates as a neutral marketplace and technical intermediary, providing
+              tools for users to discover and communicate with independent therapists. The Platform
+              does not provide therapy, medical advice, diagnosis, or treatment, and is not a party
+              to any professional or therapeutic relationship between users and therapists.
             </p>
+
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8">
+              2. User Obligations
+            </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              These Terms constitute a legally binding agreement between you and TheraSynced. Please
-              read them carefully.
+              Users agree to provide accurate and complete information when registering and using
+              the Platform. Users must use the Platform lawfully, respect all applicable
+              regulations, and refrain from any actions that could misuse, disrupt, or compromise
+              the integrity or security of the Platform or its services.
+            </p>
+
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8">
+              3. Communications Disclaimer
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              In-platform messaging is provided solely to facilitate communication between users and
+              therapists. These communications are intended for convenience and administrative
+              purposes only and are not suitable for urgent, emergency, or time-critical situations.
+              Users should not rely on in-platform messaging as a substitute for professional advice
+              or emergency services.
+            </p>
+
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8">
+              4. Emergency & Crisis Disclaimer
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              The Platform is not intended for use in medical or mental health emergencies. If a
+              user is experiencing an emergency or crisis, they should contact local emergency
+              services immediately. The Platform does not monitor messages for clinical risk,
+              safeguarding concerns, or emergency indicators, and the Platform assumes no
+              responsibility for any consequences arising from users relying on messages for urgent
+              situations.
+            </p>
+
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8">
+              5. Limitation of Liability
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              To the fullest extent permitted by law, the Platform disclaims any liability for
+              services provided by therapists, the content of messages exchanged, or any
+              interactions between users and therapists. Users acknowledge and accept that all
+              therapeutic, medical, or professional services occur solely between the user and the
+              therapist.
+            </p>
+
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8">
+              6. Eligibility
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              The Platform is intended for adults aged 18 years or older. The Platform does not
+              knowingly allow access to minors. Therapists are responsible for verifying user
+              eligibility where required by professional or regulatory standards.
+            </p>
+
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8">
+              7. Governing Law
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              These Terms and Conditions are governed by, and construed in accordance with, the laws
+              of Ireland. Any disputes arising under or in connection with these Terms shall be
+              subject to the exclusive jurisdiction of the courts of Ireland.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              2. Description of Service
+          <section className="mb-8 mt-12">
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
+              PLATFORM RULES / ACCEPTABLE USE POLICY
             </h2>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              Purpose
+            </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              TheraSynced is an online platform that connects patients with licensed healthcare
-              professionals, therapists, and wellness providers. Our services include:
+              These rules ensure a safe, professional, and lawful platform environment.
             </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              Prohibited Conduct
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">Users must not:</p>
             <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Booking and scheduling appointments</li>
-              <li>Facilitating communication between users and healthcare professionals</li>
-              <li>Payment processing for services</li>
-              <li>Profile management for users and healthcare professionals</li>
-              <li>Review and rating system</li>
-            </ul>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              <strong>Important:</strong> TheraSynced operates as an intermediary booking platform
-              that facilitates connections between clients and independent healthcare professionals.
-              We do not provide medical advice, diagnosis, or treatment services. TheraSynced is not
-              a healthcare provider and does not provide medical services. All healthcare services
-              are provided by independent practitioners who are responsible for their own
-              professional conduct, qualifications, and the quality of services they provide.
-              TheraSynced acts solely as a technology platform connecting users with healthcare
-              professionals and is not responsible for the quality, safety, or outcomes of any
-              healthcare services provided.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              3. User Accounts
-            </h2>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              3.1 Account Registration
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">To use our services, you must:</p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Be at least 16 years of age (or have parental consent)</li>
-              <li>Provide accurate, current, and complete information</li>
-              <li>Maintain and update your information as necessary</li>
-              <li>Maintain the security of your account credentials</li>
-              <li>Accept responsibility for all activities under your account</li>
-            </ul>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              3.2 Account Security
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              You are responsible for maintaining the confidentiality of your account password and
-              for all activities that occur under your account. Notify us immediately of any
-              unauthorized use.
-            </p>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              3.3 Account Termination
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              We reserve the right to suspend or terminate your account if you violate these Terms
-              or engage in fraudulent, illegal, or harmful activities.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              4. Healthcare Professional Requirements
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Healthcare professionals using our platform must:
-            </p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Hold valid professional licenses and certifications</li>
-              <li>Maintain professional indemnity insurance (where required)</li>
-              <li>Comply with all applicable healthcare regulations and standards</li>
-              <li>Provide accurate information about qualifications and services</li>
-              <li>Maintain patient confidentiality and comply with data protection laws</li>
-              <li>Adhere to professional codes of conduct</li>
-            </ul>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              TheraSynced may verify credentials and reserves the right to remove healthcare
-              professionals who do not meet these requirements.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              5. Bookings and Appointments
-            </h2>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              5.1 Booking Process
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">When you book an appointment:</p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>You enter into a direct agreement with the healthcare professional</li>
-              <li>Payment is processed through our secure payment system</li>
-              <li>You will receive confirmation and reminders</li>
-              <li>Cancellation and refund policies apply as specified</li>
-            </ul>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              5.2 Cancellations and Refunds
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Cancellation policies are set by individual healthcare professionals. Refunds are
-              subject to the healthcare professional&apos;s cancellation policy and our refund
-              procedures. Late cancellations or no-shows may result in charges as specified.
-            </p>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              5.3 Rescheduling
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Appointments may be rescheduled subject to availability and the healthcare
-              professional&apos;s policies. Rescheduling fees may apply.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              6. Payments
-            </h2>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              6.1 Payment Processing
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Payments are processed securely through third-party payment processors (e.g., Stripe).
-              We do not store your full payment card details. By making a payment, you agree to the
-              payment processor&apos;s terms.
-            </p>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              6.2 Pricing
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Prices are set by healthcare professionals and displayed on the platform. Prices may
-              vary and are subject to change. The price at the time of booking applies.
-            </p>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              6.3 Fees
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              TheraSynced may charge platform fees. These fees will be clearly disclosed before
-              booking. Healthcare professionals may charge additional fees for specific services or
-              locations.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              7. User Conduct
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">You agree not to:</p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Use the platform for illegal or unauthorized purposes</li>
-              <li>Violate any laws or regulations</li>
-              <li>Infringe on intellectual property rights</li>
-              <li>Harass, abuse, or harm other users</li>
-              <li>Impersonate others or provide false information</li>
-              <li>Interfere with or disrupt the platform</li>
-              <li>Attempt to gain unauthorized access to the platform</li>
-              <li>Use automated systems to access the platform without permission</li>
-              <li>Collect or harvest user information</li>
-              <li>Post false, misleading, or defamatory content</li>
-            </ul>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              8. Intellectual Property
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              The TheraSynced platform, including its design, features, and content, is owned by
-              TheraSynced and protected by copyright, trademark, and other intellectual property
-              laws.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              You retain ownership of content you post, but grant TheraSynced a license to use,
-              display, and distribute such content on the platform.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              9. Disclaimers and Limitation of Liability
-            </h2>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              9.1 Service Disclaimer
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              TheraSynced is a booking platform. We do not:
-            </p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Provide medical advice, diagnosis, or treatment</li>
-              <li>Endorse or guarantee the quality of healthcare professionals</li>
-              <li>Verify all information provided by users or healthcare professionals</li>
-              <li>Control the services provided by healthcare professionals</li>
-            </ul>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              9.2 Limitation of Liability
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              To the maximum extent permitted by law:
-            </p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
+              <li>Misrepresent identity or professional qualifications</li>
+              <li>Share unlawful, abusive, or misleading content</li>
+              <li>Use the Platform for emergency or crisis support</li>
+              <li>Circumvent platform safeguards or security measures</li>
               <li>
-                TheraSynced is not liable for any indirect, incidental, or consequential damages
-              </li>
-              <li>
-                Our total liability is limited to the amount you paid us in the 12 months preceding
-                the claim
-              </li>
-              <li>
-                We are not liable for the actions, services, or conduct of healthcare professionals
-              </li>
-              <li>We do not guarantee uninterrupted or error-free service</li>
-            </ul>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              9.3 Medical Disclaimer
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              <strong>Important:</strong> TheraSynced does not provide medical services. Always seek
-              the advice of qualified healthcare providers for medical concerns. In case of medical
-              emergencies, contact emergency services immediately.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              10. Indemnification
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              You agree to indemnify and hold harmless TheraSynced, its officers, directors,
-              employees, and agents from any claims, damages, losses, liabilities, and expenses
-              (including legal fees) arising from:
-            </p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Your use of the platform</li>
-              <li>Your violation of these Terms</li>
-              <li>Your violation of any rights of another party</li>
-              <li>Content you post or transmit</li>
-            </ul>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              11. Privacy and Data Protection
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Your use of the platform is also governed by our{' '}
-              <a href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
-              </a>
-              , which explains how we collect, use, and protect your personal data in compliance
-              with GDPR and Irish data protection laws.
-            </p>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              11.1 Health Data Confidentiality (Healthcare Professionals)
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Healthcare professionals using our platform acknowledge and agree to:
-            </p>
-            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>
-                Maintain strict confidentiality of all patient health data accessed through the
-                platform
-              </li>
-              <li>
-                Only access health data for patients with whom you have a legitimate therapeutic
-                relationship
-              </li>
-              <li>
-                Comply with GDPR Article 9 requirements for processing special category (health)
-                data
-              </li>
-              <li>
-                Verify that patients have granted explicit consent before accessing or creating
-                health records
-              </li>
-              <li>
-                Report any unauthorized access or data breaches immediately to
-                privacy@therasynced.com
-              </li>
-              <li>
-                Comply with professional codes of conduct and data protection regulations applicable
-                to your profession
+                Export or store platform communications in violation of data protection or
+                confidentiality obligations
               </li>
             </ul>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              Enforcement
+            </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              <strong>Important:</strong> Health data is classified as &quot;special category
-              data&quot; under GDPR Article 9. Processing requires explicit consent from the data
-              subject (patient). You must verify that consent has been granted before accessing or
-              creating any health records.
+              Violations may result in suspension or termination of access.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              12. Termination
+          <section className="mb-8 mt-12">
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
+              SUBSCRIPTION & BILLING TERMS (THERAPISTS)
             </h2>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              12.1 Termination by You
+              5.1 Subscription Fees
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              You may terminate your account at any time through your account settings or by
-              contacting us.
+              Therapists pay a recurring subscription fee billed in advance.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              12.2 Termination by Us
+              5.2 Refunds
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              We may suspend or terminate your account immediately if you:
+              Except where required by applicable law, subscription fees are non-refundable.
             </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5.3 Non-Payment & Termination
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Failure to pay may result in suspension or termination of access to the Platform.
+            </p>
+          </section>
+
+          <section className="mb-8 mt-12">
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
+              THERAPIST AGREEMENT
+            </h2>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              Independent Contractor Status
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Therapists act as independent contractors and are not employees, agents, or
+              representatives of the Platform.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              Professional & Regulatory Compliance
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">Therapists warrant that they:</p>
             <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Violate these Terms</li>
-              <li>Engage in fraudulent or illegal activity</li>
-              <li>Harm other users or the platform</li>
-              <li>Fail to pay fees when due</li>
+              <li>Hold all required licenses, registrations, and permissions</li>
+              <li>Maintain appropriate professional indemnity and public liability insurance</li>
+              <li>Comply with applicable professional codes of conduct and ethical standards</li>
             </ul>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              12.3 Effect of Termination
+              Data Protection
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Upon termination, your right to use the platform ceases immediately. We may delete
-              your account and data subject to our Privacy Policy and legal retention requirements.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              13. Dispute Resolution
-            </h2>
-
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              13.1 Governing Law
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              These Terms are governed by the laws of Ireland. Any disputes will be subject to the
-              exclusive jurisdiction of Irish courts.
+              Therapists act as independent Data Controllers for health and therapeutic data. The
+              Platform acts as a Data Processor for in-platform communications only.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              13.2 Disputes with Healthcare Professionals
+              Breach Notification
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Disputes regarding services provided by healthcare professionals should be resolved
-              directly with the healthcare professional. TheraSynced is not a party to such disputes
-              but may assist in resolution.
+              Therapists must notify the Platform without undue delay and, where feasible, within 48
+              hours of becoming aware of a personal data breach involving platform data.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              Audit & Verification
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              The Platform may verify therapist credentials, insurance, and compliance on a
+              reasonable basis.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              14. Changes to Terms
+          <section className="mb-8 mt-12">
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
+              DATA PROCESSING ADDENDUM (ANNEX)
             </h2>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              We may modify these Terms at any time. Material changes will be notified by email or
-              through the platform. Continued use after changes constitutes acceptance. The
-              &quot;Last Updated&quot; date indicates when changes were made.
+              This Data Processing Addendum (&quot;DPA&quot;) forms part of the Therapist Agreement
+              and governs the processing of personal data by the Platform on behalf of therapists in
+              accordance with Article 28 of the General Data Protection Regulation (GDPR).
             </p>
-          </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              15. Severability
-            </h2>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              1. Subject Matter of the Processing
+            </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              If any provision of these Terms is found to be invalid or unenforceable, the remaining
-              provisions will continue in full force and effect.
+              The subject matter of the processing consists of the handling of in-platform
+              communications exchanged between users and therapists through the Platform. Such
+              communications may include personal data and, where users voluntarily disclose it,
+              special category personal data, including health-related information.
             </p>
-          </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              16. Contact Information
-            </h2>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              2. Duration of the Processing
+            </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              For questions about these Terms, contact us:
+              The processing shall continue for the duration of the Therapist Agreement and for any
+              additional period during which the Platform is required to retain data in accordance
+              with applicable legal, regulatory, or contractual obligations.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              3. Nature and Purpose of the Processing
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              The nature of the processing includes the secure transmission, storage, and retrieval
+              of messages exchanged between users and therapists via the Platform&apos;s messaging
+              functionality.
             </p>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              <strong>TheraSynced</strong>
-              <br />
-              Email: support@therasynced.com
-              <br />
-              Address: [Your Business Address]
+              The purpose of the processing is strictly limited to enabling communication between
+              users and therapists and ensuring the security, integrity, and availability of the
+              Platform. The Platform does not process message content for therapeutic, diagnostic,
+              profiling, advertising, or commercial purposes.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              4. Processor Obligations
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              The Platform, acting as a data processor, shall:
+            </p>
+
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4">
+              4.1 Processing on Instructions
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Process personal data only on documented instructions from the therapist, unless
+              required to do so by applicable law, in which case the Platform shall inform the
+              therapist of such legal requirement unless prohibited from doing so.
+            </p>
+
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4">
+              4.2 Confidentiality
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Ensure that persons authorised to process personal data are bound by appropriate
+              confidentiality obligations, whether contractual or statutory, and receive appropriate
+              data protection awareness.
+            </p>
+
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4">
+              4.3 Security Measures
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Implement appropriate technical and organisational measures to ensure a level of
+              security appropriate to the risk, including measures to protect against unauthorised
+              or unlawful processing, accidental loss, destruction, or damage.
+            </p>
+
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4">
+              4.4 Data Subject Rights
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Assist therapists, insofar as reasonably possible, in responding to requests from data
+              subjects to exercise their rights under the GDPR, taking into account the nature of
+              the processing.
+            </p>
+
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4">
+              4.5 Personal Data Breaches
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Notify the therapist without undue delay after becoming aware of a personal data
+              breach involving in-platform communications and provide reasonable information to
+              support compliance with breach notification obligations.
+            </p>
+
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4">
+              4.6 Deletion or Return of Data
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Upon termination of the Therapist Agreement, delete or return all personal data
+              processed on behalf of the therapist, unless retention is required by applicable law,
+              in which case such data shall be securely isolated and protected.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5. Sub-Processors
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              The Platform may engage sub-processors for the provision of infrastructure, hosting,
+              security, or related services, provided that such sub-processors are engaged under
+              written agreements that impose data protection obligations no less protective than
+              those set out in this DPA.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              The Platform remains responsible for the performance of its sub-processors in
+              accordance with GDPR requirements.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              6. Audit and Compliance Information
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Therapists may request reasonable information necessary to demonstrate the
+              Platform&apos;s compliance with this DPA and applicable data protection obligations.
+              Any audit or inspection shall be conducted in a manner that minimises disruption to
+              the Platform&apos;s operations and protects the confidentiality and security of other
+              users and therapists.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              7. Governing Law
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              This DPA shall be governed by and construed in accordance with the laws of Ireland.
             </p>
           </section>
         </div>

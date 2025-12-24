@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle, Clock, Star, TrendingDown, TrendingUp, Users } from 'lucide-react';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import CategoryBreakdownChart from '@/components/core/Dashboard/FreelancerSide/Analytics/CategoryBreakdownChart';
@@ -71,104 +70,84 @@ const AnalyticsPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Completed Sessions */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
+            <Card className="border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-inter font-medium text-success">
-                      Completed Sessions
-                    </p>
-                    <p className="text-2xl font-poppins font-bold text-charcoal">
+                <div className="space-y-1">
+                  <p className="text-sm font-inter font-medium text-muted-foreground">
+                    Completed Sessions
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-3xl font-poppins font-bold text-charcoal">
                       {analyticsData?.completedSessions || 0}
                     </p>
-                    <div className="flex items-center mt-1">
-                      {analyticsData && analyticsData.sessionsChange > 0 ? (
-                        <TrendingUp className="h-4 w-4 text-emerald-600 mr-1" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
-                      )}
+                    {analyticsData && (
                       <span
-                        className={`text-xs ${
-                          analyticsData && analyticsData.sessionsChange > 0
-                            ? 'text-emerald-600'
-                            : 'text-red-600'
+                        className={`text-xs font-medium ${
+                          analyticsData.sessionsChange > 0 ? 'text-emerald-600' : 'text-red-600'
                         }`}
                       >
-                        {analyticsData
-                          ? `${Math.abs(analyticsData.sessionsChange).toFixed(1)}% from last period`
-                          : '0%'}
+                        {analyticsData.sessionsChange > 0 ? '+' : ''}
+                        {analyticsData.sessionsChange.toFixed(1)}%
                       </span>
-                    </div>
+                    )}
                   </div>
-                  <div className="p-3 rounded-2xl bg-emerald-50">
-                    <CheckCircle className="h-6 w-6 text-emerald-600" />
-                  </div>
+                  {analyticsData && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {analyticsData.sessionsChange > 0 ? 'Up' : 'Down'} from last period
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             {/* Total Hours */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
+            <Card className="border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-inter font-medium text-info">Total Hours</p>
-                    <p className="text-2xl font-poppins font-bold text-charcoal">
-                      {analyticsData?.totalHours.toFixed(1) || '0.0'}h
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      {analyticsData?.completionRate.toFixed(1) || '0.0'}% completion rate
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-blue-50">
-                    <Clock className="h-6 w-6 text-blue-600" />
-                  </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-inter font-medium text-muted-foreground">
+                    Total Hours
+                  </p>
+                  <p className="text-3xl font-poppins font-bold text-charcoal">
+                    {analyticsData?.totalHours.toFixed(1) || '0.0'}h
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {analyticsData?.completionRate.toFixed(1) || '0.0'}% completion rate
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Average Rating */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
+            <Card className="border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-inter font-medium text-warning">Average Rating</p>
-                    <p className="text-2xl font-poppins font-bold text-charcoal">
-                      {analyticsData?.averageRating
-                        ? analyticsData.averageRating.toFixed(1)
-                        : 'N/A'}
-                    </p>
-                    <div className="flex items-center mt-1">
-                      <Star className="h-4 w-4 text-purple-600 mr-1" />
-                      <span className="text-xs text-purple-600">
-                        {analyticsData?.ratedSessions || 0} rated sessions
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-purple-50">
-                    <Star className="h-6 w-6 text-purple-600" />
-                  </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-inter font-medium text-muted-foreground">
+                    Average Rating
+                  </p>
+                  <p className="text-3xl font-poppins font-bold text-charcoal">
+                    {analyticsData?.averageRating ? analyticsData.averageRating.toFixed(1) : 'N/A'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {analyticsData?.ratedSessions || 0} rated sessions
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Active Clients */}
-            <Card className="group border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
+            <Card className="border border-gray-200/80 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] backdrop-blur-sm bg-white/80 rounded-xl">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-inter font-medium text-primary">Active Clients</p>
-                    <p className="text-2xl font-poppins font-bold text-charcoal">
-                      {analyticsData?.activeClients || 0}
-                    </p>
-                    <p className="text-xs text-amber-600 mt-1">
-                      {analyticsData?.newClients || 0} new, {analyticsData?.returningClients || 0}{' '}
-                      returning
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-amber-50">
-                    <Users className="h-6 w-6 text-amber-600" />
-                  </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-inter font-medium text-muted-foreground">
+                    Active Clients
+                  </p>
+                  <p className="text-3xl font-poppins font-bold text-charcoal">
+                    {analyticsData?.activeClients || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {analyticsData?.newClients || 0} new, {analyticsData?.returningClients || 0}{' '}
+                    returning
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -244,24 +223,17 @@ const AnalyticsPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-inter text-muted-foreground">Change</span>
-                      <div className="flex items-center gap-1">
-                        {analyticsData && analyticsData.revenueAnalytics.revenueChange > 0 ? (
-                          <TrendingUp className="h-4 w-4 text-emerald-600" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 text-red-600" />
-                        )}
-                        <span
-                          className={`text-sm font-medium ${
-                            analyticsData && analyticsData.revenueAnalytics.revenueChange > 0
-                              ? 'text-emerald-600'
-                              : 'text-red-600'
-                          }`}
-                        >
-                          {analyticsData
-                            ? `${Math.abs(analyticsData.revenueAnalytics.revenueChange).toFixed(1)}%`
-                            : '0%'}
-                        </span>
-                      </div>
+                      <span
+                        className={`text-sm font-medium ${
+                          analyticsData && analyticsData.revenueAnalytics.revenueChange > 0
+                            ? 'text-emerald-600'
+                            : 'text-red-600'
+                        }`}
+                      >
+                        {analyticsData
+                          ? `${analyticsData.revenueAnalytics.revenueChange > 0 ? '+' : ''}${analyticsData.revenueAnalytics.revenueChange.toFixed(1)}%`
+                          : '0%'}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -281,10 +253,7 @@ const AnalyticsPage = () => {
         {/* Bottom Section: Top 5 Clients */}
         <Card className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
           <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-            <CardTitle className="flex items-center gap-2 font-poppins text-charcoal">
-              <Users className="h-5 w-5" />
-              Top Clients
-            </CardTitle>
+            <CardTitle className="font-poppins text-charcoal">Top Clients</CardTitle>
             <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
               Your top 5 clients by sessions
             </CardDescription>
@@ -343,12 +312,7 @@ const AnalyticsPage = () => {
                         </div>
                         <div className="text-right">
                           {averageRating !== undefined && averageRating !== null ? (
-                            <div className="flex items-center gap-1 mb-1">
-                              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                              <span className="text-sm font-medium">
-                                {averageRating.toFixed(1)}
-                              </span>
-                            </div>
+                            <p className="text-sm font-medium mb-1">{averageRating.toFixed(1)}</p>
                           ) : null}
                           <p className="text-xs text-gray-500">{totalHours.toFixed(1)}h</p>
                         </div>

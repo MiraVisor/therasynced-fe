@@ -1,6 +1,5 @@
 'use client';
 
-import { Calendar, Coins, MessageSquare, TrendingUp } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
@@ -45,33 +44,28 @@ const FreelancerHome = () => {
         {
           label: "Today's Bookings",
           value: dashboardData.todayBookings.toString(),
-          icon: <Calendar className="h-4 w-4 text-primary" />,
         },
         {
           label: 'Revenue',
           value: formatRevenue(dashboardData.todayRevenue),
-          icon: <Coins className="h-4 w-4 text-success" />,
         },
         {
           label: 'Messages',
           value: dashboardData.unreadMessages.toString(),
-          icon: <MessageSquare className="h-4 w-4 text-info" />,
         },
         {
           label: 'Growth',
           value: formatGrowth(dashboardData.growthPercentage),
-          icon: <TrendingUp className="h-4 w-4 text-warning" />,
         },
       ]
     : [
         {
           label: "Today's Bookings",
           value: '0',
-          icon: <Calendar className="h-4 w-4 text-primary" />,
         },
-        { label: 'Revenue', value: 'EUR 0', icon: <Coins className="h-4 w-4 text-success" /> },
-        { label: 'Messages', value: '0', icon: <MessageSquare className="h-4 w-4 text-info" /> },
-        { label: 'Growth', value: '+0%', icon: <TrendingUp className="h-4 w-4 text-warning" /> },
+        { label: 'Revenue', value: 'EUR 0' },
+        { label: 'Messages', value: '0' },
+        { label: 'Growth', value: '+0%' },
       ];
 
   return (

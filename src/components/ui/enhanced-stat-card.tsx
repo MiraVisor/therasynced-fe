@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -63,12 +62,9 @@ export const EnhancedStatCard: React.FC<EnhancedStatCardProps> = ({
 
               {trend && (
                 <div
-                  className={cn(
-                    'flex items-center gap-1 text-xs font-medium',
-                    trend.isUp ? 'text-success' : 'text-error',
-                  )}
+                  className={cn('text-xs font-medium', trend.isUp ? 'text-success' : 'text-error')}
                 >
-                  {trend.isUp ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                  {trend.isUp ? '+' : ''}
                   {Math.abs(trend.value).toFixed(1)}%
                 </div>
               )}
