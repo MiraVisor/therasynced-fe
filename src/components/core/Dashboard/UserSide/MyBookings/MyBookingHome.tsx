@@ -4,7 +4,9 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useAvailableSlots } from '@/hooks/queries/useSlots';
+import { useBookingStore } from '@/stores/bookingStore';
 import { Expert } from '@/types/types';
 
 import ModernBookingFlow from './ModernBookingFlow';
@@ -24,9 +26,21 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
     : params?.['freelancerId'];
 
   // Use React Query hook
-  const { data: slots = [] } = useAvailableSlots(freelancerId || null);
+  const {
+    data: slots = [],
+    isLoading: isLoadingSlots,
+    error: slotsError,
+  } = useAvailableSlots(freelancerId || null);
   const [showModernFlow, setShowModernFlow] = useState(true);
   const [freelancer, setFreelancer] = useState<Expert | null>(null);
+  const { resetBooking } = useBookingStore();
+
+  // Reset booking store state when freelancerId changes
+  useEffect(() => {
+    if (freelancerId) {
+      resetBooking();
+    }
+  }, [freelancerId, resetBooking]);
 
   // Get freelancer data from URL params or fallback to slot data
   useEffect(() => {
@@ -36,9 +50,9 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
         const freelancerData = JSON.parse(decodeURIComponent(dataParam));
         setFreelancer(freelancerData);
       } catch (error) {
-        // Fallback to slot data
-        const firstSlot = slots && slots.length > 0 ? slots[0] : null;
-        if (firstSlot) {
+        // If parsing fails, wait for slots to load before falling back
+        if (!isLoadingSlots && slots && slots.length > 0) {
+          const firstSlot = slots[0];
           setFreelancer({
             id: firstSlot.freelancerId,
             name: firstSlot.freelancerName || 'Unknown',
@@ -52,9 +66,9 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
         }
       }
     } else {
-      // Fallback to slot data if no URL data
-      const firstSlot = slots && slots.length > 0 ? slots[0] : null;
-      if (firstSlot) {
+      // Fallback to slot data if no URL data - wait for slots to load
+      if (!isLoadingSlots && slots && slots.length > 0) {
+        const firstSlot = slots[0];
         setFreelancer({
           id: firstSlot.freelancerId,
           name: firstSlot.freelancerName || 'Unknown',
@@ -67,10 +81,46 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
         } as Expert);
       }
     }
-  }, [searchParams, slots]);
+  }, [searchParams, slots, isLoadingSlots]);
 
+  // Show loading state while data is being fetched
+  if (isLoadingSlots || (!freelancer && !slotsError)) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Show error state if slots failed to load and no freelancer data
+  if (slotsError && !freelancer) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+        <p className="text-gray-600 dark:text-gray-400">
+          Failed to load booking information. Please try again.
+        </p>
+        <Button
+          onClick={() => window.location.reload()}
+          className="bg-primary hover:bg-primary/90 text-white"
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  // Show error if no freelancer data available after loading
   if (!freelancer) {
-    return <div>No freelancer data available</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+        <p className="text-gray-600 dark:text-gray-400">
+          No freelancer information available. Please go back and try again.
+        </p>
+        <Button onClick={() => window.history.back()} variant="outline" className="border-gray-300">
+          Go Back
+        </Button>
+      </div>
+    );
   }
 
   return (

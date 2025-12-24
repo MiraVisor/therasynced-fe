@@ -119,15 +119,15 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
           // Fallback to legacy availableServices
           setAvailableServices(slot.availableServices);
         } else {
-          // Fallback to all freelancer service categories
-          setAvailableServices(freelancerServices);
+          // Slot has no services - set to empty array
+          setAvailableServices([]);
         }
       } else {
-        // If slot not found, use all freelancer service categories
-        setAvailableServices(freelancerServices);
+        // If slot not found, set to empty array
+        setAvailableServices([]);
       }
     },
-    [slots, freelancerServices, setAvailableServices],
+    [slots, setAvailableServices],
   );
 
   // Update available services when slot is selected
@@ -139,7 +139,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
       setAvailableServices([]);
       serviceForm.setValue('serviceCategoryIds', []);
     }
-  }, [selectedTime, fetchSlotDetails, serviceForm]);
+  }, [selectedTime, fetchSlotDetails, serviceForm, setAvailableServices]);
 
   // Load more slots when needed - React Query handles pagination automatically
   const loadMoreSlots = async () => {

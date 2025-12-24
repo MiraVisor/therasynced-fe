@@ -2,8 +2,10 @@
 
 import { Chrome, Eye, EyeOff, Mail } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
+import { toast } from 'react-toastify';
 
 import { cn } from '@/lib/utils';
+import { BACKEND_URL } from '@/services/endpoints';
 import { useSignupUIStore } from '@/stores/signupUIStore';
 
 import { SignupFormData } from '../MultiStepSignup';
@@ -23,7 +25,21 @@ export function AccountSetupStep() {
     setAuthMethod,
     setShowPassword,
     setShowConfirmPassword,
+    setIsGoogleLoading,
   } = useSignupUIStore();
+
+  const handleGoogleSignUp = async () => {
+    try {
+      setIsGoogleLoading(true);
+      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+      const googleAuthUrl = `${BACKEND_URL || 'http://localhost:4000'}/auth/google?returnUrl=${encodeURIComponent(currentUrl)}&signup=true`;
+      window.location.href = googleAuthUrl;
+    } catch (error) {
+      setIsGoogleLoading(false);
+      toast.error('Failed to initiate Google sign-up');
+    }
+  };
+
   return (
     <div className="w-full space-y-2">
       {/* Header */}
@@ -43,13 +59,11 @@ export function AccountSetupStep() {
         <div className="space-y-2">
           <button
             type="button"
-            onClick={() => setAuthMethod('oauth')}
+            onClick={handleGoogleSignUp}
             disabled={isGoogleLoading}
             className={cn(
               'w-full h-10 flex items-center justify-center gap-2 px-4 rounded-lg border transition-all duration-200 text-sm font-inter font-medium',
-              authMethod === 'oauth'
-                ? 'border-primary bg-primary/5 text-primary'
-                : 'border-gray-300 hover:bg-gray-50',
+              'border-gray-300 hover:bg-gray-50',
               isGoogleLoading && 'opacity-50 cursor-not-allowed',
             )}
           >

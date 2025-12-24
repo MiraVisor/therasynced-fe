@@ -1,10 +1,9 @@
 'use client';
 
-import { CheckCircle, ChevronLeft, ChevronRight, Gift, Sparkles } from 'lucide-react';
+import { CheckCircle, Gift, Sparkles } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useBookingStore } from '@/stores/bookingStore';
 import type { Slot } from '@/types/slot';
 
@@ -40,6 +39,20 @@ export const ScheduleStep: React.FC<ScheduleStepProps> = ({
   const { selectedDate, selectedTime, datePage } = useBookingStore();
   const currentDatePage = Math.min(datePage, totalDatePages - 1);
   const datesPerPage = 6;
+
+  // Convert selectedDate string to Date object for Calendar
+  const selectedDateObj = selectedDate ? new Date(`${selectedDate}T00:00:00`) : undefined;
+
+  // Get all dates that have available slots (availableDates are already formatted strings)
+  const datesWithSlots = new Set(availableDates);
+
+  // Handle date selection from Calendar
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      const dateString = formatDateForAPI(date);
+      onDateSelect(dateString);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -92,101 +105,29 @@ export const ScheduleStep: React.FC<ScheduleStepProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-poppins font-semibold text-charcoal">Select Date</h3>
-            {totalDatePages > 1 && (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDatePageChange(Math.max(0, datePage - 1))}
-                  disabled={datePage === 0}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <span className="text-sm text-gray-500 min-w-[80px] text-center">
-                  {currentDatePage + 1} / {totalDatePages}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDatePageChange(Math.min(totalDatePages - 1, datePage + 1))}
-                  disabled={datePage >= totalDatePages - 1}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
           </div>
 
-          <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-            {displayedDates?.map((date) => {
-              const dateObj = new Date(date);
-              const isToday = date === formatDateForAPI(new Date());
-              const isSelected = selectedDate === date;
-              const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-              const dayNumber = dateObj.getDate();
-              const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
-
-              return (
-                <button
-                  key={date}
-                  className={`relative p-3 rounded-xl border ${
-                    isSelected
-                      ? 'border-primary bg-primary text-white shadow-md'
-                      : 'border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700'
-                  }`}
-                  onClick={() => onDateSelect(date)}
-                >
-                  <div className="text-center space-y-1">
-                    <div
-                      className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-500'}`}
-                    >
-                      {dayOfWeek}
-                    </div>
-                    <div
-                      className={`text-lg font-poppins font-semibold ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}
-                    >
-                      {dayNumber}
-                    </div>
-                    <div
-                      className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-500'}`}
-                    >
-                      {month}
-                    </div>
-                  </div>
-                  {isToday && (
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                      <div
-                        className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-primary'}`}
-                      />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+          {/* Calendar Component */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
+            <Calendar
+              mode="single"
+              selected={selectedDateObj}
+              onSelect={handleDateSelect}
+              className="rounded-lg"
+              disabled={(date: Date) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dateToCheck = new Date(date);
+                dateToCheck.setHours(0, 0, 0, 0);
+                const dateString = formatDateForAPI(dateToCheck);
+                // Disable dates that are in the past or don't have available slots
+                return dateToCheck < today || !datesWithSlots.has(dateString);
+              }}
+              captionLayout="dropdown"
+              fromYear={new Date().getFullYear()}
+              toYear={new Date().getFullYear() + 1}
+            />
           </div>
-
-          {/* Load more dates */}
-          {availableDates.length > (currentDatePage + 1) * datesPerPage && (
-            <div className="text-center">
-              <Button
-                variant="outline"
-                onClick={onLoadMore}
-                disabled={loadingMoreSlots}
-                className="px-8"
-              >
-                {loadingMoreSlots ? (
-                  <>
-                    <LoadingSpinner size="sm" className="mr-2" />
-                    Loading...
-                  </>
-                ) : (
-                  'Load More Dates'
-                )}
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* Time Selection */}
