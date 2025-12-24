@@ -375,7 +375,7 @@ export function BreachesTab() {
               <div className="mt-2 space-y-2">
                 <div className="flex gap-2">
                   <Select
-                    value=""
+                    value={undefined}
                     onValueChange={(value) => {
                       if (value && !formData.dataCategories.includes(value)) {
                         setFormData({

@@ -1,6 +1,7 @@
 'use client';
 
 import { Chrome, Eye, EyeOff, Mail } from 'lucide-react';
+import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
@@ -27,6 +28,11 @@ export function AccountSetupStep() {
     setShowConfirmPassword,
     setIsGoogleLoading,
   } = useSignupUIStore();
+
+  // Reset loading state when component mounts (in case user navigated back)
+  useEffect(() => {
+    setIsGoogleLoading(false);
+  }, [setIsGoogleLoading]);
 
   const handleGoogleSignUp = async () => {
     try {

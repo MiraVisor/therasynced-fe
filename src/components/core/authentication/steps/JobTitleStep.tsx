@@ -1,7 +1,9 @@
 'use client';
 
+import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -24,6 +26,13 @@ export function JobTitleStep() {
 
   const selectedJobTitleId = watch('mainJobTitleId');
   const { data: jobTitles = [], isLoading: isLoadingJobTitles } = useJobTitles();
+  const selectedJobTitle = jobTitles.find((jt) => jt.id === selectedJobTitleId) ?? undefined;
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setValue('mainJobTitleId', '', { shouldValidate: true });
+    void trigger('mainJobTitleId');
+  };
 
   return (
     <div className="w-full space-y-2">
@@ -36,53 +45,75 @@ export function JobTitleStep() {
         <label className="text-xs font-inter font-medium text-gray-700" htmlFor="mainJobTitleId">
           Job Title
         </label>
-        <Select
-          value={selectedJobTitleId || ''}
-          onValueChange={(value) => {
-            setValue('mainJobTitleId', value, { shouldValidate: true });
-            trigger('mainJobTitleId');
-          }}
-          disabled={isLoadingJobTitles}
-        >
-          <SelectTrigger
-            id="mainJobTitleId"
-            aria-label="Job title"
-            aria-invalid={!!errors.mainJobTitleId}
-            aria-describedby={errors.mainJobTitleId ? 'jobTitle-error' : undefined}
-            className={cn(
-              'w-full h-10 font-inter text-sm',
-              errors.mainJobTitleId && 'border-red-500 focus:border-red-500',
-            )}
+        <div className="grid grid-cols-[1fr_auto] gap-2 items-start">
+          <Select
+            value={selectedJobTitleId ?? undefined}
+            onValueChange={(value) => {
+              setValue('mainJobTitleId', value, { shouldValidate: true });
+              void trigger('mainJobTitleId');
+            }}
+            disabled={isLoadingJobTitles}
           >
-            <SelectValue
-              placeholder={
-                isLoadingJobTitles
-                  ? 'Loading job titles...'
-                  : jobTitles.length === 0
-                    ? 'No job titles available'
-                    : 'Select your job title'
-              }
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {jobTitles.length === 0 ? (
-              <SelectItem value="" disabled>
-                {isLoadingJobTitles ? 'Loading...' : 'No job titles available'}
-              </SelectItem>
-            ) : (
-              jobTitles.map((jobTitle) => (
-                <SelectItem key={jobTitle.id} value={jobTitle.id} className="font-inter">
-                  <div>
-                    <span className="text-sm font-medium">{jobTitle.name}</span>
-                    {jobTitle.description && (
-                      <span className="text-xs text-gray-500 block">{jobTitle.description}</span>
-                    )}
+            <SelectTrigger
+              id="mainJobTitleId"
+              aria-label="Job title"
+              aria-invalid={!!errors.mainJobTitleId}
+              aria-describedby={errors.mainJobTitleId ? 'jobTitle-error' : undefined}
+              className={cn(
+                'w-full h-10 font-inter text-sm',
+                errors.mainJobTitleId && 'border-red-500 focus:border-red-500',
+              )}
+            >
+              <SelectValue asChild placeholder="Select your job title">
+                {selectedJobTitle ? (
+                  <div className="py-1.5">
+                    <span className="text-sm font-inter font-medium text-left block">
+                      {selectedJobTitle.name}
+                    </span>
                   </div>
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+                ) : (
+                  <span className="truncate">
+                    {isLoadingJobTitles
+                      ? 'Loading job titles...'
+                      : jobTitles.length === 0
+                        ? 'No job titles available'
+                        : 'Select your job title'}
+                  </span>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {jobTitles.length === 0 ? (
+                <div className="px-2 py-1.5 text-sm text-gray-500 text-center">
+                  {isLoadingJobTitles ? 'Loading...' : 'No job titles available'}
+                </div>
+              ) : (
+                jobTitles.map((jobTitle) => (
+                  <SelectItem key={jobTitle.id} value={jobTitle.id} className="font-inter">
+                    <div>
+                      <span className="text-sm font-medium">{jobTitle.name}</span>
+                      {jobTitle.description && (
+                        <span className="text-xs text-gray-500 block">{jobTitle.description}</span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+          {selectedJobTitleId && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleClear}
+              className="h-10 w-10 shrink-0"
+              aria-label="Clear selection"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         {errors.mainJobTitleId && (
           <p id="jobTitle-error" className="text-red-500 text-xs font-inter mt-0.5" role="alert">
             {errors.mainJobTitleId.message}

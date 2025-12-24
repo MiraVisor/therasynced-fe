@@ -169,10 +169,10 @@ export function PersonalDetailsStep() {
             Gender
           </label>
           <Select
-            value={watch('gender') || ''}
+            value={watch('gender') ?? undefined}
             onValueChange={(value) => {
               setValue('gender', value);
-              trigger('gender');
+              void trigger('gender');
             }}
           >
             <SelectTrigger

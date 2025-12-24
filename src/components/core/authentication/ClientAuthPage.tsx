@@ -30,16 +30,13 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
   const { mutate: signup, isPending: isSubmitting } = useSignUp();
   const { mutate: resendEmail } = useResendVerificationEmail();
 
-  // Show password reset success toast
+  // Clean up reset success parameter from URL if present
   useEffect(() => {
     const resetSuccess = searchParams.get('reset');
     if (resetSuccess === 'success' && currentView === 'sign-in') {
       const url = new URL(window.location.href);
       url.searchParams.delete('reset');
       router.replace(url.pathname + url.search, { scroll: false });
-      setTimeout(() => {
-        toast.success('Password reset successful! You can now sign in with your new password.');
-      }, 100);
     }
   }, [searchParams, currentView, router]);
 
@@ -142,8 +139,8 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
             {/* Footer - Toggle between sign in/sign up */}
             {(currentView === 'sign-in' || currentView === 'sign-up') && (
               <div className="mt-6 pt-4 border-t border-gray-200 flex-shrink-0">
-                <div className="text-center">
-                  <p className="text-xs font-inter text-gray-600 mb-2">
+                <div className="flex flex-row items-center justify-center gap-2 text-center">
+                  <p className="text-xs font-inter text-gray-600">
                     {currentView === 'sign-up'
                       ? 'Already have an account?'
                       : "Don't have an account?"}
@@ -161,14 +158,6 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
                     className="text-xs font-inter font-semibold text-primary hover:text-primary/80 transition-colors duration-200 inline-flex items-center gap-1"
                   >
                     {currentView === 'sign-up' ? 'Sign In' : 'Create Account'}
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
                   </button>
                 </div>
               </div>

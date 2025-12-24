@@ -13,11 +13,7 @@ import { CONSENT_INFO, getRequiredConsentsForRole } from '@/types/consent';
 import { SignupFormData } from '../MultiStepSignup';
 
 export function ConsentStep() {
-  const {
-    setValue,
-    watch: _watch,
-    formState: { errors },
-  } = useFormContext<SignupFormData>();
+  const { setValue, watch: _watch } = useFormContext<SignupFormData>();
   const { role } = useAuth();
 
   // Local state for consents during signup (user not authenticated yet)
@@ -82,41 +78,26 @@ export function ConsentStep() {
                   <>
                     I agree to the{' '}
                     <Link href="/terms" target="_blank" className="text-primary hover:underline">
-                      Terms of Service
+                      Terms of Service <span className="text-red-500">*</span>
                     </Link>
                   </>
                 ) : type === 'PRIVACY_POLICY' ? (
                   <>
                     I have read and agree to the{' '}
                     <Link href="/privacy" target="_blank" className="text-primary hover:underline">
-                      Privacy Policy
+                      Privacy Policy <span className="text-red-500">*</span>
                     </Link>
                   </>
                 ) : (
-                  info.description
+                  <>
+                    {info.description} <span className="text-red-500">*</span>
+                  </>
                 )}
               </Label>
             </div>
           );
         })}
       </div>
-
-      {/* Show form validation errors */}
-      {errors.termsConsent && (
-        <p className="text-red-500 text-xs font-inter mt-0.5" role="alert">
-          {errors.termsConsent.message}
-        </p>
-      )}
-      {errors.privacyConsent && (
-        <p className="text-red-500 text-xs font-inter mt-0.5" role="alert">
-          {errors.privacyConsent.message}
-        </p>
-      )}
-      {errors.gdprConsent && (
-        <p className="text-red-500 text-xs font-inter mt-0.5" role="alert">
-          {errors.gdprConsent.message}
-        </p>
-      )}
     </div>
   );
 }

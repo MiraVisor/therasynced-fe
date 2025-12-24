@@ -359,8 +359,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   // Only show step indicator after role selection (step 1)
   const showStepIndicator = currentStep > 1;
   const displayStep = currentStep - 1; // Step number to display (starts from 1 after role selection)
-  const totalSteps = selectedRole === 'patient' ? 4 : selectedRole === 'freelancer' ? 4 : 2; // Total steps after role selection (account setup + personal details + consent for patient, account setup + professional info + consent for freelancer)
   const stepsToShow = steps.filter((step) => step.id > 1); // Steps to show in progress bar (exclude role selection)
+  const totalSteps = stepsToShow.length; // Total steps after role selection (should be 3 for both patient and freelancer)
 
   return (
     <FormProvider {...formMethods}>

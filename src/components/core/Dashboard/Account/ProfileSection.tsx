@@ -295,7 +295,7 @@ export function ProfileSection() {
               Gender
             </Label>
             <Select
-              value={formData.gender || ''}
+              value={formData.gender ?? undefined}
               onValueChange={(value) => handleInputChange('gender', value)}
               disabled={((initialLoading || loading) && !profileData) || isPersonalInfoLoading}
             >
@@ -438,7 +438,7 @@ export function ProfileSection() {
                 Job Title
               </Label>
               <Select
-                value={formData.mainJobTitle?.id || ''}
+                value={formData.mainJobTitle?.id ?? undefined}
                 onValueChange={(value) => {
                   if (value === 'clear') {
                     // Clear selection

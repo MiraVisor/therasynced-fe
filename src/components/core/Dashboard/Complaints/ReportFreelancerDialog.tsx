@@ -123,7 +123,7 @@ export const ReportFreelancerDialog = ({
               Category <span className="text-red-600 dark:text-red-400">*</span>
             </Label>
             <Select
-              value={watch('category')}
+              value={watch('category') ?? undefined}
               onValueChange={(value) => setValue('category', value)}
             >
               <SelectTrigger
