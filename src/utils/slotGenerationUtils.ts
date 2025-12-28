@@ -29,10 +29,10 @@ function calculateSlotTimes(
   const [endHour, endMinute] = endTime.split(':').map(Number);
 
   const dayStart = new Date(date);
-  dayStart.setHours(startHour, startMinute, 0, 0);
+  dayStart.setHours(startHour ?? 0, startMinute ?? 0, 0, 0);
 
   const dayEnd = new Date(date);
-  dayEnd.setHours(endHour, endMinute, 0, 0);
+  dayEnd.setHours(endHour ?? 0, endMinute ?? 0, 0, 0);
 
   let currentTime = new Date(dayStart);
 
@@ -78,10 +78,10 @@ function isSlotBlocked(slotStart: Date, slotEnd: Date, blockedPeriods: BlockedPe
     const [blockedEndHour, blockedEndMinute] = blocked.endTime.split(':').map(Number);
 
     const blockedStart = new Date(blockedDate);
-    blockedStart.setHours(blockedStartHour, blockedStartMinute, 0, 0);
+    blockedStart.setHours(blockedStartHour ?? 0, blockedStartMinute ?? 0, 0, 0);
 
     const blockedEnd = new Date(blockedDate);
-    blockedEnd.setHours(blockedEndHour, blockedEndMinute, 0, 0);
+    blockedEnd.setHours(blockedEndHour ?? 0, blockedEndMinute ?? 0, 0, 0);
 
     // Check for overlap: slot overlaps if it starts before blocked ends and ends after blocked starts
     return slotStart < blockedEnd && slotEnd > blockedStart;
@@ -111,7 +111,13 @@ function getDayConfig(date: Date, template: WeeklyAvailabilityTemplate) {
     'saturday',
     'sunday',
   ] as const;
-  return template.days[dayNames[dayIndex]];
+  return (
+    template.days[dayNames[dayIndex] as keyof typeof template.days] ?? {
+      enabled: false,
+      startTime: '09:00',
+      endTime: '17:00',
+    }
+  );
 }
 
 /**
@@ -172,10 +178,10 @@ function isSlotInBreakTime(
   slotDate.setHours(0, 0, 0, 0);
 
   const breakStart = new Date(slotDate);
-  breakStart.setHours(breakStartHour, breakStartMinute, 0, 0);
+  breakStart.setHours(breakStartHour ?? 0, breakStartMinute ?? 0, 0, 0);
 
   const breakEnd = new Date(slotDate);
-  breakEnd.setHours(breakEndHour, breakEndMinute, 0, 0);
+  breakEnd.setHours(breakEndHour ?? 0, breakEndMinute ?? 0, 0, 0);
 
   // Check if slot overlaps with break time
   return slotStart < breakEnd && slotEnd > breakStart;
@@ -193,10 +199,10 @@ function calculateSlotTimesWithBreakRange(
   const [endHour, endMinute] = config.endTime.split(':').map(Number);
 
   const dayStart = new Date(date);
-  dayStart.setHours(startHour, startMinute, 0, 0);
+  dayStart.setHours(startHour ?? 0, startMinute ?? 0, 0, 0);
 
   const dayEnd = new Date(date);
-  dayEnd.setHours(endHour, endMinute, 0, 0);
+  dayEnd.setHours(endHour ?? 0, endMinute ?? 0, 0, 0);
 
   let currentTime = new Date(dayStart);
 
@@ -215,7 +221,7 @@ function calculateSlotTimesWithBreakRange(
         // Move to after break time
         const [breakTillHour, breakTillMinute] = config.breakTill.split(':').map(Number);
         const breakTillTime = new Date(date);
-        breakTillTime.setHours(breakTillHour, breakTillMinute, 0, 0);
+        breakTillTime.setHours(breakTillHour ?? 0, breakTillMinute ?? 0, 0, 0);
         currentTime = new Date(breakTillTime);
         continue;
       }

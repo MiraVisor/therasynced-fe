@@ -15,7 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
 import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import type { Booking } from '@/types/booking';
-import type { Slot } from '@/types/slot';
 
 interface RescheduleBookingProps {
   bookingId: string;
@@ -97,7 +96,7 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
     );
   };
 
-  const selectedSlotData = slots.find((slot: Slot) => slot.id === selectedTimeSlot);
+  const selectedSlotData = slots.find((slot) => slot.id === selectedTimeSlot);
   const freelancer = currentBooking?.slot?.freelancer;
 
   const getDateDisplay = (date: Date) => {
@@ -274,7 +273,7 @@ const RescheduleBooking = ({ freelancerId, currentBooking }: RescheduleBookingPr
                 <CardContent>
                   {slots.length > 0 ? (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                      {slots.map((slot: Slot) => (
+                      {slots.map((slot) => (
                         <Button
                           key={slot.id}
                           variant={selectedTimeSlot === slot.id ? 'default' : 'outline'}

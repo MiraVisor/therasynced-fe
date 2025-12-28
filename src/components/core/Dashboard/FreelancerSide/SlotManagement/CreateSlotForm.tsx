@@ -122,7 +122,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
   const [formData, setFormData] = useState<CreateSlotDto>({
     locationType: LocationType.HOME,
     locationId: undefined,
-    basePrice: undefined, // Optional - backend calculates automatically
+    basePrice: 0,
     duration: 60,
     slots: [],
     serviceCategoryIds: [],

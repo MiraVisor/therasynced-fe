@@ -151,10 +151,12 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
     // Validate blocked periods don't overlap
     for (let i = 0; i < template.blockedPeriods.length; i++) {
       const bp1 = template.blockedPeriods[i];
+      if (!bp1) continue;
       for (let j = i + 1; j < template.blockedPeriods.length; j++) {
         const bp2 = template.blockedPeriods[j];
+        if (!bp2) continue;
         if (
-          bp1.date.toDateString() === bp2.date.toDateString() &&
+          bp1.date?.toDateString() === bp2.date?.toDateString() &&
           bp1.startTime < bp2.endTime &&
           bp1.endTime > bp2.startTime
         ) {

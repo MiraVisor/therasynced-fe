@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useFreelancerPricing, useUpdateServicePricing } from '@/hooks/queries/usePricing';
 import { useServiceCategories } from '@/hooks/queries/useServiceCategories';
-import type { ServicePricing, UpdateServicePricingDto } from '@/types/pricing';
+import { UpdateServicePricingDto } from '@/types';
 
 export const ServicePricingSection = () => {
   const { data: categories = [], isLoading: isLoadingCategories } = useServiceCategories();
@@ -56,16 +56,6 @@ export const ServicePricingSection = () => {
       });
       setServicePrices(prices);
     }
-  }, [pricing]);
-
-  // Create a map of service pricing for quick lookup (using categoryId as key)
-  const pricingMap = useMemo(() => {
-    const map = new Map<string, ServicePricing>();
-    pricing?.servicePricing.forEach((sp) => {
-      // serviceId in response is actually the categoryId
-      map.set(sp.serviceId, sp);
-    });
-    return map;
   }, [pricing]);
 
   const handlePriceChange = (categoryId: string, value: string) => {

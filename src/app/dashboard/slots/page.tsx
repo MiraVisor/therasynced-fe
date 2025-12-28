@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -21,7 +20,6 @@ import { useAuth } from '@/hooks/useAuthZustand';
 import { Slot } from '@/types/types';
 
 const SlotsPage = () => {
-  const router = useRouter();
   const { role } = useAuth();
 
   // Use React Query hooks
@@ -30,10 +28,6 @@ const SlotsPage = () => {
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  const handleSlotClick = (slot: Slot) => {
-    router.push(`/dashboard/slots/${slot.id}`);
-  };
 
   const handleDeleteFromDialog = (slotId: string) => {
     setShowDetailsDialog(false);

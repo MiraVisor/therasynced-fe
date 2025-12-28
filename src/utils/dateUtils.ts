@@ -16,5 +16,5 @@ export function formatDateForAPI(date: Date): string {
  */
 export function getDayNameFromDate(date: Date): string {
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  return dayNames[date.getDay()];
+  return dayNames[date.getDay()] ?? 'Invalid day';
 }

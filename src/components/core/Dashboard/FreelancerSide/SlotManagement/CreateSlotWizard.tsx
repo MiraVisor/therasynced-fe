@@ -67,6 +67,12 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
     setConfigurations((prev) => ({
       ...prev,
       [day]: {
+        day,
+        startTime: '09:00',
+        endTime: '17:00',
+        slotDuration: 60,
+        breakFrom: '',
+        breakTill: '',
         ...prev[day],
         ...updates,
       },
@@ -126,7 +132,9 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
     if (!validateStep2()) return;
 
     // Convert configurations to array
-    const dayConfigs: DaySlotConfiguration[] = selectedDays.map((day) => configurations[day]);
+    const dayConfigs: DaySlotConfiguration[] = selectedDays
+      .map((day) => configurations[day])
+      .filter((config): config is DaySlotConfiguration => config !== undefined);
 
     // Generate slots for 3 months ahead
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });

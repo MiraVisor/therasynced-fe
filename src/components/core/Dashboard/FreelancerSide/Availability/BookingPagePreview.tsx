@@ -6,9 +6,8 @@ import { useMemo, useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { useMySlots } from '@/hooks/queries';
 import { useBlockedDates } from '@/hooks/queries/useAvailability';
-import { useProfile } from '@/hooks/queries/useProfile';
-import { useMySlots } from '@/hooks/queries/useSlots';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
 import type { Slot } from '@/types/types';
 import { getDayNameFromDate } from '@/utils/dateUtils';
@@ -20,7 +19,6 @@ import { getMaxDaysForTier, getTierFromSubscription } from '@/utils/tierUtils';
  * Applies tier filtering and blocked dates filtering
  */
 export const BookingPagePreview = () => {
-  const { data: profile } = useProfile();
   const { data: currentSubscription } = useMySubscription();
   const { data: blockedDates = [] } = useBlockedDates();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -47,7 +45,7 @@ export const BookingPagePreview = () => {
 
     // Get unique days from slots
     const dayNames = new Set<string>();
-    allSlots.forEach((slot) => {
+    allSlots.forEach((slot: Slot) => {
       const dayName = getDayNameFromDate(new Date(slot.startTime));
       dayNames.add(dayName);
     });
@@ -68,7 +66,7 @@ export const BookingPagePreview = () => {
     }
 
     // Filter slots by allowed days and blocked dates
-    return allSlots.filter((slot) => {
+    return allSlots.filter((slot: Slot) => {
       const slotDate = new Date(slot.startTime);
       const dayName = getDayNameFromDate(slotDate);
       const dateString = formatDateForAPI(slotDate);
@@ -86,7 +84,7 @@ export const BookingPagePreview = () => {
   // Group slots by date
   const slotsByDate = useMemo(() => {
     const grouped: Record<string, Slot[]> = {};
-    filteredSlots.forEach((slot) => {
+    filteredSlots.forEach((slot: Slot) => {
       const dateString = formatDateForAPI(new Date(slot.startTime));
       if (!grouped[dateString]) {
         grouped[dateString] = [];
@@ -151,7 +149,7 @@ export const BookingPagePreview = () => {
               modifiers={{
                 hasSlots: Array.from(datesWithSlots).map((d) => {
                   const [year, month, day] = d.split('-').map(Number);
-                  return new Date(year, month - 1, day);
+                  return new Date(year ?? 0, month ?? 0, day ?? 0);
                 }),
               }}
               modifiersClassNames={{

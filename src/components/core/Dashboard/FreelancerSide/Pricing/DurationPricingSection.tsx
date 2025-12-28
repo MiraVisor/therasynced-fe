@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useFreelancerPricing, useUpdateDurationPricing } from '@/hooks/queries/usePricing';
+import { UpdateDurationPricingDto } from '@/types';
 
 const DEFAULT_DURATIONS = [30, 45, 60, 90, 120];
 
@@ -99,9 +100,10 @@ export const DurationPricingSection = () => {
 
   const hasChanges = useMemo(() => {
     if (!pricing?.durationPricing) {
-      return Object.keys(durationPrices).some(
-        (d) => durationPrices[parseInt(d)] !== undefined && durationPrices[parseInt(d)] > 0,
-      );
+      return Object.keys(durationPrices).some((d) => {
+        const price = durationPrices[parseInt(d)];
+        return price !== undefined && price > 0;
+      });
     }
 
     // Check for changes in existing durations

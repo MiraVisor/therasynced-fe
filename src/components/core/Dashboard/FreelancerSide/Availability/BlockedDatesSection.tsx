@@ -23,10 +23,6 @@ export const BlockedDatesSection = () => {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [reason, setReason] = useState('');
 
-  const blockedDatesSet = new Set(
-    blockedDates.map((bd) => format(new Date(bd.date), 'yyyy-MM-dd')),
-  );
-
   const handleBlockDates = () => {
     if (selectedDates.length === 0) {
       return;
@@ -49,11 +45,6 @@ export const BlockedDatesSection = () => {
 
   const handleUnblockDate = (dateString: string) => {
     unblockDates({ dates: [dateString] });
-  };
-
-  const isDateBlocked = (date: Date) => {
-    const dateString = format(date, 'yyyy-MM-dd');
-    return blockedDatesSet.has(dateString);
   };
 
   if (isLoading) {
