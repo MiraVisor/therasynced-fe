@@ -75,7 +75,7 @@ export interface SlotStats {
 }
 
 export interface CreateSlotDto {
-  locationType?: LocationType; // Optional - acts as default fallback
+  locationType?: LocationType; // Optional - acts as default fallback for slots without explicit locationType
   locationId?: string;
   basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
@@ -83,7 +83,7 @@ export interface CreateSlotDto {
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType?: LocationType; // Optional - per-slot location override
+    locationType: LocationType; // Required - must be HOME or CLINIC
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
@@ -92,7 +92,7 @@ export interface CreateSlotDto {
 
 // Backend DTOs matching the controller structure
 export interface CreateSlotsDto {
-  locationType?: LocationType; // Optional - acts as default fallback
+  locationType?: LocationType; // Optional - acts as default fallback for slots without explicit locationType
   locationId?: string; // Added to support location selection
   basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
@@ -100,7 +100,7 @@ export interface CreateSlotsDto {
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType?: LocationType; // Optional - per-slot location override
+    locationType: LocationType; // Required - must be HOME or CLINIC
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs

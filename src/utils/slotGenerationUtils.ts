@@ -280,3 +280,16 @@ export function generateSlotsFromDayConfigurations(
 
   return allSlots;
 }
+
+/**
+ * Filter out slots that are in the past
+ * @param slots Array of slots with startTime and endTime
+ * @returns Array of slots that are in the future
+ */
+export function filterPastSlots<T extends { startTime: string; endTime: string }>(slots: T[]): T[] {
+  const now = new Date();
+  return slots.filter((slot) => {
+    const slotStart = new Date(slot.startTime);
+    return slotStart > now;
+  });
+}

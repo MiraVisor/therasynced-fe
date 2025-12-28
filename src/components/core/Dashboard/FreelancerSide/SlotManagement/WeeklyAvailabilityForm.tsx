@@ -23,7 +23,7 @@ import { useCreateSlot } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
 import type { BlockedPeriod, WeeklyAvailabilityTemplate } from '@/types/slot';
 import { CreateSlotsDto, LocationType } from '@/types/types';
-import { generateSlotsFromTemplate } from '@/utils/slotGenerationUtils';
+import { filterPastSlots, generateSlotsFromTemplate } from '@/utils/slotGenerationUtils';
 
 interface WeeklyAvailabilityFormProps {
   onSuccess?: () => void;
@@ -172,6 +172,12 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate locationType is set (required by backend)
+    if (!formData.locationType) {
+      toast.error('Please select a location type (HOME or CLINIC)');
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
@@ -186,13 +192,34 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
     }
 
     // Convert to CreateSlotDto format
-    const slots = generatedSlots.map((slot) => ({
+    // locationType is required at slot level - include it in each slot
+    const allSlots = generatedSlots.map((slot) => ({
       startTime: slot.startTime,
       endTime: slot.endTime,
+      locationType: formData.locationType, // Required at slot level - validated above
     }));
 
+    // Filter out past slots
+    const slots = filterPastSlots(allSlots);
+    const pastSlotsCount = allSlots.length - slots.length;
+
+    if (slots.length === 0) {
+      toast.error(
+        pastSlotsCount > 0
+          ? 'All generated slots are in the past. Please adjust your configuration to include future dates.'
+          : 'No slots could be generated from the current configuration',
+      );
+      return;
+    }
+
+    if (pastSlotsCount > 0) {
+      toast.info(
+        `Filtered out ${pastSlotsCount} past slot${pastSlotsCount !== 1 ? 's' : ''}. Creating ${slots.length} future slot${slots.length !== 1 ? 's' : ''}.`,
+      );
+    }
+
     const submitData: CreateSlotsDto = {
-      locationType: formData.locationType,
+      locationType: formData.locationType, // Keep for backward compatibility
       basePrice: formData.basePrice,
       duration: template.slotDuration,
       slots,

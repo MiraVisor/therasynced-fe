@@ -6,12 +6,20 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useCreateSlot } from '@/hooks/queries/useSlots';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
 import type { DaySlotConfiguration } from '@/types/slot';
-import { CreateSlotsDto } from '@/types/types';
-import { generateSlotsFromDayConfigurations } from '@/utils/slotGenerationUtils';
+import { CreateSlotsDto, LocationType } from '@/types/types';
+import { filterPastSlots, generateSlotsFromDayConfigurations } from '@/utils/slotGenerationUtils';
 import { getTierFromSubscription } from '@/utils/tierUtils';
 
 import { DayConfigurationStep } from './DayConfigurationStep';
@@ -25,6 +33,7 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [configurations, setConfigurations] = useState<Record<string, DaySlotConfiguration>>({});
+  const [locationType, setLocationType] = useState<LocationType>(LocationType.HOME);
   const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
   const { data: currentSubscription } = useMySubscription();
   const tier = getTierFromSubscription(currentSubscription || null);
@@ -130,15 +139,37 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
     }
 
     // Convert to CreateSlotsDto format
-    const slots = generatedSlots.map((slot) => ({
+    // locationType is required at slot level - include it in each slot
+    const allSlots = generatedSlots.map((slot) => ({
       startTime: slot.startTime,
       endTime: slot.endTime,
+      locationType: locationType, // Required at slot level
     }));
+
+    // Filter out past slots
+    const slots = filterPastSlots(allSlots);
+    const pastSlotsCount = allSlots.length - slots.length;
+
+    if (slots.length === 0) {
+      toast.error(
+        pastSlotsCount > 0
+          ? 'All generated slots are in the past. Please adjust your configuration to include future dates.'
+          : 'No slots could be generated from the current configuration',
+      );
+      return;
+    }
+
+    if (pastSlotsCount > 0) {
+      toast.info(
+        `Filtered out ${pastSlotsCount} past slot${pastSlotsCount !== 1 ? 's' : ''}. Creating ${slots.length} future slot${slots.length !== 1 ? 's' : ''}.`,
+      );
+    }
 
     // Use the first day's slot duration as default (they can vary per day, but API expects one duration)
     const defaultDuration = dayConfigs[0]?.slotDuration || 60;
 
     const submitData: CreateSlotsDto = {
+      locationType: locationType, // Keep for backward compatibility
       duration: defaultDuration,
       slots,
     };
@@ -169,6 +200,32 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Global Settings - Location Type */}
+      <div className="p-4 border rounded-lg bg-muted/30">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium text-charcoal whitespace-nowrap">
+              Location Type:
+            </Label>
+            <Select
+              value={locationType}
+              onValueChange={(value) => setLocationType(value as LocationType)}
+            >
+              <SelectTrigger className="h-9 w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={LocationType.HOME}>Home Visit</SelectItem>
+                <SelectItem value={LocationType.CLINIC}>Clinic</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            This location type will be applied to all generated slots
+          </p>
+        </div>
+      </div>
+
       {/* Progress Indicator */}
       <div className="flex items-center justify-between pb-6 border-b">
         <div className="flex items-center gap-3">

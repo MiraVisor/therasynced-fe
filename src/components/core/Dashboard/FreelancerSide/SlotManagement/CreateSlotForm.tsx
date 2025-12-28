@@ -24,6 +24,7 @@ import { useCreateSlot } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
 import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
+import { filterPastSlots } from '@/utils/slotGenerationUtils';
 
 interface CreateSlotFormProps {
   onSuccess?: () => void;
@@ -281,9 +282,13 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       newErrors.price = 'All manually provided prices must be greater than 0';
     }
 
-    const hasLocation = formData.locationType || slotEntries.some((entry) => entry.locationType);
-    if (!hasLocation) {
-      newErrors.slots = 'Please specify a location type';
+    // Validate that every slot has a locationType (required by backend)
+    // Each slot must have either its own locationType or use the form default
+    const slotsWithoutLocation = slotEntries.filter(
+      (entry) => !entry.locationType && !formData.locationType,
+    );
+    if (slotsWithoutLocation.length > 0 || !formData.locationType) {
+      newErrors.slots = 'Please specify a location type (HOME or CLINIC)';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -293,7 +298,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
 
     setErrors({});
 
-    const slots = slotEntries.map((entry) => {
+    const allSlots = slotEntries.map((entry) => {
       if (!entry.date || !entry.startTime) {
         throw new Error('Invalid slot entry');
       }
@@ -323,15 +328,40 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
         0,
       );
 
+      // locationType is required at slot level - use entry's locationType or fall back to form default
+      const slotLocationType = entry.locationType || formData.locationType;
+      if (!slotLocationType) {
+        throw new Error('Location type is required for all slots');
+      }
+
       return {
         startTime: localStartDate.toISOString(),
         endTime: localEndDate.toISOString(),
+        locationType: slotLocationType, // Required - always include locationType
         ...(entry.basePrice !== undefined && entry.basePrice > 0 && { basePrice: entry.basePrice }),
-        ...(entry.locationType && { locationType: entry.locationType }),
         ...(entry.serviceCategoryIds &&
           entry.serviceCategoryIds.length > 0 && { serviceCategoryIds: entry.serviceCategoryIds }),
       };
     });
+
+    // Filter out past slots
+    const slots = filterPastSlots(allSlots);
+    const pastSlotsCount = allSlots.length - slots.length;
+
+    if (slots.length === 0) {
+      toast.error(
+        pastSlotsCount > 0
+          ? 'All selected slots are in the past. Please select future dates and times.'
+          : 'No valid slots to create',
+      );
+      return;
+    }
+
+    if (pastSlotsCount > 0) {
+      toast.info(
+        `Filtered out ${pastSlotsCount} past slot${pastSlotsCount !== 1 ? 's' : ''}. Creating ${slots.length} future slot${slots.length !== 1 ? 's' : ''}.`,
+      );
+    }
 
     const submitData: CreateSlotDto = {
       ...formData,

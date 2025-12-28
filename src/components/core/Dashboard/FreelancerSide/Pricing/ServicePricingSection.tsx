@@ -1,6 +1,6 @@
 'use client';
 
-import { Save } from 'lucide-react';
+import { ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,50 +9,78 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useFreelancerPricing, useUpdateServicePricing } from '@/hooks/queries/usePricing';
-import { useMyServices } from '@/hooks/queries/useServices';
+import { useServiceCategories } from '@/hooks/queries/useServiceCategories';
 import type { ServicePricing, UpdateServicePricingDto } from '@/types/pricing';
 
 export const ServicePricingSection = () => {
-  const { data: services = [], isLoading: isLoadingServices } = useMyServices();
+  const { data: categories = [], isLoading: isLoadingCategories } = useServiceCategories();
   const { data: pricing, isLoading: isLoadingPricing } = useFreelancerPricing();
   const { mutate: updatePricing, isPending: isSaving } = useUpdateServicePricing();
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Group categories by job title - show all categories as returned by backend
+  const groupedCategories = useMemo(() => {
+    const groups = new Map<string, typeof categories>();
+    categories.forEach((category) => {
+      const jobTitleKey = category.jobTitle?.id || 'other';
+      if (!groups.has(jobTitleKey)) {
+        groups.set(jobTitleKey, []);
+      }
+      groups.get(jobTitleKey)!.push(category);
+    });
+    return groups;
+  }, [categories]);
+
+  const toggleGroup = (jobTitleId: string) => {
+    setExpandedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(jobTitleId)) {
+        newSet.delete(jobTitleId);
+      } else {
+        newSet.add(jobTitleId);
+      }
+      return newSet;
+    });
+  };
 
   // Local state for prices
   const [servicePrices, setServicePrices] = useState<Record<string, number>>({});
 
-  // Initialize prices from API or set to empty
+  // Initialize prices from API - serviceId in response is actually categoryId
   useEffect(() => {
     if (pricing?.servicePricing) {
       const prices: Record<string, number> = {};
       pricing.servicePricing.forEach((sp) => {
+        // serviceId in response is actually the categoryId
         prices[sp.serviceId] = sp.price;
       });
       setServicePrices(prices);
     }
   }, [pricing]);
 
-  // Create a map of service pricing for quick lookup
+  // Create a map of service pricing for quick lookup (using categoryId as key)
   const pricingMap = useMemo(() => {
     const map = new Map<string, ServicePricing>();
     pricing?.servicePricing.forEach((sp) => {
+      // serviceId in response is actually the categoryId
       map.set(sp.serviceId, sp);
     });
     return map;
   }, [pricing]);
 
-  const handlePriceChange = (serviceId: string, value: string) => {
+  const handlePriceChange = (categoryId: string, value: string) => {
     const price = value === '' ? 0 : parseFloat(value) || 0;
     setServicePrices((prev) => ({
       ...prev,
-      [serviceId]: price,
+      [categoryId]: price,
     }));
   };
 
   const handleSave = () => {
     const pricingUpdates: UpdateServicePricingDto[] = Object.entries(servicePrices)
       .filter(([_, price]) => price > 0)
-      .map(([serviceId, price]) => ({
-        serviceCategoryId: serviceId, // API expects serviceCategoryId
+      .map(([categoryId, price]) => ({
+        serviceCategoryId: categoryId,
         price,
       }));
 
@@ -72,9 +100,9 @@ export const ServicePricingSection = () => {
       }
     }
 
-    // Check for new services with prices
-    for (const [serviceId, price] of Object.entries(servicePrices)) {
-      if (price > 0 && !pricing.servicePricing.find((sp) => sp.serviceId === serviceId)) {
+    // Check for new categories with prices
+    for (const [categoryId, price] of Object.entries(servicePrices)) {
+      if (price > 0 && !pricing.servicePricing.find((sp) => sp.serviceId === categoryId)) {
         return true;
       }
     }
@@ -82,12 +110,12 @@ export const ServicePricingSection = () => {
     return false;
   }, [servicePrices, pricing]);
 
-  if (isLoadingServices || isLoadingPricing) {
+  if (isLoadingCategories || isLoadingPricing) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Service Pricing</CardTitle>
-          <CardDescription>Set prices for each service you offer</CardDescription>
+          <CardDescription>Set prices for each service category you offer</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -98,17 +126,17 @@ export const ServicePricingSection = () => {
     );
   }
 
-  if (services.length === 0) {
+  if (categories.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Service Pricing</CardTitle>
-          <CardDescription>Set prices for each service you offer</CardDescription>
+          <CardDescription>Set prices for each service category you offer</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">You don't have any services yet.</p>
-            <p className="text-xs mt-2">Create services to set their pricing.</p>
+            <p className="text-sm">No service categories available.</p>
+            <p className="text-xs mt-2">Please contact support if you believe this is an error.</p>
           </div>
         </CardContent>
       </Card>
@@ -121,7 +149,7 @@ export const ServicePricingSection = () => {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Service Pricing</CardTitle>
-            <CardDescription>Set prices for each service you offer</CardDescription>
+            <CardDescription>Set prices for each service category you offer</CardDescription>
           </div>
           <Button onClick={handleSave} disabled={!hasChanges || isSaving} size="sm" className="h-9">
             {isSaving ? (
@@ -140,45 +168,77 @@ export const ServicePricingSection = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {services.map((service) => {
-            const currentPrice = servicePrices[service.id] || 0;
-            const existingPricing = pricingMap.get(service.id);
+          {Array.from(groupedCategories.entries()).map(([jobTitleId, categoryList]) => {
+            const jobTitle = categoryList[0]?.jobTitle;
+            const isExpanded = expandedGroups.has(jobTitleId);
 
             return (
-              <div
-                key={service.id}
-                className="flex items-center gap-4 p-4 border rounded-lg bg-white"
-              >
-                <div className="flex-1">
-                  <Label className="text-sm font-semibold text-charcoal">{service.name}</Label>
-                  {service.description && (
-                    <p className="text-xs text-muted-foreground mt-1">{service.description}</p>
+              <div key={jobTitleId} className="border rounded-lg bg-white">
+                <button
+                  className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors rounded-t-lg"
+                  onClick={() => toggleGroup(jobTitleId)}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-charcoal">
+                      {jobTitle?.name || 'Other Categories'}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      ({categoryList.length} {categoryList.length === 1 ? 'category' : 'categories'}
+                      )
+                    </span>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-500" />
                   )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">EUR</span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={currentPrice > 0 ? currentPrice : ''}
-                    onChange={(e) => handlePriceChange(service.id, e.target.value)}
-                    className="w-32"
-                  />
-                  {existingPricing && currentPrice === existingPricing.price && (
-                    <span className="text-xs text-muted-foreground">(saved)</span>
-                  )}
-                </div>
+                </button>
+                {isExpanded && (
+                  <div className="px-4 pb-4 space-y-3 pt-2">
+                    {categoryList.map((category) => {
+                      const currentPrice = servicePrices[category.id] || 0;
+
+                      return (
+                        <div
+                          key={category.id}
+                          className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50"
+                        >
+                          <div className="flex-1">
+                            <Label className="text-sm font-semibold text-charcoal">
+                              {category.name}
+                            </Label>
+                            {category.description && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">EUR</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="0.00"
+                              value={currentPrice > 0 ? currentPrice : ''}
+                              onChange={(e) => handlePriceChange(category.id, e.target.value)}
+                              className="w-32"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
-        {services.length > 0 && (
+        {categories.length > 0 && (
           <div className="mt-4 p-3 bg-muted/50 rounded-lg">
             <p className="text-xs text-muted-foreground">
-              Set a price for each service. Prices are in EUR. Leave empty or set to 0 if you don't
-              want to charge for a specific service.
+              Set a price for each service category. Prices are in EUR. Leave empty or set to 0 if
+              you don't want to charge for a specific category.
             </p>
           </div>
         )}

@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useFreelancerPricing, useUpdateDurationPricing } from '@/hooks/queries/usePricing';
-import type { DurationPricing, UpdateDurationPricingDto } from '@/types/pricing';
 
 const DEFAULT_DURATIONS = [30, 45, 60, 90, 120];
 
@@ -40,13 +39,6 @@ export const DurationPricingSection = () => {
   }, [pricing]);
 
   // Create a map of duration pricing for quick lookup
-  const pricingMap = useMemo(() => {
-    const map = new Map<number, DurationPricing>();
-    pricing?.durationPricing.forEach((dp) => {
-      map.set(dp.duration, dp);
-    });
-    return map;
-  }, [pricing]);
 
   const handlePriceChange = (duration: number, value: string) => {
     const price = value === '' ? 0 : parseFloat(value) || 0;
@@ -107,7 +99,9 @@ export const DurationPricingSection = () => {
 
   const hasChanges = useMemo(() => {
     if (!pricing?.durationPricing) {
-      return Object.keys(durationPrices).some((d) => durationPrices[parseInt(d)] > 0);
+      return Object.keys(durationPrices).some(
+        (d) => durationPrices[parseInt(d)] !== undefined && durationPrices[parseInt(d)] > 0,
+      );
     }
 
     // Check for changes in existing durations
@@ -129,7 +123,12 @@ export const DurationPricingSection = () => {
     const currentDurations = new Set(
       Object.keys(durationPrices)
         .map((d) => parseInt(d))
-        .filter((d) => durationPrices[d] > 0),
+        .filter(
+          (d) =>
+            durationPrices[d] !== undefined &&
+            durationPrices[d] !== undefined &&
+            durationPrices[d] > 0,
+        ),
     );
     const savedDurations = new Set(pricing.durationPricing.map((dp) => dp.duration));
     if (currentDurations.size !== savedDurations.size) {
@@ -184,7 +183,6 @@ export const DurationPricingSection = () => {
         <div className="space-y-4">
           {allDurations.map((duration) => {
             const currentPrice = durationPrices[duration] || 0;
-            const existingPricing = pricingMap.get(duration);
             const isCustom = !DEFAULT_DURATIONS.includes(duration);
 
             return (
@@ -232,9 +230,6 @@ export const DurationPricingSection = () => {
                     onChange={(e) => handlePriceChange(duration, e.target.value)}
                     className="w-32"
                   />
-                  {existingPricing && currentPrice === existingPricing.price && (
-                    <span className="text-xs text-muted-foreground">(saved)</span>
-                  )}
                 </div>
               </div>
             );
