@@ -148,8 +148,12 @@ export const BookingPagePreview = () => {
               }}
               modifiers={{
                 hasSlots: Array.from(datesWithSlots).map((d) => {
-                  const [year, month, day] = d.split('-').map(Number);
-                  return new Date(year ?? 0, month ?? 0, day ?? 0);
+                  const [yearStr, monthStr, dayStr] = d.split('-');
+                  const year = Number(yearStr) || 0;
+                  const month = Number(monthStr) || 0;
+                  const day = Number(dayStr) || 0;
+                  // JavaScript Date months are 0-indexed (0-11), but parsed month is 1-indexed (1-12)
+                  return new Date(year, month - 1, day);
                 }),
               }}
               modifiersClassNames={{
