@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Calendar, MapPin, MessageCircle, RotateCcw, X } from 'lucide-react';
+import { Calendar, MapPin, MessageCircle, RotateCcw, Star, X } from 'lucide-react';
 
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { cn } from '@/lib/utils';
+import { hasRating } from '@/types/rating';
 import { Booking } from '@/types/types';
 
 interface BookingCardProps {
@@ -14,6 +15,7 @@ interface BookingCardProps {
   onMessage?: (booking: Booking) => void;
   onReschedule?: (booking: Booking) => void;
   onCancel?: (booking: Booking) => void;
+  onRate?: (booking: Booking) => void;
   cancellingBookingId?: string | null;
   onClick?: () => void;
 }
@@ -23,6 +25,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   onMessage,
   onReschedule,
   onCancel,
+  onRate,
   cancellingBookingId,
   onClick,
 }) => {
@@ -60,6 +63,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const canMessage = onMessage;
   const canReschedule = isUpcoming && onReschedule;
   const canCancel = isUpcoming && onCancel;
+  const canRate = booking.canBeRated === true && booking.hasRating === false && onRate;
+  const hasExistingRating = booking.hasRating === true && hasRating(booking.rating);
 
   return (
     <EnhancedCard variant="default" interactive onClick={onClick}>
@@ -120,8 +125,22 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 {/* Ratings Display */}
                 <div className="mb-2 space-y-2">
                   {/* Freelancer Overall Rating */}
-                  {freelancer?.averageRating && (
-                    <RatingDisplay rating={freelancer.averageRating} size="sm" showCount={false} />
+                  {(freelancer?.averageRating || freelancer?.cardInfo?.averageRating) && (
+                    <RatingDisplay
+                      rating={freelancer?.cardInfo?.averageRating ?? freelancer?.averageRating ?? 0}
+                      size="sm"
+                      showCount={true}
+                      reviewCount={freelancer?.cardInfo?.totalRatings ?? 0}
+                    />
+                  )}
+                  {/* Booking Specific Rating */}
+                  {hasExistingRating && booking.rating && (
+                    <div className="flex items-center gap-2 px-2 py-1 bg-primary/5 border border-primary/20 rounded-md">
+                      <span className="text-xs font-poppins font-medium text-primary">
+                        Your rating:
+                      </span>
+                      <RatingDisplay rating={booking.rating.rating} size="sm" showCount={false} />
+                    </div>
                   )}
                 </div>
               </div>
@@ -130,8 +149,22 @@ export const BookingCard: React.FC<BookingCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        {(canMessage || canReschedule || canCancel) && (
+        {(canMessage || canReschedule || canCancel || canRate) && (
           <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200">
+            {canRate && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs font-medium border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRate(booking);
+                }}
+              >
+                <Star className="h-3 w-3 mr-1" />
+                Rate Booking
+              </Button>
+            )}
             {canMessage && (
               <Button
                 variant="outline"

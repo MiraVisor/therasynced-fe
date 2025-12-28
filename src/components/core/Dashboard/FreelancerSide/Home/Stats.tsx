@@ -1,4 +1,10 @@
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { Sparkline } from '@/components/ui/sparkline';
+import { useProfile } from '@/hooks/queries/useProfile';
+import { useFreelancerRatings } from '@/hooks/queries/useRatings';
+import { cn } from '@/lib/utils';
 import { FreelancerDashboardOverview } from '@/types/types';
 
 interface StatsProps {
@@ -7,6 +13,14 @@ interface StatsProps {
 }
 
 const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
+  const { data: profileData } = useProfile();
+  const freelancerId = profileData?.id;
+  const { data: ratingsData } = useFreelancerRatings(freelancerId ?? null, {
+    page: 1,
+    limit: 1, // We only need the pagination total
+  });
+  const totalRatings = ratingsData?.pagination?.total ?? 0;
+
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
     return `EUR ${(revenueInCents / 100).toLocaleString('en-US', {
@@ -142,9 +156,79 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
         },
       ];
 
+  const ratingValue = dashboardData
+    ? parseFloat(dashboardData.clientRating.value)
+    : parseFloat(defaultData.clientRating.value);
+  const ratingTrend = dashboardData ? dashboardData.clientRating : defaultData.clientRating;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
       {cardsData.map((data, index) => {
+        // Render custom rating card for Client Rating
+        if (data.title === 'Client Rating') {
+          return (
+            <EnhancedCard
+              key={index}
+              variant="default"
+              interactive
+              onClick={() => {
+                // Navigate to details or show modal
+              }}
+              className="group"
+            >
+              <div className="p-6 space-y-4">
+                {/* Header with title */}
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1">
+                    <p className="text-sm font-inter font-medium text-muted-foreground">
+                      {data.title}
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                      <div className="flex items-center gap-2">
+                        <RatingDisplay
+                          rating={ratingValue}
+                          reviewCount={totalRatings}
+                          size="md"
+                          showCount={true}
+                        />
+                      </div>
+                      {ratingTrend.trend && (
+                        <div
+                          className={cn(
+                            'text-xs font-medium',
+                            ratingTrend.trend.isUp ? 'text-success' : 'text-error',
+                          )}
+                        >
+                          {ratingTrend.trend.isUp ? '+' : ''}
+                          {Math.abs(ratingTrend.trend.value).toFixed(1)}%
+                        </div>
+                      )}
+                    </div>
+                    {ratingTrend.trend?.label && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {ratingTrend.trend.label}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sparkline chart */}
+                {ratingTrend.sparklineData && ratingTrend.sparklineData.length > 0 && (
+                  <div className="pt-2">
+                    <Sparkline
+                      data={ratingTrend.sparklineData}
+                      color="#007745"
+                      width={100}
+                      height={30}
+                    />
+                  </div>
+                )}
+              </div>
+            </EnhancedCard>
+          );
+        }
+
+        // Render regular stat cards for others
         return (
           <EnhancedStatCard
             key={index}
