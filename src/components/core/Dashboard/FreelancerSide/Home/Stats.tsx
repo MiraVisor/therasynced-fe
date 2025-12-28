@@ -156,9 +156,10 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
         },
       ];
 
-  const ratingValue = dashboardData
-    ? parseFloat(dashboardData.clientRating.value)
-    : parseFloat(defaultData.clientRating.value);
+  const ratingValue =
+    dashboardData && typeof dashboardData.clientRating.value === 'number'
+      ? dashboardData.clientRating.value
+      : parseFloat(defaultData.clientRating.value) || 0;
   const ratingTrend = dashboardData ? dashboardData.clientRating : defaultData.clientRating;
 
   return (
@@ -186,28 +187,49 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
                     <div className="flex items-baseline gap-2">
                       <div className="flex items-center gap-2">
                         <RatingDisplay
-                          rating={ratingValue}
+                          rating={Number(ratingValue)}
                           reviewCount={totalRatings}
                           size="md"
                           showCount={true}
                         />
                       </div>
-                      {ratingTrend.trend && (
+                      {('trend' in ratingTrend ? ratingTrend.trend : null) && (
                         <div
                           className={cn(
                             'text-xs font-medium',
-                            ratingTrend.trend.isUp ? 'text-success' : 'text-error',
+                            'trend' in ratingTrend && ratingTrend.trend.isUp
+                              ? 'text-success'
+                              : 'text-error',
                           )}
                         >
-                          {ratingTrend.trend.isUp ? '+' : ''}
-                          {Math.abs(ratingTrend.trend.value).toFixed(1)}%
+                          {'trend' in ratingTrend && ratingTrend.trend.isUp ? '+' : ''}
+                          {Math.abs(
+                            'trend' in ratingTrend
+                              ? ratingTrend.trend.value
+                              : ratingTrend.trendPercentage,
+                          ).toFixed(1)}
+                          %
+                        </div>
+                      )}
+                      {!('trend' in ratingTrend) && (
+                        <div
+                          className={cn(
+                            'text-xs font-medium',
+                            ratingTrend.trendDirection === 'up' ? 'text-success' : 'text-error',
+                          )}
+                        >
+                          {ratingTrend.trendDirection === 'up' ? '+' : ''}
+                          {Math.abs(ratingTrend.trendPercentage).toFixed(1)}%
                         </div>
                       )}
                     </div>
-                    {ratingTrend.trend?.label && (
+                    {'trend' in ratingTrend && ratingTrend.trend?.label && (
                       <p className="text-xs text-muted-foreground mt-1">
                         {ratingTrend.trend.label}
                       </p>
+                    )}
+                    {!('trend' in ratingTrend) && (
+                      <p className="text-xs text-muted-foreground mt-1">from last month</p>
                     )}
                   </div>
                 </div>
