@@ -248,8 +248,14 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="bg-[#ffffff] overflow-hidden h-[calc(48px*9)] flex flex-col">
-        <Table className="h-full">
+      <div
+        className={`bg-[#ffffff] flex flex-col ${
+          table.getRowModel().rows?.length && !initialLoading
+            ? 'overflow-hidden min-h-[calc(48px*5)] max-h-[calc(48px*9)]'
+            : ''
+        }`}
+      >
+        <Table className={table.getRowModel().rows?.length && !initialLoading ? 'h-full' : ''}>
           <TableHeader className="bg-gray-100 rounded-none">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="bg-gray-100">
@@ -268,7 +274,9 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="overflow-y-auto">
+          <TableBody
+            className={table.getRowModel().rows?.length && !initialLoading ? 'overflow-y-auto' : ''}
+          >
             {initialLoading ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="p-4">
@@ -296,9 +304,9 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-[calc(48px*5)] text-center font-poppins font-medium text-[14px] text-table-row border-0"
+                  className="text-center font-poppins font-medium text-[14px] text-table-row border-0 py-8"
                 >
-                  <div className="flex items-center justify-center h-full">No results found.</div>
+                  <div className="flex items-center justify-center">No results found.</div>
                 </TableCell>
               </TableRow>
             )}

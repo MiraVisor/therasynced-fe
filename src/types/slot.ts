@@ -1,7 +1,6 @@
 /**
  * Slot-related types
  */
-import type { ServiceCategory } from './common';
 import type { LocationType } from './enums';
 import type { BookingRating } from './rating';
 import type { Service } from './service';
@@ -30,10 +29,18 @@ export interface Slot {
   reservedUntil?: string;
   notes?: string;
   availableServices?: Service[]; // Legacy: Services available for this slot
-  availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
+  availableServiceCategories?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    jobTitle: {
+      id: string;
+      name: string;
+    };
+  }>; // Service categories available for this slot (matches API response structure)
   booking?: {
     id: string;
-    status: string;
+    status: 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED' | 'COMPLETED';
     totalAmount: number;
     subtotalAmount?: number;
     clientAddress?: string | null;
@@ -46,16 +53,11 @@ export interface Slot {
     };
     discountAmount?: number;
     discountPercentage?: number;
-    services?: unknown[]; // Legacy: Services for backward compatibility
-    serviceCategories?: Array<{
+    serviceCategories: Array<{
       id: string;
       name: string;
       description?: string;
-      jobTitle?: {
-        id: string;
-        name: string;
-      };
-    }>; // Service categories booked for this appointment
+    }>; // Service categories booked for this appointment (required in API response)
     rating?: BookingRating | null; // The rating object if the booking has been rated
     createdAt: string;
     updatedAt: string;
@@ -69,7 +71,7 @@ export interface SlotStats {
   bookedSlots: number;
   availableSlots: number;
   revenue: number;
-  subscriptionInfo?: SubscriptionInfo;
+  subscriptionInfo: SubscriptionInfo;
 }
 
 export interface CreateSlotDto {
@@ -118,5 +120,42 @@ export interface UpdateSlotDto {
 
 export interface ReserveSlotDto {
   slotId: string;
-  reservedUntil: string;
+  reservedUntil?: string; // Optional: ISO 8601 datetime (defaults to 5 minutes)
+}
+
+export interface DayConfiguration {
+  enabled: boolean;
+  startTime: string; // Format: "HH:mm"
+  endTime: string; // Format: "HH:mm"
+}
+
+export interface BlockedPeriod {
+  id: string;
+  date: Date;
+  startTime: string; // Format: "HH:mm"
+  endTime: string; // Format: "HH:mm"
+}
+
+export interface DaySlotConfiguration {
+  day: string; // Day name: "monday", "tuesday", etc.
+  startTime: string; // Format: "HH:mm"
+  endTime: string; // Format: "HH:mm"
+  slotDuration: number; // minutes
+  breakFrom: string; // Format: "HH:mm"
+  breakTill: string; // Format: "HH:mm"
+}
+
+export interface WeeklyAvailabilityTemplate {
+  days: {
+    monday: DayConfiguration;
+    tuesday: DayConfiguration;
+    wednesday: DayConfiguration;
+    thursday: DayConfiguration;
+    friday: DayConfiguration;
+    saturday: DayConfiguration;
+    sunday: DayConfiguration;
+  };
+  slotDuration: number; // minutes
+  breakDuration: number; // minutes
+  blockedPeriods: BlockedPeriod[];
 }

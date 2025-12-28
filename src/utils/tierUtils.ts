@@ -1,6 +1,6 @@
 import { Circle, Crown, Star } from 'lucide-react';
 
-import { Expert, SubscriptionPlanType } from '@/types/types';
+import { Expert, PlanType, Subscription, SubscriptionPlanType } from '@/types/types';
 
 /**
  * Get color scheme for a tier
@@ -159,4 +159,31 @@ export const getCurrentFeaturedTierHourly = (): 'gold' | 'silver' | 'bronze' => 
   if (hour >= 0 && hour < 8) return 'gold';
   if (hour >= 8 && hour < 16) return 'silver';
   return 'bronze';
+};
+
+/**
+ * Get maximum number of days allowed for a tier
+ */
+export const getMaxDaysForTier = (tier: PlanType | null | undefined): number => {
+  if (!tier) return 0;
+  switch (tier) {
+    case 'BRONZE':
+      return 3;
+    case 'SILVER':
+      return 5;
+    case 'GOLD':
+      return 7;
+    default:
+      return 0;
+  }
+};
+
+/**
+ * Get tier from subscription
+ */
+export const getTierFromSubscription = (
+  subscription: Subscription | null | undefined,
+): PlanType | null => {
+  if (!subscription) return null;
+  return subscription.plan?.name || null;
 };

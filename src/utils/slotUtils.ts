@@ -36,7 +36,7 @@ export const isSlotAvailable = (slot: Slot | null | undefined): boolean => {
 };
 
 // Helper function to format date safely without timezone issues
-const formatDateForAPI = (date: Date): string => {
+export const formatDateForAPI = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
     date.getDate(),
   ).padStart(2, '0')}`;

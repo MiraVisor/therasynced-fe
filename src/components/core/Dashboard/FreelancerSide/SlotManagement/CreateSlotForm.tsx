@@ -121,7 +121,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
   const [formData, setFormData] = useState<CreateSlotDto>({
     locationType: LocationType.HOME,
     locationId: undefined,
-    basePrice: 50,
+    basePrice: undefined, // Optional - backend calculates automatically
     duration: 60,
     slots: [],
     serviceCategoryIds: [],
@@ -268,31 +268,17 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       }
     }
 
-    const hasDefaultPrice = formData.basePrice !== undefined && formData.basePrice > 0;
-    const slotsWithPrices = slotEntries.filter(
-      (entry) => entry.basePrice !== undefined && entry.basePrice > 0,
-    );
-    const slotsWithoutPrices = slotEntries.filter(
-      (entry) => entry.basePrice === undefined || entry.basePrice <= 0,
-    );
-
-    if (!hasDefaultPrice && slotsWithPrices.length === 0) {
-      newErrors.price = 'Please provide a default price or specify a price for each slot';
-    }
-
+    // Price validation removed - backend calculates pricing automatically from account-level settings
+    // Only validate if manually provided prices are positive (for manual override)
     if (formData.basePrice !== undefined && formData.basePrice <= 0) {
-      newErrors.price = 'Default price must be greater than 0';
+      newErrors.price = 'Price must be greater than 0 if provided';
     }
 
     const invalidSlotPrices = slotEntries.filter(
       (entry) => entry.basePrice !== undefined && entry.basePrice <= 0,
     );
     if (invalidSlotPrices.length > 0) {
-      newErrors.price = 'All slot prices must be greater than 0';
-    }
-
-    if (!hasDefaultPrice && slotsWithoutPrices.length > 0) {
-      newErrors.price = 'All slots must have a price when no default price is provided';
+      newErrors.price = 'All manually provided prices must be greater than 0';
     }
 
     const hasLocation = formData.locationType || slotEntries.some((entry) => entry.locationType);
@@ -361,15 +347,37 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       },
       onError: (error: unknown) => {
         let errorMessage = 'Failed to create slots';
-        if (error instanceof Error) {
-          errorMessage = error.message;
-        } else if (error && typeof error === 'object') {
+        if (error && typeof error === 'object') {
           if ('response' in error) {
-            const apiError = error as { response?: { data?: { message?: string } } };
+            const apiError = error as {
+              response?: {
+                data?: {
+                  message?: string;
+                  error?: {
+                    code?: string;
+                    details?: unknown;
+                  };
+                };
+              };
+            };
+            // Use the message from API response
             errorMessage = apiError.response?.data?.message || errorMessage;
+            // Handle specific error codes
+            const errorCode = apiError.response?.data?.error?.code;
+            if (errorCode === 'TIER_DAY_LIMIT_EXCEEDED') {
+              errorMessage =
+                apiError.response?.data?.message ||
+                "You have exceeded your tier's day limit. Please upgrade your subscription or reduce the number of days.";
+            } else if (errorCode === 'PRICING_NOT_CONFIGURED') {
+              errorMessage =
+                apiError.response?.data?.message ||
+                'Pricing not configured. Please set up your service or duration pricing first.';
+            }
           } else if ('message' in error) {
             errorMessage = (error as { message: string }).message;
           }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
         } else if (typeof error === 'string') {
           errorMessage = error;
         }
