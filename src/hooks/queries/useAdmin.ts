@@ -14,6 +14,12 @@ import adminServiceCategoryService, {
   CreateServiceCategoryDto,
   UpdateServiceCategoryDto,
 } from '@/services/adminServiceCategoryService';
+import adminSubscriptionService, {
+  AdminSubscriptionFilters,
+  CancelSubscriptionRequest,
+  TrialAccessRequest,
+  UpdateSubscriptionPlanRequest,
+} from '@/services/adminSubscriptionService';
 import adminVerificationService, {
   PendingVerificationResponse,
 } from '@/services/adminVerificationService';
@@ -262,6 +268,85 @@ export const useAdminSubscriptions = () => {
   return useQuery({
     queryKey: ['adminFinance', 'subscriptions'],
     queryFn: () => adminFinanceService.getSubscriptions(),
+  });
+};
+
+// Admin User Subscription Management
+export const useAdminUserSubscriptions = (filters?: AdminSubscriptionFilters) => {
+  return useQuery({
+    queryKey: ['adminUserSubscriptions', filters],
+    queryFn: () => adminSubscriptionService.getAllUserSubscriptions(filters),
+  });
+};
+
+export const useAdminUserSubscription = (userId: string | null) => {
+  return useQuery({
+    queryKey: ['adminUserSubscription', userId],
+    queryFn: () => adminSubscriptionService.getUserSubscription(userId!),
+    enabled: !!userId,
+  });
+};
+
+export const useCancelUserSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: CancelSubscriptionRequest }) =>
+      adminSubscriptionService.cancelSubscription(userId, data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscription'] });
+      toast.success(response.message || 'Subscription canceled successfully');
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to cancel subscription');
+    },
+  });
+};
+
+export const useUpdateUserSubscriptionPlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: UpdateSubscriptionPlanRequest }) =>
+      adminSubscriptionService.updateUserPlan(userId, data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscription'] });
+      toast.success(response.message || 'Subscription plan updated successfully');
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update subscription plan');
+    },
+  });
+};
+
+export const useResumeUserSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => adminSubscriptionService.resumeSubscription(userId),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscription'] });
+      toast.success(response.message || 'Subscription resumed successfully');
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to resume subscription');
+    },
+  });
+};
+
+export const useManageTrialAccess = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: TrialAccessRequest }) =>
+      adminSubscriptionService.manageTrialAccess(userId, data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['adminUserSubscription'] });
+      toast.success(response.message || 'Trial access updated successfully');
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to manage trial access');
+    },
   });
 };
 

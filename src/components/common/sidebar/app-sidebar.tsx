@@ -24,6 +24,7 @@ import {
   Settings,
   Shield,
   Tag,
+  UserCheck,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -191,6 +192,11 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       name: 'Subscriptions',
       url: '/dashboard/admin/subscriptions',
       icon: CreditCard,
+    },
+    {
+      name: 'User Subscriptions',
+      url: '/dashboard/admin/user-subscriptions',
+      icon: UserCheck,
     },
     {
       name: 'Configuration',

@@ -261,8 +261,15 @@ export const ENDPOINTS = {
       getStats: '/admin/subscriptions/stats',
       getPlans: '/admin/subscriptions/plans',
       updatePlan: (planType: string) => `/admin/subscriptions/plans/${planType}`,
-      getUserSubscription: (userId: string) => `/admin/subscriptions/${userId}`,
+      getUserSubscriptionLegacy: (userId: string) => `/admin/subscriptions/${userId}`,
       overrideAccess: (userId: string) => `/admin/subscriptions/${userId}/override`,
+      // User subscription management endpoints
+      getAllUserSubscriptions: '/admin/subscriptions/users',
+      getUserSubscription: (userId: string) => `/admin/subscriptions/users/${userId}`,
+      cancelSubscription: (userId: string) => `/admin/subscriptions/users/${userId}/cancel`,
+      updateUserPlan: (userId: string) => `/admin/subscriptions/users/${userId}/plan`,
+      resumeSubscription: (userId: string) => `/admin/subscriptions/users/${userId}/resume`,
+      manageTrialAccess: (userId: string) => `/admin/subscriptions/users/${userId}/trial`,
     },
     // Overview management
     overview: {
