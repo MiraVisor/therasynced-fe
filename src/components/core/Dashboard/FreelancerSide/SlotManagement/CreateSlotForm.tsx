@@ -24,6 +24,7 @@ import { useCreateSlot } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
 import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
+import { filterPastSlots } from '@/utils/slotGenerationUtils';
 
 interface CreateSlotFormProps {
   onSuccess?: () => void;
@@ -121,7 +122,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
   const [formData, setFormData] = useState<CreateSlotDto>({
     locationType: LocationType.HOME,
     locationId: undefined,
-    basePrice: 50,
+    basePrice: 0,
     duration: 60,
     slots: [],
     serviceCategoryIds: [],
@@ -268,36 +269,26 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       }
     }
 
-    const hasDefaultPrice = formData.basePrice !== undefined && formData.basePrice > 0;
-    const slotsWithPrices = slotEntries.filter(
-      (entry) => entry.basePrice !== undefined && entry.basePrice > 0,
-    );
-    const slotsWithoutPrices = slotEntries.filter(
-      (entry) => entry.basePrice === undefined || entry.basePrice <= 0,
-    );
-
-    if (!hasDefaultPrice && slotsWithPrices.length === 0) {
-      newErrors.price = 'Please provide a default price or specify a price for each slot';
-    }
-
+    // Price validation removed - backend calculates pricing automatically from account-level settings
+    // Only validate if manually provided prices are positive (for manual override)
     if (formData.basePrice !== undefined && formData.basePrice <= 0) {
-      newErrors.price = 'Default price must be greater than 0';
+      newErrors.price = 'Price must be greater than 0 if provided';
     }
 
     const invalidSlotPrices = slotEntries.filter(
       (entry) => entry.basePrice !== undefined && entry.basePrice <= 0,
     );
     if (invalidSlotPrices.length > 0) {
-      newErrors.price = 'All slot prices must be greater than 0';
+      newErrors.price = 'All manually provided prices must be greater than 0';
     }
 
-    if (!hasDefaultPrice && slotsWithoutPrices.length > 0) {
-      newErrors.price = 'All slots must have a price when no default price is provided';
-    }
-
-    const hasLocation = formData.locationType || slotEntries.some((entry) => entry.locationType);
-    if (!hasLocation) {
-      newErrors.slots = 'Please specify a location type';
+    // Validate that every slot has a locationType (required by backend)
+    // Each slot must have either its own locationType or use the form default
+    const slotsWithoutLocation = slotEntries.filter(
+      (entry) => !entry.locationType && !formData.locationType,
+    );
+    if (slotsWithoutLocation.length > 0 || !formData.locationType) {
+      newErrors.slots = 'Please specify a location type (HOME or CLINIC)';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -307,7 +298,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
 
     setErrors({});
 
-    const slots = slotEntries.map((entry) => {
+    const allSlots = slotEntries.map((entry) => {
       if (!entry.date || !entry.startTime) {
         throw new Error('Invalid slot entry');
       }
@@ -337,15 +328,40 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
         0,
       );
 
+      // locationType is required at slot level - use entry's locationType or fall back to form default
+      const slotLocationType = entry.locationType || formData.locationType;
+      if (!slotLocationType) {
+        throw new Error('Location type is required for all slots');
+      }
+
       return {
         startTime: localStartDate.toISOString(),
         endTime: localEndDate.toISOString(),
+        locationType: slotLocationType, // Required - always include locationType
         ...(entry.basePrice !== undefined && entry.basePrice > 0 && { basePrice: entry.basePrice }),
-        ...(entry.locationType && { locationType: entry.locationType }),
         ...(entry.serviceCategoryIds &&
           entry.serviceCategoryIds.length > 0 && { serviceCategoryIds: entry.serviceCategoryIds }),
       };
     });
+
+    // Filter out past slots
+    const slots = filterPastSlots(allSlots);
+    const pastSlotsCount = allSlots.length - slots.length;
+
+    if (slots.length === 0) {
+      toast.error(
+        pastSlotsCount > 0
+          ? 'All selected slots are in the past. Please select future dates and times.'
+          : 'No valid slots to create',
+      );
+      return;
+    }
+
+    if (pastSlotsCount > 0) {
+      toast.info(
+        `Filtered out ${pastSlotsCount} past slot${pastSlotsCount !== 1 ? 's' : ''}. Creating ${slots.length} future slot${slots.length !== 1 ? 's' : ''}.`,
+      );
+    }
 
     const submitData: CreateSlotDto = {
       ...formData,
@@ -361,15 +377,37 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       },
       onError: (error: unknown) => {
         let errorMessage = 'Failed to create slots';
-        if (error instanceof Error) {
-          errorMessage = error.message;
-        } else if (error && typeof error === 'object') {
+        if (error && typeof error === 'object') {
           if ('response' in error) {
-            const apiError = error as { response?: { data?: { message?: string } } };
+            const apiError = error as {
+              response?: {
+                data?: {
+                  message?: string;
+                  error?: {
+                    code?: string;
+                    details?: unknown;
+                  };
+                };
+              };
+            };
+            // Use the message from API response
             errorMessage = apiError.response?.data?.message || errorMessage;
+            // Handle specific error codes
+            const errorCode = apiError.response?.data?.error?.code;
+            if (errorCode === 'TIER_DAY_LIMIT_EXCEEDED') {
+              errorMessage =
+                apiError.response?.data?.message ||
+                "You have exceeded your tier's day limit. Please upgrade your subscription or reduce the number of days.";
+            } else if (errorCode === 'PRICING_NOT_CONFIGURED') {
+              errorMessage =
+                apiError.response?.data?.message ||
+                'Pricing not configured. Please set up your service or duration pricing first.';
+            }
           } else if ('message' in error) {
             errorMessage = (error as { message: string }).message;
           }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
         } else if (typeof error === 'string') {
           errorMessage = error;
         }

@@ -5,6 +5,8 @@ import * as serviceApi from '@/services/serviceService';
 import { getApiErrorMessage } from '@/types/common';
 import { CreateServiceDto, Service } from '@/types/types';
 
+import { useProfile } from './useProfile';
+
 interface ServiceParams {
   page?: number;
   limit?: number;
@@ -43,6 +45,21 @@ export const useFreelancerServices = (freelancerId: string | null) => {
     queryKey: ['services', 'freelancer', freelancerId],
     queryFn: () => serviceApi.getFreelancerServices(freelancerId!),
     enabled: !!freelancerId,
+    select: (data) => data.data as Service[],
+  });
+};
+
+/**
+ * Hook to fetch current freelancer's services (uses profile to get user ID)
+ */
+export const useMyServices = () => {
+  const { data: profile } = useProfile();
+  const userId = profile?.id || null;
+
+  return useQuery({
+    queryKey: ['services', 'my', userId],
+    queryFn: () => serviceApi.getFreelancerServices(userId!),
+    enabled: !!userId,
     select: (data) => data.data as Service[],
   });
 };

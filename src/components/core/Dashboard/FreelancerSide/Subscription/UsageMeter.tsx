@@ -22,14 +22,16 @@ export function UsageMeter({
   showWarning = true,
   warningThreshold = 80,
 }: UsageMeterProps) {
-  const isUnlimited = slotsLimit === null;
+  // Only consider unlimited if slotsLimit is null AND user can create slots
+  // This prevents showing "unlimited" when trial expired (slotsLimit: null but canCreateSlots: false)
+  const isUnlimited = slotsLimit === null && canCreateSlots;
   const percentage = isUnlimited
     ? 0
-    : slotsLimit > 0
+    : slotsLimit !== null && slotsLimit > 0
       ? Math.min((slotsUsed / slotsLimit) * 100, 100)
       : 0;
-  const isNearLimit = !isUnlimited && percentage >= warningThreshold;
-  const isAtLimit = !isUnlimited && slotsUsed >= slotsLimit;
+  const isNearLimit = !isUnlimited && slotsLimit !== null && percentage >= warningThreshold;
+  const isAtLimit = !isUnlimited && slotsLimit !== null && slotsUsed >= slotsLimit;
 
   const getProgressColor = () => {
     if (isUnlimited) return 'bg-primary';
@@ -58,16 +60,20 @@ export function UsageMeter({
         <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {isUnlimited ? (
             <span className="font-semibold text-primary">{slotsUsed} slots active</span>
-          ) : (
+          ) : slotsLimit !== null ? (
             <span>
               <span className="font-bold text-charcoal">{slotsUsed}</span> /{' '}
               <span className="text-gray-600 dark:text-gray-400">{slotsLimit}</span> slots
+            </span>
+          ) : (
+            <span className="font-semibold text-gray-600 dark:text-gray-400">
+              {slotsUsed} slots active
             </span>
           )}
         </div>
       </div>
 
-      {!isUnlimited && (
+      {!isUnlimited && slotsLimit !== null && (
         <Progress value={percentage} className="h-3 bg-gray-200 dark:bg-gray-700">
           <div
             className={`h-full rounded-full transition-all duration-500 ease-out ${getProgressColor()}`}

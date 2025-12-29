@@ -104,7 +104,8 @@ export const ENDPOINTS = {
   },
   // Service categories endpoints
   serviceCategories: {
-    getAll: '/service-categories',
+    getAll: '/service/categories/all', // Flat list (recommended for pricing setup)
+    getGrouped: '/service/categories', // Grouped by job title
     getByJobTitle: (jobTitle: string) => `/service-categories/${jobTitle}`,
   },
   // Job titles endpoints
