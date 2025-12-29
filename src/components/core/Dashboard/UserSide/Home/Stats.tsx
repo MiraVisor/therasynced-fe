@@ -58,9 +58,6 @@ const Stats = () => {
     return sum / ratings.length;
   }, [myRatingsData]);
 
-  const isLoading = isLoadingBookings || isLoadingFavorites || isLoadingRatings;
-  const isLoadingData = isLoading && !bookingStats && favorites.length === 0 && !myRatingsData;
-
   const statsCards = [
     {
       title: 'Total Sessions',
