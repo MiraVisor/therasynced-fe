@@ -1,8 +1,6 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Edit, Eye } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -21,13 +19,11 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { VerificationBadge } from '@/components/ui/verification-badge';
-import { useToggleFreelancerStatus } from '@/hooks/queries/useAdmin';
-import { useFreelancers, useFreelancerStats } from '@/hooks/queries/useFreelancers';
+import { useAdminFreelancers, useToggleFreelancerStatus } from '@/hooks/queries/useAdmin';
+import { useFreelancerStats } from '@/hooks/queries/useFreelancers';
 import { Freelancer } from '@/types/types';
 
 const RealFreelancersPage = () => {
-  const router = useRouter();
   // State for pagination and search
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -61,13 +57,13 @@ const RealFreelancersPage = () => {
     error: statsError,
   } = useFreelancerStats();
 
-  // Fetch freelancers with pagination and search
+  // Fetch all freelancers using admin endpoint (shows all freelancers regardless of subscription)
   const {
     data: freelancersData,
     isLoading,
     isFetching,
     error,
-  } = useFreelancers({
+  } = useAdminFreelancers({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
@@ -92,15 +88,13 @@ const RealFreelancersPage = () => {
     }
   }, [error, freelancersData]);
 
-  const handleViewProfile = (freelancerId: string) => {
-    router.push(`/dashboard/freelancer/${freelancerId}`);
-  };
-
   const toggleStatusMutation = useToggleFreelancerStatus();
 
-  const handleEdit = (_freelancerId: string) => {
-    // TODO: Implement edit functionality - could navigate to edit page or open dialog
-    toast.info('Edit functionality coming soon');
+  // Helper function to get status text (matching verification page)
+  const getStatusText = (status: string | undefined) => {
+    if (status === 'APPROVED') return 'Yes';
+    if (status === 'REJECTED') return 'No';
+    return 'Pending';
   };
 
   const handleStatusToggle = (freelancer: Freelancer) => {
@@ -200,36 +194,46 @@ const RealFreelancersPage = () => {
       accessorKey: 'verificationStatus',
       header: 'Verification',
       cell: ({ row }) => {
-        const status = row.original.verificationStatus;
-        const verificationStatus = status ?? 'UNVERIFIED';
-        return <VerificationBadge status={verificationStatus} size="sm" />;
-      },
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => {
-        const freelancer = row.original;
+        const { verificationStatus } = row.original;
+        const certificateStatus = row.original.firstAidCertificateStatus;
+        const certificateUrl = row.original.firstAidCertificateUrl;
+
         return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleViewProfile(freelancer.id)}
-              className="h-8 w-8 p-0 hover:bg-info/10"
-              title="View Profile"
-            >
-              <Eye className="h-4 w-4 text-info" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEdit(freelancer.id)}
-              className="h-8 w-8 p-0 hover:bg-info/10"
-              title="Edit"
-            >
-              <Edit className="h-4 w-4 text-info" />
-            </Button>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="font-inter text-xs text-muted-foreground min-w-[100px]">
+                Verification:
+              </span>
+              <span
+                className={`font-inter text-sm font-medium ${
+                  verificationStatus === 'APPROVED'
+                    ? 'text-green-600'
+                    : verificationStatus === 'REJECTED'
+                      ? 'text-red-600'
+                      : 'text-yellow-600'
+                }`}
+              >
+                {getStatusText(verificationStatus)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-inter text-xs text-muted-foreground min-w-[100px]">
+                First Aid Certificate:
+              </span>
+              <span
+                className={`font-inter text-sm font-medium ${
+                  !certificateUrl
+                    ? 'text-muted-foreground'
+                    : certificateStatus === 'APPROVED'
+                      ? 'text-green-600'
+                      : certificateStatus === 'REJECTED'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                }`}
+              >
+                {certificateUrl ? getStatusText(certificateStatus) : 'Not uploaded'}
+              </span>
+            </div>
           </div>
         );
       },

@@ -266,6 +266,17 @@ export const useAdminSubscriptions = () => {
 };
 
 // Admin Freelancer Management
+export const useAdminFreelancers = (params?: { page?: number; limit?: number; name?: string }) => {
+  return useQuery({
+    queryKey: ['adminFreelancers', params],
+    queryFn: () => adminVerificationService.getAllFreelancers(params),
+    select: (data) => ({
+      freelancers: data.data || data.verifications || [],
+      pagination: data.pagination,
+    }),
+  });
+};
+
 export const useToggleFreelancerStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -279,6 +290,7 @@ export const useToggleFreelancerStatus = () => {
     onSuccess: (response) => {
       // Invalidate freelancers queries to refetch updated data
       queryClient.invalidateQueries({ queryKey: ['freelancers'] });
+      queryClient.invalidateQueries({ queryKey: ['adminFreelancers'] });
       queryClient.invalidateQueries({ queryKey: ['freelancerStats'] });
       toast.success(response.message || 'Freelancer status updated successfully');
     },

@@ -229,6 +229,7 @@ export const ENDPOINTS = {
       getDetails: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}`,
       approve: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/approve`,
       reject: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/reject`,
+      getAllFreelancers: '/freelancer/admin/verifications/all',
       getByStatus: (status: string) => `/freelancer/admin/verifications/all?status=${status}`,
       approveCertificate: (freelancerId: string) =>
         `/freelancer/admin/first-aid-certificate/${freelancerId}/approve`,

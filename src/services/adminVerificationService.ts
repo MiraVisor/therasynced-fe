@@ -97,6 +97,14 @@ const adminVerificationService = {
     return response.data;
   },
 
+  // Get all freelancers (admin endpoint - shows all freelancers regardless of subscription)
+  getAllFreelancers: async (pagination?: PaginationDto & { name?: string }) => {
+    const response = await api.get(ENDPOINTS.admin.verification.getAllFreelancers, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
   // Get verification statistics
   getStatistics: async () => {
     const response = await api.get(ENDPOINTS.admin.verification.statistics);
