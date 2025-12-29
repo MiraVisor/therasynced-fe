@@ -3,6 +3,9 @@ import { toast } from 'react-toastify';
 
 import adminBookingsService from '@/services/adminBookingsService';
 import adminFinanceService from '@/services/adminFinanceService';
+import adminFreelancerService, {
+  ToggleFreelancerStatusRequest,
+} from '@/services/adminFreelancerService';
 import adminJobTitleService, {
   CreateJobTitleDto,
   UpdateJobTitleDto,
@@ -259,5 +262,28 @@ export const useAdminSubscriptions = () => {
   return useQuery({
     queryKey: ['adminFinance', 'subscriptions'],
     queryFn: () => adminFinanceService.getSubscriptions(),
+  });
+};
+
+// Admin Freelancer Management
+export const useToggleFreelancerStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      freelancerId,
+      data,
+    }: {
+      freelancerId: string;
+      data: ToggleFreelancerStatusRequest;
+    }) => adminFreelancerService.toggleStatus(freelancerId, data),
+    onSuccess: (response) => {
+      // Invalidate freelancers queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['freelancers'] });
+      queryClient.invalidateQueries({ queryKey: ['freelancerStats'] });
+      toast.success(response.message || 'Freelancer status updated successfully');
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to update freelancer status');
+    },
   });
 };

@@ -8,10 +8,21 @@ import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { Badge } from '@/components/ui/badge';
+import { StatusSwitch } from '@/components/ui';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { VerificationBadge } from '@/components/ui/verification-badge';
+import { useToggleFreelancerStatus } from '@/hooks/queries/useAdmin';
 import { useFreelancers, useFreelancerStats } from '@/hooks/queries/useFreelancers';
 import { Freelancer } from '@/types/types';
 
@@ -22,6 +33,12 @@ const RealFreelancersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // State for status toggle dialog
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null);
+  const [deactivationReason, setDeactivationReason] = useState('');
+  const [togglingFreelancers, setTogglingFreelancers] = useState<Set<string>>(new Set());
 
   // Debounce search query
   useEffect(() => {
@@ -79,9 +96,55 @@ const RealFreelancersPage = () => {
     router.push(`/dashboard/freelancer/${freelancerId}`);
   };
 
+  const toggleStatusMutation = useToggleFreelancerStatus();
+
   const handleEdit = (_freelancerId: string) => {
     // TODO: Implement edit functionality - could navigate to edit page or open dialog
     toast.info('Edit functionality coming soon');
+  };
+
+  const handleStatusToggle = (freelancer: Freelancer) => {
+    setSelectedFreelancer(freelancer);
+    setDeactivationReason('');
+    setIsStatusDialogOpen(true);
+  };
+
+  const handleStatusConfirm = () => {
+    if (!selectedFreelancer) return;
+
+    const newStatus = !selectedFreelancer.isActive;
+
+    // If deactivating, require a reason
+    if (!newStatus && !deactivationReason.trim()) {
+      toast.error('Please provide a reason for deactivation');
+      return;
+    }
+
+    setTogglingFreelancers((prev) => new Set(prev).add(selectedFreelancer.id));
+
+    toggleStatusMutation.mutate(
+      {
+        freelancerId: selectedFreelancer.id,
+        data: {
+          isActive: newStatus,
+          reason: !newStatus ? deactivationReason.trim() : undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsStatusDialogOpen(false);
+          setSelectedFreelancer(null);
+          setDeactivationReason('');
+        },
+        onSettled: () => {
+          setTogglingFreelancers((prev) => {
+            const next = new Set(prev);
+            next.delete(selectedFreelancer.id);
+            return next;
+          });
+        },
+      },
+    );
   };
 
   // Column definitions for freelancers table
@@ -122,18 +185,14 @@ const RealFreelancersPage = () => {
       accessorKey: 'isActive',
       header: 'Status',
       cell: ({ row }) => {
-        const { isActive } = row.original;
+        const freelancer = row.original;
+        const isToggling = togglingFreelancers.has(freelancer.id);
         return (
-          <Badge
-            variant="outline"
-            className={`font-inter font-medium text-xs px-2 py-1 ${
-              isActive
-                ? 'bg-success/10 text-success border-success/20'
-                : 'bg-error/10 text-error border-error/20'
-            }`}
-          >
-            {isActive ? 'Active' : 'Inactive'}
-          </Badge>
+          <StatusSwitch
+            checked={freelancer.isActive ?? false}
+            onCheckedChange={() => handleStatusToggle(freelancer)}
+            disabled={isToggling || toggleStatusMutation.isPending}
+          />
         );
       },
     },
@@ -257,6 +316,58 @@ const RealFreelancersPage = () => {
           setPage(1);
         }}
       />
+
+      {/* Status Toggle Dialog */}
+      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-poppins font-semibold">
+              {selectedFreelancer?.isActive ? 'Deactivate Freelancer' : 'Activate Freelancer'}
+            </DialogTitle>
+            <DialogDescription className="font-inter">
+              {selectedFreelancer?.isActive
+                ? `Are you sure you want to deactivate ${selectedFreelancer.name}? Please provide a reason for deactivation.`
+                : `Activate ${selectedFreelancer?.name}'s account?`}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedFreelancer?.isActive && (
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="deactivation-reason" className="font-inter font-medium">
+                  Reason for Deactivation <span className="text-error">*</span>
+                </Label>
+                <Textarea
+                  id="deactivation-reason"
+                  placeholder="Enter reason for deactivation..."
+                  value={deactivationReason}
+                  onChange={(e) => setDeactivationReason(e.target.value)}
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusConfirm}
+              disabled={
+                toggleStatusMutation.isPending ||
+                (selectedFreelancer?.isActive && !deactivationReason.trim())
+              }
+              variant={selectedFreelancer?.isActive ? 'destructive' : 'default'}
+            >
+              {toggleStatusMutation.isPending
+                ? 'Updating...'
+                : selectedFreelancer?.isActive
+                  ? 'Deactivate'
+                  : 'Activate'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardPageWrapper>
   );
 };

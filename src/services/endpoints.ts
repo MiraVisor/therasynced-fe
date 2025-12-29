@@ -239,6 +239,8 @@ export const ENDPOINTS = {
       fileDetails: (fileId: string) => `/freelancer/admin/files/${fileId}`,
       fileDownload: (fileId: string) => `/freelancer/admin/files/${fileId}/download`,
       fileSignedUrl: (fileId: string) => `/freelancer/admin/files/${fileId}/signed-url`,
+      toggleStatus: (freelancerId: string) =>
+        `/freelancer/admin/freelancer/${freelancerId}/toggle-status`,
     },
     // Complaint management
     complaint: {
