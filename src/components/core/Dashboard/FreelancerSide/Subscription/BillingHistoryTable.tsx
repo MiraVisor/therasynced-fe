@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, FileText, Loader2 } from 'lucide-react';
+import { Download, FileText, Loader2, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -18,15 +18,22 @@ import {
 import { useBillingHistoryFlat } from '@/hooks/queries/useBillingHistory';
 
 import { InvoiceDownloadButton } from './InvoiceDownloadButton';
+import { RefundRequestDialog } from './RefundRequestDialog';
 
 export function BillingHistoryTable() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedInvoice, setSelectedInvoice] = useState<{
+    invoiceId: string;
+    amount: number;
+  } | null>(null);
+  const [isRefundDialogOpen, setIsRefundDialogOpen] = useState(false);
   const {
     data: transactions,
     isLoading,
     hasMore,
     fetchNextPage,
     isFetchingNextPage,
+    refetch,
   } = useBillingHistoryFlat(20);
 
   const filteredTransactions = transactions.filter((transaction) => {
@@ -167,8 +174,8 @@ export function BillingHistoryTable() {
                     <TableHead className="font-poppins font-semibold text-charcoal">
                       Status
                     </TableHead>
-                    <TableHead className="font-poppins font-semibold text-right text-charcoal">
-                      Invoice
+                    <TableHead className="font-poppins font-semibold text-charcoal">
+                      Actions
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -199,23 +206,43 @@ export function BillingHistoryTable() {
                         </div>
                       </TableCell>
                       <TableCell className="py-4">{getStatusBadge(transaction.status)}</TableCell>
-                      <TableCell className="text-right py-4">
-                        {transaction.invoiceUrl ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.open(transaction.invoiceUrl, '_blank')}
-                            className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            title="View invoice"
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <InvoiceDownloadButton
-                            transactionId={transaction.invoiceId}
-                            invoiceId={transaction.invoiceId}
-                          />
-                        )}
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-2">
+                          {transaction.invoiceUrl ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(transaction.invoiceUrl, '_blank')}
+                              className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              title="View invoice"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <InvoiceDownloadButton
+                              transactionId={transaction.invoiceId}
+                              invoiceId={transaction.invoiceId}
+                            />
+                          )}
+                          {transaction.status === 'paid' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedInvoice({
+                                  invoiceId: transaction.invoiceId,
+                                  amount: transaction.amount,
+                                });
+                                setIsRefundDialogOpen(true);
+                              }}
+                              className="h-8 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              title="Request refund"
+                            >
+                              <RotateCcw className="h-4 w-4 mr-1" />
+                              Refund
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -245,6 +272,22 @@ export function BillingHistoryTable() {
           </>
         )}
       </CardContent>
+
+      {/* Refund Request Dialog */}
+      {selectedInvoice && (
+        <RefundRequestDialog
+          isOpen={isRefundDialogOpen}
+          onClose={() => {
+            setIsRefundDialogOpen(false);
+            setSelectedInvoice(null);
+          }}
+          invoiceId={selectedInvoice.invoiceId}
+          invoiceAmount={selectedInvoice.amount}
+          onSuccess={() => {
+            refetch();
+          }}
+        />
+      )}
     </Card>
   );
 }

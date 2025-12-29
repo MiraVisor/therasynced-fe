@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useBookingStore } from '@/stores/bookingStore';
 import type { ServiceCategory } from '@/types/common';
-import type { Slot } from '@/types/slot';
+import type { Slot } from '@/types/types';
 
 interface ServiceFormData {
   serviceCategoryIds?: string[];
@@ -21,7 +21,7 @@ interface DetailsFormData {
 
 interface DetailsStepProps {
   therapistName?: string;
-  slotsByDate: { [date: string]: Slot[] };
+  slotsByDate: Record<string, Slot[]>;
   serviceForm: UseFormReturn<ServiceFormData>;
   detailsForm: UseFormReturn<DetailsFormData>;
 }

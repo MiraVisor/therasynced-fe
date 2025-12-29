@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  Calendar,
-  CheckCircle2,
-  CreditCard,
-  Crown,
-  ExternalLink,
-  TrendingUp,
-  XCircle,
-} from 'lucide-react';
+import { Calendar, CreditCard, Crown, ExternalLink, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -216,7 +208,7 @@ export function OverviewTab({
               Monitor your subscription usage and limits
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* Slot Usage Card */}
             <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
               <CardHeader className="pb-4">
@@ -229,75 +221,11 @@ export function OverviewTab({
               </CardHeader>
               <CardContent className="pt-0">
                 <UsageMeter
-                  slotsUsed={subscription.slotsUsed}
-                  slotsLimit={subscription.slotsLimit}
+                  slotsUsed={subscription.slotsUsed ?? 0}
+                  slotsLimit={subscription.slotsLimit ?? plan?.maxSlots ?? null}
                   canCreateSlots={subscription.canCreateSlots}
                   showWarning={true}
                 />
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats Card */}
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
-                  Account Status
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Your subscription capabilities
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-3">
-                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-1.5 rounded-md ${subscription.canCreateSlots ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}
-                    >
-                      {subscription.canCreateSlots ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Can Create Slots
-                    </span>
-                  </div>
-                  <span
-                    className={`text-sm font-semibold ${
-                      subscription.canCreateSlots
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}
-                  >
-                    {subscription.canCreateSlots ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-1.5 rounded-md ${subscription.canAcceptBookings ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}
-                    >
-                      {subscription.canAcceptBookings ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Can Accept Bookings
-                    </span>
-                  </div>
-                  <span
-                    className={`text-sm font-semibold ${
-                      subscription.canAcceptBookings
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}
-                  >
-                    {subscription.canAcceptBookings ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
               </CardContent>
             </Card>
           </div>

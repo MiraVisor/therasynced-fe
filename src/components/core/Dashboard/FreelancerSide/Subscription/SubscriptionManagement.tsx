@@ -2,7 +2,7 @@
 
 import { AlertTriangle, Info } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -47,13 +47,44 @@ export default function SubscriptionManagement() {
 
   // Use React Query hooks
   const { data: plans = [], isFetching: initialLoading } = useSubscriptionPlans();
-  const { data: currentSubscription, isFetching: isLoading } = useMySubscription();
+  const {
+    data: currentSubscription,
+    isFetching: isLoading,
+    refetch: refetchSubscription,
+  } = useMySubscription();
   const { mutate: createCheckout, isPending: isSubscribing } = useCreateCheckoutSession();
   const { mutate: updateSubscriptionMutation, isPending: isUpdating } = useUpdateSubscription();
   const { mutate: cancelSubscriptionMutation, isPending: isCanceling } = useCancelSubscription();
 
   // For billing portal, we need to use query with enabled: false and refetch
   const { refetch: refetchBillingPortal } = useBillingPortal();
+
+  // Refetch subscription data when returning from Stripe checkout
+  useEffect(() => {
+    const subscriptionSuccess = searchParams.get('subscription');
+
+    // If coming from successful subscription, refetch data
+    if (subscriptionSuccess === 'success') {
+      void refetchSubscription();
+      // Clean up URL param after refetching
+      const url = new URL(window.location.href);
+      url.searchParams.delete('subscription');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams, refetchSubscription]);
+
+  // Refetch subscription data when window regains focus (user returns from Stripe)
+  useEffect(() => {
+    const handleFocus = () => {
+      // Only refetch if we don't have recent data or if it's been a while
+      void refetchSubscription();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [refetchSubscription]);
 
   // Combine loading states - only show loader if no data exists
   const isLoadingPlans =
@@ -187,8 +218,7 @@ export default function SubscriptionManagement() {
     }
   };
 
-  const status: SubscriptionStatus =
-    (subscriptionStatus as SubscriptionStatus) || currentSubscription?.status || 'INACTIVE';
+  const status: SubscriptionStatus = subscriptionStatus as SubscriptionStatus;
   const isTrial = status === 'TRIALING';
   const isInactive = status === 'INACTIVE' || status === 'UNPAID' || status === 'TRIAL_EXPIRED';
   const userHasActiveSubscription = status === 'ACTIVE' && !!currentSubscription?.plan;
@@ -285,27 +315,30 @@ export default function SubscriptionManagement() {
       </div>
 
       {/* Inactive/Trial Alerts - More Integrated Design */}
-      {currentSubscription && isInactive && (
-        <Alert className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 shadow-sm">
-          <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-          <AlertTitle className="text-base font-poppins font-semibold text-orange-900 dark:text-orange-100">
-            Trial Expired
-          </AlertTitle>
-          <AlertDescription className="text-sm text-orange-800 dark:text-orange-200 space-y-3 mt-2">
-            <div>
-              {currentSubscription.message ||
-                'Your trial has expired. Please subscribe to continue creating slots.'}
-            </div>
-            <Button
-              onClick={() => handleSelectPlan('SILVER')}
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-white mt-2"
-            >
-              Subscribe Now
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Only show trial expired alert if status is not ACTIVE or there's no plan */}
+      {currentSubscription &&
+        isInactive &&
+        !(status === 'INACTIVE' && currentSubscription?.plan) && (
+          <Alert className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 shadow-sm">
+            <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            <AlertTitle className="text-base font-poppins font-semibold text-orange-900 dark:text-orange-100">
+              Trial Expired
+            </AlertTitle>
+            <AlertDescription className="text-sm text-orange-800 dark:text-orange-200 space-y-3 mt-2">
+              <div>
+                {currentSubscription.message ||
+                  'Your trial has expired. Please subscribe to continue creating slots.'}
+              </div>
+              <Button
+                onClick={() => handleSelectPlan('SILVER')}
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-white mt-2"
+              >
+                Subscribe Now
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
       {currentSubscription && isTrial && (
         <Alert className="border-primary/30 dark:border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-sm">

@@ -104,7 +104,8 @@ export const ENDPOINTS = {
   },
   // Service categories endpoints
   serviceCategories: {
-    getAll: '/service-categories',
+    getAll: '/service/categories/all', // Flat list (recommended for pricing setup)
+    getGrouped: '/service/categories', // Grouped by job title
     getByJobTitle: (jobTitle: string) => `/service-categories/${jobTitle}`,
   },
   // Job titles endpoints
@@ -178,6 +179,15 @@ export const ENDPOINTS = {
     invoice: (invoiceId: string) => `/subscription/invoice/${invoiceId}`,
     paymentMethods: '/subscription/payment-methods',
     updatePaymentMethod: '/subscription/payment-method',
+  },
+  // Refund endpoints
+  refund: {
+    create: '/refund/request',
+    myRequests: '/refund/my-requests',
+    getDetails: (id: string) => `/refund/request/${id}`,
+    adminAll: '/refund/admin/all',
+    adminApprove: (id: string) => `/refund/admin/approve/${id}`,
+    adminReject: (id: string) => `/refund/admin/reject/${id}`,
   },
   // Rating endpoints
   ratings: {

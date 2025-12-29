@@ -17,8 +17,7 @@ import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { useBookingStore } from '@/stores/bookingStore';
 import { getApiErrorMessage, type ServiceCategory } from '@/types/common';
-import type { Slot } from '@/types/slot';
-import type { Expert } from '@/types/types';
+import type { Expert, Slot } from '@/types/types';
 
 import { BookingSummarySidebar } from './BookingSummarySidebar';
 import { ConfirmStep } from './steps/ConfirmStep';
@@ -93,9 +92,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     if (slots && slots.length > 0) {
       // Collect all unique service categories from all slots
       const allCategories = new Map<string, ServiceCategory>();
-      slots.forEach((slot: Slot) => {
+      slots.forEach((slot) => {
         if (slot.availableServiceCategories && Array.isArray(slot.availableServiceCategories)) {
-          slot.availableServiceCategories.forEach((category: ServiceCategory) => {
+          slot.availableServiceCategories.forEach((category) => {
             if (!allCategories.has(category.id)) {
               allCategories.set(category.id, category);
             }
@@ -110,7 +109,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   const fetchSlotDetails = useCallback(
     (slotId: string) => {
       // Find the slot in the already-fetched slots
-      const slot = slots?.find((s: Slot) => s.id === slotId);
+      const slot = slots?.find((s) => s.id === slotId);
       if (slot) {
         // Use service categories from the slot
         if (slot.availableServiceCategories && slot.availableServiceCategories.length > 0) {
@@ -206,12 +205,12 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     }
 
     const availableSlots = slots.filter(
-      (slot: Slot) => slot.status === 'AVAILABLE' && new Date(slot.startTime) > new Date(),
+      (slot) => slot.status === 'AVAILABLE' && new Date(slot.startTime) > new Date(),
     );
     const nextAvailable =
       availableSlots.length > 0
         ? availableSlots.sort(
-            (a: Slot, b: Slot) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+            (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
           )[0]
         : null;
 
@@ -285,8 +284,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   };
 
   // Group slots by date - show all slots with different visual indicators
-  const slotsByDate: { [date: string]: Slot[] } = {};
-  slots?.forEach((slot: Slot) => {
+  const slotsByDate: Record<string, Slot[]> = {};
+  slots?.forEach((slot) => {
     // Show all slots (available, reserved, booked) with different visual indicators
     const date = formatDateForAPI(new Date(slot.startTime));
     if (!slotsByDate[date]) slotsByDate[date] = [];

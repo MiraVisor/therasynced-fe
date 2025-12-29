@@ -6,7 +6,7 @@ import { UseFormReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import type { TherapistStampDetail } from '@/types/loyalty';
-import type { Slot } from '@/types/slot';
+import type { Slot } from '@/types/types';
 
 interface ServiceFormData {
   serviceCategoryIds?: string[];
@@ -28,7 +28,7 @@ interface BookingSummarySidebarProps {
   therapist: TherapistInfo | null;
   selectedDate: string;
   selectedTime: string;
-  slotsByDate: { [date: string]: Slot[] };
+  slotsByDate: Record<string, Slot[]>;
   serviceForm: UseFormReturn<ServiceFormData>;
   stampDetail?: TherapistStampDetail | null;
   isCreatingBooking: boolean;

@@ -57,7 +57,15 @@ export const getMySlotsStats = async (): Promise<ApiResponse<SlotStats>> => {
   return response.data;
 };
 
-export const getAvailableSlots = async (freelancerId: string): Promise<ApiResponse<Slot[]>> => {
-  const response = await api.get(`/slot/available/${freelancerId}`);
+export const getAvailableSlots = async (
+  freelancerId: string,
+  params?: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  },
+): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.get(`/slot/available/${freelancerId}`, { params });
   return response.data;
 };

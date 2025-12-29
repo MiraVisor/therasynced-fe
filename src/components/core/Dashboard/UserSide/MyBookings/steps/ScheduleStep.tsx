@@ -5,11 +5,11 @@ import { CheckCircle, Gift } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { useBookingStore } from '@/stores/bookingStore';
-import type { Slot } from '@/types/slot';
+import type { Slot } from '@/types/types';
 
 interface ScheduleStepProps {
   therapistName?: string;
-  slotsByDate: { [date: string]: Slot[] };
+  slotsByDate: Record<string, Slot[]>;
   totalDatePages: number;
   displayedDates: string[];
   availableDates: string[];

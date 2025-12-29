@@ -8,6 +8,7 @@ import {
   BarChart,
   Briefcase,
   Calendar,
+  CalendarCheck,
   ChevronDown,
   ChevronRight,
   CreditCard,
@@ -115,6 +116,11 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: Calendar,
     },
     {
+      name: 'Availability',
+      url: '/dashboard/availability',
+      icon: CalendarCheck,
+    },
+    {
       name: 'Messages',
       url: '/dashboard/messages',
       icon: MessageSquare,
@@ -170,6 +176,11 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       name: 'Transactions',
       url: '/dashboard/admin/transactions',
       icon: Receipt,
+    },
+    {
+      name: 'Refunds',
+      url: '/dashboard/admin/refunds',
+      icon: FileDown,
     },
     {
       name: 'Finance',

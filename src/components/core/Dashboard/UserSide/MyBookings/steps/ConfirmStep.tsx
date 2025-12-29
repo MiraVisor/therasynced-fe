@@ -7,7 +7,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { useBookingStore } from '@/stores/bookingStore';
 import type { TherapistStampDetail } from '@/types/loyalty';
-import type { Slot } from '@/types/slot';
+import type { Slot } from '@/types/types';
 
 import { StampDiscountBadge } from '../StampDiscountBadge';
 
@@ -32,7 +32,7 @@ interface TherapistInfo {
 
 interface ConfirmStepProps {
   therapist: TherapistInfo | null;
-  slotsByDate: { [date: string]: Slot[] };
+  slotsByDate: Record<string, Slot[]>;
   serviceForm: UseFormReturn<ServiceFormData>;
   detailsForm: UseFormReturn<DetailsFormData>;
   stampDetail?: TherapistStampDetail | null;
