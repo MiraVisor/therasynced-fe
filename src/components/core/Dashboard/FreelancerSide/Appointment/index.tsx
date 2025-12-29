@@ -88,10 +88,19 @@ const Appointments = () => {
   const {
     data: appointments = [],
     isLoading,
+    error,
     refetch,
   } = useFreelancerAppointmentsByDate(format(currentDate, 'yyyy-MM-dd'));
   const { mutate: cancelBookingMutation } = useCancelBooking();
   const { mutate: updateNotesMutation } = useUpdateBookingNotes();
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (error && appointments.length === 0) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load appointments';
+      toast.error(errorMessage);
+    }
+  }, [error, appointments]);
 
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);

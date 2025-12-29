@@ -4,7 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBookings/BookingDetailsModal';
@@ -122,8 +123,28 @@ export default function MyBookingsPage() {
     date: weekDate,
   });
 
-  const { data: bookingStats, isLoading: isLoadingStats } = usePatientBookingStats();
+  const {
+    data: bookingStats,
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = usePatientBookingStats();
   const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (error && bookings.length === 0) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load bookings';
+      toast.error(errorMessage);
+    }
+  }, [error, bookings]);
+
+  useEffect(() => {
+    if (statsError && !bookingStats) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load booking stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, bookingStats]);
 
   // Handler functions for booking actions
   const handleMessage = (booking: Booking) => {

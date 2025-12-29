@@ -1,7 +1,8 @@
 'use client';
 
 import { AlertTriangle, Ban, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
@@ -16,9 +17,38 @@ import { useComplaintsAgainstMe, useMyComplaints } from '@/hooks/queries/useComp
 import { Complaint, ComplaintCategory } from '@/types/types';
 
 export default function MyComplaintsPage() {
-  const { data: myComplaints = [], isLoading: isLoadingMy } = useMyComplaints();
-  const { data: complaintsAgainstMe = [], isLoading: isLoadingAgainst } = useComplaintsAgainstMe();
+  const {
+    data: myComplaints = [],
+    isLoading: isLoadingMy,
+    error: myComplaintsError,
+  } = useMyComplaints();
+  const {
+    data: complaintsAgainstMe = [],
+    isLoading: isLoadingAgainst,
+    error: complaintsAgainstMeError,
+  } = useComplaintsAgainstMe();
   const isLoading = isLoadingMy || isLoadingAgainst;
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (myComplaintsError && myComplaints.length === 0) {
+      const errorMessage =
+        myComplaintsError instanceof Error
+          ? myComplaintsError.message
+          : 'Failed to load my complaints';
+      toast.error(errorMessage);
+    }
+  }, [myComplaintsError, myComplaints]);
+
+  useEffect(() => {
+    if (complaintsAgainstMeError && complaintsAgainstMe.length === 0) {
+      const errorMessage =
+        complaintsAgainstMeError instanceof Error
+          ? complaintsAgainstMeError.message
+          : 'Failed to load complaints against me';
+      toast.error(errorMessage);
+    }
+  }, [complaintsAgainstMeError, complaintsAgainstMe]);
   const [selectedTab, setSelectedTab] = useState('filed');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');

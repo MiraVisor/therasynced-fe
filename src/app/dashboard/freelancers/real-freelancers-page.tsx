@@ -191,15 +191,6 @@ const RealFreelancersPage = () => {
     error: statsError,
   } = useFreelancerStats();
 
-  // Show stats error as toast
-  useEffect(() => {
-    if (statsError) {
-      const errorMessage =
-        statsError instanceof Error ? statsError.message : 'Failed to load freelancer stats';
-      toast.error(errorMessage);
-    }
-  }, [statsError]);
-
   // Fetch freelancers with pagination and search
   const {
     data: freelancersData,
@@ -215,13 +206,21 @@ const RealFreelancersPage = () => {
   const freelancers = freelancersData?.freelancers || [];
   const pagination = freelancersData?.pagination;
 
-  // Show error as toast when it occurs
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    if (error) {
+    if (statsError && !freelancerStats) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load freelancer stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, freelancerStats]);
+
+  useEffect(() => {
+    if (error && !freelancersData) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load freelancers';
       toast.error(errorMessage);
     }
-  }, [error]);
+  }, [error, freelancersData]);
 
   const stats =
     freelancerStats?.totalFreelancers?.value && freelancerStats.activeFreelancers?.value

@@ -2,6 +2,7 @@
 
 import { Search } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,6 +91,14 @@ const FavoritesPage = () => {
     },
     [debouncedSearch],
   );
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (error && favorites.length === 0) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load favorites';
+      toast.error(errorMessage);
+    }
+  }, [error, favorites]);
 
   useEffect(() => {
     if (!favorites || !Array.isArray(favorites)) {

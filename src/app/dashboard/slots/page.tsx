@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
@@ -23,8 +24,17 @@ const SlotsPage = () => {
   const { role } = useAuth();
 
   // Use React Query hooks
-  const { data: slotStats, isLoading: isLoadingStats } = useSlotStats();
+  const { data: slotStats, isLoading: isLoadingStats, error: statsError } = useSlotStats();
   const { mutate: deleteSlotMutation } = useDeleteSlot();
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (statsError && !slotStats) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load slot stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, slotStats]);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

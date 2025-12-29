@@ -98,6 +98,19 @@ export const useFreelancerStats = () => {
 };
 
 /**
+ * Hook to fetch freelancer analytics data
+ */
+export const useFreelancerAnalytics = () => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics'],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analytics);
+      return response.data.data;
+    },
+  });
+};
+
+/**
  * Hook to search freelancers with filters (single page)
  */
 export const useSearchFreelancers = (params: SearchFreelancersParams) => {

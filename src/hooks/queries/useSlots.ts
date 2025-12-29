@@ -83,7 +83,7 @@ export const useCreateSlots = () => {
       void queryClient.invalidateQueries({ queryKey: ['slots'] });
       // Removed toast - components handle their own toasts with more specific messages
     },
-    onError: (error: unknown) => {
+    onError: () => {
       // Removed toast - components handle their own error toasts
     },
   });
