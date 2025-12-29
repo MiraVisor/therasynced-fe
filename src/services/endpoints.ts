@@ -180,6 +180,15 @@ export const ENDPOINTS = {
     paymentMethods: '/subscription/payment-methods',
     updatePaymentMethod: '/subscription/payment-method',
   },
+  // Refund endpoints
+  refund: {
+    create: '/refund/request',
+    myRequests: '/refund/my-requests',
+    getDetails: (id: string) => `/refund/request/${id}`,
+    adminAll: '/refund/admin/all',
+    adminApprove: (id: string) => `/refund/admin/approve/${id}`,
+    adminReject: (id: string) => `/refund/admin/reject/${id}`,
+  },
   // Rating endpoints
   ratings: {
     create: '/ratings',

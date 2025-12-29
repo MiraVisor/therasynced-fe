@@ -178,6 +178,11 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: Receipt,
     },
     {
+      name: 'Refunds',
+      url: '/dashboard/admin/refunds',
+      icon: FileDown,
+    },
+    {
       name: 'Finance',
       url: '/dashboard/finance',
       icon: Wallet,
