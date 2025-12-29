@@ -1,12 +1,14 @@
 'use client';
 
-import { Save, Settings, Trash2 } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import { Edit, Save, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -76,6 +78,18 @@ const StampConfigPage = () => {
     setIsEditDialogOpen(true);
   };
 
+  const handleDelete = async (therapistId: string) => {
+    if (!confirm('Are you sure you want to delete this configuration?')) {
+      return;
+    }
+
+    try {
+      await deleteMutation.mutateAsync(therapistId);
+    } catch (error) {
+      // Error handled by mutation
+    }
+  };
+
   const handleUpdate = async () => {
     if (!selectedConfig) return;
 
@@ -98,17 +112,81 @@ const StampConfigPage = () => {
     }
   };
 
-  const handleDelete = async (therapistId: string) => {
-    if (!confirm('Are you sure you want to delete this configuration?')) {
-      return;
-    }
-
-    try {
-      await deleteMutation.mutateAsync(therapistId);
-    } catch (error) {
-      // Error handled by mutation
-    }
-  };
+  // Column definitions for stamp configs table
+  const columns: ColumnDef<TherapistStampConfig>[] = [
+    {
+      accessorKey: 'therapist.name',
+      header: 'Freelancer',
+      cell: ({ row }) => (
+        <div className="font-inter font-medium text-charcoal">
+          {row.original.therapist?.name || 'Unknown Freelancer'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'therapist.email',
+      header: 'Email',
+      cell: ({ row }) => (
+        <div className="font-inter font-medium text-charcoal">
+          {row.original.therapist?.email || 'Unknown Email'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'stampTarget',
+      header: 'Stamp Target',
+      cell: ({ row }) => (
+        <div className="font-poppins text-lg font-bold text-charcoal">
+          {row.original.stampTarget || 'Default'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'discountPercentage',
+      header: 'Discount',
+      cell: ({ row }) => (
+        <div className="font-poppins text-lg font-bold text-success">
+          {row.original.discountPercentage || 'Default'}%
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => (
+        <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
+          {row.original.isActive ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: 'Last Updated',
+      cell: ({ row }) => (
+        <div className="font-inter text-xs text-muted-foreground">
+          {new Date(row.original.updatedAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const config = row.original;
+        return (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => handleEdit(config)}>
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleDelete(config.therapistId)}>
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
 
   if (isLoadingConfigs && configs.length === 0) {
     return (
@@ -117,7 +195,7 @@ const StampConfigPage = () => {
           <div>
             <h1 className="font-poppins font-bold text-2xl text-charcoal">Stamp Configuration</h1>
             <p className="font-inter text-sm text-muted-foreground">
-              Manage therapist stamp loyalty settings
+              Manage freelancer stamp loyalty settings
             </p>
           </div>
         }
@@ -136,7 +214,7 @@ const StampConfigPage = () => {
           <div>
             <h1 className="font-poppins font-bold text-2xl text-charcoal">Stamp Configuration</h1>
             <p className="font-inter text-sm text-muted-foreground">
-              Manage therapist stamp loyalty settings
+              Manage freelancer stamp loyalty settings
             </p>
           </div>
           <Button onClick={() => setIsBulkDialogOpen(true)}>
@@ -151,84 +229,39 @@ const StampConfigPage = () => {
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-4">
             <p className="font-inter text-sm text-blue-800">
-              <strong>Note:</strong> Therapists without custom configurations will use the default
+              <strong>Note:</strong> Freelancers without custom configurations will use the default
               settings (5 stamps for 15% discount). Use bulk update to apply settings to all
-              therapists at once.
+              freelancers at once.
             </p>
           </CardContent>
         </Card>
 
-        {/* Configs List */}
-        {configs.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="font-inter text-gray-500">No custom configurations found.</p>
-              <p className="font-inter text-sm text-gray-400 mt-2">
-                All therapists are using default settings.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {configs.map((config) => (
-              <Card key={config.therapistId} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="font-poppins text-lg font-semibold">
-                      {config.therapist?.name || 'Unknown Therapist'}
-                    </CardTitle>
-                    <Badge variant={config.isActive ? 'default' : 'secondary'}>
-                      {config.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="font-inter text-sm text-muted-foreground">Stamp Target</p>
-                    <p className="font-poppins text-2xl font-bold text-charcoal">
-                      {config.stampTarget || 'Default'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-inter text-sm text-muted-foreground">Discount Percentage</p>
-                    <p className="font-poppins text-2xl font-bold text-success">
-                      {config.discountPercentage || 'Default'}%
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <span className="font-inter text-xs text-muted-foreground">
-                      Updated: {new Date(config.updatedAt).toLocaleDateString()}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(config)}>
-                        <Settings className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(config.therapistId)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        {/* Configs Table */}
+        <DataTable
+          columns={columns}
+          data={configs}
+          title="Stamp Configurations"
+          searchKey="therapist.name"
+          searchPlaceholder="Search freelancers..."
+          enableSorting={true}
+          enableFiltering={true}
+          enableColumnVisibility={true}
+          enablePagination={true}
+          showSearch={true}
+          showSorting={true}
+          initialLoading={isLoadingConfigs && configs.length === 0}
+        />
 
         {/* Bulk Update Dialog */}
         <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="font-poppins font-semibold">
-                Bulk Update All Therapists
+                Bulk Update All Freelancers
               </DialogTitle>
               <DialogDescription className="font-inter">
-                Apply the same stamp configuration to all therapists. This will create or update
-                configurations for every therapist.
+                Apply the same stamp configuration to all freelancers. This will create or update
+                configurations for every freelancer.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -304,7 +337,7 @@ const StampConfigPage = () => {
                 Edit Configuration for {selectedConfig?.therapist?.name}
               </DialogTitle>
               <DialogDescription className="font-inter">
-                Update the stamp target and discount percentage for this therapist.
+                Update the stamp target and discount percentage for this freelancer.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">

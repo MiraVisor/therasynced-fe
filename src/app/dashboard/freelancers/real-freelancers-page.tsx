@@ -1,7 +1,8 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, MapPin, Star } from 'lucide-react';
+import { Edit, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -14,156 +15,8 @@ import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useFreelancers, useFreelancerStats } from '@/hooks/queries/useFreelancers';
 import { Freelancer } from '@/types/types';
 
-// Column definitions for freelancers table
-const freelancerColumns: ColumnDef<Freelancer>[] = [
-  {
-    accessorKey: 'name',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
-        >
-          Freelancer
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-inter font-medium text-charcoal">
-          {row.original.cardInfo?.initials || row.original.name.charAt(0)}
-        </div>
-        <div>
-          <div className="font-inter font-medium text-charcoal">{row.original.name}</div>
-          <div className="font-inter text-xs text-muted-foreground">{row.original.email}</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'mainJobTitle.name',
-    header: 'Specialization',
-    cell: ({ row }) => (
-      <div>
-        <div className="font-inter font-medium text-charcoal">
-          {row.original.mainJobTitle?.name || 'N/A'}
-        </div>
-        <div className="font-inter text-xs text-muted-foreground">
-          {row.original.mainJobTitle?.description || ''}
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'cardInfo.averageRating',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
-        >
-          Rating
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const rating = row.original.cardInfo?.averageRating || 0;
-      return (
-        <div className="flex items-center gap-1">
-          <div className="flex">
-            {Array(5)
-              .fill(0)
-              .map((_, index) => (
-                <Star
-                  key={index}
-                  className={`h-4 w-4 ${
-                    index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                  }`}
-                />
-              ))}
-          </div>
-          <span className="text-sm text-gray-500">({rating})</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'city',
-    header: 'Location',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1 font-inter text-sm text-foreground">
-        <MapPin className="h-4 w-4 text-muted-foreground" />
-        <span>{row.original.city || 'N/A'}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'slotSummary.availableSlots',
-    header: 'Available Slots',
-    cell: ({ row }) => {
-      const availableSlots = row.original.slotSummary?.availableSlots ?? null;
-      const totalSlots = row.original.slotSummary?.totalSlots ?? null;
-
-      return (
-        <div className="flex items-center gap-1 font-inter text-sm text-foreground">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <span>
-            {availableSlots !== null && totalSlots !== null
-              ? `${availableSlots} of ${totalSlots}`
-              : 'N/A'}
-          </span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'cardInfo.patientStories',
-    header: 'Patients',
-    cell: ({ row }) => (
-      <div className="font-inter text-sm text-foreground text-center">
-        {row.original.cardInfo?.patientStories !== undefined
-          ? row.original.cardInfo.patientStories
-          : 'N/A'}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'isActive',
-    header: 'Status',
-    cell: ({ row }) => {
-      const { isActive } = row.original;
-
-      return (
-        <Badge
-          variant="outline"
-          className={`font-inter font-medium text-xs px-2 py-1 ${
-            isActive
-              ? 'bg-success/10 text-success border-success/20'
-              : 'bg-error/10 text-error border-error/20'
-          }`}
-        >
-          {isActive ? 'Active' : 'Inactive'}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: 'verificationStatus',
-    header: 'Verification',
-    cell: ({ row }) => {
-      const status = row.original.verificationStatus;
-      const verificationStatus = status || 'UNVERIFIED';
-
-      return <VerificationBadge status={verificationStatus} size="sm" />;
-    },
-  },
-];
-
 const RealFreelancersPage = () => {
+  const router = useRouter();
   // State for pagination and search
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -222,6 +75,108 @@ const RealFreelancersPage = () => {
     }
   }, [error, freelancersData]);
 
+  const handleViewProfile = (freelancerId: string) => {
+    router.push(`/dashboard/freelancer/${freelancerId}`);
+  };
+
+  const handleEdit = (_freelancerId: string) => {
+    // TODO: Implement edit functionality - could navigate to edit page or open dialog
+    toast.info('Edit functionality coming soon');
+  };
+
+  // Column definitions for freelancers table
+  const freelancerColumns: ColumnDef<Freelancer>[] = [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      cell: ({ row }) => (
+        <div className="font-mono text-xs text-muted-foreground">{row.original.id ?? 'N/A'}</div>
+      ),
+    },
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) => (
+        <div className="font-inter font-medium text-charcoal">{row.original.name ?? 'N/A'}</div>
+      ),
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+      cell: ({ row }) => (
+        <div className="font-inter text-sm text-muted-foreground">
+          {row.original.email ?? 'N/A'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'mainJobTitle.name',
+      header: 'Specialization',
+      cell: ({ row }) => (
+        <div className="font-inter text-sm text-charcoal">
+          {row.original.mainJobTitle?.name ?? 'N/A'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => {
+        const { isActive } = row.original;
+        return (
+          <Badge
+            variant="outline"
+            className={`font-inter font-medium text-xs px-2 py-1 ${
+              isActive
+                ? 'bg-success/10 text-success border-success/20'
+                : 'bg-error/10 text-error border-error/20'
+            }`}
+          >
+            {isActive ? 'Active' : 'Inactive'}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: 'verificationStatus',
+      header: 'Verification',
+      cell: ({ row }) => {
+        const status = row.original.verificationStatus;
+        const verificationStatus = status ?? 'UNVERIFIED';
+        return <VerificationBadge status={verificationStatus} size="sm" />;
+      },
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const freelancer = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleViewProfile(freelancer.id)}
+              className="h-8 w-8 p-0 hover:bg-info/10"
+              title="View Profile"
+            >
+              <Eye className="h-4 w-4 text-info" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEdit(freelancer.id)}
+              className="h-8 w-8 p-0 hover:bg-info/10"
+              title="Edit"
+            >
+              <Edit className="h-4 w-4 text-info" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
   const stats =
     freelancerStats?.totalFreelancers?.value && freelancerStats.activeFreelancers?.value
       ? [
@@ -259,10 +214,10 @@ const RealFreelancersPage = () => {
     >
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {stats.map((stat, index) => {
+        {stats.map((stat) => {
           return (
             <EnhancedStatCard
-              key={index}
+              key={stat.title}
               title={stat.title}
               value={stat.value}
               trend={stat.trend}
@@ -282,7 +237,7 @@ const RealFreelancersPage = () => {
         data={freelancers as unknown as Freelancer[]}
         title="All Freelancers"
         searchKey="name"
-        searchPlaceholder="Search by name..."
+        searchPlaceholder="Search by name or email..."
         enableSorting={false}
         enableFiltering={true}
         enableColumnVisibility={true}
