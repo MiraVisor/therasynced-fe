@@ -403,6 +403,7 @@ export default function MyBookingsPage() {
                       onMessage={handleMessage}
                       onReschedule={handleReschedule}
                       onCancel={handleCancel}
+                      onRate={handleReview}
                       cancellingBookingId={cancellingBookingId}
                     />
                   </div>

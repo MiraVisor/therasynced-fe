@@ -25,7 +25,10 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
   showCount = true,
   className,
 }) => {
-  if (rating === undefined || rating === null || rating === 0) {
+  // Ensure rating is a valid number
+  const numericRating = typeof rating === 'number' ? rating : Number(rating) || 0;
+
+  if (numericRating === 0 || isNaN(numericRating)) {
     return (
       <div className="flex items-center gap-0.5">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -41,8 +44,9 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
     );
   }
 
-  const roundedRating = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5 && rating % 1 < 1;
+  const roundedRating = Math.floor(numericRating);
+  const decimalPart = numericRating % 1;
+  const hasHalfStar = decimalPart >= 0.5 && decimalPart < 1;
 
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
@@ -51,6 +55,29 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
           const isFilled = star <= roundedRating;
           const isHalfFilled = star === roundedRating + 1 && hasHalfStar;
 
+          if (isHalfFilled) {
+            // Render half-star using overflow and positioning
+            return (
+              <div
+                key={star}
+                className="relative inline-block"
+                style={{ width: sizeClasses[size], height: sizeClasses[size] }}
+              >
+                {/* Empty star background */}
+                <Star
+                  className={cn(
+                    sizeClasses[size],
+                    'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600',
+                  )}
+                />
+                {/* Half-filled star - clipped to left half */}
+                <div className="absolute inset-0 overflow-hidden" style={{ width: '50%' }}>
+                  <Star className={cn(sizeClasses[size], 'fill-yellow-400 text-yellow-400')} />
+                </div>
+              </div>
+            );
+          }
+
           return (
             <Star
               key={star}
@@ -58,9 +85,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
                 sizeClasses[size],
                 isFilled
                   ? 'fill-yellow-400 text-yellow-400'
-                  : isHalfFilled
-                    ? 'fill-yellow-200 text-yellow-400'
-                    : 'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600',
+                  : 'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600',
               )}
             />
           );
@@ -68,7 +93,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
       </div>
       {showCount && (
         <span className="text-sm text-gray-600 dark:text-gray-400">
-          {rating.toFixed(1)}{' '}
+          {numericRating.toFixed(1)}{' '}
           {reviewCount > 0 && `(${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`}
         </span>
       )}

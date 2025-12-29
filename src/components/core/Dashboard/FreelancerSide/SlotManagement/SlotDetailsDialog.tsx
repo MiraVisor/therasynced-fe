@@ -18,7 +18,6 @@ import { toast } from 'react-toastify';
 
 import * as bookingService from '@/services/bookingService';
 import { InvoiceGenerationDialog } from '@/components/core/Dashboard/FreelancerSide/Appointment/InvoiceGenerationDialog';
-import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -454,28 +453,6 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                       Discount: -EUR {slot.booking.discountAmount.toFixed(2)}
                     </p>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Client Rating (if booking has been rated) */}
-          {slot.booking?.rating && (
-            <div className="mt-6 pt-6 border-t">
-              <Label className="font-inter text-xs text-muted-foreground mb-2 block">
-                Client Rating
-              </Label>
-              <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                <div className="flex items-center gap-3">
-                  <RatingDisplay rating={slot.booking.rating.rating} size="md" showCount={false} />
-                  <span className="font-poppins font-semibold text-charcoal">
-                    {slot.booking.rating.rating}/5
-                  </span>
-                  {slot.booking.rating.createdAt && (
-                    <span className="font-inter text-sm text-muted-foreground ml-auto">
-                      Rated on {safeFormatDate(slot.booking.rating.createdAt, 'MMM d, yyyy')}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>

@@ -3,6 +3,7 @@ import {
   ApiResponse,
   CreateRatingDto,
   FreelancerRatingsResponse,
+  MyRatingsResponse,
   Rating,
   RatingEligibility,
 } from '@/types/types';
@@ -35,7 +36,7 @@ export const getMyRatings = async (params?: {
   limit?: number;
   minRating?: number;
   maxRating?: number;
-}): Promise<FreelancerRatingsResponse> => {
+}): Promise<MyRatingsResponse> => {
   const response = await api.get('/ratings/my-ratings', { params });
   return response.data;
 };
