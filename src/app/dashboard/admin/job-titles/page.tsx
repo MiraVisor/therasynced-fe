@@ -3,6 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Edit, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -20,6 +21,7 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import { Textarea } from '@/components/ui/textarea';
 import {
   useCreateJobTitle,
@@ -51,6 +53,7 @@ const JobTitlesPage = () => {
     data: jobTitlesResponse,
     isLoading: loading,
     isFetching: _isFetching,
+    error: jobTitlesError,
   } = useJobTitles({
     page,
     limit: pageSize,
@@ -60,8 +63,25 @@ const JobTitlesPage = () => {
   const pagination = jobTitlesResponse?.pagination || null;
   const initialLoading = loading && !jobTitlesResponse;
 
-  const { data: statsResponse, isLoading: statsLoading } = useJobTitlesStats();
+  const { data: statsResponse, isLoading: statsLoading, error: statsError } = useJobTitlesStats();
   const stats = statsResponse?.data || null;
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (jobTitlesError && !jobTitlesResponse) {
+      const errorMessage =
+        jobTitlesError instanceof Error ? jobTitlesError.message : 'Failed to load job titles';
+      toast.error(errorMessage);
+    }
+  }, [jobTitlesError, jobTitlesResponse]);
+
+  useEffect(() => {
+    if (statsError && !statsResponse) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load job title stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, statsResponse]);
 
   const createMutation = useCreateJobTitle();
   const updateMutation = useUpdateJobTitle();
@@ -247,16 +267,15 @@ const JobTitlesPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((card) => (
-            <EnhancedStatCard
-              key={card.title}
-              title={card.title}
-              value={card.value}
-              loading={statsLoading}
-            />
-          ))}
-        </div>
+        {statsLoading && !statsResponse ? (
+          <StatsCardsSkeleton count={4} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statCards.map((card) => (
+              <EnhancedStatCard key={card.title} title={card.title} value={card.value} />
+            ))}
+          </div>
+        )}
 
         {/* Job Titles Table */}
         <DataTable

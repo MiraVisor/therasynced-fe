@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import { Textarea } from '@/components/ui/textarea';
 import {
   useCreateServiceCategory,
@@ -61,6 +62,7 @@ const ServiceCategoriesPage = () => {
     data: categoriesResponse,
     isLoading: categoriesLoading,
     isFetching: _isFetching,
+    error: categoriesError,
   } = useServiceCategories({
     page,
     limit: pageSize,
@@ -70,8 +72,31 @@ const ServiceCategoriesPage = () => {
   const pagination = categoriesResponse?.pagination || null;
   const categoriesInitialLoading = categoriesLoading && !categoriesResponse;
 
-  const { data: statsResponse } = useServiceCategoriesStats();
+  const {
+    data: statsResponse,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useServiceCategoriesStats();
   const stats = statsResponse?.data || null;
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (categoriesError && !categoriesResponse) {
+      const errorMessage =
+        categoriesError instanceof Error
+          ? categoriesError.message
+          : 'Failed to load service categories';
+      toast.error(errorMessage);
+    }
+  }, [categoriesError, categoriesResponse]);
+
+  useEffect(() => {
+    if (statsError && !statsResponse) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load category stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, statsResponse]);
 
   const createMutation = useCreateServiceCategory();
   const updateMutation = useUpdateServiceCategory();
@@ -249,16 +274,15 @@ const ServiceCategoriesPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((card) => (
-            <EnhancedStatCard
-              key={card.title}
-              title={card.title}
-              value={card.value}
-              loading={categoriesInitialLoading}
-            />
-          ))}
-        </div>
+        {statsLoading && !statsResponse ? (
+          <StatsCardsSkeleton count={4} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statCards.map((card) => (
+              <EnhancedStatCard key={card.title} title={card.title} value={card.value} />
+            ))}
+          </div>
+        )}
 
         {/* Service Categories Table */}
         <DataTable

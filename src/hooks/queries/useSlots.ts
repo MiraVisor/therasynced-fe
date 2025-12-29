@@ -81,10 +81,10 @@ export const useCreateSlots = () => {
     mutationFn: (data: CreateSlotsDto) => slotApi.createSlot(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['slots'] });
-      toast.success('Slots created successfully!');
+      // Removed toast - components handle their own toasts with more specific messages
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error) || 'Failed to create slots');
+      // Removed toast - components handle their own error toasts
     },
   });
 };

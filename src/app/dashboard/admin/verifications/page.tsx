@@ -21,6 +21,7 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import { useAdminVerifications, useAdminVerificationStats } from '@/hooks/queries/useAdmin';
 import { useAdminGetFileSignedUrl } from '@/hooks/queries/useFreelancerFiles';
 import adminVerificationService, {
@@ -127,21 +128,21 @@ const VerificationsPage = () => {
         total: 0,
       };
 
-  // Show errors as toast when they occur
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    if (error) {
+    if (error && !verificationsData) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load verifications';
       toast.error(errorMessage);
     }
-  }, [error]);
+  }, [error, verificationsData]);
 
   useEffect(() => {
-    if (statsError) {
+    if (statsError && !statsData) {
       const errorMessage =
         statsError instanceof Error ? statsError.message : 'Failed to load verification stats';
       toast.error(errorMessage);
     }
-  }, [statsError]);
+  }, [statsError, statsData]);
 
   // Handle action submission - admins can approve/reject at any time
   // Backend handles clearing opposite status fields automatically
@@ -523,16 +524,19 @@ const VerificationsPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {statsConfig.map((config) => (
-            <EnhancedStatCard
-              key={config.key}
-              title={config.title}
-              value={stats[config.key].toString()}
-              loading={statsLoading && !statsData}
-            />
-          ))}
-        </div>
+        {statsLoading && !statsData ? (
+          <StatsCardsSkeleton count={4} />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {statsConfig.map((config) => (
+              <EnhancedStatCard
+                key={config.key}
+                title={config.title}
+                value={stats[config.key].toString()}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Verifications Table */}
         <DataTable

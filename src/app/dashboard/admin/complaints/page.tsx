@@ -12,6 +12,7 @@ import { StatusFilterOption } from '@/components/core/Dashboard/AdminSide/Compon
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Button } from '@/components/ui/button';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import { useAdminComplaints, useAdminComplaintStats } from '@/hooks/queries/useComplaints';
 import { ComplaintStatus } from '@/types/types';
 
@@ -100,21 +101,21 @@ const ComplaintsPage = () => {
         dismissed: 0,
       };
 
-  // Show errors as toast when they occur
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    if (error) {
+    if (error && !complaintsData) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load complaints';
       toast.error(errorMessage);
     }
-  }, [error]);
+  }, [error, complaintsData]);
 
   useEffect(() => {
-    if (statsError) {
+    if (statsError && !statsData) {
       const errorMessage =
         statsError instanceof Error ? statsError.message : 'Failed to load complaint stats';
       toast.error(errorMessage);
     }
-  }, [statsError]);
+  }, [statsError, statsData]);
 
   const handleViewDetails = (complaintId: string) => {
     router.push(`/dashboard/admin/complaints/${complaintId}`);
@@ -246,19 +247,22 @@ const ComplaintsPage = () => {
     },
   ];
 
+  // Only show loading skeleton if no cached data
+  const isLoadingStats = statsLoading && !statsData;
+
   // Render stat cards with responsive layout
-  const renderStatCards = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {statCards.map((card) => (
-        <EnhancedStatCard
-          key={card.title}
-          title={card.title}
-          value={card.value}
-          loading={statsLoading && !statsData}
-        />
-      ))}
-    </div>
-  );
+  const renderStatCards = () => {
+    if (isLoadingStats) {
+      return <StatsCardsSkeleton count={5} />;
+    }
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((card) => (
+          <EnhancedStatCard key={card.title} title={card.title} value={card.value} />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <DashboardPageWrapper

@@ -8,6 +8,7 @@ import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import { useAdminBookings, useAdminBookingsStats } from '@/hooks/queries/useAdmin';
 import { AdminBookingDto } from '@/services/adminBookingsService';
 
@@ -105,21 +106,21 @@ const AdminBookingsPage = () => {
     pendingBookings: 0,
   };
 
-  // Show errors as toast when they occur
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    if (error) {
+    if (error && !bookingsData) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load bookings';
       toast.error(errorMessage);
     }
-  }, [error]);
+  }, [error, bookingsData]);
 
   useEffect(() => {
-    if (statsError) {
+    if (statsError && !statsData) {
       const errorMessage =
         statsError instanceof Error ? statsError.message : 'Failed to load booking stats';
       toast.error(errorMessage);
     }
-  }, [statsError]);
+  }, [statsError, statsData]);
 
   // Format currency
   const formatCurrency = (value: number): string => {
@@ -231,16 +232,19 @@ const AdminBookingsPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {statsConfig.map((config) => (
-            <EnhancedStatCard
-              key={config.key}
-              title={config.title}
-              value={stats[config.key].toString()}
-              loading={statsLoading && !statsData}
-            />
-          ))}
-        </div>
+        {statsLoading && !statsData ? (
+          <StatsCardsSkeleton count={7} />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {statsConfig.map((config) => (
+              <EnhancedStatCard
+                key={config.key}
+                title={config.title}
+                value={stats[config.key].toString()}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Bookings Table */}
         <DataTable

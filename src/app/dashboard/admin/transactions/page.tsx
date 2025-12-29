@@ -3,6 +3,7 @@
 import { Download, FileText, Filter, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { TransactionTable } from '@/components/core/Dashboard/AdminSide/Transactions/TransactionTable';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -16,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import {
   useAdminTransactions,
   useExportTransactions,
@@ -189,6 +191,7 @@ function AdminTransactionsPageContent() {
     data: transactionsData,
     isLoading: isLoadingTransactions,
     isFetching: isFetchingTransactions,
+    error: transactionsError,
   } = useAdminTransactions({
     ...filters,
     search: debouncedSearch || undefined,
@@ -198,11 +201,34 @@ function AdminTransactionsPageContent() {
 
   // Stats query - will automatically refetch when dateFrom, dateTo, or freelancerId changes
   // because the query key includes these values
-  const { data: stats, isLoading: isLoadingStats } = useTransactionStats({
+  const {
+    data: stats,
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = useTransactionStats({
     dateFrom: filters.dateFrom,
     dateTo: filters.dateTo,
     freelancerId: filters.freelancerId,
   });
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (transactionsError && !transactionsData) {
+      const errorMessage =
+        transactionsError instanceof Error
+          ? transactionsError.message
+          : 'Failed to load transactions';
+      toast.error(errorMessage);
+    }
+  }, [transactionsError, transactionsData]);
+
+  useEffect(() => {
+    if (statsError && !stats) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load transaction stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, stats]);
   const { mutate: exportTransactions, isPending: isExporting } = useExportTransactions();
 
   const transactions = transactionsData?.transactions || [];
@@ -220,7 +246,8 @@ function AdminTransactionsPageContent() {
   };
 
   const isLoading = isLoadingTransactions || isLoadingStats;
-  const initialLoading = isLoading && !transactionsData && !stats;
+  // Only show loading skeleton if no cached data
+  const isLoadingData = isLoading && !transactionsData && !stats;
 
   const statsCards = stats
     ? [
@@ -272,18 +299,15 @@ function AdminTransactionsPageContent() {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsCards.map((stat, index) => {
-            return (
-              <EnhancedStatCard
-                key={index}
-                title={stat.title}
-                value={stat.value}
-                loading={initialLoading}
-              />
-            );
-          })}
-        </div>
+        {isLoadingData ? (
+          <StatsCardsSkeleton count={5} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statsCards.map((stat, index) => {
+              return <EnhancedStatCard key={index} title={stat.title} value={stat.value} />;
+            })}
+          </div>
+        )}
 
         {/* Transaction Table with Integrated Filters */}
         <div className="border rounded-lg">

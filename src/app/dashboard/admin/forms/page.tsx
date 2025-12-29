@@ -20,6 +20,7 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import { Switch } from '@/components/ui/switch';
 import {
   useDeleteFormTemplate,
@@ -304,15 +305,15 @@ const AdminFormsPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <EnhancedStatCard
-            title="Total Templates"
-            value={stats.total.toString()}
-            loading={isLoading}
-          />
-          <EnhancedStatCard title="Visible" value={stats.visible.toString()} loading={isLoading} />
-          <EnhancedStatCard title="Hidden" value={stats.hidden.toString()} loading={isLoading} />
-        </div>
+        {isLoading && !templates ? (
+          <StatsCardsSkeleton count={3} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <EnhancedStatCard title="Total Templates" value={stats.total.toString()} />
+            <EnhancedStatCard title="Visible" value={stats.visible.toString()} />
+            <EnhancedStatCard title="Hidden" value={stats.hidden.toString()} />
+          </div>
+        )}
 
         {/* Templates Table */}
         <DataTable

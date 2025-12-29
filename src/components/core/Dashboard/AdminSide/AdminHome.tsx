@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import adminOverviewService from '@/services/adminOverviewService';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -16,7 +17,7 @@ const AdminHome = () => {
 
   const {
     data: overviewData,
-    isLoading: _isLoading,
+    isLoading,
     isFetching: _isFetching,
     error,
   } = useQuery({
@@ -24,13 +25,16 @@ const AdminHome = () => {
     queryFn: () => adminOverviewService.getOverview(),
   });
 
-  // Handle errors separately
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    if (error) {
+    if (error && !overviewData) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load overview data';
       toast.error(`Error loading overview data: ${errorMessage}`);
     }
-  }, [error]);
+  }, [error, overviewData]);
+
+  // Only show loading skeleton if no cached data
+  const isLoadingData = isLoading && !overviewData;
 
   // Unused variable removed - was: const _initialLoading = isLoading && !overviewData;
 
@@ -113,22 +117,26 @@ const AdminHome = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsData.map((stat, index) => {
-            return (
-              <EnhancedStatCard
-                key={index}
-                title={stat.title}
-                value={stat.value}
-                trend={stat.trend}
-                interactive
-                onClick={() => {
-                  // Navigate to details or show modal
-                }}
-              />
-            );
-          })}
-        </div>
+        {isLoadingData ? (
+          <StatsCardsSkeleton count={4} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statsData.map((stat, index) => {
+              return (
+                <EnhancedStatCard
+                  key={index}
+                  title={stat.title}
+                  value={stat.value}
+                  trend={stat.trend}
+                  interactive
+                  onClick={() => {
+                    // Navigate to details or show modal
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
 
         {/* Revenue Chart */}
         <AdminRevenueChart
