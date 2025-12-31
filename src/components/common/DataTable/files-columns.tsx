@@ -6,7 +6,7 @@ import { Award, Eye, File, FileText, Image as ImageIcon, Shield, Trash2, User } 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FreelancerFile, FreelancerFileType } from '@/types/types';
-import { formatFileSize, getFileTypeIcon, isImageFile, isPdfFile } from '@/utils/fileUpload';
+import { formatFileSize } from '@/utils/fileUpload';
 
 // Get file type icon
 const getFileTypeIconComponent = (fileType: FreelancerFileType) => {
@@ -86,11 +86,11 @@ export const createFilesColumns = (
     accessorKey: 'fileType',
     header: 'Type',
     cell: ({ row }) => {
-      const fileType = row.getValue('fileType') as FreelancerFileType;
+      const fileType = row.getValue('fileType');
       return (
         <div className="flex items-center space-x-2">
-          {getFileTypeIconComponent(fileType)}
-          {getFileTypeBadge(fileType)}
+          {getFileTypeIconComponent(fileType as any)}
+          {getFileTypeBadge(fileType as any)}
         </div>
       );
     },
@@ -112,12 +112,13 @@ export const createFilesColumns = (
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string | undefined;
+      const status = row.getValue('status');
       if (!status) {
         return <Badge variant="outline">No Status</Badge>;
       }
 
-      switch (status.toUpperCase()) {
+      const statusStr = String(status || '');
+      switch (statusStr.toUpperCase()) {
         case 'APPROVED':
           return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
         case 'PENDING':
@@ -125,7 +126,7 @@ export const createFilesColumns = (
         case 'REJECTED':
           return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
         default:
-          return <Badge variant="outline">{status}</Badge>;
+          return <Badge variant="outline">{statusStr}</Badge>;
       }
     },
   },

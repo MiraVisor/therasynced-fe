@@ -89,15 +89,13 @@ const SessionCard = ({
 };
 
 const UpcomingSessionsList = () => {
-  const [selectedSession, setSelectedSession] = useState<(typeof sessions)[0] | null>(null);
+  const [_selectedSession, setSelectedSession] = useState<(typeof sessions)[0] | null>(null);
 
   const handleViewDetails = (session: (typeof sessions)[0]) => {
     setSelectedSession(session);
   };
 
-  const handleCloseDialog = () => {
-    setSelectedSession(null);
-  };
+  // Unused function removed - was: const _handleCloseDialog = () => { ... };
 
   return (
     <>

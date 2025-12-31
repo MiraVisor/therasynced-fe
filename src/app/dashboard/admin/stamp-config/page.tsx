@@ -1,14 +1,14 @@
 'use client';
 
-import { Plus, Save, Settings, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { ColumnDef } from '@tanstack/react-table';
+import { Edit, Save, Settings, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
+import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -22,26 +22,18 @@ import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Switch } from '@/components/ui/switch';
 import {
-  bulkUpdateStampConfigs,
-  createOrUpdateStampConfig,
-  deleteStampConfig,
-  getAllStampConfigs,
-  updateStampConfig,
-} from '@/redux/api/loyaltyApi';
-import { RootState } from '@/redux/store';
-import {
+  useBulkUpdateStampConfigs,
+  useDeleteStampConfig,
+  useStampConfigs,
+  useUpdateStampConfig,
+} from '@/hooks/queries/useAdmin';
+import type {
   BulkTherapistStampConfigDto,
-  CreateTherapistStampConfigDto,
   TherapistStampConfig,
   UpdateTherapistStampConfigDto,
 } from '@/types/types';
 
 const StampConfigPage = () => {
-  const dispatch = useDispatch();
-  const { configs, isLoadingConfigs, isUpdatingConfig, configError } = useSelector(
-    (state: RootState) => state.stamps,
-  );
-
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<TherapistStampConfig | null>(null);
@@ -56,27 +48,23 @@ const StampConfigPage = () => {
     isActive: true,
   });
 
-  useEffect(() => {
-    dispatch(getAllStampConfigs() as any);
-  }, [dispatch]);
+  const { data: configsResponse, isLoading: isLoadingConfigs } = useStampConfigs();
+  const configs = configsResponse?.data || [];
+
+  const bulkUpdateMutation = useBulkUpdateStampConfigs();
+  const updateMutation = useUpdateStampConfig();
+  const deleteMutation = useDeleteStampConfig();
 
   const handleBulkUpdate = async () => {
     if (bulkForm.stampTarget <= 0 || bulkForm.discountPercentage <= 0) {
-      toast.error('Stamp target and discount percentage must be greater than 0');
       return;
     }
 
     try {
-      const result = await dispatch(bulkUpdateStampConfigs(bulkForm) as any);
-      if (bulkUpdateStampConfigs.fulfilled.match(result)) {
-        toast.success(
-          `Successfully updated ${result.payload.updatedCount} therapist configurations`,
-        );
-        setIsBulkDialogOpen(false);
-        dispatch(getAllStampConfigs() as any);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to bulk update configurations');
+      await bulkUpdateMutation.mutateAsync(bulkForm);
+      setIsBulkDialogOpen(false);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -90,59 +78,125 @@ const StampConfigPage = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdate = async () => {
-    if (!selectedConfig) return;
-
-    if (editForm.stampTarget && editForm.stampTarget <= 0) {
-      toast.error('Stamp target must be greater than 0');
-      return;
-    }
-
-    if (editForm.discountPercentage && editForm.discountPercentage <= 0) {
-      toast.error('Discount percentage must be greater than 0');
-      return;
-    }
-
-    try {
-      const result = await dispatch(
-        updateStampConfig({
-          therapistId: selectedConfig.therapistId,
-          dto: editForm,
-        }) as any,
-      );
-      if (updateStampConfig.fulfilled.match(result)) {
-        toast.success('Configuration updated successfully');
-        setIsEditDialogOpen(false);
-        dispatch(getAllStampConfigs() as any);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update configuration');
-    }
-  };
-
   const handleDelete = async (therapistId: string) => {
     if (!confirm('Are you sure you want to delete this configuration?')) {
       return;
     }
 
     try {
-      const result = await dispatch(deleteStampConfig(therapistId) as any);
-      if (deleteStampConfig.fulfilled.match(result)) {
-        toast.success('Configuration deleted successfully');
-        dispatch(getAllStampConfigs() as any);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete configuration');
+      await deleteMutation.mutateAsync(therapistId);
+    } catch (error) {
+      // Error handled by mutation
     }
   };
+
+  const handleUpdate = async () => {
+    if (!selectedConfig) return;
+
+    if (editForm.stampTarget && editForm.stampTarget <= 0) {
+      return;
+    }
+
+    if (editForm.discountPercentage && editForm.discountPercentage <= 0) {
+      return;
+    }
+
+    try {
+      await updateMutation.mutateAsync({
+        therapistId: selectedConfig.therapistId,
+        dto: editForm,
+      });
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      // Error handled by mutation
+    }
+  };
+
+  // Column definitions for stamp configs table
+  const columns: ColumnDef<TherapistStampConfig>[] = [
+    {
+      accessorKey: 'therapist.name',
+      header: 'Freelancer',
+      cell: ({ row }) => (
+        <div className="font-inter font-medium text-charcoal">
+          {row.original.therapist?.name || 'Unknown Freelancer'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'therapist.email',
+      header: 'Email',
+      cell: ({ row }) => (
+        <div className="font-inter font-medium text-charcoal">
+          {row.original.therapist?.email || 'Unknown Email'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'stampTarget',
+      header: 'Stamp Target',
+      cell: ({ row }) => (
+        <div className="font-poppins text-lg font-bold text-charcoal">
+          {row.original.stampTarget || 'Default'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'discountPercentage',
+      header: 'Discount',
+      cell: ({ row }) => (
+        <div className="font-poppins text-lg font-bold text-success">
+          {row.original.discountPercentage || 'Default'}%
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => (
+        <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
+          {row.original.isActive ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: 'Last Updated',
+      cell: ({ row }) => (
+        <div className="font-inter text-xs text-muted-foreground">
+          {new Date(row.original.updatedAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const config = row.original;
+        return (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => handleEdit(config)}>
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleDelete(config.therapistId)}>
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
 
   if (isLoadingConfigs && configs.length === 0) {
     return (
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Stamp Configuration</h1>
-            <p className="text-gray-600">Manage therapist stamp loyalty settings</p>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Stamp Configuration</h1>
+            <p className="font-inter text-sm text-muted-foreground">
+              Manage freelancer stamp loyalty settings
+            </p>
           </div>
         }
       >
@@ -158,8 +212,10 @@ const StampConfigPage = () => {
       header={
         <div className="flex items-center justify-between w-full">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Stamp Configuration</h1>
-            <p className="text-gray-600">Manage therapist stamp loyalty settings</p>
+            <h1 className="font-poppins font-bold text-2xl text-charcoal">Stamp Configuration</h1>
+            <p className="font-inter text-sm text-muted-foreground">
+              Manage freelancer stamp loyalty settings
+            </p>
           </div>
           <Button onClick={() => setIsBulkDialogOpen(true)}>
             <Settings className="h-4 w-4 mr-2" />
@@ -168,92 +224,51 @@ const StampConfigPage = () => {
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-6 lg:space-y-8">
         {/* Info Card */}
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-4">
-            <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Therapists without custom configurations will use the default
+            <p className="font-inter text-sm text-blue-800">
+              <strong>Note:</strong> Freelancers without custom configurations will use the default
               settings (5 stamps for 15% discount). Use bulk update to apply settings to all
-              therapists at once.
+              freelancers at once.
             </p>
           </CardContent>
         </Card>
 
-        {/* Configs List */}
-        {configs.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-gray-500">No custom configurations found.</p>
-              <p className="text-sm text-gray-400 mt-2">
-                All therapists are using default settings.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {configs.map((config) => (
-              <Card key={config.therapistId} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">
-                      {config.therapist?.name || 'Unknown Therapist'}
-                    </CardTitle>
-                    <Badge variant={config.isActive ? 'default' : 'secondary'}>
-                      {config.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Stamp Target</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {config.stampTarget || 'Default'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Discount Percentage</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {config.discountPercentage || 'Default'}%
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <span className="text-xs text-gray-500">
-                      Updated: {new Date(config.updatedAt).toLocaleDateString()}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(config)}>
-                        <Settings className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(config.therapistId)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        {/* Configs Table */}
+        <DataTable
+          columns={columns}
+          data={configs}
+          title="Stamp Configurations"
+          searchKey="therapist.name"
+          searchPlaceholder="Search freelancers..."
+          enableSorting={true}
+          enableFiltering={true}
+          enableColumnVisibility={true}
+          enablePagination={true}
+          showSearch={true}
+          showSorting={true}
+          initialLoading={isLoadingConfigs && configs.length === 0}
+        />
 
         {/* Bulk Update Dialog */}
         <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Bulk Update All Therapists</DialogTitle>
-              <DialogDescription>
-                Apply the same stamp configuration to all therapists. This will create or update
-                configurations for every therapist.
+              <DialogTitle className="font-poppins font-semibold">
+                Bulk Update All Freelancers
+              </DialogTitle>
+              <DialogDescription className="font-inter">
+                Apply the same stamp configuration to all freelancers. This will create or update
+                configurations for every freelancer.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="bulk-stamp-target">Stamp Target</Label>
+                <Label htmlFor="bulk-stamp-target" className="font-inter font-medium">
+                  Stamp Target
+                </Label>
                 <Input
                   id="bulk-stamp-target"
                   type="number"
@@ -265,7 +280,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="bulk-discount">Discount Percentage</Label>
+                <Label htmlFor="bulk-discount" className="font-inter font-medium">
+                  Discount Percentage
+                </Label>
                 <Input
                   id="bulk-discount"
                   type="number"
@@ -281,7 +298,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="bulk-active">Active</Label>
+                <Label htmlFor="bulk-active" className="font-inter font-medium">
+                  Active
+                </Label>
                 <Switch
                   id="bulk-active"
                   checked={bulkForm.isActive}
@@ -293,8 +312,8 @@ const StampConfigPage = () => {
               <Button variant="outline" onClick={() => setIsBulkDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleBulkUpdate} disabled={isUpdatingConfig}>
-                {isUpdatingConfig ? (
+              <Button onClick={handleBulkUpdate} disabled={bulkUpdateMutation.isPending}>
+                {bulkUpdateMutation.isPending ? (
                   <>
                     <LoadingSpinner size="sm" className="mr-2" />
                     Updating...
@@ -314,14 +333,18 @@ const StampConfigPage = () => {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Configuration for {selectedConfig?.therapist?.name}</DialogTitle>
-              <DialogDescription>
-                Update the stamp target and discount percentage for this therapist.
+              <DialogTitle className="font-poppins font-semibold">
+                Edit Configuration for {selectedConfig?.therapist?.name}
+              </DialogTitle>
+              <DialogDescription className="font-inter">
+                Update the stamp target and discount percentage for this freelancer.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="edit-stamp-target">Stamp Target</Label>
+                <Label htmlFor="edit-stamp-target" className="font-inter font-medium">
+                  Stamp Target
+                </Label>
                 <Input
                   id="edit-stamp-target"
                   type="number"
@@ -336,7 +359,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-discount">Discount Percentage</Label>
+                <Label htmlFor="edit-discount" className="font-inter font-medium">
+                  Discount Percentage
+                </Label>
                 <Input
                   id="edit-discount"
                   type="number"
@@ -352,7 +377,9 @@ const StampConfigPage = () => {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="edit-active">Active</Label>
+                <Label htmlFor="edit-active" className="font-inter font-medium">
+                  Active
+                </Label>
                 <Switch
                   id="edit-active"
                   checked={editForm.isActive}
@@ -364,8 +391,8 @@ const StampConfigPage = () => {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdate} disabled={isUpdatingConfig}>
-                {isUpdatingConfig ? (
+              <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? (
                   <>
                     <LoadingSpinner size="sm" className="mr-2" />
                     Updating...

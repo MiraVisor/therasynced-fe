@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+
+  // Transpile packages that use ES modules
+  transpilePackages: ['@tanstack/react-table', '@tanstack/table-core'],
+
   images: {
     remotePatterns: [
       {
@@ -17,37 +22,36 @@ const nextConfig = {
     ],
     formats: ['image/webp', 'image/avif'],
   },
-  compress: true,
-  poweredByHeader: false,
-  generateEtags: false,
-  // Production optimizations
-  experimental: {
-    // Disable static generation for client-side pages
-    workerThreads: false,
-    cpus: 1,
-    // Enable optimizations
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+
+  // Fix for @tanstack/react-table ES module parsing
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        child_process: false,
+        dns: false,
+      };
+    }
+
+    // Handle ES modules in @tanstack packages
+    config.module.rules.unshift({
+      test: /node_modules\/@tanstack\/.*\.(mjs|esm\.js|js)$/,
+      type: 'javascript/auto',
+      resolve: {
+        fullySpecified: false,
+      },
+      parser: {
+        sourceType: 'module',
+      },
+    });
+
+    return config;
   },
-  // Bundle analyzer (uncomment for analysis)
-  // webpack: (config, { isServer }) => {
-  //   if (!isServer) {
-  //     config.resolve.fallback = {
-  //       ...config.resolve.fallback,
-  //       fs: false,
-  //     };
-  //   }
-  //   return config;
-  // },
-  // Performance optimizations
-  swcMinify: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  // Ensure CSS is properly loaded
-  onDemandEntries: {
-    maxInactiveAge: 60 * 1000,
-    pagesBufferLength: 5,
-  },
+
+  // Security headers
   async headers() {
     return [
       {
@@ -67,7 +71,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
           },
           {
             key: 'Strict-Transport-Security',
@@ -83,7 +87,7 @@ const nextConfig = {
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                     "font-src 'self' https://fonts.gstatic.com data:",
                     "img-src 'self' data: https: blob:",
-                    "connect-src 'self' http://localhost:* https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com ws://localhost:* wss://backend.mehadnadeem.com",
+                    "connect-src 'self' http://localhost:* https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com https://api.bigdatacloud.net https://*.supabase.co ws://localhost:* wss://backend.mehadnadeem.com",
                     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
                     "object-src 'none'",
                     "base-uri 'self'",
@@ -96,7 +100,7 @@ const nextConfig = {
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                     "font-src 'self' https://fonts.gstatic.com data:",
                     "img-src 'self' data: https: blob:",
-                    "connect-src 'self' https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com wss://backend.mehadnadeem.com",
+                    "connect-src 'self' https://api.stripe.com https://*.cloudinary.com https://backend.mehadnadeem.com https://api.bigdatacloud.net https://*.supabase.co wss://backend.mehadnadeem.com",
                     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
                     "object-src 'none'",
                     "base-uri 'self'",

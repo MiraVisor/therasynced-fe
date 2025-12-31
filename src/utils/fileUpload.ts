@@ -1,10 +1,10 @@
 // File upload utility for handling certificate and document uploads
 // Now integrated with real backend Cloudinary upload service
 import {
-  type UploadProgress as ServiceUploadProgress,
-  type UploadOptions,
   deleteFromCloudinary,
+  type UploadProgress as ServiceUploadProgress,
   uploadFirstAidCertificate,
+  type UploadOptions,
   uploadSingleImage,
   uploadVerificationDocument,
   validateFile as validateFileService,
@@ -25,17 +25,21 @@ export interface UploadResult {
 }
 
 export interface FileUploadOptions {
-  maxSize?: number; // in bytes
+  // in bytes
+  maxSize?: number;
   allowedTypes?: string[];
-  folder?: string; // folder path in cloud storage (deprecated - now handled by backend)
+  // folder path in cloud storage (deprecated - now handled by backend)
+  folder?: string;
   uploadType?: 'single' | 'verification-document' | 'first-aid-certificate';
 }
 
 // Default configuration
 const DEFAULT_OPTIONS: Required<FileUploadOptions> = {
-  maxSize: 5 * 1024 * 1024, // 5MB
+  // 5MB
+  maxSize: 5 * 1024 * 1024,
   allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'],
-  folder: 'uploads', // Deprecated
+  // Deprecated
+  folder: 'uploads',
   uploadType: 'single',
 };
 
@@ -109,7 +113,8 @@ export const uploadFile = async (
       success: result.success,
       url: result.url,
       publicId: result.publicId,
-      fileId: result.publicId, // Use publicId as fileId for backward compatibility
+      // Use publicId as fileId for backward compatibility
+      fileId: result.publicId,
       error: result.error,
     };
   } catch (error) {
@@ -131,6 +136,9 @@ export const uploadMultipleFiles = async (
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
+    if (!file) {
+      throw new Error('No file provided');
+    }
     const progressCallback = onProgress
       ? (progress: UploadProgress) => onProgress(i, progress)
       : undefined;
@@ -175,7 +183,7 @@ export const formatFileSize = (bytes: number): string => {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 };
 
 // Get file type icon

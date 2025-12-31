@@ -4,7 +4,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { HealthDataAccessLog } from '@/redux/api/dataRightsApi';
+import type { HealthDataAccessLog } from '@/types/dataRights';
 
 export const formatLogDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -112,7 +112,7 @@ export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
       const log = row.original;
       const isSelfAccess = log.isSelfAccess ?? false;
       const accessedBy = log.accessedByUser;
-      const role = accessedBy.role;
+      const { role } = accessedBy;
       const isThirdParty = !isSelfAccess && (role === 'FREELANCER' || role === 'ADMIN');
 
       return (
@@ -188,8 +188,8 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
     accessorKey: 'user',
     header: 'Data Owner',
     cell: ({ row }) => {
-      const user = row.original.user;
-      const role = user.role;
+      const { user } = row.original;
+      const { role } = user;
 
       return (
         <div className="space-y-1">
@@ -212,7 +212,7 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
     cell: ({ row }) => {
       const log = row.original;
       const accessedBy = log.accessedByUser;
-      const role = accessedBy.role;
+      const { role } = accessedBy;
       const isSelfAccess = log.isSelfAccess ?? false;
 
       const isThirdParty = !isSelfAccess && (role === 'FREELANCER' || role === 'ADMIN');

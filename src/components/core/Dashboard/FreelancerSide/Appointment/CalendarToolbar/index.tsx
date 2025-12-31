@@ -2,17 +2,17 @@
 
 import { endOfWeek, format, startOfWeek } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/button';
-import { navigateToNext, navigateToPrev, setSelectedDate } from '@/redux/slices/calendarSlice';
-import { RootState } from '@/redux/store';
+import { useCalendarStore } from '@/stores/calendarStore';
 import { View } from '@/types/types';
 
 import { ActiveFilters } from './ActiveFilters';
 import { DateSelector } from './DateSelector';
 import { FilterSelector } from './FilterSelector';
 import { ViewSelector } from './ViewSelector';
+
+const { setSelectedDate } = useCalendarStore.getState();
 
 interface CalendarToolbarProps {
   view: View;
@@ -33,8 +33,12 @@ export const CalendarToolbar = ({
   filters,
   onFilterChange,
 }: CalendarToolbarProps) => {
-  const dispatch = useDispatch();
-  const { selectedDate } = useSelector((state: RootState) => state.calendar);
+  const {
+    selectedDate,
+    navigateToPrev,
+    navigateToNext,
+    setSelectedDate: _setSelectedDate,
+  } = useCalendarStore();
 
   const getViewLabel = () => {
     switch (view) {
@@ -61,7 +65,7 @@ export const CalendarToolbar = ({
             size="icon"
             className="h-8 w-8"
             onClick={() => {
-              dispatch(navigateToPrev());
+              navigateToPrev();
             }}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -72,7 +76,7 @@ export const CalendarToolbar = ({
             size="icon"
             className="h-8 w-8"
             onClick={() => {
-              dispatch(navigateToNext());
+              navigateToNext();
             }}
           >
             <ChevronRight className="h-4 w-4" />
@@ -83,7 +87,7 @@ export const CalendarToolbar = ({
               className="ml-2"
               onClick={() => {
                 const today = new Date();
-                dispatch(setSelectedDate(today));
+                setSelectedDate(today);
               }}
             >
               Today
@@ -98,7 +102,7 @@ export const CalendarToolbar = ({
               variant="outline"
               onClick={() => {
                 const today = new Date();
-                dispatch(setSelectedDate(today));
+                setSelectedDate(today);
               }}
             >
               Today

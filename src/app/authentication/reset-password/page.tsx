@@ -15,11 +15,11 @@ function ResetPasswordContent() {
       {/* Modern Background with Gradient and Patterns */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-green-50/30 to-gray-50">
         {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_1px_1px,rgb(0,119,69)_1px,transparent_0)] bg-[length:40px_40px]"></div>
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_1px_1px,rgb(0,119,69)_1px,transparent_0)] bg-[length:40px_40px]" />
         {/* Decorative gradient orbs */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
-        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-primary/3 rounded-full blur-2xl"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-primary/3 rounded-full blur-2xl" />
       </div>
 
       {/* Auth Card */}

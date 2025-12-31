@@ -1,13 +1,10 @@
 'use client';
 
-import { Elements } from '@stripe/react-stripe-js';
-import { StripeElementsOptions, loadStripe } from '@stripe/stripe-js';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -16,8 +13,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { getStripe } from '@/lib/stripe';
-import { createSubscription } from '@/redux/api/subscriptionApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
 import { PlanType } from '@/types/types';
 
 interface PaymentFormProps {
@@ -29,9 +24,14 @@ interface PaymentFormProps {
 
 const stripePromise = getStripe();
 
-const PaymentForm = ({ clientSecret, planType, onSuccess, onCancel }: PaymentFormProps) => {
+const PaymentForm = ({
+  clientSecret: _clientSecret,
+  planType,
+  onSuccess,
+  onCancel,
+}: PaymentFormProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const router = useRouter();
+  useRouter(); // Required hook call, but router not used
 
   const handlePayment = async () => {
     try {
@@ -41,8 +41,10 @@ const PaymentForm = ({ clientSecret, planType, onSuccess, onCancel }: PaymentFor
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate payment
       toast.success('Payment successful! Your subscription is now active.');
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || 'Payment failed. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Payment failed. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }

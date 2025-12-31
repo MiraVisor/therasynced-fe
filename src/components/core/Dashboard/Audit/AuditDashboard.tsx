@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, Shield, ShieldAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -9,12 +9,43 @@ import { AccessLogsTab } from './AccessLogsTab';
 import { BreachesTab } from './BreachesTab';
 import { ExportLogsTab } from './ExportLogsTab';
 
-export function AuditDashboard() {
-  const [activeTab, setActiveTab] = useState('breaches');
+interface AuditDashboardProps {
+  activeTab?: string;
+}
+
+export function AuditDashboard({ activeTab: initialTab }: AuditDashboardProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get active tab from query params, default to 'breaches'
+  const getActiveTab = () => {
+    if (initialTab) return initialTab;
+
+    // Support ?tab=breaches format (preferred)
+    const tab = searchParams.get('tab');
+    if (tab && ['breaches', 'access-logs', 'export-logs'].includes(tab)) {
+      return tab;
+    }
+
+    // Support legacy format: ?breaches, ?access-logs, ?export-logs
+    if (searchParams.has('breaches')) return 'breaches';
+    if (searchParams.has('access-logs')) return 'access-logs';
+    if (searchParams.has('export-logs')) return 'export-logs';
+
+    return 'breaches';
+  };
+
+  const activeTab = getActiveTab();
+
+  const handleTabChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', value);
+    router.push(`/dashboard/admin/audit?${params.toString()}`, { scroll: false });
+  };
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="breaches" className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4" />

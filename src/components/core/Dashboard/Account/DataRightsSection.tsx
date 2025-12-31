@@ -1,22 +1,10 @@
 'use client';
 
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  Download,
-  Edit,
-  FileText,
-  Info,
-  Lock,
-  Shield,
-  Trash2,
-} from 'lucide-react';
+import { AlertCircle, Download, Edit, FileText, Info, Lock, Shield, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { HealthDataConsent } from '@/components/common/HealthDataConsent';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,20 +18,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  deleteAccount,
-  exportDataPortable,
-  exportUserData,
-  getDataRightsStatus,
-} from '@/redux/api/dataRightsApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
-import { ROLES } from '@/types/types';
+import { useAuth } from '@/hooks/useAuthZustand';
+import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
 
 export function DataRightsSection() {
   const router = useRouter();
-  const { logout, role } = useAuth();
+  const { logout, role: _role } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -58,49 +40,14 @@ export function DataRightsSection() {
   const [exportRequestReference, setExportRequestReference] = useState('');
   const [exportPurpose, setExportPurpose] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const [consentStatuses, setConsentStatuses] = useState<
-    Array<{ consentType: string; granted: boolean; grantedAt: string | null }>
-  >([]);
-  const [isLoadingConsents, setIsLoadingConsents] = useState(true);
 
-  const handleDataAccess = async () => {
-    setLoading('access');
-    try {
-      const response = await exportUserData();
-
-      if (response.anonymized) {
-        toast.info('User data has been anonymized');
-        setShowExportDialog(false);
-        return;
-      }
-
-      const blob = new Blob([JSON.stringify(response.data, null, 2)], {
-        type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `therasynced-data-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast.success('Your data has been exported successfully');
-      setShowExportDialog(false);
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to export data. Please try again.');
-    } finally {
-      setLoading(null);
-    }
-  };
+  // Unused function removed - was: const _handleDataAccess = async () => { ... }
 
   const handleDataPortability = async () => {
     setLoading('portability');
     try {
-      const { exportMyData, downloadEncryptedExport, downloadUnencryptedExport } = await import(
-        '@/services/exportService'
-      );
+      const { exportMyData, downloadEncryptedExport, downloadUnencryptedExport } =
+        await import('@/services/exportService');
       const response = await exportMyData({
         format: exportFormat,
         encrypt: exportEncrypt,
@@ -110,9 +57,10 @@ export function DataRightsSection() {
 
       if (response.success) {
         // Check if encrypted
-        if ('encrypted' in response.data && response.data.encrypted) {
+        const responseData = response.data as { encrypted?: boolean; data?: unknown };
+        if ('encrypted' in responseData && responseData.encrypted) {
           // Handle encrypted export
-          const encryptedData = response.data as any;
+          const encryptedData = responseData as any;
           downloadEncryptedExport(encryptedData);
 
           // Store encryption info to show in dialog
@@ -137,8 +85,10 @@ export function DataRightsSection() {
       } else {
         toast.error(response.message || 'Failed to export data');
       }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to export data. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to export data. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(null);
     }
@@ -152,10 +102,10 @@ export function DataRightsSection() {
 
     setLoading('erasure');
     try {
-      const response = await deleteAccount();
+      const response = await api.delete(ENDPOINTS.dataRights?.deleteAccount || '/user/account');
 
       toast.success(
-        response.message ||
+        (response.data as { message?: string })?.message ||
           'Account deleted successfully. Healthcare and financial records retained for 7 years as required by law.',
       );
 
@@ -164,10 +114,14 @@ export function DataRightsSection() {
 
       setTimeout(() => {
         logout();
-        router.push('/authentication/sign-in');
+        router.push('/');
       }, 2000);
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to delete account. Please contact support.');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete account. Please contact support.';
+      toast.error(errorMessage);
     } finally {
       setLoading(null);
     }
@@ -175,69 +129,6 @@ export function DataRightsSection() {
 
   const handleDataRectification = () => {
     router.push('/dashboard/account?tab=profile');
-  };
-
-  useEffect(() => {
-    const loadConsentStatuses = async () => {
-      try {
-        setIsLoadingConsents(true);
-        // Use the data rights status endpoint for getting current user's own status
-        const response = await getDataRightsStatus();
-        // Extract health data consents from the response
-        setConsentStatuses(response.data.healthDataConsents);
-      } catch (error) {
-        console.error('Error loading consent statuses:', error);
-        toast.error('Failed to load consent statuses');
-      } finally {
-        setIsLoadingConsents(false);
-      }
-    };
-    loadConsentStatuses();
-  }, []);
-
-  const handleConsentChange = async () => {
-    try {
-      // Reload data rights status after consent change
-      const response = await getDataRightsStatus();
-      setConsentStatuses(response.data.healthDataConsents);
-    } catch (error) {
-      console.error('Error reloading consent statuses:', error);
-    }
-  };
-
-  const getConsentTypeLabel = (type: string): string => {
-    const labels: Record<string, string> = {
-      MEDICAL_HISTORY: 'Medical History',
-      SOAP_NOTES: 'SOAP Notes',
-      COMPLAINTS: 'Health-Related Complaints',
-      FIRST_AID_CERTIFICATE: 'First Aid Certificate',
-    };
-    return labels[type] || type;
-  };
-
-  const medicalHistoryStatus = useMemo(
-    () => consentStatuses.find((c) => c.consentType === 'MEDICAL_HISTORY'),
-    [consentStatuses],
-  );
-  const soapNotesStatus = useMemo(
-    () => consentStatuses.find((c) => c.consentType === 'SOAP_NOTES'),
-    [consentStatuses],
-  );
-  const complaintsStatus = useMemo(
-    () => consentStatuses.find((c) => c.consentType === 'COMPLAINTS'),
-    [consentStatuses],
-  );
-  const firstAidStatus = useMemo(
-    () => consentStatuses.find((c) => c.consentType === 'FIRST_AID_CERTIFICATE'),
-    [consentStatuses],
-  );
-
-  // Check if we should show a specific consent type
-  const shouldShowConsent = (consentType: string) => {
-    if (role === ROLES.FREELANCER) {
-      return consentType === 'FIRST_AID_CERTIFICATE' || consentType === 'COMPLAINTS';
-    }
-    return true; // Show all for patients and admins
   };
 
   return (
@@ -359,146 +250,28 @@ export function DataRightsSection() {
           </CardContent>
         </Card>
 
-        {/* Health Data Consent Management */}
+        {/* Note: Consent management has been moved to Privacy & Consent section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5" />
-              Health Data Consent Management (GDPR Article 9)
+              Consent Management
             </CardTitle>
             <CardDescription>
-              Manage your explicit consent for health data processing. Health data is special
-              category data under GDPR and requires explicit consent.
+              Consent management has been consolidated into a unified system. Please manage your
+              consents in the Privacy & Consent section of your account settings.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {isLoadingConsents ? (
-              <div className="flex items-center justify-center py-8">
-                <LoadingSpinner size="sm" />
-              </div>
-            ) : (
-              <>
-                <div>
-                  <h4 className="font-semibold mb-4 text-sm">Manage Consents</h4>
-                  {role === ROLES.FREELANCER && (
-                    <Alert className="mb-4">
-                      <Info className="h-4 w-4" />
-                      <AlertTitle>Note for Healthcare Professionals</AlertTitle>
-                      <AlertDescription>
-                        Medical History and SOAP Notes consents are for clients only. You only need
-                        to manage consents for your professional documents.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  <div className="space-y-4">
-                    {shouldShowConsent('MEDICAL_HISTORY') && (
-                      <div className="border rounded-lg p-4">
-                        <div className="mb-3">
-                          <h5 className="font-semibold text-sm mb-1">Medical History</h5>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Processing of medical history forms, ROM assessments, and health
-                            questionnaires. Retained for 7 years (Irish law).
-                          </p>
-                        </div>
-                        <HealthDataConsent
-                          consentType="MEDICAL_HISTORY"
-                          onConsentChange={handleConsentChange}
-                          required={false}
-                          showDisclaimer={false}
-                          initialConsentStatus={medicalHistoryStatus}
-                          compact={true}
-                          showTitle={false}
-                          disableApiCall={true}
-                        />
-                      </div>
-                    )}
-
-                    {shouldShowConsent('SOAP_NOTES') && (
-                      <div className="border rounded-lg p-4">
-                        <div className="mb-3">
-                          <h5 className="font-semibold text-sm mb-1">SOAP Notes</h5>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Clinical notes created by healthcare professionals during appointments.
-                            Retained for 7 years (Irish law).
-                          </p>
-                        </div>
-                        <HealthDataConsent
-                          consentType="SOAP_NOTES"
-                          onConsentChange={handleConsentChange}
-                          required={false}
-                          showDisclaimer={false}
-                          initialConsentStatus={soapNotesStatus}
-                          compact={true}
-                          showTitle={false}
-                          disableApiCall={true}
-                        />
-                      </div>
-                    )}
-
-                    {shouldShowConsent('COMPLAINTS') && (
-                      <div className="border rounded-lg p-4">
-                        <div className="mb-3">
-                          <h5 className="font-semibold text-sm mb-1">Health-Related Complaints</h5>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Processing health information in complaints for service quality.
-                            Retained for 7 years (Irish law).
-                          </p>
-                        </div>
-                        <HealthDataConsent
-                          consentType="COMPLAINTS"
-                          onConsentChange={handleConsentChange}
-                          required={false}
-                          showDisclaimer={false}
-                          initialConsentStatus={complaintsStatus}
-                          compact={true}
-                          showTitle={false}
-                          disableApiCall={true}
-                        />
-                      </div>
-                    )}
-
-                    {shouldShowConsent('FIRST_AID_CERTIFICATE') && (
-                      <div className="border rounded-lg p-4">
-                        <div className="mb-3">
-                          <h5 className="font-semibold text-sm mb-1">First Aid Certificate</h5>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Storage of first aid certificates for professional verification
-                            (healthcare professionals only). Retained until account deletion + 7
-                            years.
-                          </p>
-                        </div>
-                        <HealthDataConsent
-                          consentType="FIRST_AID_CERTIFICATE"
-                          onConsentChange={handleConsentChange}
-                          required={false}
-                          showDisclaimer={false}
-                          initialConsentStatus={firstAidStatus}
-                          compact={true}
-                          showTitle={false}
-                          disableApiCall={true}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <Alert className="mt-4">
-                  <Info className="h-4 w-4" />
-                  <AlertTitle>Your Rights</AlertTitle>
-                  <AlertDescription className="text-xs">
-                    You can withdraw consent anytime. Data retained 7 years (Irish law).{' '}
-                    <a
-                      href="/privacy"
-                      className="text-primary hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Privacy Policy
-                    </a>
-                  </AlertDescription>
-                </Alert>
-              </>
-            )}
+          <CardContent>
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Consent Management Moved</AlertTitle>
+              <AlertDescription>
+                All consent management, including health data consents, is now available in the
+                Privacy & Consent tab. This provides a simpler, unified interface for managing all
+                your consents in one place.
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
 

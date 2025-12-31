@@ -6,22 +6,30 @@ import Image from 'next/image';
 const servicesData = [
   {
     id: 1,
-    title: 'Massage Therapy',
+    title: 'Physiotherapy',
     description:
-      'Experience deep relaxation and stress relief through our expert massage therapy services.',
+      'Sports massage, injury assessment, rehabilitation, chronic pain management, and post-operative care. Expert treatment to help you recover and regain mobility.',
     icon: '/svgs/file.svg',
   },
   {
     id: 2,
-    title: 'Athletic Training',
+    title: 'Athletic Therapy',
     description:
-      'Enhance your performance with personalized athletic training programs designed for your goals.',
+      'Sports injury assessment, performance enhancement, concussion management, and return-to-sport protocols. Specialized care for athletes at all levels.',
     icon: '/svgs/file.svg',
   },
   {
     id: 3,
-    title: 'Physiotherapy',
-    description: 'Recover and rehabilitate with our specialized physiotherapy treatments and care.',
+    title: 'Massage Therapy',
+    description:
+      'Swedish, deep tissue, sports massage, trigger point therapy, and myofascial release. Therapeutic massage for relaxation, pain relief, and recovery.',
+    icon: '/svgs/file.svg',
+  },
+  {
+    id: 4,
+    title: 'Strength & Conditioning',
+    description:
+      'Personal training, group fitness, strength training programs, and performance coaching. Build strength, improve conditioning, and achieve your fitness goals.',
     icon: '/svgs/file.svg',
   },
 ];
@@ -57,15 +65,14 @@ const Services = () => {
               Our Services
             </h1>
             <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto lg:mx-0 leading-relaxed">
-              Discover a world of holistic healing and professional care. We offer expert services
-              that nurture your body, mind, and spirit. Experience the perfect blend of traditional
-              techniques and modern wellness practices, all tailored to help you achieve your
-              optimal state of well-being.
+              Connect with licensed professionals across multiple specialties. From injury
+              rehabilitation to performance enhancement, find the right therapist for your unique
+              needs.
             </p>
           </div>
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mt-10">
             {servicesData.map((service) => (
               <div
                 key={service.id}

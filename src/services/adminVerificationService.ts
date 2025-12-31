@@ -58,6 +58,17 @@ export interface VerificationDetailsResponse {
   verificationRejectionReason?: string;
 }
 
+export interface FreelancerFile {
+  id: string;
+  title: string;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PendingVerificationResponse {
   id: string;
   name: string;
@@ -66,7 +77,7 @@ export interface PendingVerificationResponse {
   profilePicture?: string;
   isActive?: boolean;
   verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
-  verificationDocuments?: string[]; // Array of URLs
+  verificationDocuments?: string[]; // Array of URLs (legacy)
   firstAidCertificateUrl?: string; // Single URL
   firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   verificationRequestedAt?: string;
@@ -74,12 +85,21 @@ export interface PendingVerificationResponse {
   verificationRejectedAt?: string;
   createdAt?: string;
   freelancerId?: string; // Optional as it might be id
+  freelancerFiles?: FreelancerFile[]; // New files array
 }
 
 const adminVerificationService = {
   // Get all verifications
   getAll: async (pagination?: PaginationDto) => {
     const response = await api.get(ENDPOINTS.admin.verification.getAll, {
+      params: pagination,
+    });
+    return response.data;
+  },
+
+  // Get all freelancers (admin endpoint - shows all freelancers regardless of subscription)
+  getAllFreelancers: async (pagination?: PaginationDto & { name?: string }) => {
+    const response = await api.get(ENDPOINTS.admin.verification.getAllFreelancers, {
       params: pagination,
     });
     return response.data;
@@ -137,7 +157,10 @@ const adminVerificationService = {
 
   // Get verifications by status (legacy method)
   getByStatus: async (status: 'PENDING' | 'APPROVED' | 'REJECTED', pagination?: PaginationDto) => {
-    const params: any = { ...pagination, status };
+    const params: PaginationDto & { status: 'PENDING' | 'APPROVED' | 'REJECTED' } = {
+      ...pagination,
+      status,
+    };
     const response = await api.get(ENDPOINTS.admin.verification.getAll, {
       params,
     });

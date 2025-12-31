@@ -32,7 +32,14 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-sm"></div>
+          <div className="flex items-center gap-4 text-sm">
+            <Link href="/privacy" className="hover:text-[var(--primary)] transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-[var(--primary)] transition-colors">
+              Terms of Service
+            </Link>
+          </div>
 
           {/* decorative svg pattern */}
           <svg
@@ -89,16 +96,9 @@ const Footer = () => {
               <h3 className="text-lg font-semibold">Quick Links</h3>
               <ul className="mt-3 space-y-2 text-sm">
                 <li>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="hover:text-[var(--primary)] transition-colors"
-                  >
+                  <Link href="/" className="hover:text-[var(--primary)] transition-colors">
                     Home
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a

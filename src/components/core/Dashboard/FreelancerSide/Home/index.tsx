@@ -1,11 +1,11 @@
 'use client';
 
-import { Calendar, Coins, MessageSquare, TrendingUp } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { HeroSection } from '@/components/ui/hero-section';
-import { useAuth, useFreelancerDashboard } from '@/redux/hooks/useAppHooks';
+import { useFreelancerDashboard } from '@/hooks/queries/useFreelancers';
+import { useAuth } from '@/hooks/useAuthZustand';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import TrialBanner from '../Subscription/TrialBanner';
@@ -14,28 +14,12 @@ import Stats from './Stats';
 
 const FreelancerHome = () => {
   const { role } = useAuth();
-  const { data: dashboardData, loading, error, fetchDashboard } = useFreelancerDashboard();
+  const { data: dashboardData, isLoading: loading, error } = useFreelancerDashboard();
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        // If data exists, fetch silently in background
-        // If no data exists, show loading state
-        await fetchDashboard({ silent: !!dashboardData });
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
-        toast.error(`Error loading dashboard data: ${errorMessage}`);
-      }
-    };
-
-    loadDashboard();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show error toast only on error (not during silent refresh)
+  // Show error toast only on error
   useEffect(() => {
     if (error && !dashboardData) {
-      toast.error(error);
+      toast.error((error as any)?.message || 'Failed to load dashboard data');
     }
   }, [error, dashboardData]);
 
@@ -60,33 +44,28 @@ const FreelancerHome = () => {
         {
           label: "Today's Bookings",
           value: dashboardData.todayBookings.toString(),
-          icon: <Calendar className="h-4 w-4 text-primary" />,
         },
         {
           label: 'Revenue',
           value: formatRevenue(dashboardData.todayRevenue),
-          icon: <Coins className="h-4 w-4 text-success" />,
         },
         {
           label: 'Messages',
           value: dashboardData.unreadMessages.toString(),
-          icon: <MessageSquare className="h-4 w-4 text-info" />,
         },
         {
           label: 'Growth',
           value: formatGrowth(dashboardData.growthPercentage),
-          icon: <TrendingUp className="h-4 w-4 text-warning" />,
         },
       ]
     : [
         {
           label: "Today's Bookings",
           value: '0',
-          icon: <Calendar className="h-4 w-4 text-primary" />,
         },
-        { label: 'Revenue', value: 'EUR 0', icon: <Coins className="h-4 w-4 text-success" /> },
-        { label: 'Messages', value: '0', icon: <MessageSquare className="h-4 w-4 text-info" /> },
-        { label: 'Growth', value: '+0%', icon: <TrendingUp className="h-4 w-4 text-warning" /> },
+        { label: 'Revenue', value: 'EUR 0' },
+        { label: 'Messages', value: '0' },
+        { label: 'Growth', value: '+0%' },
       ];
 
   return (

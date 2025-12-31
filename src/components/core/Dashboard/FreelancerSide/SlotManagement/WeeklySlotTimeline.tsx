@@ -1,4 +1,4 @@
-import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
+import { eachDayOfInterval, endOfWeek, format, isSameDay } from 'date-fns';
 import { Calendar } from 'lucide-react';
 import { useMemo } from 'react';
 
@@ -16,7 +16,7 @@ export const WeeklySlotTimeline = ({
   slots,
   weekStart,
   onDayClick,
-  selectedDate,
+  selectedDate: _selectedDate,
 }: WeeklySlotTimelineProps) => {
   const weekDays = useMemo(() => {
     const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
@@ -54,7 +54,7 @@ export const WeeklySlotTimeline = ({
       <div className="space-y-3 lg:space-y-4">
         {weekDays.map((date, index) => {
           const stats = getStatsForDay(date);
-          const isSelected = selectedDate && isSameDay(date, selectedDate);
+          // Unused variable removed - was: const _isSelected = selectedDate && isSameDay(date, selectedDate);
           const isToday = isSameDay(date, new Date());
 
           return (
@@ -125,11 +125,11 @@ export const WeeklySlotTimeline = ({
       {/* Legend */}
       <div className="flex items-center gap-6 mt-6 pt-6 border-t border-gray-200">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-success rounded"></div>
+          <div className="w-3 h-3 bg-success rounded" />
           <span className="text-xs font-inter text-muted-foreground">Booked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-info rounded"></div>
+          <div className="w-3 h-3 bg-info rounded" />
           <span className="text-xs font-inter text-muted-foreground">Available</span>
         </div>
       </div>

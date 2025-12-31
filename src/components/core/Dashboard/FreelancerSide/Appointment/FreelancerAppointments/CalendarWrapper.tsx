@@ -2,9 +2,8 @@
 
 import { format } from 'date-fns';
 import { Calendar, DateLocalizer, View } from 'react-big-calendar';
-import { useDispatch } from 'react-redux';
 
-import { setCalendarView, setSelectedDate } from '@/redux/slices/calendarSlice';
+import { useCalendarStore } from '@/stores/calendarStore';
 import { Appointment } from '@/types/types';
 
 interface CalendarEvent extends Omit<Appointment, 'start' | 'end'> {
@@ -73,15 +72,15 @@ export const CalendarWrapper = ({
   onNavigate,
   onSelectEvent,
 }: CalendarWrapperProps) => {
-  const dispatch = useDispatch();
+  const { setCalendarView, setSelectedDate } = useCalendarStore();
 
   const handleViewChange = (newView: View) => {
-    dispatch(setCalendarView(newView));
+    setCalendarView(newView);
     onView(newView);
   };
 
   const handleNavigate = (newDate: Date) => {
-    dispatch(setSelectedDate(newDate));
+    setSelectedDate(newDate);
     onNavigate(newDate);
   };
 

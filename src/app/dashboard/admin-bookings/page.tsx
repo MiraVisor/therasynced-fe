@@ -1,7 +1,6 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Calendar, Users, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -9,8 +8,9 @@ import { DataTable } from '@/components/common/DataTable/data-table';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { useAdminBookings } from '@/hooks/useBookings';
-import adminBookingsService, { AdminBookingDto } from '@/services/adminBookingsService';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
+import { useAdminBookings, useAdminBookingsStats } from '@/hooks/queries/useAdmin';
+import { AdminBookingDto } from '@/services/adminBookingsService';
 
 interface BookingStats {
   todaysAppointments: number;
@@ -26,51 +26,30 @@ const statsConfig = [
   {
     key: 'totalBookingsAllTime' as keyof BookingStats,
     title: 'Total All Time',
-    icon: Calendar,
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary/10',
   },
   {
     key: 'todaysAppointments' as keyof BookingStats,
     title: "Today's Appointments",
-    icon: Calendar,
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary/10',
   },
   {
     key: 'canceledAppointments' as keyof BookingStats,
     title: 'Canceled Appointments',
-    icon: XCircle,
-    iconColor: 'text-error',
-    iconBg: 'bg-error/10',
   },
   {
     key: 'therapistsOnline' as keyof BookingStats,
     title: 'Therapists Online',
-    icon: Users,
-    iconColor: 'text-success',
-    iconBg: 'bg-success/10',
   },
   {
     key: 'totalBookingsThisMonth' as keyof BookingStats,
     title: 'Total This Month',
-    icon: Calendar,
-    iconColor: 'text-info',
-    iconBg: 'bg-info/10',
   },
   {
     key: 'completedBookingsThisMonth' as keyof BookingStats,
     title: 'Completed This Month',
-    icon: Users,
-    iconColor: 'text-success',
-    iconBg: 'bg-success/10',
   },
   {
     key: 'pendingBookings' as keyof BookingStats,
     title: 'Pending Bookings',
-    icon: Calendar,
-    iconColor: 'text-warning',
-    iconBg: 'bg-warning/10',
   },
 ];
 
@@ -95,14 +74,29 @@ const AdminBookingsPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch bookings with pagination, search, and status filter
-  const { bookings, loading, initialLoading, error, pagination } = useAdminBookings({
+  const {
+    data: bookingsData,
+    isLoading,
+    isFetching,
+    error,
+  } = useAdminBookings({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
   });
 
-  // Calculate stats - we'll need to fetch these separately or from the API
-  const [stats, setStats] = useState<BookingStats>({
+  const bookings = bookingsData?.bookings || [];
+  const pagination = bookingsData?.pagination;
+
+  // Fetch stats
+  const {
+    data: statsData,
+    isLoading: statsLoading,
+    isFetching: _statsFetching,
+    error: statsError,
+  } = useAdminBookingsStats();
+
+  const stats: BookingStats = statsData || {
     totalBookingsAllTime: 0,
     todaysAppointments: 0,
     canceledAppointments: 0,
@@ -110,50 +104,23 @@ const AdminBookingsPage = () => {
     totalBookingsThisMonth: 0,
     completedBookingsThisMonth: 0,
     pendingBookings: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [initialStatsLoading, setInitialStatsLoading] = useState(true);
+  };
 
-  // Fetch stats separately
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    const fetchStats = async () => {
-      const hasStats = stats.totalBookingsAllTime > 0 || stats.todaysAppointments > 0;
-      try {
-        if (!hasStats) {
-          setInitialStatsLoading(true);
-        } else {
-          setStatsLoading(true);
-        }
-        const statsResponse = await adminBookingsService.getStats();
-
-        // Map the stats to our interface - updated for simplified response
-        setStats({
-          totalBookingsAllTime: statsResponse.totalBookingsAllTime || 0,
-          todaysAppointments: statsResponse.todaysAppointments || 0,
-          canceledAppointments: statsResponse.canceledAppointments || 0,
-          therapistsOnline: statsResponse.therapistsOnline || 0,
-          totalBookingsThisMonth: statsResponse.totalBookingsThisMonth || 0,
-          completedBookingsThisMonth: statsResponse.completedBookingsThisMonth || 0,
-          pendingBookings: statsResponse.pendingBookings || 0,
-        });
-      } catch (error) {
-        // Error handled by toast in useEffect below
-      } finally {
-        setStatsLoading(false);
-        setInitialStatsLoading(false);
-      }
-    };
-
-    fetchStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Show error as toast when it occurs
-  useEffect(() => {
-    if (error) {
-      toast.error(`Failed to load bookings: ${error}`);
+    if (error && !bookingsData) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load bookings';
+      toast.error(errorMessage);
     }
-  }, [error]);
+  }, [error, bookingsData]);
+
+  useEffect(() => {
+    if (statsError && !statsData) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load booking stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, statsData]);
 
   // Format currency
   const formatCurrency = (value: number): string => {
@@ -265,22 +232,19 @@ const AdminBookingsPage = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {statsConfig.map((config) => (
-            <EnhancedStatCard
-              key={config.key}
-              title={config.title}
-              value={stats[config.key].toString()}
-              icon={config.icon}
-              iconColor={config.iconColor}
-              iconBg={config.iconBg}
-              loading={
-                initialStatsLoading ||
-                (statsLoading && stats.totalBookingsAllTime === 0 && stats.todaysAppointments === 0)
-              }
-            />
-          ))}
-        </div>
+        {statsLoading && !statsData ? (
+          <StatsCardsSkeleton count={7} />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {statsConfig.map((config) => (
+              <EnhancedStatCard
+                key={config.key}
+                title={config.title}
+                value={stats[config.key].toString()}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Bookings Table */}
         <DataTable
@@ -295,8 +259,8 @@ const AdminBookingsPage = () => {
           enablePagination={true}
           showSearch={true}
           showSorting={false}
-          initialLoading={initialLoading}
-          loading={loading}
+          initialLoading={isLoading && !bookings.length}
+          loading={isFetching}
           externalSearchValue={searchQuery}
           onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Settings, X } from 'lucide-react';
+import { Check, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { storeCookieConsent } from '@/redux/api/dataRightsApi';
+import { useStoreCookieConsent } from '@/hooks/queries/useDataRights';
 
 type CookieCategory = 'essential' | 'analytics' | 'marketing';
 
@@ -34,6 +34,8 @@ export default function CookieConsent() {
     analytics: false,
     marketing: false,
   });
+
+  const storeCookieConsentMutation = useStoreCookieConsent();
 
   useEffect(() => {
     // Check if user has already given consent
@@ -96,11 +98,11 @@ export default function CookieConsent() {
 
       if (token) {
         // Sync with backend
-        await storeCookieConsent(prefs);
+        await storeCookieConsentMutation.mutateAsync(prefs);
       }
     } catch (error) {
       // Silently fail - localStorage is the primary storage
-      console.warn('Failed to sync cookie consent with backend:', error);
+      // Error is already handled by mutation
     }
 
     // Dispatch custom event for other components to listen

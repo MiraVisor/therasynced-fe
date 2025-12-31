@@ -1,20 +1,14 @@
 'use client';
 
-import { AlertCircle, CheckCircle2, Info, Shield } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { getDecodedToken } from '@/lib/utils';
-import {
-  type HealthDataConsentRequest,
-  getHealthDataConsent,
-  updateHealthDataConsent,
-} from '@/redux/api/dataRightsApi';
+import { useHealthDataConsent, useUpdateHealthDataConsent } from '@/hooks/queries/useDataRights';
+import type { HealthDataConsentRequest } from '@/types/types';
 
 export type ConsentType = 'MEDICAL_HISTORY' | 'SOAP_NOTES' | 'COMPLAINTS' | 'FIRST_AID_CERTIFICATE';
 
@@ -30,207 +24,101 @@ interface HealthDataConsentProps {
   compact?: boolean;
   showTitle?: boolean; // Add this prop
   disableApiCall?: boolean; // If true, never calls the API (for data rights page where data comes from status endpoint)
+  isLoading?: boolean; // External loading state (e.g., when fetching consent statuses)
 }
 
-const CONSENT_TYPE_INFO: Record<
-  ConsentType,
-  { title: string; description: string; dataTypes: string[] }
-> = {
-  MEDICAL_HISTORY: {
-    title: 'Medical History Data Consent',
-    description:
-      'By consenting, you allow us to collect and process your medical history information for healthcare service delivery.',
-    dataTypes: [
-      'Medical history forms',
-      'ROM Assessment forms',
-      'Health questionnaires',
-      'Pre-appointment information',
-    ],
-  },
-  SOAP_NOTES: {
-    title: 'SOAP Notes Data Consent',
-    description:
-      'By consenting, you allow healthcare professionals to create and store SOAP (Subjective, Objective, Assessment, Plan) notes documenting your appointments. This includes clinical documentation created by healthcare professionals during appointments.',
-    dataTypes: ['Clinical notes', 'Treatment plans', 'Assessment documentation'],
-  },
-  COMPLAINTS: {
-    title: 'Health-Related Complaints Data Consent',
-    description:
-      'By consenting, you allow us to process health-related information included in complaints for service quality and safety purposes.',
-    dataTypes: ['Complaint descriptions', 'Health-related concerns', 'Safety reports'],
-  },
-  FIRST_AID_CERTIFICATE: {
-    title: 'First Aid Certificate Data Consent',
-    description:
-      'By consenting, you allow us to store and process your first aid certificate for professional verification purposes. This consent is for healthcare professionals only.',
-    dataTypes: ['First aid certificates', 'Professional qualifications', 'Verification documents'],
-  },
-};
+// Unused constant removed - was: const CONSENT_TYPE_INFO: Record<ConsentType, {...}> = { ... };
 
 export function HealthDataConsent({
   consentType,
   onConsentChange,
-  required = true,
-  showDisclaimer = true,
+  required: _required = true,
+  showDisclaimer: _showDisclaimer = true,
   className,
   initialConsentStatus,
   userId,
-  description,
-  compact,
-  showTitle,
+  description: _description,
+  compact: _compact,
+  showTitle: _showTitle,
   disableApiCall = false,
+  isLoading: externalLoading = false,
 }: HealthDataConsentProps) {
-  const [consentGranted, setConsentGranted] = useState<boolean | null>(
-    initialConsentStatus?.granted ?? null,
+  // Unused variable removed - was: const _consentInfo = CONSENT_TYPE_INFO[consentType];
+
+  const {
+    data: consentResponse,
+    isLoading: isLoadingConsent,
+    error: consentError,
+  } = useHealthDataConsent(userId, !disableApiCall && !initialConsentStatus);
+
+  const updateConsentMutation = useUpdateHealthDataConsent();
+
+  const consentFromApi = consentResponse?.data?.consents?.find(
+    (c) => c.consentType === consentType,
   );
-  const [isLoading, setIsLoading] = useState(!initialConsentStatus);
-  const [isSaving, setIsSaving] = useState(false);
-  const [consentTimestamp, setConsentTimestamp] = useState<string | null>(
-    initialConsentStatus?.grantedAt || null,
-  );
+  const apiConsentGranted = consentFromApi?.granted && !consentFromApi?.withdrawnAt;
 
-  const consentInfo = CONSENT_TYPE_INFO[consentType];
+  const consentGranted =
+    initialConsentStatus?.granted ?? (disableApiCall ? false : (apiConsentGranted ?? false));
+  const consentTimestamp =
+    initialConsentStatus?.grantedAt || (disableApiCall ? null : consentFromApi?.grantedAt || null);
+  const isLoading =
+    externalLoading || (!initialConsentStatus && !disableApiCall && isLoadingConsent);
+  const isSaving = updateConsentMutation.isPending;
 
-  // Use refs to track initialization and last values to prevent unnecessary re-runs
-  const hasInitializedRef = useRef(false);
-  const lastConsentStatusRef = useRef<string | null>(null);
-
+  // Sync consent status when it changes
   useEffect(() => {
-    // Reset initialization when userId or consentType changes
-    if (hasInitializedRef.current && userId !== undefined && !disableApiCall) {
-      // If userId is provided and we've initialized, check consent again (only if API calls are enabled)
-      checkExistingConsent();
-      return;
+    if (consentGranted !== null) {
+      onConsentChange?.(consentGranted);
     }
-
-    // Only run once on mount or when consentType/userId changes
-    if (hasInitializedRef.current) {
-      return;
-    }
-
-    // Only fetch if initialConsentStatus not provided AND API calls are not disabled
-    if (!initialConsentStatus && !disableApiCall) {
-      checkExistingConsent();
-    } else if (initialConsentStatus) {
-      // Initialize from prop (only once)
-      setConsentGranted(initialConsentStatus.granted);
-      setConsentTimestamp(initialConsentStatus.grantedAt);
-      setIsLoading(false);
-      onConsentChange?.(initialConsentStatus.granted);
-      lastConsentStatusRef.current = `${initialConsentStatus.granted}-${initialConsentStatus.grantedAt}`;
-    } else if (disableApiCall) {
-      // If API is disabled and no initial status, default to false
-      setConsentGranted(false);
-      setConsentTimestamp(null);
-      setIsLoading(false);
-      onConsentChange?.(false);
-    }
-    hasInitializedRef.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consentType, userId]); // Add userId to dependencies
-
-  // Separate effect to sync when initialConsentStatus prop actually changes (value changes, not reference)
-  useEffect(() => {
-    if (!initialConsentStatus || !hasInitializedRef.current) {
-      return;
-    }
-
-    const statusKey = `${initialConsentStatus.granted}-${initialConsentStatus.grantedAt}`;
-    // Only update if the actual values changed (not just the object reference)
-    if (lastConsentStatusRef.current !== statusKey) {
-      setConsentGranted(initialConsentStatus.granted ?? null);
-      setConsentTimestamp(initialConsentStatus.grantedAt);
-      lastConsentStatusRef.current = statusKey;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialConsentStatus?.granted, initialConsentStatus?.grantedAt]); // Only depend on actual values, not the object
-
-  const checkExistingConsent = async () => {
-    // Don't call API if disabled
-    if (disableApiCall) {
-      setIsLoading(false);
-      setConsentGranted(false);
-      onConsentChange?.(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      // Get current user ID if userId is not provided (for checking own consent)
-      let targetUserId = userId;
-      if (targetUserId === undefined) {
-        const decodedToken = getDecodedToken();
-        if (!decodedToken?.sub) {
-          console.error('Unable to get current user ID');
-          setConsentGranted(false);
-          onConsentChange?.(false);
-          setIsLoading(false);
-          return;
-        }
-        targetUserId = decodedToken.sub;
-      }
-
-      const response = await getHealthDataConsent(targetUserId);
-      const consent = response.data.consents.find((c) => c.consentType === consentType);
-      if (consent && consent.granted && !consent.withdrawnAt) {
-        setConsentGranted(true);
-        setConsentTimestamp(consent.grantedAt);
-        onConsentChange?.(true);
-      } else {
-        setConsentGranted(false);
-        setConsentTimestamp(null);
-        onConsentChange?.(false);
-      }
-    } catch (error) {
-      console.error('Error checking consent:', error);
-      // If API fails, default to no consent
-      setConsentGranted(false);
-      onConsentChange?.(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [consentGranted, onConsentChange]);
 
   const handleConsentChange = async (granted: boolean) => {
     if (isSaving) return;
 
     try {
-      setIsSaving(true);
       const request: HealthDataConsentRequest = {
         consentType,
         granted,
       };
 
-      await updateHealthDataConsent(request);
+      await updateConsentMutation.mutateAsync(request);
 
-      setConsentGranted(granted);
       if (granted) {
-        setConsentTimestamp(new Date().toISOString());
         toast.success('Consent granted successfully');
       } else {
-        setConsentTimestamp(null);
         toast.info('Consent withdrawn');
       }
 
       onConsentChange?.(granted);
-    } catch (error: any) {
-      console.error('Error updating consent:', error);
-      toast.error(error?.message || 'Failed to update consent. Please try again.');
-    } finally {
-      setIsSaving(false);
+    } catch (error: unknown) {
+      // Error handled by mutation
+      console.error('Health data consent error:', error);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={`flex items-center justify-center p-4 ${className}`}>
-        <LoadingSpinner size="sm" />
-      </div>
-    );
-  }
+  // Don't show full loader - instead show disabled radio buttons with small loader
 
   // Simple banner view for freelancers checking client consent (userId provided)
+  // Backend no longer requires booking verification - simplified endpoint
   if (userId) {
+    // Handle any errors
+    if (consentError) {
+      return (
+        <div className={className}>
+          <Alert variant="destructive" role="alert">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Unable to Check Consent</AlertTitle>
+            <AlertDescription>
+              {consentError instanceof Error
+                ? consentError.message
+                : 'Failed to load consent information. Please try again.'}
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
+    }
+
     return (
       <div className={className}>
         {consentGranted ? (
@@ -269,42 +157,60 @@ export function HealthDataConsent({
     <div className={`${className}`}>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <input
-            type="radio"
-            id={`consent-allow-${consentType}`}
-            name={`consent-${consentType}`}
-            checked={consentGranted === true}
-            onChange={() => handleConsentChange(true)}
-            disabled={isSaving}
-            className="h-4 w-4 text-primary cursor-pointer"
-          />
+          <div className="relative">
+            <input
+              type="radio"
+              id={`consent-allow-${consentType}`}
+              name={`consent-${consentType}`}
+              checked={consentGranted === true}
+              onChange={() => handleConsentChange(true)}
+              disabled={isSaving || isLoading}
+              className="h-4 w-4 text-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
           <Label
             htmlFor={`consent-allow-${consentType}`}
-            className="text-sm font-medium cursor-pointer"
+            className={`text-sm font-medium ${
+              isLoading || isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            }`}
           >
             I consent to data processing
           </Label>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            type="radio"
-            id={`consent-deny-${consentType}`}
-            name={`consent-${consentType}`}
-            checked={consentGranted === false}
-            onChange={() => handleConsentChange(false)}
-            disabled={isSaving}
-            className="h-4 w-4 text-primary cursor-pointer"
-          />
+          <div className="relative">
+            <input
+              type="radio"
+              id={`consent-deny-${consentType}`}
+              name={`consent-${consentType}`}
+              checked={consentGranted === false}
+              onChange={() => handleConsentChange(false)}
+              disabled={isSaving || isLoading}
+              className="h-4 w-4 text-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
           <Label
             htmlFor={`consent-deny-${consentType}`}
-            className="text-sm font-medium cursor-pointer"
+            className={`text-sm font-medium ${
+              isLoading || isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            }`}
           >
             I do not consent
           </Label>
         </div>
-        {isSaving && <LoadingSpinner size="sm" />}
+        {isSaving && !isLoading && <LoadingSpinner size="sm" />}
       </div>
-      {consentGranted && consentTimestamp && (
+      {consentGranted && consentTimestamp && !isLoading && (
         <p className="text-xs text-gray-500 mt-2">
           Consent granted on {new Date(consentTimestamp).toLocaleDateString()}
         </p>

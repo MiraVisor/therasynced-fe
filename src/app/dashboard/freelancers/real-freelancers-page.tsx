@@ -1,168 +1,27 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Clock, MapPin, Star, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { Badge } from '@/components/ui/badge';
+import { StatusSwitch } from '@/components/ui';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { VerificationBadge } from '@/components/ui/verification-badge';
-import { useFreelancers } from '@/hooks/useFreelancers';
-import freelancerService, { FreelancerStatsDto } from '@/services/freelancerService';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useAdminFreelancers, useToggleFreelancerStatus } from '@/hooks/queries/useAdmin';
+import { useFreelancerStats } from '@/hooks/queries/useFreelancers';
 import { Freelancer } from '@/types/types';
-
-// Column definitions for freelancers table
-const freelancerColumns: ColumnDef<Freelancer>[] = [
-  {
-    accessorKey: 'name',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
-        >
-          Freelancer
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-inter font-medium text-charcoal">
-          {row.original.cardInfo?.initials || row.original.name.charAt(0)}
-        </div>
-        <div>
-          <div className="font-inter font-medium text-charcoal">{row.original.name}</div>
-          <div className="font-inter text-xs text-muted-foreground">{row.original.email}</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'mainJobTitle.name',
-    header: 'Specialization',
-    cell: ({ row }) => (
-      <div>
-        <div className="font-inter font-medium text-charcoal">
-          {row.original.mainJobTitle?.name || 'N/A'}
-        </div>
-        <div className="font-inter text-xs text-muted-foreground">
-          {row.original.mainJobTitle?.description || ''}
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'cardInfo.averageRating',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="hover:bg-transparent p-0 font-medium text-sm sm:text-base text-black"
-        >
-          Rating
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const rating = row.original.cardInfo?.averageRating || 0;
-      return (
-        <div className="flex items-center gap-1">
-          <div className="flex">
-            {Array(5)
-              .fill(0)
-              .map((_, index) => (
-                <Star
-                  key={index}
-                  className={`h-4 w-4 ${
-                    index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                  }`}
-                />
-              ))}
-          </div>
-          <span className="text-sm text-gray-500">({rating})</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'city',
-    header: 'Location',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1 font-inter text-sm text-foreground">
-        <MapPin className="h-4 w-4 text-muted-foreground" />
-        <span>{row.original.city || 'N/A'}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'slotSummary.availableSlots',
-    header: 'Available Slots',
-    cell: ({ row }) => {
-      const availableSlots = row.original.slotSummary?.availableSlots ?? null;
-      const totalSlots = row.original.slotSummary?.totalSlots ?? null;
-
-      return (
-        <div className="flex items-center gap-1 font-inter text-sm text-foreground">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <span>
-            {availableSlots !== null && totalSlots !== null
-              ? `${availableSlots} of ${totalSlots}`
-              : 'N/A'}
-          </span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'cardInfo.patientStories',
-    header: 'Patients',
-    cell: ({ row }) => (
-      <div className="font-inter text-sm text-foreground text-center">
-        {row.original.cardInfo?.patientStories !== undefined
-          ? row.original.cardInfo.patientStories
-          : 'N/A'}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'isActive',
-    header: 'Status',
-    cell: ({ row }) => {
-      const isActive = row.original.isActive;
-
-      return (
-        <Badge
-          variant="outline"
-          className={`font-inter font-medium text-xs px-2 py-1 ${
-            isActive
-              ? 'bg-success/10 text-success border-success/20'
-              : 'bg-error/10 text-error border-error/20'
-          }`}
-        >
-          {isActive ? 'Active' : 'Inactive'}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: 'verificationStatus',
-    header: 'Verification',
-    cell: ({ row }) => {
-      const status = row.original.verificationStatus;
-      const verificationStatus = status || 'UNVERIFIED';
-
-      return <VerificationBadge status={verificationStatus} size="sm" />;
-    },
-  },
-];
 
 const RealFreelancersPage = () => {
   // State for pagination and search
@@ -170,8 +29,12 @@ const RealFreelancersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [freelancerStats, setFreelancerStats] = useState<FreelancerStatsDto | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
+
+  // State for status toggle dialog
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null);
+  const [deactivationReason, setDeactivationReason] = useState('');
+  const [togglingFreelancers, setTogglingFreelancers] = useState<Set<string>>(new Set());
 
   // Debounce search query
   useEffect(() => {
@@ -188,40 +51,197 @@ const RealFreelancersPage = () => {
   }, [searchQuery, debouncedSearch]);
 
   // Fetch freelancer stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setStatsLoading(true);
-        const stats = await freelancerService.getStats();
-        setFreelancerStats(stats);
-      } catch (err) {
-        toast.error(
-          `Failed to load freelancer stats: ${err instanceof Error ? err.message : 'Unknown error'}`,
-        );
-      } finally {
-        setStatsLoading(false);
-      }
-    };
+  const {
+    data: freelancerStats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useFreelancerStats();
 
-    fetchStats();
-  }, []);
-
-  // Fetch freelancers with pagination and search
-  const { freelancers, loading, initialLoading, error, pagination } = useFreelancers({
+  // Fetch all freelancers using admin endpoint (shows all freelancers regardless of subscription)
+  const {
+    data: freelancersData,
+    isLoading,
+    isFetching,
+    error,
+  } = useAdminFreelancers({
     page,
     limit: pageSize,
     name: debouncedSearch || undefined,
   });
 
-  // Show error as toast when it occurs
+  const freelancers = freelancersData?.freelancers || [];
+  const pagination = freelancersData?.pagination;
+
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    if (error) {
-      toast.error(`Failed to load freelancers: ${error}`);
+    if (statsError && !freelancerStats) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load freelancer stats';
+      toast.error(errorMessage);
     }
-  }, [error]);
+  }, [statsError, freelancerStats]);
+
+  useEffect(() => {
+    if (error && !freelancersData) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load freelancers';
+      toast.error(errorMessage);
+    }
+  }, [error, freelancersData]);
+
+  const toggleStatusMutation = useToggleFreelancerStatus();
+
+  // Helper function to get status text (matching verification page)
+  const getStatusText = (status: string | undefined) => {
+    if (status === 'APPROVED') return 'Yes';
+    if (status === 'REJECTED') return 'No';
+    return 'Pending';
+  };
+
+  const handleStatusToggle = (freelancer: Freelancer) => {
+    setSelectedFreelancer(freelancer);
+    setDeactivationReason('');
+    setIsStatusDialogOpen(true);
+  };
+
+  const handleStatusConfirm = () => {
+    if (!selectedFreelancer) return;
+
+    const newStatus = !selectedFreelancer.isActive;
+
+    // If deactivating, require a reason
+    if (!newStatus && !deactivationReason.trim()) {
+      toast.error('Please provide a reason for deactivation');
+      return;
+    }
+
+    setTogglingFreelancers((prev) => new Set(prev).add(selectedFreelancer.id));
+
+    toggleStatusMutation.mutate(
+      {
+        freelancerId: selectedFreelancer.id,
+        data: {
+          isActive: newStatus,
+          reason: !newStatus ? deactivationReason.trim() : undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsStatusDialogOpen(false);
+          setSelectedFreelancer(null);
+          setDeactivationReason('');
+        },
+        onSettled: () => {
+          setTogglingFreelancers((prev) => {
+            const next = new Set(prev);
+            next.delete(selectedFreelancer.id);
+            return next;
+          });
+        },
+      },
+    );
+  };
+
+  // Column definitions for freelancers table
+  const freelancerColumns: ColumnDef<Freelancer>[] = [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      cell: ({ row }) => (
+        <div className="font-mono text-xs text-muted-foreground">{row.original.id ?? 'N/A'}</div>
+      ),
+    },
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) => (
+        <div className="font-inter font-medium text-charcoal">{row.original.name ?? 'N/A'}</div>
+      ),
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+      cell: ({ row }) => (
+        <div className="font-inter text-sm text-muted-foreground">
+          {row.original.email ?? 'N/A'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'mainJobTitle.name',
+      header: 'Specialization',
+      cell: ({ row }) => (
+        <div className="font-inter text-sm text-charcoal">
+          {row.original.mainJobTitle?.name ?? 'N/A'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => {
+        const freelancer = row.original;
+        const isToggling = togglingFreelancers.has(freelancer.id);
+        return (
+          <StatusSwitch
+            checked={freelancer.isActive ?? false}
+            onCheckedChange={() => handleStatusToggle(freelancer)}
+            disabled={isToggling || toggleStatusMutation.isPending}
+          />
+        );
+      },
+    },
+    {
+      accessorKey: 'verificationStatus',
+      header: 'Verification',
+      cell: ({ row }) => {
+        const { verificationStatus } = row.original;
+        const certificateStatus = row.original.firstAidCertificateStatus;
+        const certificateUrl = row.original.firstAidCertificateUrl;
+
+        return (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="font-inter text-xs text-muted-foreground min-w-[100px]">
+                Verification:
+              </span>
+              <span
+                className={`font-inter text-sm font-medium ${
+                  verificationStatus === 'APPROVED'
+                    ? 'text-green-600'
+                    : verificationStatus === 'REJECTED'
+                      ? 'text-red-600'
+                      : 'text-yellow-600'
+                }`}
+              >
+                {getStatusText(verificationStatus)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-inter text-xs text-muted-foreground min-w-[100px]">
+                First Aid Certificate:
+              </span>
+              <span
+                className={`font-inter text-sm font-medium ${
+                  !certificateUrl
+                    ? 'text-muted-foreground'
+                    : certificateStatus === 'APPROVED'
+                      ? 'text-green-600'
+                      : certificateStatus === 'REJECTED'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                }`}
+              >
+                {certificateUrl ? getStatusText(certificateStatus) : 'Not uploaded'}
+              </span>
+            </div>
+          </div>
+        );
+      },
+    },
+  ];
 
   const stats =
-    freelancerStats && freelancerStats.totalFreelancers && freelancerStats.activeFreelancers
+    freelancerStats?.totalFreelancers?.value && freelancerStats.activeFreelancers?.value
       ? [
           {
             title: 'Total Freelancers',
@@ -231,17 +251,11 @@ const RealFreelancersPage = () => {
               isUp: (freelancerStats.totalFreelancers.percentageChange || 0) >= 0,
               label: freelancerStats.totalFreelancers.comparisonPeriod || 'all time',
             },
-            icon: Users,
-            iconColor: 'text-info',
-            iconBg: 'bg-info/10',
           },
           {
             title: 'Active Freelancers',
             value: freelancerStats.activeFreelancers.value?.toString() || '0',
             trend: { value: 0, isUp: true, label: 'currently' },
-            icon: Clock,
-            iconColor: 'text-success',
-            iconBg: 'bg-success/10',
           },
         ]
       : [
@@ -249,17 +263,11 @@ const RealFreelancersPage = () => {
             title: 'Total Freelancers',
             value: '0',
             trend: undefined,
-            icon: Users,
-            iconColor: 'text-info',
-            iconBg: 'bg-info/10',
           },
           {
             title: 'Active Freelancers',
             value: '0',
             trend: undefined,
-            icon: Clock,
-            iconColor: 'text-success',
-            iconBg: 'bg-success/10',
           },
         ];
 
@@ -269,17 +277,13 @@ const RealFreelancersPage = () => {
     >
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
+        {stats.map((stat) => {
           return (
             <EnhancedStatCard
-              key={index}
+              key={stat.title}
               title={stat.title}
               value={stat.value}
               trend={stat.trend}
-              icon={Icon}
-              iconColor={stat.iconColor}
-              iconBg={stat.iconBg}
               interactive
               loading={statsLoading}
               onClick={() => {
@@ -293,18 +297,18 @@ const RealFreelancersPage = () => {
       {/* Freelancers Table with built-in pagination */}
       <DataTable
         columns={freelancerColumns}
-        data={freelancers}
+        data={freelancers as unknown as Freelancer[]}
         title="All Freelancers"
         searchKey="name"
-        searchPlaceholder="Search by name..."
+        searchPlaceholder="Search by name or email..."
         enableSorting={false}
         enableFiltering={true}
         enableColumnVisibility={true}
         enablePagination={true}
         showSearch={true}
         showSorting={false}
-        initialLoading={initialLoading}
-        loading={loading}
+        initialLoading={isLoading && !freelancers.length}
+        loading={isFetching}
         externalSearchValue={searchQuery}
         onExternalSearchChange={(value) => setSearchQuery(value)}
         externalPageIndex={page - 1}
@@ -316,6 +320,58 @@ const RealFreelancersPage = () => {
           setPage(1);
         }}
       />
+
+      {/* Status Toggle Dialog */}
+      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-poppins font-semibold">
+              {selectedFreelancer?.isActive ? 'Deactivate Freelancer' : 'Activate Freelancer'}
+            </DialogTitle>
+            <DialogDescription className="font-inter">
+              {selectedFreelancer?.isActive
+                ? `Are you sure you want to deactivate ${selectedFreelancer.name}? Please provide a reason for deactivation.`
+                : `Activate ${selectedFreelancer?.name}'s account?`}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedFreelancer?.isActive && (
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="deactivation-reason" className="font-inter font-medium">
+                  Reason for Deactivation <span className="text-error">*</span>
+                </Label>
+                <Textarea
+                  id="deactivation-reason"
+                  placeholder="Enter reason for deactivation..."
+                  value={deactivationReason}
+                  onChange={(e) => setDeactivationReason(e.target.value)}
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusConfirm}
+              disabled={
+                toggleStatusMutation.isPending ||
+                (selectedFreelancer?.isActive && !deactivationReason.trim())
+              }
+              variant={selectedFreelancer?.isActive ? 'destructive' : 'default'}
+            >
+              {toggleStatusMutation.isPending
+                ? 'Updating...'
+                : selectedFreelancer?.isActive
+                  ? 'Deactivate'
+                  : 'Activate'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardPageWrapper>
   );
 };

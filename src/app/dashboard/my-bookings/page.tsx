@@ -1,10 +1,10 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
@@ -25,9 +25,11 @@ import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { BookingCardSkeleton } from '@/components/ui/skeletons/BookingCardSkeleton';
-import * as bookingApi from '@/redux/api/bookingApi';
-import { cancelUserBooking, fetchUserBookings } from '@/redux/slices/bookingSlice';
-import { RootState } from '@/redux/store';
+import {
+  useCancelBooking,
+  usePatientBookings,
+  usePatientBookingStats,
+} from '@/hooks/queries/useBookings';
 import { Booking, BookingStats } from '@/types/types';
 
 // Stats Section Component
@@ -49,45 +51,29 @@ const BookingStatsComponent = ({
     {
       title: 'Total Bookings',
       value: displayStats.totalBookings.toString(),
-      icon: CalendarIcon,
-      iconBg: 'bg-info/10',
-      iconColor: 'text-info',
     },
     {
       title: 'Upcoming',
       value: displayStats.upcomingBookings.toString(),
-      icon: Clock,
-      iconBg: 'bg-success/10',
-      iconColor: 'text-success',
     },
     {
       title: 'Completed',
       value: displayStats.completedBookings.toString(),
-      icon: User,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
     },
     {
       title: 'Cancelled',
       value: displayStats.cancelledBookings.toString(),
-      icon: CalendarIcon,
-      iconBg: 'bg-error/10',
-      iconColor: 'text-error',
     },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
       {statsData.map((stat, index) => {
-        const Icon = stat.icon;
         return (
           <EnhancedStatCard
             key={index}
             title={stat.title}
             value={stat.value}
-            icon={Icon}
-            iconColor={stat.iconColor}
-            iconBg={stat.iconBg}
             interactive
             loading={isLoading}
             bookingSkeleton={true}
@@ -105,12 +91,8 @@ const BookingStatsComponent = ({
 
 export default function MyBookingsPage() {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { bookings, loading, initialLoading, error } = useSelector(
-    (state: RootState) => state.booking,
-  );
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [searchTerm, _setSearchTerm] = useState('');
+  const [statusFilter, _setStatusFilter] = useState('');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -120,66 +102,49 @@ export default function MyBookingsPage() {
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
-  const [bookingStats, setBookingStats] = useState<BookingStats | null>(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [bookingToRate, setBookingToRate] = useState<Booking | null>(null);
 
-  const fetchBookingStats = useCallback(async () => {
-    setIsLoadingStats(true);
-    try {
-      const response = await bookingApi.getPatientBookingStats();
-      setBookingStats(response.data);
-    } catch (error) {
-      console.error('Failed to fetch booking stats:', error);
-    } finally {
-      setIsLoadingStats(false);
+  // Calculate week date for query
+  const weekDate = currentWeekStart.toISOString().split('T')[0];
+
+  // Use React Query hooks
+  const {
+    data: bookings = [],
+    isLoading: loading,
+    isFetching: initialLoading,
+    error,
+  } = usePatientBookings({
+    page: 1,
+    limit: 1000,
+    sortBy: 'slot.startTime',
+    sortOrder: 'asc',
+    date: weekDate,
+  });
+
+  const {
+    data: bookingStats,
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = usePatientBookingStats();
+  const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (error && bookings.length === 0) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load bookings';
+      toast.error(errorMessage);
     }
-  }, []);
+  }, [error, bookings]);
 
-  // Fetch stats only once on initial load
   useEffect(() => {
-    fetchBookingStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchBookingsForWeek = useCallback(
-    async (weekStartDate: Date, resetBookings = false) => {
-      // Calculate week range (Monday 00:00 to Sunday 23:59:59)
-      const weekStart = new Date(weekStartDate);
-      weekStart.setHours(0, 0, 0, 0);
-
-      const weekEnd = new Date(weekStartDate);
-      weekEnd.setDate(weekStartDate.getDate() + 6);
-      weekEnd.setHours(23, 59, 59, 999);
-
-      const hasBookings = bookings.length > 0;
-
-      try {
-        // Fetch with pagination and sorting using the week start date
-        await dispatch(
-          fetchUserBookings({
-            page: 1,
-            limit: 1000,
-            sortBy: 'slot.startTime',
-            sortOrder: 'asc',
-            silent: hasBookings && !resetBookings,
-            date: weekStart.toISOString().split('T')[0], // Format: YYYY-MM-DD
-          }) as any,
-        ).unwrap();
-      } catch (error) {
-        console.error('Failed to fetch bookings:', error);
-        toast.error('Failed to load bookings for this week');
-      }
-    },
-    [dispatch, bookings.length],
-  );
-
-  // Fetch bookings for the week
-  useEffect(() => {
-    fetchBookingsForWeek(currentWeekStart, true);
-  }, [fetchBookingsForWeek, currentWeekStart]);
+    if (statsError && !bookingStats) {
+      const errorMessage =
+        statsError instanceof Error ? statsError.message : 'Failed to load booking stats';
+      toast.error(errorMessage);
+    }
+  }, [statsError, bookingStats]);
 
   // Handler functions for booking actions
   const handleMessage = (booking: Booking) => {
@@ -212,48 +177,45 @@ export default function MyBookingsPage() {
 
   const handleRatingSuccess = () => {
     // Refresh bookings after successful rating
-    fetchBookingsForWeek(currentWeekStart, true);
-    fetchBookingStats();
+    queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    queryClient.invalidateQueries({ queryKey: ['ratings'] });
   };
 
-  const confirmCancel = async () => {
+  const confirmCancel = () => {
     if (!bookingToCancel) return;
 
-    setCancellingBookingId(bookingToCancel.id);
-    try {
-      await dispatch(
-        cancelUserBooking({
-          bookingId: bookingToCancel.id,
-          reason: cancelReason || 'Cancelled by user',
-        }) as any,
-      ).unwrap();
-      toast.success('Booking cancelled successfully');
-      setShowCancelModal(false);
-      setBookingToCancel(null);
-      setCancelReason('');
-      fetchBookingStats(); // Refresh stats after cancellation
-    } catch (error) {
-      toast.error('Failed to cancel booking');
-    } finally {
-      setCancellingBookingId(null);
-    }
+    cancelBooking(
+      {
+        bookingId: bookingToCancel.id,
+        reason: cancelReason || 'Cancelled by user',
+      },
+      {
+        onSuccess: () => {
+          setShowCancelModal(false);
+          setBookingToCancel(null);
+          setCancelReason('');
+          setCancellingBookingId(null);
+        },
+        onError: () => {
+          setCancellingBookingId(null);
+        },
+      },
+    );
   };
 
-  const navigateWeek = async (direction: 'prev' | 'next') => {
+  const queryClient = useQueryClient();
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
     setIsNavigatingWeek(true);
-    try {
-      if (direction === 'prev') {
-        const newWeekStart = addDays(currentWeekStart, -7);
-        setCurrentWeekStart(newWeekStart);
-        fetchBookingsForWeek(newWeekStart, true);
-      } else {
-        const newWeekStart = addDays(currentWeekStart, 7);
-        setCurrentWeekStart(newWeekStart);
-        fetchBookingsForWeek(newWeekStart, true);
-      }
-    } finally {
-      setIsNavigatingWeek(false);
+    if (direction === 'prev') {
+      const newWeekStart = addDays(currentWeekStart, -7);
+      setCurrentWeekStart(newWeekStart);
+    } else {
+      const newWeekStart = addDays(currentWeekStart, 7);
+      setCurrentWeekStart(newWeekStart);
     }
+    // React Query will automatically refetch when currentWeekStart changes
+    setTimeout(() => setIsNavigatingWeek(false), 500);
   };
 
   // Calendar date picker handler
@@ -261,7 +223,7 @@ export default function MyBookingsPage() {
     if (date) {
       const newWeekStart = startOfWeek(date, { weekStartsOn: 1 });
       setCurrentWeekStart(newWeekStart);
-      fetchBookingsForWeek(newWeekStart, true);
+      // React Query will automatically refetch
     }
   };
 
@@ -279,7 +241,7 @@ export default function MyBookingsPage() {
           )) ||
         (booking.services &&
           booking.services.length > 0 &&
-          booking.services[0].name.toLowerCase().includes(searchTerm.toLowerCase()));
+          booking.services[0]?.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus = (() => {
         if (!statusFilter) return true;
@@ -338,10 +300,12 @@ export default function MyBookingsPage() {
           <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
             Error loading bookings
           </h3>
-          <p className="font-inter text-muted-foreground mb-4">{error}</p>
+          <p className="font-inter text-muted-foreground mb-4">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
           <Button
             variant="outline"
-            onClick={() => dispatch(fetchUserBookings({ date: new Date().toISOString() }) as any)}
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['bookings'] })}
           >
             Try Again
           </Button>
@@ -352,7 +316,7 @@ export default function MyBookingsPage() {
       {!error && (
         <div className="space-y-6">
           {/* Stats Section */}
-          <BookingStatsComponent stats={bookingStats} isLoading={isLoadingStats} />
+          <BookingStatsComponent stats={bookingStats || null} isLoading={isLoadingStats} />
 
           {/* Week Navigation */}
           <div className="flex items-center justify-between gap-4 w-full">
@@ -460,6 +424,7 @@ export default function MyBookingsPage() {
                       onMessage={handleMessage}
                       onReschedule={handleReschedule}
                       onCancel={handleCancel}
+                      onRate={handleReview}
                       cancellingBookingId={cancellingBookingId}
                     />
                   </div>
@@ -533,9 +498,9 @@ export default function MyBookingsPage() {
               onClick={confirmCancel}
               disabled={cancellingBookingId === bookingToCancel?.id}
             >
-              {cancellingBookingId === bookingToCancel?.id ? (
+              {isCancelling || cancellingBookingId === bookingToCancel?.id ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                   Cancelling...
                 </>
               ) : (

@@ -1,9 +1,7 @@
 'use client';
 
-import { AlertTriangle, Shield } from 'lucide-react';
-import { AlertCircle, Ban, FileText } from 'lucide-react';
+import { AlertTriangle, Ban, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { FilterBar } from '@/components/core/Dashboard/AdminSide/Components/FilterBar';
@@ -15,34 +13,45 @@ import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getComplaintsAgainstMe, getMyComplaints } from '@/redux/api/complaintApi';
-import { RootState } from '@/redux/store';
-import { ComplaintCategory, ComplaintStatus } from '@/types/types';
+import { useComplaintsAgainstMe, useMyComplaints } from '@/hooks/queries/useComplaints';
+import { Complaint, ComplaintCategory } from '@/types/types';
 
 export default function MyComplaintsPage() {
-  const dispatch = useDispatch();
-  const { myComplaints, complaintsAgainstMe, isLoading, error } = useSelector(
-    (state: RootState) => state.complaint,
-  );
+  const {
+    data: myComplaints = [],
+    isLoading: isLoadingMy,
+    error: myComplaintsError,
+  } = useMyComplaints();
+  const {
+    data: complaintsAgainstMe = [],
+    isLoading: isLoadingAgainst,
+    error: complaintsAgainstMeError,
+  } = useComplaintsAgainstMe();
+  const isLoading = isLoadingMy || isLoadingAgainst;
+
+  // Show error toast only when no cached data exists
+  useEffect(() => {
+    if (myComplaintsError && myComplaints.length === 0) {
+      const errorMessage =
+        myComplaintsError instanceof Error
+          ? myComplaintsError.message
+          : 'Failed to load my complaints';
+      toast.error(errorMessage);
+    }
+  }, [myComplaintsError, myComplaints]);
+
+  useEffect(() => {
+    if (complaintsAgainstMeError && complaintsAgainstMe.length === 0) {
+      const errorMessage =
+        complaintsAgainstMeError instanceof Error
+          ? complaintsAgainstMeError.message
+          : 'Failed to load complaints against me';
+      toast.error(errorMessage);
+    }
+  }, [complaintsAgainstMeError, complaintsAgainstMe]);
   const [selectedTab, setSelectedTab] = useState('filed');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await Promise.all([
-          dispatch(getMyComplaints({}) as any),
-          dispatch(getComplaintsAgainstMe({}) as any),
-        ]);
-      } catch (error) {
-        console.error('Error fetching complaints:', error);
-        toast.error('Failed to fetch complaints');
-      }
-    };
-
-    fetchData();
-  }, [dispatch]);
 
   const getCategoryLabel = (category: ComplaintCategory) => {
     const labels: Record<ComplaintCategory, string> = {
@@ -58,7 +67,7 @@ export default function MyComplaintsPage() {
     return labels[category] || category;
   };
 
-  const filteredComplaints = (complaints: any[]) => {
+  const filteredComplaints = (complaints: Complaint[]) => {
     let filtered = complaints;
 
     // Filter by status
@@ -134,33 +143,21 @@ export default function MyComplaintsPage() {
           <EnhancedStatCard
             title="Total"
             value={currentStats.total.toString()}
-            icon={FileText}
-            iconColor="text-primary"
-            iconBg="bg-primary/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.total)}
           />
           <EnhancedStatCard
             title="Pending"
             value={currentStats.pending.toString()}
-            icon={AlertCircle}
-            iconColor="text-warning"
-            iconBg="bg-warning/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.pending)}
           />
           <EnhancedStatCard
             title="Under Review"
             value={currentStats.underReview.toString()}
-            icon={Shield}
-            iconColor="text-info"
-            iconBg="bg-info/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.underReview)}
           />
           <EnhancedStatCard
             title="Resolved"
             value={currentStats.resolved.toString()}
-            icon={FileText}
-            iconColor="text-success"
-            iconBg="bg-success/10"
             sparklineData={Array.from({ length: 7 }, () => currentStats.resolved)}
           />
           {selectedTab === 'against' && (
@@ -168,17 +165,11 @@ export default function MyComplaintsPage() {
               <EnhancedStatCard
                 title="Warned"
                 value={currentStats.warned.toString()}
-                icon={AlertTriangle}
-                iconColor="text-warning"
-                iconBg="bg-warning/10"
                 sparklineData={Array.from({ length: 7 }, () => currentStats.warned)}
               />
               <EnhancedStatCard
                 title="Suspended"
                 value={currentStats.suspended.toString()}
-                icon={Ban}
-                iconColor="text-error"
-                iconBg="bg-error/10"
                 sparklineData={Array.from({ length: 7 }, () => currentStats.suspended)}
               />
             </>

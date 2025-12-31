@@ -3,14 +3,14 @@
 import {
   ColumnDef,
   ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  SortingState,
   useReactTable,
+  VisibilityState,
 } from '@tanstack/react-table';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
@@ -35,6 +35,12 @@ import {
 
 import { LoadingSpinner } from './loading-spinner';
 import { TableSkeleton } from './table-skeleton';
+
+export interface FilterOption<T = string> {
+  label: string;
+  value: T;
+  color?: string; // e.g., 'primary', 'warning', 'success', 'error'
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -61,6 +67,10 @@ interface DataTableProps<TData, TValue> {
   totalPages?: number;
   onExternalPageChange?: (pageIndex: number) => void;
   onExternalPageSizeChange?: (pageSize: number) => void;
+  // Filter buttons beside search bar
+  filterOptions?: FilterOption[];
+  selectedFilter?: string;
+  onFilterChange?: (value: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -86,12 +96,14 @@ export function DataTable<TData, TValue>({
   totalPages,
   onExternalPageChange,
   onExternalPageSizeChange,
+  filterOptions,
+  selectedFilter,
+  onFilterChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [isFiltering, setIsFiltering] = useState(false);
 
   // External pagination state
   const [internalPageIndex, setInternalPageIndex] = useState(0);
@@ -114,6 +126,21 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
     onColumnVisibilityChange: enableColumnVisibility ? setColumnVisibility : undefined,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange:
+      enablePagination && !onExternalPageChange
+        ? (updater) => {
+            const newPagination =
+              typeof updater === 'function'
+                ? updater({ pageIndex: internalPageIndex, pageSize: internalPageSize })
+                : updater;
+            if (newPagination.pageIndex !== undefined) {
+              setInternalPageIndex(newPagination.pageIndex);
+            }
+            if (newPagination.pageSize !== undefined) {
+              setInternalPageSize(newPagination.pageSize);
+            }
+          }
+        : undefined,
     state: {
       sorting: enableSorting ? sorting : undefined,
       columnFilters: enableFiltering ? columnFilters : undefined,
@@ -122,7 +149,7 @@ export function DataTable<TData, TValue>({
       ...(enablePagination &&
         !onExternalPageChange && {
           pagination: {
-            pageIndex: currentPageIndex,
+            pageIndex: internalPageIndex,
             pageSize: currentPageSize,
           },
         }),
@@ -135,16 +162,13 @@ export function DataTable<TData, TValue>({
     pageCount: totalPages,
     manualPagination: !!onExternalPageChange,
   });
-  const [firstWord, ...rest] = (title ?? '').split(' ');
-  const restTitle = rest.join(' ');
   return (
     <div className="border rounded-lg">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2">
         <div className="flex items-center space-x-2 px-2 py-4">
-          <h2 className="font-poppins text-[22px] font-bold tracking-tight">
-            <span className="text-black">{firstWord} </span>
-            <span className="text-primary">{restTitle}</span>
+          <h2 className="font-poppins text-[22px] font-bold tracking-tight text-charcoal">
+            {title}
           </h2>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
@@ -155,31 +179,50 @@ export function DataTable<TData, TValue>({
             </div>
           )}
 
-          {/* Search Input */}
-          {showSearch && enableFiltering && searchKey && (
-            <div className="w-full sm:max-w-sm px-3 py-2">
-              {/* ← outer padding here */}
-              <div className="relative w-full">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={searchPlaceholder}
-                  value={
-                    onExternalSearchChange
-                      ? (externalSearchValue ?? '')
-                      : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
-                  }
-                  onChange={(event) => {
-                    if (onExternalSearchChange) {
-                      onExternalSearchChange(event.target.value);
-                    } else {
-                      table.getColumn(searchKey)?.setFilterValue(event.target.value);
+          {/* Search Input and Filters */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto px-3 py-2">
+            {showSearch && enableFiltering && searchKey && (
+              <div className="w-full sm:max-w-sm">
+                <div className="relative w-full">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={searchPlaceholder}
+                    value={
+                      onExternalSearchChange
+                        ? (externalSearchValue ?? '')
+                        : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
                     }
-                  }}
-                  className="pl-8 border-gray-200 w-full"
-                />
+                    onChange={(event) => {
+                      if (onExternalSearchChange) {
+                        onExternalSearchChange(event.target.value);
+                      } else {
+                        table.getColumn(searchKey)?.setFilterValue(event.target.value);
+                      }
+                    }}
+                    className="pl-8 border-gray-200 w-full"
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Filter Dropdown */}
+            {filterOptions && filterOptions.length > 0 && onFilterChange && (
+              <div className="w-full sm:w-[180px]">
+                <Select value={selectedFilter ?? 'all'} onValueChange={onFilterChange}>
+                  <SelectTrigger className="h-8 border-gray-200">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterOptions.map((option) => (
+                      <SelectItem key={String(option.value)} value={String(option.value)}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
 
           {/* Sort By Dropdown */}
           {showSorting && enableSorting && (
@@ -205,8 +248,14 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="bg-[#ffffff] overflow-hidden h-[calc(48px*9)] flex flex-col">
-        <Table className="h-full">
+      <div
+        className={`bg-[#ffffff] flex flex-col ${
+          table.getRowModel().rows?.length && !initialLoading
+            ? 'overflow-hidden min-h-[calc(48px*5)] max-h-[calc(48px*9)]'
+            : ''
+        }`}
+      >
+        <Table className={table.getRowModel().rows?.length && !initialLoading ? 'h-full' : ''}>
           <TableHeader className="bg-gray-100 rounded-none">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="bg-gray-100">
@@ -214,7 +263,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className="min-w-[150px] font-poppins  font-medium text-sm sm:text-base text-black py-1 sm:py-1 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-3 sm:last:pr-6 border-0"
+                      className="min-w-[150px] font-poppins font-medium text-sm sm:text-base text-charcoal py-1 sm:py-1 px-2 sm:px-3 first:pl-3 sm:first:pl-6 last:pr-3 sm:last:pr-6 border-0"
                     >
                       {header.isPlaceholder
                         ? null
@@ -225,7 +274,9 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="overflow-y-auto">
+          <TableBody
+            className={table.getRowModel().rows?.length && !initialLoading ? 'overflow-y-auto' : ''}
+          >
             {initialLoading ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="p-4">
@@ -253,9 +304,9 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-[calc(48px*5)] text-center font-poppins font-medium text-[14px] text-table-row border-0"
+                  className="text-center font-poppins font-medium text-[14px] text-table-row border-0 py-8"
                 >
-                  <div className="flex items-center justify-center h-full">No results found.</div>
+                  <div className="flex items-center justify-center">No results found.</div>
                 </TableCell>
               </TableRow>
             )}
@@ -319,7 +370,8 @@ export function DataTable<TData, TValue>({
                   if (onExternalPageChange) {
                     onExternalPageChange(currentPageIndex - 1);
                   } else {
-                    table.previousPage();
+                    const newPageIndex = Math.max(0, currentPageIndex - 1);
+                    table.setPageIndex(newPageIndex);
                   }
                 }}
                 disabled={currentPageIndex === 0}
@@ -374,7 +426,9 @@ export function DataTable<TData, TValue>({
                   if (onExternalPageChange) {
                     onExternalPageChange(currentPageIndex + 1);
                   } else {
-                    table.nextPage();
+                    const maxPage = (totalPages || table.getPageCount()) - 1;
+                    const newPageIndex = Math.min(maxPage, currentPageIndex + 1);
+                    table.setPageIndex(newPageIndex);
                   }
                 }}
                 disabled={currentPageIndex >= (totalPages || table.getPageCount()) - 1}
@@ -389,7 +443,8 @@ export function DataTable<TData, TValue>({
                   if (onExternalPageChange) {
                     onExternalPageChange((totalPages || table.getPageCount()) - 1);
                   } else {
-                    table.setPageIndex(table.getPageCount() - 1);
+                    const lastPage = table.getPageCount() - 1;
+                    table.setPageIndex(lastPage);
                   }
                 }}
                 disabled={currentPageIndex >= (totalPages || table.getPageCount()) - 1}

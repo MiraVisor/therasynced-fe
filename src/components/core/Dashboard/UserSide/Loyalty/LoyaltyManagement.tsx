@@ -1,9 +1,6 @@
 'use client';
 
 import { Award, Gift, Medal } from 'lucide-react';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,47 +8,26 @@ import { Progress } from '@/components/ui/progress';
 import { LoyaltySectionSkeleton } from '@/components/ui/skeletons/LoyaltySectionSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  getLoyaltyProfile,
-  getLoyaltyRewards,
-  getRedemptionHistory,
-  redeemReward,
-} from '@/redux/api/loyaltyApi';
-import { RootState } from '@/redux/store';
+  useLoyaltyProfile,
+  useLoyaltyRewards,
+  useRedeemReward,
+  useRedemptionHistory,
+} from '@/hooks/queries/useLoyalty';
 import { LoyaltyTier } from '@/types/types';
 
 export default function LoyaltyManagement() {
-  const dispatch = useDispatch();
-  const { profile, rewards, redemptions, isLoading, isRedeeming } = useSelector(
-    (state: RootState) => state.loyalty,
-  );
+  // Use React Query hooks
+  const { data: profile, isLoading } = useLoyaltyProfile();
+  const { data: rewards = [] } = useLoyaltyRewards();
+  const { data: redemptions = [] } = useRedemptionHistory();
+  const { mutate: redeemRewardMutation, isPending: isRedeeming } = useRedeemReward();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await Promise.all([
-          dispatch(getLoyaltyProfile() as any),
-          dispatch(getLoyaltyRewards() as any),
-          dispatch(getRedemptionHistory() as any),
-        ]);
-      } catch (error) {
-        toast.error('Failed to load loyalty information. Please try again.');
-      }
-    };
-
-    fetchData();
-  }, [dispatch]);
-
-  const handleRedeem = async (rewardId: string) => {
-    try {
-      const result = await dispatch(redeemReward(rewardId) as any);
-      if (redeemReward.fulfilled.match(result)) {
-        toast.success('Reward redeemed successfully!');
-        dispatch(getLoyaltyProfile() as any);
-        dispatch(getRedemptionHistory() as any);
-      }
-    } catch (error) {
-      toast.error('Failed to redeem reward');
-    }
+  const handleRedeem = (rewardId: string) => {
+    redeemRewardMutation(rewardId, {
+      onSuccess: () => {
+        // React Query will automatically refetch profile and redemptions
+      },
+    });
   };
 
   const getTierColor = (tier: LoyaltyTier) => {

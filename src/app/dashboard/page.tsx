@@ -8,7 +8,7 @@ import {
   FreelancerPageSkeleton,
   UserPageSkeleton,
 } from '@/components/common/PageSkeleton';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { useAuth } from '@/hooks/useAuthZustand';
 import { ROLES } from '@/types/types';
 
 // Dynamically import components that use Redux to prevent SSR issues

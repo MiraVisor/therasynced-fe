@@ -17,7 +17,7 @@ const Page = () => {
 
   const handleBack = () => {
     // Check if we came from a specific page
-    const referrer = document.referrer;
+    const { referrer } = document;
     const currentHost = window.location.origin;
 
     if (referrer && referrer.startsWith(currentHost)) {

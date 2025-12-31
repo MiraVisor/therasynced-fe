@@ -1,16 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import EmailVerificationForm from '@/components/core/authentication/EmailVerificationForm';
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
 import SignInForm from '@/components/core/authentication/SignInForm';
-import { sendVerificationEmailApi } from '@/redux/api/authApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { signUpUser } from '@/redux/slices/authSlice';
+import { useResendVerificationEmail, useSignUp } from '@/hooks/queries/useAuth';
+import type { SignUpDto } from '@/types';
 
 import MultiStepSignup from './MultiStepSignup';
 
@@ -23,11 +22,23 @@ type AuthView = 'sign-in' | 'sign-up' | 'forgot-password' | 'email-verification'
 const validAuthTypes = ['sign-up', 'sign-in'];
 
 export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
-  const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<AuthView>(authtype as AuthView);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+
+  const { mutate: signup, isPending: isSubmitting } = useSignUp();
+  const { mutate: resendEmail } = useResendVerificationEmail();
+
+  // Clean up reset success parameter from URL if present
+  useEffect(() => {
+    const resetSuccess = searchParams.get('reset');
+    if (resetSuccess === 'success' && currentView === 'sign-in') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('reset');
+      router.replace(url.pathname + url.search, { scroll: false });
+    }
+  }, [searchParams, currentView, router]);
 
   if (!validAuthTypes.includes(authtype)) {
     return notFound();
@@ -43,25 +54,13 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     setCurrentView('sign-in');
   };
 
-  const handleSignUpSubmit = (data: any) => {
-    setIsSubmitting(true);
+  const handleSignUpSubmit = (data: SignUpDto) => {
     setUserEmail(data.email);
-
-    dispatch(signUpUser(data))
-      .unwrap()
-      .then((res) => {
-        toast.success(
-          'Account created successfully! Please check your email for the verification link.',
-        );
-        // Show email verification page instead of redirecting to dashboard
+    signup(data, {
+      onSuccess: () => {
         setCurrentView('email-verification');
-      })
-      .catch((err) => {
-        toast.error(err?.message || 'Sign-Up Failed');
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+      },
+    });
   };
 
   const handleBackToSignInFromSignup = () => {
@@ -69,25 +68,33 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     window.history.pushState({}, '', '/authentication/sign-in');
   };
 
-  const handleResendEmail = async () => {
+  const handleResendEmail = () => {
     if (!userEmail) {
       toast.error('Email address not found');
       return;
     }
-
-    try {
-      await sendVerificationEmailApi({ email: userEmail });
-      toast.success('Verification email resent to your inbox');
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to resend verification email');
-    }
+    resendEmail({ email: userEmail });
   };
 
   const renderAuthForm = () => {
     if (currentView === 'sign-up') {
       return (
         <MultiStepSignup
-          onSubmit={handleSignUpSubmit}
+          onSubmit={(data) => {
+            // Convert MultiStepSignup data format to SignUpDto
+            const signupData: SignUpDto = {
+              name: data.name,
+              email: data.email,
+              password: data.password || '',
+              role: data.role as any,
+              dob: data.dob,
+              gender: data.gender,
+              city: data.city,
+              clinicAddress: data.clinicAddress,
+              mainJobTitleId: data.mainJobTitleId,
+            };
+            handleSignUpSubmit(signupData);
+          }}
           onBack={handleBackToSignInFromSignup}
           isLoading={isSubmitting}
         />
@@ -100,11 +107,12 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
       return (
         <EmailVerificationForm
           onBack={handleBackToSignInFromSignup}
-          email={userEmail}
+          email={userEmail || ''}
           onResendEmail={handleResendEmail}
         />
       );
     }
+    return null;
   };
 
   return (
@@ -131,8 +139,8 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
             {/* Footer - Toggle between sign in/sign up */}
             {(currentView === 'sign-in' || currentView === 'sign-up') && (
               <div className="mt-6 pt-4 border-t border-gray-200 flex-shrink-0">
-                <div className="text-center">
-                  <p className="text-xs font-inter text-gray-600 mb-2">
+                <div className="flex flex-row items-center justify-center gap-2 text-center">
+                  <p className="text-xs font-inter text-gray-600">
                     {currentView === 'sign-up'
                       ? 'Already have an account?'
                       : "Don't have an account?"}
@@ -150,14 +158,6 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
                     className="text-xs font-inter font-semibold text-primary hover:text-primary/80 transition-colors duration-200 inline-flex items-center gap-1"
                   >
                     {currentView === 'sign-up' ? 'Sign In' : 'Create Account'}
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
                   </button>
                 </div>
               </div>

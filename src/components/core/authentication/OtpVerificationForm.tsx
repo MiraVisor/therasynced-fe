@@ -74,7 +74,7 @@ export default function OtpVerificationForm({
             />
             {error && (
               <p className="text-red-500 text-xs flex items-center gap-1">
-                <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                <span className="w-1 h-1 bg-red-500 rounded-full" />
                 {error}
               </p>
             )}

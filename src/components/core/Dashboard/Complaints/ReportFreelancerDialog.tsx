@@ -2,14 +2,10 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, AlertTriangle, Send } from 'lucide-react';
-import { useState } from 'react';
+// Unused imports removed: useState, toast
 import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
 import { z } from 'zod';
 
-import { HealthDataConsent } from '@/components/common/HealthDataConsent';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -29,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { createComplaint } from '@/redux/api/complaintApi';
+import { useCreateComplaint } from '@/hooks/queries/useComplaints';
 import { ComplaintCategory } from '@/types/types';
 
 const complaintSchema = z.object({
@@ -64,9 +60,7 @@ export const ReportFreelancerDialog = ({
   freelancerId,
   freelancerName,
 }: ReportFreelancerDialogProps) => {
-  const dispatch = useDispatch();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasConsent, setHasConsent] = useState(false);
+  const { mutate: createComplaintMutation, isPending: isSubmitting } = useCreateComplaint();
 
   const {
     register,
@@ -85,41 +79,24 @@ export const ReportFreelancerDialog = ({
   });
 
   const onSubmit = async (data: ComplaintFormData) => {
-    if (!hasConsent) {
-      toast.error(
-        'You must grant explicit consent for health data processing before submitting a complaint.',
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const result = await dispatch(
-        createComplaint({
-          reportedUserId: freelancerId,
-          category: data.category as ComplaintCategory,
-          reason: data.reason,
-          description: data.description,
-          evidence: [],
-        }) as any,
-      );
-
-      if (createComplaint.fulfilled.match(result)) {
-        toast.success('Complaint submitted successfully');
-        reset();
-        setHasConsent(false);
-        onClose();
-      } else {
-        toast.error('Failed to submit complaint');
-      }
-    } catch (error) {
-      toast.error('Failed to submit complaint');
-    } finally {
-      setIsSubmitting(false);
-    }
+    createComplaintMutation(
+      {
+        reportedUserId: freelancerId,
+        category: data.category as ComplaintCategory,
+        reason: data.reason,
+        description: data.description,
+        evidence: [],
+      },
+      {
+        onSuccess: () => {
+          reset();
+          onClose();
+        },
+      },
+    );
   };
 
-  const selectedCategory = watch('category');
+  // Unused variable removed - was: const _selectedCategory = watch('category');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -140,21 +117,13 @@ export const ReportFreelancerDialog = ({
           className="space-y-6"
           aria-label="Report freelancer form"
         >
-          {/* Health Data Consent */}
-          <HealthDataConsent
-            consentType="COMPLAINTS"
-            onConsentChange={setHasConsent}
-            required={true}
-            showDisclaimer={true}
-          />
-
           {/* Category Selection */}
           <div className="space-y-2">
             <Label htmlFor="category">
               Category <span className="text-red-600 dark:text-red-400">*</span>
             </Label>
             <Select
-              value={watch('category')}
+              value={watch('category') ?? undefined}
               onValueChange={(value) => setValue('category', value)}
             >
               <SelectTrigger
@@ -267,8 +236,9 @@ export const ReportFreelancerDialog = ({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !hasConsent}
-              aria-label={!hasConsent ? 'Consent required before submitting' : 'Submit complaint'}
+              disabled={isSubmitting}
+              isLoading={isSubmitting}
+              aria-label="Submit complaint"
             >
               {isSubmitting ? (
                 <>Submitting...</>

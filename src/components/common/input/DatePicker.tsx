@@ -1,8 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import * as React from 'react';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -88,9 +88,12 @@ export function DatePicker({
             onChange={(e) => {
               const val = e.target.value;
               if (val) {
-                const [year, month, day] = val.split('-').map(Number);
-                const selectedDate = new Date(year, month - 1, day);
-                handleDateChange(selectedDate);
+                const parts = val.split('-').map(Number);
+                const [year, month, day] = parts;
+                if (year && month !== undefined && day !== undefined) {
+                  const selectedDate = new Date(year, month - 1, day);
+                  handleDateChange(selectedDate);
+                }
               } else {
                 handleDateChange(undefined);
               }

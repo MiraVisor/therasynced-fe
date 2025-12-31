@@ -1,6 +1,10 @@
-import { Calendar, Coins, Star, Users } from 'lucide-react';
-
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { Sparkline } from '@/components/ui/sparkline';
+import { useProfile } from '@/hooks/queries/useProfile';
+import { useFreelancerRatings } from '@/hooks/queries/useRatings';
+import { cn } from '@/lib/utils';
 import { FreelancerDashboardOverview } from '@/types/types';
 
 interface StatsProps {
@@ -9,6 +13,14 @@ interface StatsProps {
 }
 
 const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
+  const { data: profileData } = useProfile();
+  const freelancerId = profileData?.id;
+  const { data: ratingsData } = useFreelancerRatings(freelancerId ?? null, {
+    page: 1,
+    limit: 1, // We only need the pagination total
+  });
+  const totalRatings = ratingsData?.pagination?.total ?? 0;
+
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
     return `EUR ${(revenueInCents / 100).toLocaleString('en-US', {
@@ -51,28 +63,8 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
     },
   };
 
-  // Loading skeleton
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className="p-6 bg-card border border-gray-200/80 rounded-xl shadow-soft space-y-4 overflow-hidden relative"
-          >
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700/30 rounded-lg" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 bg-gray-200 dark:bg-gray-700/20 rounded w-2/3" />
-                <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/2" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // Only show loading if no cached data
+  const isLoadingData = isLoading && !dashboardData;
 
   const cardsData = dashboardData
     ? [
@@ -84,9 +76,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.totalAppointments.trendDirection === 'up',
             label: 'from last month',
           },
-          icon: Calendar,
-          iconBg: 'bg-info/10',
-          iconColor: 'text-info',
           sparklineData: dashboardData.totalAppointments.sparklineData,
         },
         {
@@ -97,9 +86,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.clientRating.trendDirection === 'up',
             label: 'from last month',
           },
-          icon: Star,
-          iconBg: 'bg-warning/10',
-          iconColor: 'text-warning',
           sparklineData: dashboardData.clientRating.sparklineData,
         },
         {
@@ -110,9 +96,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.newClients.trendDirection === 'up',
             label: 'this month',
           },
-          icon: Users,
-          iconBg: 'bg-success/10',
-          iconColor: 'text-success',
           sparklineData: dashboardData.newClients.sparklineData,
         },
         {
@@ -123,9 +106,6 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
             isUp: dashboardData.weeklyRevenue.trendDirection === 'up',
             label: 'from last week',
           },
-          icon: Coins,
-          iconBg: 'bg-primary/10',
-          iconColor: 'text-primary',
           sparklineData: dashboardData.weeklyRevenue.sparklineData.map((val) => val / 100),
         },
       ]
@@ -134,54 +114,131 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
           title: 'Total Appointments',
           value: defaultData.totalAppointments.value,
           trend: defaultData.totalAppointments.trend,
-          icon: Calendar,
-          iconBg: 'bg-info/10',
-          iconColor: 'text-info',
           sparklineData: defaultData.totalAppointments.sparklineData,
         },
         {
           title: 'Client Rating',
           value: defaultData.clientRating.value,
           trend: defaultData.clientRating.trend,
-          icon: Star,
-          iconBg: 'bg-warning/10',
-          iconColor: 'text-warning',
           sparklineData: defaultData.clientRating.sparklineData,
         },
         {
           title: 'New Clients',
           value: defaultData.newClients.value,
           trend: defaultData.newClients.trend,
-          icon: Users,
-          iconBg: 'bg-success/10',
-          iconColor: 'text-success',
           sparklineData: defaultData.newClients.sparklineData,
         },
         {
           title: 'Weekly Revenue',
           value: defaultData.weeklyRevenue.value,
           trend: defaultData.weeklyRevenue.trend,
-          icon: Coins,
-          iconBg: 'bg-primary/10',
-          iconColor: 'text-primary',
           sparklineData: defaultData.weeklyRevenue.sparklineData,
         },
       ];
 
+  const ratingValue =
+    dashboardData && typeof dashboardData.clientRating.value === 'number'
+      ? dashboardData.clientRating.value
+      : parseFloat(defaultData.clientRating.value) || 0;
+  const ratingTrend = dashboardData ? dashboardData.clientRating : defaultData.clientRating;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
       {cardsData.map((data, index) => {
-        const Icon = data.icon;
+        // Render custom rating card for Client Rating
+        if (data.title === 'Client Rating') {
+          return (
+            <EnhancedCard
+              key={index}
+              variant="default"
+              interactive
+              onClick={() => {
+                // Navigate to details or show modal
+              }}
+              className="group"
+            >
+              <div className="p-6 space-y-4">
+                {/* Header with title */}
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1">
+                    <p className="text-sm font-inter font-medium text-muted-foreground">
+                      {data.title}
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                      <div className="flex items-center gap-2">
+                        <RatingDisplay
+                          rating={Number(ratingValue)}
+                          reviewCount={totalRatings}
+                          size="md"
+                          showCount={true}
+                        />
+                      </div>
+                      {('trend' in ratingTrend ? ratingTrend.trend : null) && (
+                        <div
+                          className={cn(
+                            'text-xs font-medium',
+                            'trend' in ratingTrend && ratingTrend.trend.isUp
+                              ? 'text-success'
+                              : 'text-error',
+                          )}
+                        >
+                          {'trend' in ratingTrend && ratingTrend.trend.isUp ? '+' : ''}
+                          {Math.abs(
+                            'trend' in ratingTrend
+                              ? ratingTrend.trend.value
+                              : ratingTrend.trendPercentage,
+                          ).toFixed(1)}
+                          %
+                        </div>
+                      )}
+                      {!('trend' in ratingTrend) && (
+                        <div
+                          className={cn(
+                            'text-xs font-medium',
+                            ratingTrend.trendDirection === 'up' ? 'text-success' : 'text-error',
+                          )}
+                        >
+                          {ratingTrend.trendDirection === 'up' ? '+' : ''}
+                          {Math.abs(ratingTrend.trendPercentage).toFixed(1)}%
+                        </div>
+                      )}
+                    </div>
+                    {'trend' in ratingTrend && ratingTrend.trend?.label && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {ratingTrend.trend.label}
+                      </p>
+                    )}
+                    {!('trend' in ratingTrend) && (
+                      <p className="text-xs text-muted-foreground mt-1">from last month</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sparkline chart */}
+                {ratingTrend.sparklineData && ratingTrend.sparklineData.length > 0 && (
+                  <div className="pt-2">
+                    <Sparkline
+                      data={ratingTrend.sparklineData}
+                      color="#007745"
+                      width={100}
+                      height={30}
+                    />
+                  </div>
+                )}
+              </div>
+            </EnhancedCard>
+          );
+        }
+
+        // Render regular stat cards for others
         return (
           <EnhancedStatCard
             key={index}
             title={data.title}
             value={data.value}
             trend={data.trend}
-            icon={Icon}
-            iconColor={data.iconColor}
-            iconBg={data.iconBg}
             sparklineData={data.sparklineData}
+            loading={isLoadingData}
             interactive
             onClick={() => {
               // Navigate to details or show modal

@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { Edit2, Euro, Mail, MapPin, Save, User } from 'lucide-react';
+import { Edit2, Mail, Save, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { slotNoteService } from '@/services/draftStorage.service';
@@ -61,8 +60,9 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
       try {
         await slotNoteService.saveNote(slot.id, { content: notes });
         setLastSaved(new Date());
-      } catch (error: any) {
-        if (error.response?.status === 429) {
+      } catch (error: unknown) {
+        const apiError = error as { response?: { status?: number } };
+        if (apiError.response?.status === 429) {
           // Rate limit - don't show error
           console.warn('Rate limited - skipping auto-save');
         } else {
@@ -83,7 +83,7 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
       setIsEditingNotes(false);
       setLastSaved(new Date());
       toast.success('Notes saved successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to save notes:', error);
       toast.error('Failed to save notes. Please try again.');
     } finally {
@@ -223,9 +223,6 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
                       )}`
                     : 'Time not available'}
                 </p>
-                <p className="font-inter text-sm text-muted-foreground mt-1">
-                  Duration: {slot.duration || 0} minutes
-                </p>
               </div>
             </div>
 
@@ -233,8 +230,7 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
             <div className="space-y-4">
               <div>
                 <Label className="font-inter text-xs text-muted-foreground mb-1 flex items-center gap-2">
-                  <MapPin className="h-3 w-3" />
-                  Location Type
+                  Location
                 </Label>
                 <p className="font-poppins font-semibold text-charcoal text-lg">{locationText}</p>
                 {slot.location && (
@@ -248,25 +244,25 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
                     <Label className="font-inter text-xs text-muted-foreground mb-1">
                       Client Address
                     </Label>
-                    <p className="font-inter text-charcoal">{slot.booking.clientAddress}</p>
+                    <p className="font-poppins font-semibold text-charcoal text-lg">
+                      {slot.booking.clientAddress}
+                    </p>
                   </div>
                 )}
               </div>
-
-              <div>
-                <Label className="font-inter text-xs text-muted-foreground mb-1 flex items-center gap-2">
-                  <Euro className="h-3 w-3" />
-                  Price
-                </Label>
-                <p className="font-poppins font-semibold text-charcoal text-lg">
-                  €{slot.basePrice?.toFixed(2) || '0.00'}
+            </div>
+            <div>
+              <Label className="font-inter text-xs text-muted-foreground mb-1 flex items-center gap-2">
+                Price
+              </Label>
+              <p className="font-poppins font-semibold text-charcoal text-lg">
+                €{slot.basePrice?.toFixed(2) || '0.00'}
+              </p>
+              {slot.booking?.totalAmount && slot.booking.totalAmount !== slot.basePrice && (
+                <p className="font-inter text-sm text-muted-foreground mt-1">
+                  Total: €{slot.booking.totalAmount.toFixed(2)}
                 </p>
-                {slot.booking?.totalAmount && slot.booking.totalAmount !== slot.basePrice && (
-                  <p className="font-inter text-sm text-muted-foreground mt-1">
-                    Total: €{slot.booking.totalAmount.toFixed(2)}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </CardContent>

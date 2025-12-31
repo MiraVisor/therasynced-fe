@@ -5,13 +5,13 @@ import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { setCookie } from '@/lib/utils';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { useAuthStore } from '@/stores/authStore';
 
 function AuthCallbackContent() {
   const [isProcessing, setIsProcessing] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  const { login } = useAuthStore();
 
   useEffect(() => {
     const processCallback = async () => {
@@ -54,28 +54,20 @@ function AuthCallbackContent() {
           // For login flow, store token and redirect
           if (typeof window !== 'undefined') {
             setCookie('token', token);
+            login(token, 'PATIENT');
+            // User data will be fetched by API interceptor
           }
-
-          // Update Redux state exactly like normal login
-          dispatch({
-            type: 'auth/googleSignIn/fulfilled',
-            payload: {
-              data: {
-                data: {
-                  token,
-                  user: {
-                    role: 'PATIENT', // Default role, will be updated by API interceptor
-                  },
-                },
-              },
-            },
-          });
-
-          toast.success('Successfully signed in with Google!');
 
           // Redirect to the intended page or dashboard
           const finalUrl = returnUrl || '/dashboard';
-          router.push(finalUrl);
+          router.push(
+            finalUrl +
+              (finalUrl === '/dashboard'
+                ? `?login=google&message=${encodeURIComponent(
+                    'Successfully signed in with Google!',
+                  )}`
+                : ''),
+          );
         } else {
           toast.error('Authentication failed');
           router.push(isSignup ? '/authentication/sign-up' : '/authentication/sign-in');
@@ -91,13 +83,13 @@ function AuthCallbackContent() {
     };
 
     processCallback();
-  }, [searchParams, router, dispatch]);
+  }, [searchParams, router, login]);
 
   if (isProcessing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Processing authentication...</p>
         </div>
       </div>
@@ -113,7 +105,7 @@ export default function AuthCallbackPage() {
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-600">Processing authentication...</p>
           </div>
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
@@ -12,97 +12,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { freelancerService } from '@/services/freelancerService';
-import { jobTitleService } from '@/services/jobTitleService';
-import { Expert, SearchFilters } from '@/types/types';
+import { useInfiniteSearchFreelancers } from '@/hooks/queries/useFreelancers';
+import { useJobTitles } from '@/hooks/queries/useJobTitles';
+import { SearchFilters } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import { ExpertList } from './ExpertSection';
 import { FilterChips } from './FilterChips';
 
-const mapFreelancerToExpert = (freelancer: any): Expert => {
-  // Extract services and their location types
-  const services = freelancer.services || [];
-  const allLocationTypes = new Set<string>();
-
-  // Convert location types to session types
-
-  // Get primary service name
-  const primaryService = services.length > 0 ? services[0]?.name : undefined;
-
-  // Get location information
-  const locations = freelancer.locations || [];
-
-  // Calculate experience from creation date
-
-  // Get rating and reviews from cardInfo
-  const cardInfo = freelancer.cardInfo || {};
-  // Use cardInfo.averageRating as primary source (real calculated ratings from API)
-  const rating =
-    cardInfo.averageRating !== undefined && cardInfo.averageRating !== null
-      ? cardInfo.averageRating
-      : freelancer.averageRating;
-
-  // Only use rating if it's a valid number greater than 0
-  const validRating = rating !== undefined && rating !== null && rating > 0 ? rating : undefined;
-
-  // Map API freelancer to Expert type for UI
-  return {
-    id: freelancer.id,
-    name: freelancer.name || cardInfo.name,
-    specialty: cardInfo.mainService || primaryService,
-    jobTitle: freelancer.mainJobTitle,
-    rating: validRating,
-    reviews: cardInfo.totalRatings || freelancer.cardInfo?.patientStories || 0,
-    description: freelancer.description || cardInfo.title,
-    isFavorite: freelancer.isFavorite ?? false,
-    // Additional data for profile dialog
-    profilePicture: freelancer.profilePicture,
-    slots: freelancer.slots || [],
-    slotSummary: freelancer.slotSummary || {},
-    cardInfo: cardInfo,
-    availableSlots: freelancer.slotSummary?.availableSlots || 0,
-    totalSlots: freelancer.slotSummary?.totalSlots || 0,
-    planFeatures: freelancer.planFeatures || null,
-    tier: freelancer.planFeatures?.planType || null,
-    subscriptionStatus: freelancer.subscriptionStatus || undefined,
-    stampInfo: freelancer.stampInfo || null,
-  };
-};
+// Use unified mapping function
+const mapFreelancerToExpert = mapOneFreelancerToExpert;
 
 // Enhanced Loading Skeleton
 const ExpertCardSkeleton = () => (
   <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm min-h-[320px] flex flex-col animate-pulse">
     <div className="p-6 flex-1 flex flex-col">
       <div className="flex items-start space-x-4 mb-6">
-        <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+        <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
         <div className="flex-1 space-y-3">
-          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2 animate-pulse"></div>
+          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2 animate-pulse" />
           <div className="flex space-x-1">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
                 className="w-3 h-3 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse"
-              ></div>
+              />
             ))}
           </div>
-          <div className="h-5 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse"></div>
+          <div className="h-5 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse" />
         </div>
       </div>
       <div className="space-y-2 mb-6">
-        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full animate-pulse"></div>
-        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3 animate-pulse"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full animate-pulse" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3 animate-pulse" />
       </div>
       <div className="flex space-x-2 mb-4">
-        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse"></div>
-        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-16 animate-pulse"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-16 animate-pulse" />
       </div>
       <div className="mt-auto space-y-3">
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse"></div>
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse" />
         <div className="flex space-x-2">
-          <div className="h-9 flex-1 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
-          <div className="h-9 flex-1 bg-primary/20 dark:bg-primary/10 rounded-lg animate-pulse"></div>
+          <div className="h-9 flex-1 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+          <div className="h-9 flex-1 bg-primary/20 dark:bg-primary/10 rounded-lg animate-pulse" />
         </div>
       </div>
     </div>
@@ -110,22 +64,6 @@ const ExpertCardSkeleton = () => (
 );
 
 const UserOverview = () => {
-  // Single state for all freelancers
-  const [freelancers, setFreelancers] = useState<Expert[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  // Pagination
-  const [pagination, setPagination] = useState<{
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  } | null>(null);
-
   // Filters state
   const [filters, setFilters] = useState<SearchFilters>({
     query: '',
@@ -145,115 +83,95 @@ const UserOverview = () => {
   const [sortBy, setSortBy] = useState<'relevance' | 'rating' | 'availability'>('relevance');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Filter options data
-  const [jobTitles, setJobTitles] = useState<Array<{ id: string; name: string }>>([]);
-
-  // Fetch job titles on mount
-  useEffect(() => {
-    const fetchJobTitles = async () => {
-      const response = await jobTitleService.getActiveJobTitles();
-      if (response.success) {
-        setJobTitles(response.data.map((jt) => ({ id: jt.id, name: jt.name })));
-      }
-    };
-    fetchJobTitles();
-  }, []);
-
-  // Fetch freelancers with current filters and sort
-  const fetchFreelancers = useCallback(
-    async (page: number = 1, append: boolean = false) => {
-      const limit = 12;
-      try {
-        if (append) {
-          setLoadingMore(true);
-        } else {
-          setLoading(true);
-        }
-
-        // Build search params - need to handle arrays properly for backend
-        const searchParams: {
-          page: number;
-          limit: number;
-          sortBy: 'relevance' | 'rating' | 'availability';
-          sortOrder: 'asc' | 'desc';
-          specialty?: string[];
-          serviceCategories?: string[];
-          location?: string;
-          priceMin?: number;
-          priceMax?: number;
-          sessionType?: ('HOME' | 'CLINIC')[];
-          availableThisWeek?: boolean;
-          verificationStatus?: string;
-          minRating?: number;
-          tier?: string[];
-        } = {
-          page,
-          limit,
-          sortBy,
-          sortOrder,
-        };
-
-        // Add filters
-        if (filters.specialty.length > 0) {
-          searchParams.specialty = filters.specialty;
-        }
-        if (filters.serviceCategories.length > 0) {
-          searchParams.serviceCategories = filters.serviceCategories;
-        }
-        if (filters.location) {
-          searchParams.location = filters.location;
-        }
-        if (filters.priceMin !== undefined) {
-          searchParams.priceMin = filters.priceMin;
-        }
-        if (filters.priceMax !== undefined) {
-          searchParams.priceMax = filters.priceMax;
-        }
-        if (filters.sessionType.length > 0) {
-          searchParams.sessionType = filters.sessionType;
-        }
-        if (filters.availableThisWeek) {
-          searchParams.availableThisWeek = true;
-        }
-        // Backend expects verificationStatus as single value, not array
-        if (filters.verificationStatus.length > 0) {
-          // Send first value as single string (backend doesn't accept array)
-          searchParams.verificationStatus = filters.verificationStatus[0];
-        }
-        if (filters.minRating !== undefined) {
-          searchParams.minRating = filters.minRating;
-        }
-        if (filters.tier && filters.tier.length > 0) {
-          searchParams.tier = filters.tier;
-        }
-
-        const response = await freelancerService.searchFreelancers(searchParams);
-
-        if (response.success && Array.isArray(response.data)) {
-          const mapped = response.data.map(mapFreelancerToExpert);
-          if (page === 1 || !append) {
-            setFreelancers(mapped);
-          } else {
-            setFreelancers((prev) => [...prev, ...mapped]);
-          }
-          setPagination(response.pagination);
-        }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching freelancers:', error);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-        setInitialLoading(false);
-      }
-    },
-    [filters, sortBy, sortOrder],
+  // Fetch job titles
+  const { data: jobTitlesData } = useJobTitles();
+  const jobTitles = useMemo(
+    () => jobTitlesData?.map((jt) => ({ id: jt.id, name: jt.name })) || [],
+    [jobTitlesData],
   );
 
-  // Fetch on initial load and when filters/sort change
-  useEffect(() => {
-    fetchFreelancers(1, false);
-  }, [fetchFreelancers]);
+  // Build search params
+  const searchParams = useMemo(() => {
+    const params: {
+      limit: number;
+      sortBy: 'relevance' | 'rating' | 'availability';
+      sortOrder: 'asc' | 'desc';
+      specialty?: string[];
+      serviceCategories?: string[];
+      location?: string;
+      priceMin?: number;
+      priceMax?: number;
+      sessionType?: ('HOME' | 'CLINIC')[];
+      availableThisWeek?: boolean;
+      verificationStatus?: string;
+      minRating?: number;
+      tier?: string[];
+      query?: string;
+    } = {
+      limit: 12,
+      sortBy,
+      sortOrder,
+    };
+
+    if (filters.specialty.length > 0) {
+      params.specialty = filters.specialty;
+    }
+    if (filters.serviceCategories.length > 0) {
+      params.serviceCategories = filters.serviceCategories;
+    }
+    if (filters.location) {
+      params.location = filters.location;
+    }
+    if (filters.priceMin !== undefined) {
+      params.priceMin = filters.priceMin;
+    }
+    if (filters.priceMax !== undefined) {
+      params.priceMax = filters.priceMax;
+    }
+    if (filters.sessionType.length > 0) {
+      params.sessionType = filters.sessionType;
+    }
+    if (filters.availableThisWeek) {
+      params.availableThisWeek = true;
+    }
+    if (filters.verificationStatus.length > 0) {
+      params.verificationStatus = filters.verificationStatus[0];
+    }
+    if (filters.minRating !== undefined) {
+      params.minRating = filters.minRating;
+    }
+    if (filters.tier && filters.tier.length > 0) {
+      params.tier = filters.tier;
+    }
+    if (filters.query) {
+      params.query = filters.query;
+    }
+
+    return params;
+  }, [filters, sortBy, sortOrder]);
+
+  // Fetch freelancers with infinite query
+  const {
+    data,
+    isLoading,
+    isFetching: _isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteSearchFreelancers(searchParams);
+
+  // Flatten all pages into a single array
+  const freelancers = useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) => page.freelancers.map(mapFreelancerToExpert));
+  }, [data]);
+
+  // Get pagination info from last page
+  const pagination = useMemo(() => {
+    if (!data?.pages || data.pages.length === 0) return null;
+    const lastPage = data.pages[data.pages.length - 1];
+    return lastPage?.pagination;
+  }, [data]);
 
   // Handle filter changes
   const handleFiltersChange = useCallback((newFilters: SearchFilters) => {
@@ -279,10 +197,10 @@ const UserOverview = () => {
 
   // Handle load more
   const handleLoadMore = useCallback(() => {
-    if (pagination?.hasNext && !loadingMore) {
-      fetchFreelancers((pagination.page || 1) + 1, true);
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [pagination, loadingMore, fetchFreelancers]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Handle sort change
   const handleSortChange = useCallback((newSortBy: string) => {
@@ -350,36 +268,30 @@ const UserOverview = () => {
         </div>
 
         {/* Content */}
-        {initialLoading ? (
+        {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {Array.from({ length: 9 }).map((_, i) => (
               <ExpertCardSkeleton key={i} />
             ))}
           </div>
-        ) : loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <ExpertCardSkeleton key={`loading-${i}`} />
-            ))}
-          </div>
         ) : freelancers.length > 0 ? (
           <>
             <ExpertList experts={freelancers} />
-            {pagination?.hasNext && (
+            {hasNextPage && (
               <div className="flex justify-center mt-6">
                 <Button
                   onClick={handleLoadMore}
-                  disabled={loadingMore}
+                  disabled={isFetchingNextPage}
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary/5"
                 >
-                  {loadingMore ? (
+                  {isFetchingNextPage ? (
                     <span className="flex items-center gap-2">
                       <LoadingSpinner size="sm" />
                       Loading...
                     </span>
                   ) : (
-                    `Load More (${(pagination.total || 0) - freelancers.length} remaining)`
+                    `Load More (${(pagination?.total || 0) - freelancers.length} remaining)`
                   )}
                 </Button>
               </div>

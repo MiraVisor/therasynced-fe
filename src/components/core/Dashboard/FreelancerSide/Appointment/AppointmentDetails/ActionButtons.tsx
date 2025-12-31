@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { FileText, Flag } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -14,9 +15,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { updateAppointment } from '@/redux/slices';
-import { closeEventDialog } from '@/redux/slices/calendarSlice';
+import { useCancelBooking } from '@/hooks/queries/useBookings';
+import { useCalendarStore } from '@/stores/calendarStore';
 import { Appointment } from '@/types/types';
 
 import { InvoiceGenerationDialog } from '../InvoiceGenerationDialog';
@@ -26,7 +26,9 @@ interface ActionButtonsProps {
 }
 
 export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
-  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  const { closeEventDialog } = useCalendarStore();
+  const { mutate: cancelBookingMutation } = useCancelBooking();
   const isCancelled = appointment.status === 'CANCELLED';
   const isCompleted = appointment.status === 'COMPLETED';
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
@@ -44,30 +46,29 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
       return;
     }
 
-    const previousStatus = appointment.status;
-    dispatch(updateAppointment({ bookingId: appointment.id, status: 'CANCELLED' }));
-    dispatch(closeEventDialog());
-
-    toast.success(
-      <div className="flex flex-col gap-2">
-        <span>Appointment cancelled successfully</span>
-        <button
-          onClick={() => {
-            dispatch(updateAppointment({ bookingId: appointment.id, status: previousStatus }));
-            toast.dismiss();
-          }}
-          className="text-sm text-primary hover:text-primary/80 font-medium"
-        >
-          Undo
-        </button>
-      </div>,
+    cancelBookingMutation(
       {
-        position: 'top-right',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        bookingId: appointment.id,
+        reason: 'Cancelled by freelancer',
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['bookings'] });
+          closeEventDialog();
+          toast.success('Appointment cancelled successfully', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        },
+        onError: (error: unknown) => {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Failed to cancel appointment';
+          toast.error(errorMessage);
+        },
       },
     );
   };
@@ -82,7 +83,7 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
       pauseOnHover: true,
       draggable: true,
     });
-    dispatch(closeEventDialog());
+    closeEventDialog();
   };
 
   return (

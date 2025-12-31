@@ -14,6 +14,7 @@ interface DayBookingSectionProps {
   onMessage?: (booking: Booking) => void;
   onReschedule?: (booking: Booking) => void;
   onCancel?: (booking: Booking) => void;
+  onRate?: (booking: Booking) => void;
   cancellingBookingId?: string | null;
 }
 
@@ -24,6 +25,7 @@ export const DayBookingSection = ({
   onMessage,
   onReschedule,
   onCancel,
+  onRate,
   cancellingBookingId,
 }: DayBookingSectionProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -122,6 +124,7 @@ export const DayBookingSection = ({
                   onMessage={onMessage}
                   onReschedule={onReschedule}
                   onCancel={onCancel}
+                  onRate={onRate}
                   cancellingBookingId={cancellingBookingId}
                   onClick={() => onBookingClick?.(booking)}
                 />

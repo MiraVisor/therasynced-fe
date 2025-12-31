@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,11 @@ export default function GoogleSignInButton({
   children,
 }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+
+  // Reset loading state when component mounts (in case user navigated back)
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -50,7 +55,7 @@ export default function GoogleSignInButton({
     >
       {isLoading ? (
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+          <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
           <span>Signing in...</span>
         </div>
       ) : (

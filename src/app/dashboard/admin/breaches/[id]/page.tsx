@@ -35,33 +35,35 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  BreachRiskLevel,
-  BreachStatus,
-  DataBreach,
-  getBreachById,
-  notifyUsersAboutBreach,
-  reportBreachToDpc,
-  updateBreachStatus,
-} from '@/redux/api/dataRightsApi';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+  useBreachById,
+  useNotifyUsersAboutBreach,
+  useReportBreachToDpc,
+  useUpdateBreachStatus,
+} from '@/hooks/queries/useDataRights';
+import { useAuthStore } from '@/stores/authStore';
+import { BreachStatus } from '@/types/dataRights';
 import { ROLES } from '@/types/types';
 
 const BreachDetailPage = () => {
   const router = useRouter();
   const params = useParams();
-  const breachId = params.id as string;
-  const { isAuthenticated, role } = useAuth();
+  const breachId = params['id'] as string;
+  const { isAuthenticated, role } = useAuthStore();
 
-  const [breach, setBreach] = useState<DataBreach | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isReportDpcDialogOpen, setIsReportDpcDialogOpen] = useState(false);
   const [isNotifyUsersDialogOpen, setIsNotifyUsersDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<BreachStatus>(BreachStatus.DETECTED);
   const [statusNotes, setStatusNotes] = useState('');
   const [dpcNotes, setDpcNotes] = useState('');
   const [notificationNotes, setNotificationNotes] = useState('');
+
+  const { data: breachResponse, isLoading: loading, error: breachError } = useBreachById(breachId);
+  const breach = breachResponse?.data || null;
+
+  const updateStatusMutation = useUpdateBreachStatus();
+  const reportDpcMutation = useReportBreachToDpc();
+  const notifyUsersMutation = useNotifyUsersAboutBreach();
 
   // Check admin access
   useEffect(() => {
@@ -72,91 +74,67 @@ const BreachDetailPage = () => {
     if (role && role !== ROLES.ADMIN) {
       toast.error('Access denied. Admin privileges required.');
       router.push('/dashboard');
-      return;
     }
   }, [isAuthenticated, role, router]);
 
   useEffect(() => {
-    if (breachId && role === ROLES.ADMIN) {
-      fetchBreachDetails();
+    if (breach) {
+      setStatus(breach.status);
     }
-  }, [breachId, role]);
+  }, [breach]);
 
-  const fetchBreachDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await getBreachById(breachId);
-      if (response.success) {
-        const data = response.data;
-        setBreach(data);
-        setStatus(data.status);
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch breach details');
-      if (error?.status === 404) {
+  useEffect(() => {
+    if (breachError) {
+      if ((breachError as any)?.status === 404) {
         router.push('/dashboard/admin/audit');
       } else {
         router.push('/dashboard/admin/audit');
       }
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [breachError, router]);
 
   const handleStatusUpdate = async () => {
     if (!breach) return;
     try {
-      setIsSubmitting(true);
-      const response = await updateBreachStatus(breach.id, {
-        status,
-        notes: statusNotes || undefined,
+      await updateStatusMutation.mutateAsync({
+        id: breach.id,
+        data: {
+          status,
+          notes: statusNotes || undefined,
+        },
       });
-      if (response.success) {
-        toast.success('Breach status updated successfully');
-        setIsStatusDialogOpen(false);
-        setStatusNotes('');
-        fetchBreachDetails();
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update breach status');
-    } finally {
-      setIsSubmitting(false);
+      setIsStatusDialogOpen(false);
+      setStatusNotes('');
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
   const handleReportToDpc = async () => {
     if (!breach) return;
     try {
-      setIsSubmitting(true);
-      const response = await reportBreachToDpc(breach.id, dpcNotes || undefined);
-      if (response.success) {
-        toast.success('Breach marked as reported to DPC');
-        setIsReportDpcDialogOpen(false);
-        setDpcNotes('');
-        fetchBreachDetails();
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to mark as reported to DPC');
-    } finally {
-      setIsSubmitting(false);
+      await reportDpcMutation.mutateAsync({
+        id: breach.id,
+        notes: dpcNotes || undefined,
+      });
+      setIsReportDpcDialogOpen(false);
+      setDpcNotes('');
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
   const handleNotifyUsers = async () => {
     if (!breach) return;
     try {
-      setIsSubmitting(true);
-      const response = await notifyUsersAboutBreach(breach.id, notificationNotes || undefined);
-      if (response.success) {
-        toast.success('Users marked as notified');
-        setIsNotifyUsersDialogOpen(false);
-        setNotificationNotes('');
-        fetchBreachDetails();
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to mark users as notified');
-    } finally {
-      setIsSubmitting(false);
+      await notifyUsersMutation.mutateAsync({
+        id: breach.id,
+        notes: notificationNotes || undefined,
+      });
+      setIsNotifyUsersDialogOpen(false);
+      setNotificationNotes('');
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -182,7 +160,7 @@ const BreachDetailPage = () => {
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
             <p className="font-open-sans text-muted-foreground">Loading breach details...</p>
           </div>
         </div>
@@ -249,8 +227,10 @@ const BreachDetailPage = () => {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setStatus(nextStatusOptions[0]);
-                  setIsStatusDialogOpen(true);
+                  if (nextStatusOptions[0]) {
+                    setStatus(nextStatusOptions[0]);
+                    setIsStatusDialogOpen(true);
+                  }
                 }}
                 className="font-inter"
               >
@@ -483,7 +463,7 @@ const BreachDetailPage = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-start gap-4">
-                <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
+                <div className="w-2 h-2 rounded-full bg-primary mt-2" />
                 <div>
                   <p className="font-inter font-semibold">Breach Detected</p>
                   <p className="font-open-sans text-sm text-muted-foreground">
@@ -493,7 +473,7 @@ const BreachDetailPage = () => {
               </div>
               {breach.reportedAt && (
                 <div className="flex items-start gap-4">
-                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
                   <div>
                     <p className="font-inter font-semibold">Reported to DPC</p>
                     <p className="font-open-sans text-sm text-muted-foreground">
@@ -504,7 +484,7 @@ const BreachDetailPage = () => {
               )}
               {breach.notifiedAt && (
                 <div className="flex items-start gap-4">
-                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
                   <div>
                     <p className="font-inter font-semibold">Users Notified</p>
                     <p className="font-open-sans text-sm text-muted-foreground">
@@ -514,7 +494,7 @@ const BreachDetailPage = () => {
                 </div>
               )}
               <div className="flex items-start gap-4">
-                <div className="w-2 h-2 rounded-full bg-gray-400 mt-2"></div>
+                <div className="w-2 h-2 rounded-full bg-gray-400 mt-2" />
                 <div>
                   <p className="font-inter font-semibold">Last Updated</p>
                   <p className="font-open-sans text-sm text-muted-foreground">
@@ -553,7 +533,8 @@ const BreachDetailPage = () => {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Next status in workflow: {getStatusLabel(nextStatusOptions[0])}
+                  Next status in workflow:{' '}
+                  {nextStatusOptions[0] ? getStatusLabel(nextStatusOptions[0]) : 'N/A'}
                 </p>
               </div>
               <div>
@@ -577,12 +558,16 @@ const BreachDetailPage = () => {
                   setIsStatusDialogOpen(false);
                   setStatusNotes('');
                 }}
-                disabled={isSubmitting}
+                disabled={
+                  updateStatusMutation.isPending ||
+                  reportDpcMutation.isPending ||
+                  notifyUsersMutation.isPending
+                }
               >
                 Cancel
               </Button>
-              <Button onClick={handleStatusUpdate} disabled={isSubmitting}>
-                {isSubmitting ? 'Updating...' : 'Update Status'}
+              <Button onClick={handleStatusUpdate} disabled={updateStatusMutation.isPending}>
+                {updateStatusMutation.isPending ? 'Updating...' : 'Update Status'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -625,12 +610,12 @@ const BreachDetailPage = () => {
                   setIsReportDpcDialogOpen(false);
                   setDpcNotes('');
                 }}
-                disabled={isSubmitting}
+                disabled={reportDpcMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button onClick={handleReportToDpc} disabled={isSubmitting}>
-                {isSubmitting ? 'Processing...' : 'Mark as Reported'}
+              <Button onClick={handleReportToDpc} disabled={reportDpcMutation.isPending}>
+                {reportDpcMutation.isPending ? 'Processing...' : 'Mark as Reported'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -673,12 +658,12 @@ const BreachDetailPage = () => {
                   setIsNotifyUsersDialogOpen(false);
                   setNotificationNotes('');
                 }}
-                disabled={isSubmitting}
+                disabled={notifyUsersMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button onClick={handleNotifyUsers} disabled={isSubmitting}>
-                {isSubmitting ? 'Processing...' : 'Mark as Notified'}
+              <Button onClick={handleNotifyUsers} disabled={notifyUsersMutation.isPending}>
+                {notifyUsersMutation.isPending ? 'Processing...' : 'Mark as Notified'}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -42,14 +42,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((part) => part.charAt(0))
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
-  };
+  // Unused function removed - was: const _getInitials = (name: string) => { ... }
 
   const groupMessagesByDate = (messages: ChatMessage[]) => {
     const groups: { date: string; messages: ChatMessage[] }[] = [];
@@ -106,7 +99,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
               className={cn('flex space-x-3', index % 2 === 0 ? 'justify-start' : 'justify-end')}
             >
               {index % 2 === 0 && (
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
               )}
               <div
                 className={cn(
@@ -114,11 +107,11 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
                   index % 2 === 0 ? 'bg-gray-200' : 'bg-green-200',
                 )}
               >
-                <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                <div className="h-3 bg-gray-300 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-300 rounded mb-2" />
+                <div className="h-3 bg-gray-300 rounded w-3/4" />
               </div>
               {index % 2 === 1 && (
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
               )}
             </div>
           ))}
@@ -178,18 +171,23 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
             {/* Messages */}
             <div className="space-y-3">
               {groupMessages.map((message) => {
-                const isOwnMessage = message.users.id === currentUserId;
+                const isOwnMessage =
+                  message.senderId === currentUserId ||
+                  (message.users?.id && message.users.id === currentUserId);
 
                 return (
                   <div
                     key={message.id}
                     className={cn('flex gap-3', isOwnMessage ? 'justify-end' : 'justify-start')}
                   >
-                    {!isOwnMessage && (
+                    {!isOwnMessage && message.users && (
                       <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
-                        <AvatarImage src={message.users.profilePicture} alt={message.users.name} />
+                        <AvatarImage
+                          src={message.users.profilePicture || ''}
+                          alt={message.users.name || 'User'}
+                        />
                         <AvatarFallback className="bg-green-100 text-green-700 text-xs">
-                          {message.users.name.charAt(0)}
+                          {message.users.name?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     )}

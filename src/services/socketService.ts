@@ -1,4 +1,4 @@
-import { Socket, io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 import { getCookie } from '@/lib/utils';
 
@@ -9,6 +9,8 @@ class SocketService {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private isInitialized = false;
+  private hasLoggedConnectionError = false;
+  private isWebSocketDisabled = false;
 
   constructor() {
     // Don't initialize immediately - wait for connect() call
@@ -18,7 +20,7 @@ class SocketService {
     if (this.isInitialized) return;
 
     const token = getCookie('token');
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
 
     // Check if we have the required configuration
     if (!backendUrl) {
@@ -34,7 +36,7 @@ class SocketService {
     // Convert https://backend.mehadnadeem.com/api/v1 to https://backend.mehadnadeem.com
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }
@@ -52,13 +54,18 @@ class SocketService {
       socketUrl = `wss://${baseUrl}`;
     }
 
-    console.log('SocketService: Initializing socket connection to:', socketUrl);
-    console.log('SocketService: Original backend URL:', backendUrl);
-    console.log('SocketService: Base URL:', baseUrl);
+    // Only log initialization details in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('SocketService: Initializing socket connection to:', socketUrl);
+      console.log('SocketService: Original backend URL:', backendUrl);
+      console.log('SocketService: Base URL:', baseUrl);
+    }
 
     // Connect to the /slots namespace to match backend SlotGateway
     const socketUrlWithNamespace = `${socketUrl}/slots`;
-    console.log('SocketService: Connecting to namespace:', socketUrlWithNamespace);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('SocketService: Connecting to namespace:', socketUrlWithNamespace);
+    }
 
     this.socket = io(socketUrlWithNamespace, {
       auth: {
@@ -78,114 +85,155 @@ class SocketService {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
-      console.log('SocketService: Connected to socket, ID:', this.socket?.id);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Connected to socket, ID:', this.socket?.id);
+      }
       this.isConnected = true;
       this.reconnectAttempts = 0;
+      this.hasLoggedConnectionError = false; // Reset on successful connection
+      this.isWebSocketDisabled = false; // Reset on successful connection
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('SocketService: Disconnected from socket, reason:', reason);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Disconnected from socket, reason:', reason);
+      }
       this.isConnected = false;
 
       if (reason === 'io server disconnect') {
         // Server disconnected us, try to reconnect
-        console.log('SocketService: Server disconnected, attempting to reconnect...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('SocketService: Server disconnected, attempting to reconnect...');
+        }
         setTimeout(() => {
           this.socket?.connect();
         }, 1000);
       }
     });
 
-    this.socket.on('connect_error', (error) => {
-      console.error('SocketService: Connection error:', error);
-      console.error('SocketService: Error details:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-      });
+    this.socket.on('connect_error', () => {
       this.isConnected = false;
+
+      // Only log the first connection error, then suppress subsequent attempts
+      if (!this.hasLoggedConnectionError) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(
+            'SocketService: WebSocket connection failed. Real-time updates will be unavailable.',
+          );
+          console.warn('SocketService: The app will continue to work normally without WebSocket.');
+        }
+        this.hasLoggedConnectionError = true;
+      }
 
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts); // Exponential backoff
-        console.log(
-          `SocketService: Attempting reconnect ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts} in ${delay}ms`,
-        );
-
+        // Suppress reconnection attempt logs - they're too noisy
         setTimeout(() => {
           this.reconnectAttempts++;
           this.socket?.connect();
         }, delay);
       } else {
-        console.error('SocketService: Max reconnection attempts reached');
-        console.error('SocketService: Please check:');
-        console.error('1. Backend WebSocket server is running');
-        console.error('2. WebSocket endpoint is correct');
-        console.error('3. CORS is properly configured');
-        console.error('4. Authentication token is valid');
+        // After max attempts, disable WebSocket silently
+        if (!this.isWebSocketDisabled) {
+          this.isWebSocketDisabled = true;
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(
+              'SocketService: WebSocket connection unavailable after multiple attempts.',
+            );
+            console.warn('SocketService: App will continue to work without real-time updates.');
+          }
+        }
+        // Disconnect to stop further reconnection attempts
+        if (this.socket) {
+          this.socket.removeAllListeners('connect_error');
+          this.socket.disconnect();
+        }
       }
     });
 
     // Slot status updates
     this.socket.on('slot-status-updated', (data) => {
-      console.log('SocketService: Slot status updated:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot status updated:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-status-updated', { detail: data }));
     });
 
     // Multiple slots updated
     this.socket.on('multiple-slots-updated', (data) => {
-      console.log('SocketService: Multiple slots updated:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Multiple slots updated:', data);
+      }
       window.dispatchEvent(new CustomEvent('multiple-slots-updated', { detail: data }));
     });
 
     // Slot reserved
     this.socket.on('slot-reserved', (data) => {
-      console.log('SocketService: Slot reserved:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot reserved:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-reserved', { detail: data }));
     });
 
     // Slot reservation confirmed (from WebSocket handler)
     this.socket.on('slot-reservation-confirmed', (data) => {
-      console.log('SocketService: Slot reservation confirmed:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot reservation confirmed:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-reservation-confirmed', { detail: data }));
     });
 
     // Slot reservation failed (from WebSocket handler)
     this.socket.on('slot-reservation-failed', (data) => {
-      console.log('SocketService: Slot reservation failed:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot reservation failed:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-reservation-failed', { detail: data }));
     });
 
     // NEW: Slot booked (removed from available list)
     this.socket.on('slot-booked', (data) => {
-      console.log('SocketService: Slot booked:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot booked:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-booked', { detail: data }));
     });
 
     // NEW: Slot removed from available list
     this.socket.on('slot-removed', (data) => {
-      console.log('SocketService: Slot removed:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot removed:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-removed', { detail: data }));
     });
 
     // Slot released
     this.socket.on('slot-released', (data) => {
-      console.log('SocketService: Slot released:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot released:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-released', { detail: data }));
     });
 
     // Slot release failed
     this.socket.on('slot-release-failed', (data) => {
-      console.log('SocketService: Slot release failed:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Slot release failed:', data);
+      }
       window.dispatchEvent(new CustomEvent('slot-release-failed', { detail: data }));
     });
 
     // Room join/leave acknowledgments
     this.socket.on('joined-freelancer-slots', (data) => {
-      console.log('SocketService: Joined freelancer slots room:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Joined freelancer slots room:', data);
+      }
     });
 
     this.socket.on('left-freelancer-slots', (data) => {
-      console.log('SocketService: Left freelancer slots room:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Left freelancer slots room:', data);
+      }
     });
   }
 
@@ -203,15 +251,21 @@ class SocketService {
     }
 
     if (!this.isConnected) {
-      console.log('SocketService: Attempting to connect...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Attempting to connect...');
+      }
       this.socket.connect();
     } else {
-      console.log('SocketService: Already connected');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SocketService: Already connected');
+      }
     }
   }
 
   public disconnect() {
-    console.log('SocketService: disconnect() called');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('SocketService: disconnect() called');
+    }
 
     if (this.socket) {
       this.socket.disconnect();
@@ -222,26 +276,38 @@ class SocketService {
 
   public joinFreelancerSlots(freelancerId: string) {
     if (this.socket && this.isConnected) {
-      console.log(`SocketService: Joining freelancer slots room: ${freelancerId}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`SocketService: Joining freelancer slots room: ${freelancerId}`);
+      }
       this.socket.emit('join-freelancer-slots', { freelancerId });
     } else {
-      console.warn(`SocketService: Cannot join room ${freelancerId} - socket not connected`);
+      // Only warn in development - this is expected when socket fails to connect
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`SocketService: Cannot join room ${freelancerId} - socket not connected`);
+      }
     }
   }
 
   public leaveFreelancerSlots(freelancerId: string) {
     if (this.socket && this.isConnected) {
-      console.log(`SocketService: Leaving freelancer slots room: ${freelancerId}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`SocketService: Leaving freelancer slots room: ${freelancerId}`);
+      }
       this.socket.emit('leave-freelancer-slots', { freelancerId });
     } else {
-      console.warn(`SocketService: Cannot leave room ${freelancerId} - socket not connected`);
+      // Only warn in development - this is expected when socket fails to connect
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`SocketService: Cannot leave room ${freelancerId} - socket not connected`);
+      }
     }
   }
 
   public reserveSlot(slotId: string, duration: number = 300000) {
     // 5 minutes default
     if (this.socket && this.isConnected) {
-      console.log(`SocketService: Reserving slot: ${slotId} for ${duration}ms`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`SocketService: Reserving slot: ${slotId} for ${duration}ms`);
+      }
       this.socket.emit('reserve-slot', {
         slotId,
         duration,
@@ -254,10 +320,15 @@ class SocketService {
 
   public releaseSlot(slotId: string) {
     if (this.socket && this.isConnected) {
-      console.log(`SocketService: Releasing slot: ${slotId}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`SocketService: Releasing slot: ${slotId}`);
+      }
       this.socket.emit('release-slot', { slotId });
     } else {
-      console.error('SocketService: Cannot release slot - socket not connected');
+      // Only error in development - this is expected when socket fails to connect
+      if (process.env.NODE_ENV === 'development') {
+        console.error('SocketService: Cannot release slot - socket not connected');
+      }
     }
   }
 
@@ -271,14 +342,14 @@ class SocketService {
 
   // Debug methods
   public getConnectionStatus() {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     let socketUrl = '';
 
     if (backendUrl) {
       // Extract the base domain from the API URL
       let baseUrl: string;
       if (backendUrl.includes('/api/v1')) {
-        baseUrl = backendUrl.split('/api/v1')[0];
+        baseUrl = backendUrl.split('/api/v1')[0] || '';
       } else {
         baseUrl = backendUrl;
       }
@@ -301,13 +372,13 @@ class SocketService {
       socketId: this.socket?.id,
       reconnectAttempts: this.reconnectAttempts,
       isInitialized: this.isInitialized,
-      backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+      backendUrl: process.env['NEXT_PUBLIC_BACKEND_URL'],
       socketUrl: socketUrl,
       hasToken: !!getCookie('token'),
     };
   }
 
-  public emitDebugEvent(eventName: string, data: any) {
+  public emitDebugEvent(eventName: string, data: unknown) {
     if (this.socket && this.isConnected) {
       this.socket.emit(eventName, data);
       console.log(`SocketService: Debug event emitted: ${eventName}`, data);
@@ -329,7 +400,7 @@ class SocketService {
   public testDifferentEndpoints() {
     console.log('SocketService: Testing different WebSocket endpoints...');
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -338,7 +409,7 @@ class SocketService {
     // Extract the base domain from the API URL
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }
@@ -357,17 +428,17 @@ class SocketService {
       // Try base URL (most likely to work based on Postman test)
       baseSocketUrl,
       // Try base URL with /slots namespace
-      baseSocketUrl + '/slots',
+      `${baseSocketUrl}/slots`,
       // Try base URL with /socket
-      baseSocketUrl + '/socket',
+      `${baseSocketUrl}/socket`,
       // Try base URL with /ws
-      baseSocketUrl + '/ws',
+      `${baseSocketUrl}/ws`,
       // Try base URL with /realtime
-      baseSocketUrl + '/realtime',
+      `${baseSocketUrl}/realtime`,
       // Try base URL with /api/v1 (in case it's needed)
-      baseSocketUrl + '/api/v1',
+      `${baseSocketUrl}/api/v1`,
       // Try base URL with /slots
-      baseSocketUrl + '/slots',
+      `${baseSocketUrl}/slots`,
     ];
 
     endpoints.forEach((endpoint, index) => {
@@ -382,7 +453,7 @@ class SocketService {
   public testNamespace(namespace: string) {
     console.log(`SocketService: Testing namespace: ${namespace}`);
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -431,7 +502,7 @@ class SocketService {
   public testBasicConnection() {
     console.log('SocketService: Testing basic WebSocket connectivity...');
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const backendUrl = process.env['NEXT_PUBLIC_BACKEND_URL'];
     if (!backendUrl) {
       console.error('SocketService: NEXT_PUBLIC_BACKEND_URL is not defined');
       return;
@@ -440,7 +511,7 @@ class SocketService {
     // Extract the base domain from the API URL
     let baseUrl: string;
     if (backendUrl.includes('/api/v1')) {
-      baseUrl = backendUrl.split('/api/v1')[0];
+      baseUrl = backendUrl.split('/api/v1')[0] || '';
     } else {
       baseUrl = backendUrl;
     }

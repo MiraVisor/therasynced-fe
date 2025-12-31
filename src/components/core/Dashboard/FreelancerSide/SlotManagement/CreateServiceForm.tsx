@@ -2,7 +2,6 @@
 
 import { Package } from 'lucide-react';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { createServiceAsync } from '@/redux/slices/serviceSlice';
+import { useCreateService } from '@/hooks/queries/useServices';
 import { CreateServiceDto, LocationType } from '@/types/types';
 
 interface CreateServiceFormProps {
@@ -27,7 +26,7 @@ interface CreateServiceFormProps {
 }
 
 export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
-  const dispatch = useDispatch();
+  const { mutateAsync: createServiceMutation, isPending: _isPending } = useCreateService();
   const [formData, setFormData] = useState<CreateServiceDto>({
     name: '',
     description: '',
@@ -47,12 +46,15 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
       return;
     }
 
-    try {
-      await dispatch(createServiceAsync(formData) as any).unwrap();
-      onSuccess?.();
-    } catch (error) {
-      toast.error('Failed to create service');
-    }
+    createServiceMutation(formData, {
+      onSuccess: () => {
+        onSuccess?.();
+      },
+      onError: (error: unknown) => {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create service';
+        toast.error(errorMessage);
+      },
+    });
   };
 
   const addTag = () => {
@@ -177,7 +179,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
                   </div>
                   {formData.locationTypes.includes(locationType as LocationType) && (
                     <div className="absolute top-2 right-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     </div>
                   )}
                 </div>
@@ -242,7 +244,7 @@ export const CreateServiceForm = ({ onSuccess }: CreateServiceFormProps) => {
           {/* Summary */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full" />
               <span className="font-medium text-blue-800">Service Summary</span>
             </div>
             <div className="text-sm text-blue-700">

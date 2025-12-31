@@ -1,21 +1,22 @@
 'use client';
 
 import * as SwitchPrimitives from '@radix-ui/react-switch';
-import { Check, X } from 'lucide-react';
 import * as React from 'react';
+import { Check, X } from 'lucide-react';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const StatusSwitch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, disabled, ...props }, ref) => {
-  const tooltipClass = disabled
-    ? 'text-md bg-transparent border border-gray-400 text-gray-500'
-    : props.checked
-      ? 'text-md bg-transparent border border-red-500 text-red-700'
-      : 'text-md bg-transparent border border-green-500 text-green-700';
+  // Tooltip class for future use (currently unused)
+  // const tooltipClass = disabled
+  //   ? 'text-md bg-transparent border border-gray-400 text-gray-500'
+  //   : props.checked
+  //     ? 'text-md bg-transparent border border-red-500 text-red-700'
+  //     : 'text-md bg-transparent border border-green-500 text-green-700';
 
   return (
     <TooltipProvider delayDuration={300}>

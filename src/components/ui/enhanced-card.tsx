@@ -1,5 +1,5 @@
-import { type VariantProps, cva } from 'class-variance-authority';
 import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
@@ -19,8 +19,7 @@ const enhancedCardVariants = cva('rounded-2xl border bg-white/80 backdrop-blur-s
 });
 
 export interface EnhancedCardProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof enhancedCardVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof enhancedCardVariants> {
   interactive?: boolean;
 }
 

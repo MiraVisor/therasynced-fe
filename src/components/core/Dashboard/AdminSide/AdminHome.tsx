@@ -1,73 +1,42 @@
 'use client';
 
-import { Calendar, DollarSign, UserCheck, Users } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { useAuth } from '@/redux/hooks/useAppHooks';
+import { StatsCardsSkeleton } from '@/components/ui/skeletons/StatsCardsSkeleton';
 import adminOverviewService from '@/services/adminOverviewService';
-import { AdminOverviewDto } from '@/services/adminOverviewService';
+import { useAuthStore } from '@/stores/authStore';
 
 import { DashboardPageWrapper } from '../DashboardPageWrapper';
 import { AdminRevenueChart } from './Charts/AdminRevenueChart';
 
-type IconName = 'users' | 'clients' | 'calendar' | 'money';
-
 const AdminHome = () => {
-  const { role } = useAuth();
-  const [overviewData, setOverviewData] = useState<AdminOverviewDto | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const { role } = useAuthStore();
 
-  // Map icons to Lucide icons for EnhancedStatCard
-  const iconMap = {
-    users: Users,
-    clients: UserCheck,
-    calendar: Calendar,
-    money: DollarSign,
-  };
+  const {
+    data: overviewData,
+    isLoading,
+    isFetching: _isFetching,
+    error,
+  } = useQuery({
+    queryKey: ['adminOverview'],
+    queryFn: () => adminOverviewService.getOverview(),
+  });
 
-  // Map icon names to semantic colors
-  const iconColors: Record<IconName, { iconColor: string; iconBg: string }> = {
-    users: { iconColor: 'text-info', iconBg: 'bg-info/10' },
-    clients: { iconColor: 'text-warning', iconBg: 'bg-warning/10' },
-    calendar: { iconColor: 'text-error', iconBg: 'bg-error/10' },
-    money: { iconColor: 'text-primary', iconBg: 'bg-primary/10' },
-  };
-
-  // Fetch overview data
+  // Show error toast only when no cached data exists
   useEffect(() => {
-    const fetchOverview = async () => {
-      const hasData = overviewData !== null;
-      try {
-        if (!hasData) {
-          setInitialLoading(true);
-        } else {
-          setIsLoading(true);
-        }
-        const data = await adminOverviewService.getOverview();
-        setOverviewData(data);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load overview data';
-        // Only show error toast on initial load
-        if (!hasData) {
-          toast.error(`Error loading overview data: ${errorMessage}`);
-        }
-        console.error('Error fetching admin overview:', err);
-        // Don't clear data on error if we have existing data
-        if (!hasData) {
-          setOverviewData(null);
-        }
-      } finally {
-        setIsLoading(false);
-        setInitialLoading(false);
-      }
-    };
+    if (error && !overviewData) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load overview data';
+      toast.error(`Error loading overview data: ${errorMessage}`);
+    }
+  }, [error, overviewData]);
 
-    fetchOverview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Only show loading skeleton if no cached data
+  const isLoadingData = isLoading && !overviewData;
+
+  // Unused variable removed - was: const _initialLoading = isLoading && !overviewData;
 
   // Format currency value
   const formatCurrency = (value: number): string => {
@@ -83,7 +52,8 @@ const AdminHome = () => {
   };
 
   // Transform chart data from API format to chart component format
-  const chartData = overviewData?.monthlyRevenueChart || [];
+  const overview = overviewData;
+  const chartData = overview?.monthlyRevenueChart || [];
   const xLabels =
     chartData.length > 0
       ? chartData.map((item) => {
@@ -91,50 +61,46 @@ const AdminHome = () => {
           return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         })
       : [];
-  const profitData = chartData.map((item) => item.profit || 0);
+  const profitData = chartData.map((item) => (item as { profit?: number }).profit || 0);
   const lossData = chartData.map((item) => item.loss || 0);
 
   // Prepare stats data from API
   const statsData = [
     {
       title: 'Total Users',
-      value: formatNumber(overviewData?.totalUsers?.value || 0),
+      value: formatNumber(overview?.totalUsers?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.totalUsers?.percentageChange || 0),
-        isUp: (overviewData?.totalUsers?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.totalUsers?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.totalUsers?.percentageChange || 0),
+        isUp: (overview?.totalUsers?.percentageChange || 0) >= 0,
+        label: overview?.totalUsers?.comparisonPeriod || 'N/A',
       },
-      iconName: 'users' as IconName,
     },
     {
       title: 'Active Clients',
-      value: formatNumber(overviewData?.activeClients?.value || 0),
+      value: formatNumber(overview?.activeClients?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.activeClients?.percentageChange || 0),
-        isUp: (overviewData?.activeClients?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.activeClients?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.activeClients?.percentageChange || 0),
+        isUp: (overview?.activeClients?.percentageChange || 0) >= 0,
+        label: overview?.activeClients?.comparisonPeriod || 'N/A',
       },
-      iconName: 'clients' as IconName,
     },
     {
       title: 'Sessions This Month',
-      value: formatNumber(overviewData?.sessionsThisMonth?.value || 0),
+      value: formatNumber(overview?.sessionsThisMonth?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.sessionsThisMonth?.percentageChange || 0),
-        isUp: (overviewData?.sessionsThisMonth?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.sessionsThisMonth?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.sessionsThisMonth?.percentageChange || 0),
+        isUp: (overview?.sessionsThisMonth?.percentageChange || 0) >= 0,
+        label: overview?.sessionsThisMonth?.comparisonPeriod || 'N/A',
       },
-      iconName: 'calendar' as IconName,
     },
     {
       title: 'Revenue',
-      value: formatCurrency(overviewData?.revenue?.value || 0),
+      value: formatCurrency(overview?.revenue?.value || 0),
       trend: {
-        value: Math.abs(overviewData?.revenue?.percentageChange || 0),
-        isUp: (overviewData?.revenue?.percentageChange || 0) >= 0,
-        timeframe: overviewData?.revenue?.comparisonPeriod || 'N/A',
+        value: Math.abs(overview?.revenue?.percentageChange || 0),
+        isUp: (overview?.revenue?.percentageChange || 0) >= 0,
+        label: overview?.revenue?.comparisonPeriod || 'N/A',
       },
-      iconName: 'money' as IconName,
     },
   ];
 
@@ -151,32 +117,26 @@ const AdminHome = () => {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsData.map((stat, index) => {
-            const Icon = iconMap[stat.iconName as IconName];
-            const colors = iconColors[stat.iconName as IconName];
-
-            return (
-              <EnhancedStatCard
-                key={index}
-                title={stat.title}
-                value={stat.value}
-                trend={{
-                  value: stat.trend.value,
-                  isUp: stat.trend.isUp,
-                  label: stat.trend.timeframe,
-                }}
-                icon={Icon}
-                iconColor={colors.iconColor}
-                iconBg={colors.iconBg}
-                interactive
-                onClick={() => {
-                  // Navigate to details or show modal
-                }}
-              />
-            );
-          })}
-        </div>
+        {isLoadingData ? (
+          <StatsCardsSkeleton count={4} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statsData.map((stat, index) => {
+              return (
+                <EnhancedStatCard
+                  key={index}
+                  title={stat.title}
+                  value={stat.value}
+                  trend={stat.trend}
+                  interactive
+                  onClick={() => {
+                    // Navigate to details or show modal
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
 
         {/* Revenue Chart */}
         <AdminRevenueChart

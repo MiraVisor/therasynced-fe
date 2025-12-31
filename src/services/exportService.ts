@@ -51,7 +51,7 @@ export interface EncryptedExportResponse {
 export interface UnencryptedExportResponse {
   success: boolean;
   message: string;
-  data: any; // The actual export data
+  data: unknown; // The actual export data
   format: 'json' | 'csv';
 }
 
@@ -135,7 +135,7 @@ const extractFilenameFromHeader = (
 ): string => {
   if (contentDisposition) {
     const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-    if (filenameMatch && filenameMatch[1]) {
+    if (filenameMatch?.[1]) {
       return filenameMatch[1].replace(/['"]/g, '');
     }
   }
@@ -155,7 +155,15 @@ export const adminExportUserData = async (
   data: AdminExportFormData,
 ): Promise<FileDownloadResponse> => {
   // Transform data to match backend API format
-  const payload: any = {
+  const payload: {
+    format: 'json' | 'csv';
+    requestReference?: string;
+    purpose?: string;
+    encrypt?: boolean;
+    exportAll?: boolean;
+    userId?: string;
+    userEmail?: string;
+  } = {
     format: data.format,
     requestReference: data.requestReference,
     purpose: data.purpose,
@@ -194,15 +202,18 @@ export const adminExportUserData = async (
       filename,
       contentType,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     // If error response is JSON, try to parse it
-    if (error.response?.data && error.response.data instanceof Blob) {
-      const errorText = await error.response.data.text();
-      try {
-        const errorJson = JSON.parse(errorText);
-        throw new Error(errorJson.message || 'Export failed');
-      } catch {
-        throw new Error(errorText || 'Export failed');
+    if (error && typeof error === 'object' && 'response' in error) {
+      const apiError = error as { response?: { data?: Blob } };
+      if (apiError.response?.data && apiError.response.data instanceof Blob) {
+        const errorText = await apiError.response.data.text();
+        try {
+          const errorJson = JSON.parse(errorText) as { message?: string };
+          throw new Error(errorJson.message || 'Export failed');
+        } catch {
+          throw new Error(errorText || 'Export failed');
+        }
       }
     }
     throw error;
@@ -462,7 +473,7 @@ export const downloadEncryptedExport = (exportData: EncryptedExportResponse['dat
  * Download unencrypted export as file (legacy - for when we have the data object)
  */
 export const downloadUnencryptedExport = (
-  data: any,
+  data: unknown,
   format: 'json' | 'csv',
   requestReference?: string,
 ) => {

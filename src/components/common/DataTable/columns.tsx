@@ -117,9 +117,9 @@ const BookingDetailsModal = ({
 
   if (!booking) return null;
 
-  const freelancer = booking.slot.freelancer;
-  const slot = booking.slot;
-  const location = slot.location;
+  const { freelancer } = booking.slot;
+  const { slot } = booking;
+  const { location } = slot;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -360,11 +360,11 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     accessorKey: 'slot.freelancer.name',
     header: () => {
       return (
-        <div className="font-semibold text-sm text-black text-left">Healthcare Professional</div>
+        <div className="font-semibold text-sm text-charcoal text-left">Healthcare Professional</div>
       );
     },
     cell: ({ row }) => {
-      const freelancer = row.original.slot.freelancer;
+      const { freelancer } = row.original.slot;
       return (
         <div className="flex items-center gap-3">
           <Avatar className="h-16 w-16">
@@ -387,7 +387,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-black text-left hover:bg-transparent p-0"
+          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
         >
           <Calendar className="mr-2 h-4 w-4" />
           Date
@@ -408,7 +408,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     accessorKey: 'slot.startTime',
     header: () => {
       return (
-        <div className="font-semibold text-sm text-black text-left flex items-center gap-1">
+        <div className="font-semibold text-sm text-charcoal text-left flex items-center gap-1">
           <Clock className="h-4 w-4" />
           Time
         </div>
@@ -428,7 +428,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
     accessorKey: 'slot.location.name',
     header: () => {
       return (
-        <div className="font-semibold text-sm text-black text-left flex items-center gap-1">
+        <div className="font-semibold text-sm text-charcoal text-left flex items-center gap-1">
           <MapPin className="h-4 w-4" />
           Location
         </div>
@@ -447,7 +447,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-black text-left hover:bg-transparent p-0"
+          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
         >
           Price
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -471,10 +471,10 @@ export const bookingColumns: ColumnDef<Booking>[] = [
   {
     accessorKey: 'status',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Status</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Status</div>;
     },
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const status = row.getValue('status');
 
       let badgeProps = {
         variant: 'secondary' as 'default' | 'secondary',
@@ -512,16 +512,17 @@ export const bookingColumns: ColumnDef<Booking>[] = [
           };
           break;
         default:
+          const statusStr = String(status || 'unknown');
           badgeProps = {
             variant: 'secondary',
             className: 'bg-gray-100 text-gray-800 hover:bg-gray-100 text-sm',
-            label: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
+            label: statusStr.charAt(0).toUpperCase() + statusStr.slice(1).toLowerCase(),
           };
       }
 
       return (
         <Badge variant={badgeProps.variant} className={badgeProps.className}>
-          {badgeProps.label}
+          {String(badgeProps.label)}
         </Badge>
       );
     },
@@ -529,7 +530,7 @@ export const bookingColumns: ColumnDef<Booking>[] = [
   {
     id: 'actions',
     header: () => {
-      return <div className="font-semibold text-sm text-black text-left">Actions</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Actions</div>;
     },
     cell: ({ row }) => {
       const booking = row.original;

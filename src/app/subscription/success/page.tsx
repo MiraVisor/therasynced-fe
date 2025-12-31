@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Calendar, CheckCircle2, Sparkles } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -8,101 +8,135 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { verifyCheckoutSession } from '@/redux/api/subscriptionApi';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
+import { useMySubscription, useVerifyCheckoutSession } from '@/hooks/queries/useSubscription';
 
 function SubscriptionSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(true);
+  const { mutate: verifyCheckout, isPending: isLoading } = useVerifyCheckoutSession();
+  const { data: subscription, refetch: refetchSubscription } = useMySubscription();
   const [error, setError] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // Verify payment using the verify-checkout endpoint
-    const verifyPayment = async () => {
-      try {
-        if (sessionId) {
-          // Verify checkout session with backend
-          const result = await dispatch(verifyCheckoutSession(sessionId) as any);
-
-          if (verifyCheckoutSession.fulfilled.match(result)) {
-            setIsLoading(false);
-            toast.success('Payment successful! Your subscription is now active.');
-
-            // Redirect to subscription management after a short delay
-            setTimeout(() => {
-              router.push('/dashboard/account?tab=subscription');
-            }, 3000);
-          } else {
-            // Payment verification failed
-            const errorMessage = (result.payload as string) || 'Payment verification failed';
-            setIsLoading(false);
-            setError(errorMessage);
-            toast.error(`Payment verification failed: ${errorMessage}`);
-          }
-        } else {
-          setIsLoading(false);
-          setError('No session ID found');
-          toast.error('No session ID found. Please contact support if payment was successful.');
-        }
-      } catch (error) {
-        setIsLoading(false);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to verify payment';
-        setError(errorMessage);
-        toast.error(`Failed to verify payment: ${errorMessage}`);
-      }
-    };
-
-    verifyPayment();
-  }, [sessionId, dispatch, router]);
+    if (sessionId && !isVerified) {
+      verifyCheckout(sessionId, {
+        onSuccess: () => {
+          setIsVerified(true);
+          void refetchSubscription();
+          // Small delay to show success animation
+          setTimeout(() => {
+            router.push('/dashboard/account?tab=subscription&subscription=success');
+          }, 2000);
+        },
+        onError: (error: unknown) => {
+          const apiError = error as { response?: { data?: { message?: string } } };
+          const errorMessage = apiError?.response?.data?.message || 'Payment verification failed';
+          setError(errorMessage);
+        },
+      });
+    } else if (!sessionId) {
+      setError('No session ID found');
+      toast.error('No session ID found. Please contact support if payment was successful.');
+    }
+  }, [sessionId, verifyCheckout, router, isVerified, refetchSubscription]);
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="lg" />
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Verifying your payment...</p>
+        </div>
       </div>
     );
   }
+
+  const nextBillingDate = subscription?.currentPeriodEnd
+    ? new Date(subscription.currentPeriodEnd)
+    : null;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 animate-in zoom-in duration-500">
+            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400 animate-in zoom-in duration-300 delay-200" />
           </div>
-          <CardTitle className="text-2xl">Payment Successful!</CardTitle>
+          <CardTitle className="text-2xl font-poppins font-bold">Payment Successful!</CardTitle>
           <CardDescription className="mt-2">
             {error
               ? 'There was an issue verifying your payment. Please contact support if payment was successful.'
-              : 'Your subscription has been activated successfully. You will be redirected to your subscription page shortly.'}
+              : isVerified
+                ? 'Your subscription has been activated successfully!'
+                : 'Verifying your payment...'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 dark:bg-red-900/20">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800">
+              <p className="text-sm font-medium text-red-800 dark:text-red-200">Error</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+              <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                If your payment was successful, please contact support with your session ID.
+              </p>
             </div>
           )}
-          {sessionId && !error && (
+
+          {isVerified && subscription && !error && (
+            <div className="space-y-3 rounded-lg border bg-primary/5 p-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h3 className="font-poppins font-semibold">Subscription Activated</h3>
+              </div>
+              {subscription.plan && (
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Plan</p>
+                  <p className="font-poppins font-semibold text-lg">
+                    {subscription.plan.displayName}
+                  </p>
+                </div>
+              )}
+              {nextBillingDate && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Next billing date</p>
+                    <p className="font-medium">
+                      {nextBillingDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {sessionId && !error && !isVerified && (
             <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Session ID: <span className="font-mono text-xs">{sessionId}</span>
               </p>
             </div>
           )}
-          <Button
-            onClick={() => router.push('/dashboard/account?tab=subscription')}
-            className="w-full bg-primary hover:bg-primary/90"
-          >
-            Go to Subscription Page
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-          <Button onClick={() => router.push('/dashboard')} variant="outline" className="w-full">
-            Go to Dashboard
-          </Button>
+
+          <div className="space-y-2">
+            <Button
+              onClick={() => router.push('/dashboard/account?tab=subscription')}
+              className="w-full bg-primary hover:bg-primary/90"
+              size="lg"
+            >
+              Go to Subscription Page
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button onClick={() => router.push('/dashboard')} variant="outline" className="w-full">
+              Go to Dashboard
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

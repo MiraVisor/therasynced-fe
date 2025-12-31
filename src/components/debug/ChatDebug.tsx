@@ -27,7 +27,7 @@ const ChatDebug = () => {
   const testBackendApi = async () => {
     try {
       console.log('Testing backend API connectivity...');
-      const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/chat/contacts', {
+      const response = await fetch(`${process.env['NEXT_PUBLIC_BACKEND_URL']}/chat/contacts`, {
         headers: {
           Authorization: `Bearer ${document.cookie.split('token=')[1]?.split(';')[0] || ''}`,
           'Content-Type': 'application/json',
@@ -126,7 +126,11 @@ const ChatDebug = () => {
             </div>
             <div className="flex justify-between">
               <span>Error:</span>
-              <span className="text-red-600">{error.contacts || 'None'}</span>
+              <span className="text-red-600">
+                {error && typeof error === 'object' && error !== null && 'contacts' in error
+                  ? String((error as { contacts?: unknown }).contacts || 'None')
+                  : 'None'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Total Unread:</span>
@@ -230,7 +234,7 @@ const ChatDebug = () => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>Backend URL:</span>
-              <span className="font-mono text-sm">{process.env.NEXT_PUBLIC_BACKEND_URL}</span>
+              <span className="font-mono text-sm">{process.env['NEXT_PUBLIC_BACKEND_URL']}</span>
             </div>
             <div className="flex justify-between">
               <span>Socket URL:</span>

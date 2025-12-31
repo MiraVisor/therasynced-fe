@@ -1,88 +1,98 @@
+import api from '@/services/api';
 import {
+  ApiResponse,
+  BookingStats,
   CancelBookingDto,
   CompleteBookingDto,
   CreateBookingDto,
-  PaginationDto,
   RescheduleBookingDto,
 } from '@/types/types';
 
-import api from './api';
-import { ENDPOINTS } from './endpoints';
-
-// API Functions
-export const bookingService = {
-  // Create a new booking
-  createBooking: async (data: CreateBookingDto) => {
-    const response = await api.post(ENDPOINTS.bookings.create, data);
-    return response.data;
-  },
-
-  // Cancel a booking
-  cancelBooking: async (data: CancelBookingDto) => {
-    const response = await api.post(ENDPOINTS.bookings.cancel, data);
-    return response.data;
-  },
-
-  // Reschedule a booking
-  rescheduleBooking: async (data: RescheduleBookingDto) => {
-    const response = await api.post(ENDPOINTS.bookings.reschedule, data);
-    return response.data;
-  },
-
-  // Complete a booking
-  completeBooking: async (data: CompleteBookingDto) => {
-    const response = await api.patch(ENDPOINTS.bookings.complete, data);
-    return response.data;
-  },
-
-  // Get patient bookings (future only by default)
-  getPatientBookings: async (date?: string, includePast: boolean = false) => {
-    const params: any = {};
-    if (date) params.date = date;
-    if (includePast) params.includePast = includePast;
-
-    const response = await api.get(ENDPOINTS.bookings.patientAll, { params });
-    return response.data;
-  },
-
-  // Get complete patient booking history
-  getPatientBookingHistory: async (pagination?: PaginationDto) => {
-    const response = await api.get(ENDPOINTS.bookings.patientHistory, { params: pagination });
-    return response.data;
-  },
-
-  // Get freelancer future bookings
-  getFreelancerFutureBookings: async (pagination?: PaginationDto) => {
-    const response = await api.get(ENDPOINTS.bookings.freelancerFuture, { params: pagination });
-    return response.data;
-  },
-
-  // Get freelancer complete history
-  getFreelancerHistory: async (pagination?: PaginationDto, includePast: boolean = true) => {
-    const params: any = { ...pagination };
-    if (!includePast) params.includePast = false;
-
-    const response = await api.get(ENDPOINTS.bookings.freelancerHistory, { params });
-    return response.data;
-  },
-
-  // Get freelancer today's bookings
-  getFreelancerTodayBookings: async () => {
-    const response = await api.get(ENDPOINTS.bookings.freelancerToday);
-    return response.data;
-  },
-
-  // Get freelancer appointments by date
-  getFreelancerAppointmentsByDate: async (date: string) => {
-    const response = await api.get(ENDPOINTS.bookings.freelancerByDate, { params: { date } });
-    return response.data;
-  },
-
-  // Get admin booking history
-  getAdminBookingHistory: async (pagination?: PaginationDto) => {
-    const response = await api.get(ENDPOINTS.bookings.adminHistory, { params: pagination });
-    return response.data;
-  },
+export const createBooking = async (data: CreateBookingDto) => {
+  const response = await api.post('/booking/create', data);
+  return response.data;
 };
 
-export default bookingService;
+export const getPatientBookings = async (params?: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  date?: string;
+}) => {
+  const response = await api.get('/booking/patient/all', { params });
+  return response.data;
+};
+
+export const getPatientBookingHistory = async (params?: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  const response = await api.get('/booking/patient/history', { params });
+  return response.data;
+};
+
+export const getBookingById = async (bookingId: string) => {
+  const response = await api.get(`/booking/${bookingId}`);
+  return response.data;
+};
+
+export const cancelBooking = async (data: CancelBookingDto) => {
+  const response = await api.patch('/booking/cancel', data);
+  return response.data;
+};
+
+export const completeBooking = async (data: CompleteBookingDto) => {
+  const response = await api.patch('/booking/complete', data);
+  return response.data;
+};
+
+export const rescheduleBooking = async (data: RescheduleBookingDto) => {
+  const response = await api.patch('/booking/reschedule', data);
+  return response.data;
+};
+
+export const getPatientBookingStats = async (): Promise<ApiResponse<BookingStats>> => {
+  const response = await api.get('/booking/patient/stats');
+  return response.data;
+};
+
+// Freelancer booking functions
+export const getFreelancerBookings = async (params?: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  const response = await api.get('/booking/freelancer/all', { params });
+  return response.data;
+};
+
+export const getFreelancerFutureBookings = async (params?: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  const response = await api.get('/booking/freelancer/future', { params });
+  return response.data;
+};
+
+export const getFreelancerAppointmentsByDate = async (date: string) => {
+  const response = await api.get('/booking/freelancer/appointments-by-date', {
+    params: { date },
+  });
+  return response.data;
+};
+
+export const getTodayBookingsFreelancer = async () => {
+  const response = await api.get('/booking/freelancer/today');
+  return response.data;
+};
+
+export const updateBookingNotes = async (bookingId: string, notes: string) => {
+  const response = await api.patch(`/booking/${bookingId}/notes`, { notes });
+  return response.data;
+};

@@ -5,17 +5,15 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/redux/hooks/useAppHooks';
-import { verifyEmailLinkUser } from '@/redux/slices/authSlice';
+import { useVerifyEmail } from '@/hooks/queries/useAuth';
 
 export default function VerifyEmailPage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-
-  const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState('');
   const [token, setToken] = useState<string | null>(null);
+
+  const { mutate: verifyEmail, isPending: isVerifying } = useVerifyEmail();
 
   useEffect(() => {
     // Get search params only on client side
@@ -25,33 +23,24 @@ export default function VerifyEmailPage() {
       setToken(tokenParam);
 
       if (tokenParam) {
-        verifyEmail(tokenParam);
+        verifyEmail(tokenParam, {
+          onSuccess: () => {
+            setIsVerified(true);
+            setTimeout(() => {
+              router.push('/dashboard');
+            }, 2000);
+          },
+          onError: (err: unknown) => {
+            const errorMessage =
+              err instanceof Error ? err.message : 'Failed to verify email. Please try again.';
+            setError(errorMessage);
+          },
+        });
       } else {
         setError('Invalid verification link. Please check your email for the correct link.');
       }
     }
-  }, []);
-
-  const verifyEmail = async (emailToken: string) => {
-    if (!emailToken) return;
-
-    setIsVerifying(true);
-    setError('');
-
-    try {
-      await dispatch(verifyEmailLinkUser(emailToken)).unwrap();
-      setIsVerified(true);
-
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to verify email. Please try again.');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+  }, [verifyEmail, router]);
 
   const handleBackToSignIn = () => {
     router.push('/authentication/sign-in');
@@ -62,11 +51,11 @@ export default function VerifyEmailPage() {
       {/* Modern Background with Gradient and Patterns */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-green-50/30 to-gray-50">
         {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_1px_1px,rgb(0,119,69)_1px,transparent_0)] bg-[length:40px_40px]"></div>
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_1px_1px,rgb(0,119,69)_1px,transparent_0)] bg-[length:40px_40px]" />
         {/* Decorative gradient orbs */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
-        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-primary/3 rounded-full blur-2xl"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-primary/3 rounded-full blur-2xl" />
       </div>
 
       {/* Auth Card */}
@@ -94,7 +83,7 @@ export default function VerifyEmailPage() {
     return renderCard(
       <div className="text-center space-y-6">
         <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary" />
         </div>
         <div className="space-y-2">
           <h3 className="text-xl font-poppins font-bold text-charcoal">Verifying Your Email</h3>
@@ -166,7 +155,7 @@ export default function VerifyEmailPage() {
   return renderCard(
     <div className="text-center space-y-6">
       <div className="flex justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary" />
       </div>
       <div className="space-y-2">
         <h3 className="text-xl font-poppins font-bold text-charcoal">Loading...</h3>

@@ -1,14 +1,12 @@
 'use client';
 
-import { Download, FileDown, Lock, TrendingUp, Unlock } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { exportLogsColumns } from '@/components/common/DataTable/export-logs-columns';
-import { UserSearchSelect } from '@/components/common/UserSearchSelect';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -18,15 +16,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  exportExportLogsToCSV,
   type ExportLog,
   type ExportLogFilters,
-  exportExportLogsToCSV,
   getExportLogs,
 } from '@/services/exportService';
 
+import { TimelineChart } from './components/charts/TimelineChart';
 import { DateRange, DateRangePresets } from './components/DateRangePresets';
 import { StatCard, StatsCardsGrid } from './components/StatsCards';
-import { TimelineChart } from './components/charts/TimelineChart';
 
 export function ExportLogsTab() {
   const [logs, setLogs] = useState<ExportLog[]>([]);
@@ -46,11 +44,11 @@ export function ExportLogsTab() {
   // Filters
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [exportTypeFilter, setExportTypeFilter] = useState<string>('');
-  const [formatFilter, setFormatFilter] = useState<string>('');
-  const [encryptionFilter, setEncryptionFilter] = useState<string>('');
-  const [exportedByFilter, setExportedByFilter] = useState<string>('');
-  const [exportedUserFilter, setExportedUserFilter] = useState<string>('');
-  const [requestReferenceFilter, setRequestReferenceFilter] = useState<string>('');
+  const [formatFilter] = useState<string>('');
+  const [encryptionFilter] = useState<string>('');
+  const [exportedByFilter] = useState<string>('');
+  const [exportedUserFilter] = useState<string>('');
+  const [requestReferenceFilter] = useState<string>('');
 
   const fetchLogs = async () => {
     try {
@@ -132,24 +130,30 @@ export function ExportLogsTab() {
         setLogs([]);
         setPagination(null);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as {
+        status?: number;
+        statusText?: string;
+        response?: { data?: unknown };
+        message?: string;
+      };
       console.error('Failed to fetch export logs:', error);
       console.error('Error details:', {
-        status: error?.status,
-        statusText: error?.statusText,
-        response: error?.response?.data,
-        message: error?.message,
+        status: apiError?.status,
+        statusText: apiError?.statusText,
+        response: apiError?.response?.data,
+        message: apiError?.message,
       });
 
       // If it's a 404, the endpoint might not exist yet
-      if (error?.status === 404) {
+      if (apiError?.status === 404) {
         toast.error(
           'Export logs endpoint not found. The backend may not have this feature implemented yet.',
         );
-      } else if (error?.status === 403) {
+      } else if (apiError?.status === 403) {
         toast.error('Access denied. Admin privileges required.');
       } else {
-        toast.error(error?.message || 'Failed to load export logs. Please try again.');
+        toast.error(apiError?.message || 'Failed to load export logs. Please try again.');
       }
 
       setLogs([]);
@@ -169,10 +173,11 @@ export function ExportLogsTab() {
     if (dateRange.from || dateRange.to || exportTypeFilter) {
       const timer = setTimeout(() => {
         setPage(1);
-        fetchLogs();
+        void fetchLogs();
       }, 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, exportTypeFilter]);
 
@@ -259,7 +264,9 @@ export function ExportLogsTab() {
         if (!date) return acc;
         try {
           const dateStr = new Date(date).toISOString().split('T')[0];
-          acc[dateStr] = (acc[dateStr] || 0) + 1;
+          if (dateStr) {
+            acc[dateStr] = (acc[dateStr] || 0) + 1;
+          }
         } catch {
           // Skip invalid dates
         }
@@ -273,46 +280,7 @@ export function ExportLogsTab() {
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [logs]);
 
-  const typeDistribution = useMemo(() => {
-    const admin = logs.filter(
-      (log) => log.exportType === 'ADMIN' || log.exportType === 'BULK_USER_DATA',
-    ).length;
-    const user = logs.filter(
-      (log) => log.exportType === 'USER' || log.exportType === 'USER_DATA',
-    ).length;
-    return [
-      { name: 'Admin', value: admin },
-      { name: 'User', value: user },
-    ];
-  }, [logs]);
-
-  const formatDistribution = useMemo(() => {
-    const json = logs.filter((log) => {
-      const format = log.format?.toLowerCase();
-      return format === 'json';
-    }).length;
-    const csv = logs.filter((log) => {
-      const format = log.format?.toLowerCase();
-      return format === 'csv';
-    }).length;
-    return [
-      { name: 'JSON', value: json },
-      { name: 'CSV', value: csv },
-    ];
-  }, [logs]);
-
-  const encryptionDistribution = useMemo(() => {
-    const encrypted = logs.filter(
-      (log) => log.isEncrypted === true || log.encrypted === true,
-    ).length;
-    const unencrypted = logs.filter(
-      (log) => !(log.isEncrypted === true || log.encrypted === true),
-    ).length;
-    return [
-      { name: 'Encrypted', value: encrypted },
-      { name: 'Unencrypted', value: unencrypted },
-    ];
-  }, [logs]);
+  // Unused variables removed - was: const _typeDistribution, _formatDistribution, _encryptionDistribution = useMemo(() => { ... }, [logs]);
 
   const handleExportToCSV = async () => {
     try {
@@ -363,12 +331,14 @@ export function ExportLogsTab() {
       window.URL.revokeObjectURL(url);
 
       toast.success('Export logs downloaded as CSV');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as { status?: number };
       console.error('Failed to export logs:', error);
-      if (error?.status === 404) {
+      if (apiError?.status === 404) {
         toast.error('CSV export endpoint not found. Please check backend configuration.');
       } else {
-        toast.error(error?.message || 'Failed to export logs. Please try again.');
+        const errorWithMessage = error as { message?: string };
+        toast.error(errorWithMessage?.message || 'Failed to export logs. Please try again.');
       }
     }
   };
@@ -377,24 +347,9 @@ export function ExportLogsTab() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <StatsCardsGrid>
-        <StatCard
-          title="Total Exports"
-          value={stats.total}
-          icon={FileDown}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Last 30 Days"
-          value={stats.last30d}
-          icon={TrendingUp}
-          loading={initialLoading}
-        />
-        <StatCard
-          title="Total Data Exported"
-          value={stats.totalSizeGB}
-          icon={Download}
-          loading={initialLoading}
-        />
+        <StatCard title="Total Exports" value={stats.total} loading={initialLoading} />
+        <StatCard title="Last 30 Days" value={stats.last30d} loading={initialLoading} />
+        <StatCard title="Total Data Exported" value={stats.totalSizeGB} loading={initialLoading} />
       </StatsCardsGrid>
 
       {/* Filters */}

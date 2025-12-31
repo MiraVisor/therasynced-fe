@@ -8,9 +8,8 @@ import SlideArrowButton from '@/components/ui/SlideArrowButton';
 import { isTokenValid } from '@/lib/utils';
 
 const Hero = () => {
-  const router = useRouter();
   const [hasValidToken, setHasValidToken] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     setHasValidToken(isTokenValid());
   }, []);
@@ -47,26 +46,26 @@ const Hero = () => {
             <h1 className="capitalize font-bold text-white text-balance leading-[1.1] tracking-tight text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
               Feel Better, <span className="text-primary">One Click</span> Away
             </h1>
-            <p className="text-white/90 font-light text-balance tracking-wide leading-relaxed text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl">
-              Experience genuine care from dedicated professionals
+
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
+              Book appointments with licensed therapists. Get personalized care when you need it.
             </p>
           </div>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-[90vw] xs:max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none items-center justify-center">
+          {/* CTA Button */}
+          <div className="flex justify-center">
             <SlideArrowButton
-              text={hasValidToken ? 'Dashboard' : 'Start Your Journey'}
+              text={hasValidToken ? 'Go to Dashboard' : 'Get Started Free'}
               reverse={true}
-              className="w-full sm:w-auto lg:w-64 lg:h-12"
+              className="w-full sm:w-auto min-w-[240px] h-14 text-lg font-medium"
               onClick={handleCTAClick}
             />
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-12 sm:w-24 lg:w-40 h-1.5 bg-primary/40 rounded-full blur-sm" />
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </div>
+
+      {/* Bottom decorative line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
     </section>
   );
 };

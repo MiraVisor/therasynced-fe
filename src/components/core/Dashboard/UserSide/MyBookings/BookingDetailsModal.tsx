@@ -1,18 +1,7 @@
 'use client';
 
-import { format } from 'date-fns';
-import {
-  Calendar,
-  Clock,
-  CreditCard,
-  FileText,
-  MapPin,
-  MessageCircle,
-  RotateCcw,
-  Star,
-  User,
-  X,
-} from 'lucide-react';
+import { CreditCard, FileText, MessageCircle, RotateCcw, Star, User, X } from 'lucide-react';
+import React from 'react';
 
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -28,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { hasRating } from '@/types/rating';
 import { Booking } from '@/types/types';
 
 interface BookingDetailsModalProps {
@@ -51,11 +41,10 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   onReview,
   cancellingBookingId,
 }) => {
-  if (!booking) return null;
+  if (!booking?.slot) return null;
 
-  const freelancer = booking.slot?.freelancer;
-  const slot = booking.slot;
-  const location = slot?.location;
+  const { freelancer } = booking.slot;
+  const { slot } = booking;
   const bookingDate = new Date(slot.startTime);
   const now = new Date();
   const isUpcoming = booking.status === 'CONFIRMED' && bookingDate > now;
@@ -64,16 +53,14 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   // Note: Backend may update status to COMPLETED, but we also check past confirmed bookings
   const isCompleted = booking.status === 'COMPLETED' || (booking.status === 'CONFIRMED' && isPast);
   const isCancelled = booking.status === 'CANCELLED';
-  const canCancel = booking.status === 'CONFIRMED' && isUpcoming;
-  const canReschedule = booking.status === 'CONFIRMED' && isUpcoming;
   // User side: Show message for all bookings
-  const canMessage = onMessage;
-  // Use backend's canBeRated field if available, otherwise fall back to calculated value
+  const canMessage = !!onMessage;
+  const canReschedule = booking.status === 'CONFIRMED' && isUpcoming;
+  const canCancel = booking.status === 'CONFIRMED' && isUpcoming;
   const canReview =
     booking.canBeRated !== undefined
       ? booking.canBeRated && !booking.hasRating
       : isCompleted && !isCancelled;
-
   const getStatusColor = (status: string) => {
     if (isUpcoming) return 'bg-info/10 text-info border border-info/20';
     if (status === 'CANCELLED') return 'bg-error/10 text-error border border-error/20';
@@ -90,29 +77,129 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     return status.charAt(0) + status.slice(1).toLowerCase();
   };
 
-  const getLocationDetails = () => {
-    if (slot.locationType === 'ONLINE') {
-      return { type: 'Online', address: 'Video call session' };
-    }
-    if (slot.locationType === 'CLINIC' && (freelancer as any)?.clinicAddress) {
-      return { type: 'Clinic', address: (freelancer as any).clinicAddress };
-    }
-    if (slot.locationType === 'HOME') {
-      return { type: 'Home Visit', address: (booking as any)?.clientAddress || 'Address provided' };
-    }
-    if (location) {
-      return { type: location.name, address: location.address };
-    }
-    return { type: 'Office', address: 'Address to be confirmed' };
-  };
-
-  const locationDetails = getLocationDetails();
-
   // Calculate total services price (legacy support)
   const servicesTotal =
-    booking.services?.reduce((sum, service) => sum + (service.additionalPrice || 0), 0) || 0;
-  const basePrice = slot?.basePrice || 0;
-  const totalAmount = booking.totalAmount || basePrice + servicesTotal;
+    booking.services?.reduce((sum, service) => sum + (service.additionalPrice ?? 0), 0) ?? 0;
+  const basePrice = slot?.basePrice ?? 0;
+  const totalAmount = booking.totalAmount ?? basePrice + servicesTotal;
+
+  // Extract and safely convert notes from formData
+  const getNotesString = (): string | null => {
+    const notes = booking.formData?.['notes'];
+    if (notes == null) return null;
+    return typeof notes === 'string' ? notes : String(notes);
+  };
+  const notesString = getNotesString();
+
+  // Helper to render freelancer email
+  const getFreelancerEmailElement = (): React.ReactNode => {
+    if (!freelancer?.email) {
+      return null;
+    }
+    return <p className="text-sm font-inter text-muted-foreground mb-2">{freelancer.email}</p>;
+  };
+
+  // Helper to render freelancer overall rating
+  const getFreelancerRatingElement = (): React.ReactNode => {
+    const rating = freelancer?.cardInfo?.averageRating ?? freelancer?.averageRating ?? 0;
+    if (rating > 0) {
+      return (
+        <RatingDisplay
+          rating={rating}
+          size="sm"
+          showCount={true}
+          reviewCount={freelancer?.cardInfo?.totalRatings ?? 0}
+        />
+      );
+    }
+    return null;
+  };
+
+  // Helper to render booking rating
+  const getBookingRatingElement = (): React.ReactNode => {
+    if (!booking.hasRating || !hasRating(booking.rating)) {
+      return null;
+    }
+    return (
+      <div className="flex items-center gap-3 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+        <span className="text-sm font-poppins font-semibold text-primary">
+          Your Rating for this Booking:
+        </span>
+        <RatingDisplay rating={booking.rating.rating} size="sm" showCount={false} />
+      </div>
+    );
+  };
+
+  // Helper to render service categories
+  const getServiceCategoriesElement = (): React.ReactNode => {
+    const hasServiceCategories = booking.serviceCategories && booking.serviceCategories.length > 0;
+    const hasServices = booking.services && booking.services.length > 0;
+
+    if (!hasServiceCategories && !hasServices) {
+      return null;
+    }
+
+    const renderCategoryDescription = (description?: string): React.ReactNode => {
+      if (!description) return null;
+      return <p className="text-xs font-inter text-muted-foreground mt-1">{description}</p>;
+    };
+
+    const renderServiceDescription = (description?: string): React.ReactNode => {
+      if (!description) return null;
+      return <p className="text-xs font-inter text-muted-foreground mt-1">{description}</p>;
+    };
+
+    const renderServiceDuration = (duration?: number): React.ReactNode => {
+      if (!duration) return null;
+      return (
+        <p className="text-xs font-inter text-muted-foreground mt-1">
+          Duration: {duration} minutes
+        </p>
+      );
+    };
+
+    return (
+      <div className="space-y-3">
+        <h3 className="text-sm font-poppins font-semibold text-charcoal flex items-center gap-2">
+          <CreditCard className="h-4 w-4" />
+          Service Categories
+        </h3>
+        <div className="space-y-2">
+          {hasServiceCategories
+            ? booking.serviceCategories!.map((category, index) => (
+                <div
+                  key={category.id || index}
+                  className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div className="flex-1">
+                    <p className="text-sm font-poppins font-medium text-charcoal">
+                      {category.name}
+                    </p>
+                    {renderCategoryDescription(category.description)}
+                  </div>
+                </div>
+              ))
+            : (booking.services?.map((service, index) => (
+                <div
+                  key={service.id || index}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex-1">
+                    <p className="text-sm font-poppins font-medium text-charcoal">{service.name}</p>
+                    {renderServiceDescription(service.description)}
+                    {renderServiceDuration(service.duration)}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-poppins font-semibold text-primary">
+                      €{service.additionalPrice || 0}
+                    </p>
+                  </div>
+                </div>
+              )) ?? null)}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -142,7 +229,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               <p className="text-sm font-mono font-medium text-charcoal">{booking.id}</p>
             </div>
           </div>
-
           {/* Healthcare Professional */}
           <div className="space-y-3">
             <h3 className="text-sm font-poppins font-semibold text-charcoal flex items-center gap-2">
@@ -159,154 +245,32 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 <h4 className="text-lg font-poppins font-semibold text-charcoal mb-1">
                   {freelancer?.name || 'Unknown'}
                 </h4>
-                {freelancer?.email && (
-                  <p className="text-sm font-inter text-muted-foreground mb-2">
-                    {freelancer.email}
-                  </p>
-                )}
+                {getFreelancerEmailElement()}
                 {/* Ratings Display */}
                 <div className="mt-2 space-y-2">
                   {/* Freelancer Overall Rating */}
-                  {((freelancer as any)?.cardInfo?.averageRating ||
-                    (freelancer as any)?.averageRating) && (
-                    <RatingDisplay
-                      rating={
-                        (freelancer as any)?.cardInfo?.averageRating ||
-                        (freelancer as any)?.averageRating
-                      }
-                      size="sm"
-                      showCount={true}
-                      reviewCount={(freelancer as any)?.cardInfo?.totalRatings || 0}
-                    />
-                  )}
+                  {getFreelancerRatingElement()}
                   {/* Booking Specific Rating - Styled as a distinct badge */}
-                  {booking.hasRating && booking.rating && (
-                    <div className="flex items-center gap-3 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg">
-                      <span className="text-sm font-poppins font-semibold text-primary">
-                        Your Rating for this Booking:
-                      </span>
-                      <RatingDisplay rating={booking.rating.rating} size="sm" showCount={false} />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Appointment Details */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-poppins font-semibold text-charcoal flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Appointment Details
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <Calendar className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-inter text-muted-foreground mb-1">Date</p>
-                  <p className="text-sm font-poppins font-medium text-charcoal">
-                    {format(bookingDate, 'EEEE, MMMM d, yyyy')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <Clock className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-inter text-muted-foreground mb-1">Time</p>
-                  <p className="text-sm font-poppins font-medium text-charcoal">
-                    {format(bookingDate, 'h:mm a')} - {format(new Date(slot.endTime), 'h:mm a')}
-                  </p>
-                  <p className="text-xs font-inter text-muted-foreground mt-1">
-                    Duration: {slot.duration} minutes
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg md:col-span-2">
-                <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-xs font-inter text-muted-foreground mb-1">Location</p>
-                  <p className="text-sm font-poppins font-medium text-charcoal mb-1">
-                    {locationDetails.type}
-                  </p>
-                  <p className="text-xs font-inter text-muted-foreground">
-                    {locationDetails.address}
-                  </p>
+                  {getBookingRatingElement()}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Service Categories */}
-          {(booking.serviceCategories && booking.serviceCategories.length > 0) ||
-          (booking.services && booking.services.length > 0) ? (
-            <div className="space-y-3">
-              <h3 className="text-sm font-poppins font-semibold text-charcoal flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                Service Categories
-              </h3>
-              <div className="space-y-2">
-                {booking.serviceCategories && booking.serviceCategories.length > 0
-                  ? booking.serviceCategories.map((category, index) => (
-                      <div
-                        key={category.id || index}
-                        className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
-                      >
-                        <div className="flex-1">
-                          <p className="text-sm font-poppins font-medium text-charcoal">
-                            {category.name}
-                          </p>
-                          {category.description && (
-                            <p className="text-xs font-inter text-muted-foreground mt-1">
-                              {category.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  : booking.services?.map((service, index) => (
-                      <div
-                        key={service.id || index}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <p className="text-sm font-poppins font-medium text-charcoal">
-                            {service.name}
-                          </p>
-                          {service.description && (
-                            <p className="text-xs font-inter text-muted-foreground mt-1">
-                              {service.description}
-                            </p>
-                          )}
-                          {service.duration && (
-                            <p className="text-xs font-inter text-muted-foreground mt-1">
-                              Duration: {service.duration} minutes
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-poppins font-semibold text-primary">
-                            €{service.additionalPrice || 0}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-              </div>
-            </div>
-          ) : null}
-
+          {getServiceCategoriesElement()}
           {/* Notes */}
-          {(booking as any).notes && (
+          {notesString && (
             <div className="space-y-3">
               <h3 className="text-sm font-poppins font-semibold text-charcoal flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Notes
               </h3>
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm font-inter text-muted-foreground">{(booking as any).notes}</p>
+                <p className="text-sm font-inter text-muted-foreground">{notesString}</p>
               </div>
             </div>
           )}
-
           {/* Cancellation Reason */}
           {booking.cancelledReason && (
             <div className="space-y-3">
@@ -318,7 +282,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               </div>
             </div>
           )}
-
           {/* Booking Summary */}
           <div className="space-y-3 pt-2 border-t border-gray-200">
             <h3 className="text-sm font-poppins font-semibold text-charcoal">Booking Summary</h3>
@@ -336,80 +299,55 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               <Separator />
               <div className="flex justify-between items-center">
                 <span className="text-base font-poppins font-semibold text-charcoal">Total</span>
-                <span className="text-xl font-poppins font-bold text-primary">€{totalAmount}</span>
+                <span className="text-lg font-poppins font-bold text-primary">
+                  €{totalAmount.toFixed(2)}
+                </span>
               </div>
-            </div>
-            <div className="pt-2">
-              <p className="text-xs font-inter text-muted-foreground">
-                Created on {format(new Date(booking.createdAt), 'MMM d, yyyy')}
-              </p>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
         {(canMessage || canReschedule || canCancel || canReview) && (
           <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-200">
             {canReview && onReview && (
               <Button
                 variant="outline"
-                className="flex-1 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                onClick={() => {
-                  onReview(booking);
-                  onOpenChange(false);
-                }}
+                onClick={() => onReview(booking)}
+                className="flex items-center gap-2"
               >
-                <Star className="h-4 w-4 mr-2" />
-                Rate & Review
+                <Star className="h-4 w-4" />
+                Leave Review
               </Button>
             )}
             {canMessage && onMessage && (
               <Button
                 variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  onMessage(booking);
-                  onOpenChange(false);
-                }}
+                onClick={() => onMessage(booking)}
+                className="flex items-center gap-2"
               >
-                <MessageCircle className="h-4 w-4 mr-2" />
+                <MessageCircle className="h-4 w-4" />
                 Message
               </Button>
             )}
             {canReschedule && onReschedule && (
               <Button
                 variant="outline"
-                className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
-                onClick={() => {
-                  onReschedule(booking);
-                  onOpenChange(false);
-                }}
+                onClick={() => onReschedule(booking)}
+                className="flex items-center gap-2"
               >
-                <RotateCcw className="h-4 w-4 mr-2" />
+                <RotateCcw className="h-4 w-4" />
                 Reschedule
               </Button>
             )}
             {canCancel && onCancel && (
               <Button
-                variant="outline"
-                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
-                onClick={() => {
-                  onCancel(booking);
-                  onOpenChange(false);
-                }}
+                variant="destructive"
+                onClick={() => onCancel(booking)}
                 disabled={cancellingBookingId === booking.id}
+                className="flex items-center gap-2"
               >
-                {cancellingBookingId === booking.id ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2" />
-                    Cancelling...
-                  </>
-                ) : (
-                  <>
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel Booking
-                  </>
-                )}
+                <X className="h-4 w-4" />
+                {cancellingBookingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
               </Button>
             )}
           </DialogFooter>

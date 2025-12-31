@@ -5,7 +5,8 @@ export const ENDPOINTS = {
     signup: '/auth/signup',
     forgotPassword: '/auth/forgot-password',
     resetPassword: (token: string) => `/auth/reset-password/${token}`,
-    verifyEmailLink: '/auth/verify-email-link',
+    verifyEmailLink: '/auth/verify-email-link', // POST endpoint (legacy, still supported)
+    verifyEmail: '/auth/verify-email', // GET endpoint (recommended)
     googleSignIn: '/auth/google-signin',
     sendVerificationEmail: '/auth/send-verification-email',
   },
@@ -31,6 +32,8 @@ export const ENDPOINTS = {
     update: (id: string) => `/slot/${id}`,
     delete: (id: string) => `/slot/${id}`,
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
+    reserve: (slotId: string) => `/slots/${slotId}/reserve`,
+    release: (slotId: string) => `/slots/${slotId}/release`,
   },
   // Service management
   services: {
@@ -70,7 +73,15 @@ export const ENDPOINTS = {
     favorite: '/freelancer/favorite',
     favoriteAll: '/freelancer/favorite/all',
     recentFavorite: '/freelancer/favorite/recent',
-    files: '/freelancer/files', // Get all uploaded files
+    files: '/freelancer/files', // Get all uploaded files (legacy)
+    // New file upload endpoints
+    filesUpload: '/freelancer/files/upload',
+    filesList: '/freelancer/files',
+    fileDownload: (fileId: string) => `/freelancer/files/${fileId}/download`,
+    fileSignedUrl: (fileId: string) => `/freelancer/files/${fileId}/signed-url`,
+    fileDelete: (fileId: string) => `/freelancer/files/${fileId}`,
+    // Form templates
+    formSignedUrl: (id: string) => `/freelancer/forms/${id}/signed-url`,
     stats: '/freelancer/admin/stats',
     analytics: '/freelancer/analytics',
     tierBronze: '/freelancer/tier/bronze',
@@ -81,6 +92,8 @@ export const ENDPOINTS = {
   // Dashboard endpoints
   dashboard: {
     freelancerOverview: '/dashboard/freelancer/overview',
+    freelancerStats: '/dashboard/freelancer/stats',
+    freelancerWeeklyAppointments: '/dashboard/freelancer/weekly-appointments',
   },
   // Chat/messaging endpoints
   chat: {
@@ -91,7 +104,8 @@ export const ENDPOINTS = {
   },
   // Service categories endpoints
   serviceCategories: {
-    getAll: '/service-categories',
+    getAll: '/service/categories/all', // Flat list (recommended for pricing setup)
+    getGrouped: '/service/categories', // Grouped by job title
     getByJobTitle: (jobTitle: string) => `/service-categories/${jobTitle}`,
   },
   // Job titles endpoints
@@ -161,6 +175,19 @@ export const ENDPOINTS = {
     billingPortal: '/subscription/billing-portal',
     checkout: '/subscription/checkout',
     verifyCheckout: '/subscription/verify-checkout',
+    billingHistory: '/subscription/billing-history',
+    invoice: (invoiceId: string) => `/subscription/invoice/${invoiceId}`,
+    paymentMethods: '/subscription/payment-methods',
+    updatePaymentMethod: '/subscription/payment-method',
+  },
+  // Refund endpoints
+  refund: {
+    create: '/refund/request',
+    myRequests: '/refund/my-requests',
+    getDetails: (id: string) => `/refund/request/${id}`,
+    adminAll: '/refund/admin/all',
+    adminApprove: (id: string) => `/refund/admin/approve/${id}`,
+    adminReject: (id: string) => `/refund/admin/reject/${id}`,
   },
   // Rating endpoints
   ratings: {
@@ -202,11 +229,19 @@ export const ENDPOINTS = {
       getDetails: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}`,
       approve: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/approve`,
       reject: (freelancerId: string) => `/freelancer/admin/verification/${freelancerId}/reject`,
+      getAllFreelancers: '/freelancer/admin/verifications/all',
       getByStatus: (status: string) => `/freelancer/admin/verifications/all?status=${status}`,
       approveCertificate: (freelancerId: string) =>
         `/freelancer/admin/first-aid-certificate/${freelancerId}/approve`,
       rejectCertificate: (freelancerId: string) =>
         `/freelancer/admin/first-aid-certificate/${freelancerId}/reject`,
+      // Admin file management endpoints
+      filesList: '/freelancer/admin/files',
+      fileDetails: (fileId: string) => `/freelancer/admin/files/${fileId}`,
+      fileDownload: (fileId: string) => `/freelancer/admin/files/${fileId}/download`,
+      fileSignedUrl: (fileId: string) => `/freelancer/admin/files/${fileId}/signed-url`,
+      toggleStatus: (freelancerId: string) =>
+        `/freelancer/admin/freelancer/${freelancerId}/toggle-status`,
     },
     // Complaint management
     complaint: {
@@ -226,8 +261,15 @@ export const ENDPOINTS = {
       getStats: '/admin/subscriptions/stats',
       getPlans: '/admin/subscriptions/plans',
       updatePlan: (planType: string) => `/admin/subscriptions/plans/${planType}`,
-      getUserSubscription: (userId: string) => `/admin/subscriptions/${userId}`,
+      getUserSubscriptionLegacy: (userId: string) => `/admin/subscriptions/${userId}`,
       overrideAccess: (userId: string) => `/admin/subscriptions/${userId}/override`,
+      // User subscription management endpoints
+      getAllUserSubscriptions: '/admin/subscriptions/users',
+      getUserSubscription: (userId: string) => `/admin/subscriptions/users/${userId}`,
+      cancelSubscription: (userId: string) => `/admin/subscriptions/users/${userId}/cancel`,
+      updateUserPlan: (userId: string) => `/admin/subscriptions/users/${userId}/plan`,
+      resumeSubscription: (userId: string) => `/admin/subscriptions/users/${userId}/resume`,
+      manageTrialAccess: (userId: string) => `/admin/subscriptions/users/${userId}/trial`,
     },
     // Overview management
     overview: {
@@ -242,6 +284,11 @@ export const ENDPOINTS = {
     finance: {
       getRevenue: '/admin/finance/revenue',
       getSubscriptions: '/admin/finance/subscriptions',
+      getTransactions: '/admin/transactions',
+      getTransactionDetails: (id: string) => `/admin/transactions/${id}`,
+      getTransactionInvoice: (id: string) => `/admin/transactions/${id}/invoice`,
+      exportTransactions: '/admin/transactions/export/csv',
+      transactionStats: '/admin/transactions/stats/summary',
     },
     // User management
     users: {
@@ -269,7 +316,8 @@ export const ENDPOINTS = {
   consent: {
     healthData: '/consent/health-data',
     cookies: '/consent/cookies',
+    all: '/consent/all', // Unified consent endpoint
   },
 };
 
-export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+export const BACKEND_URL = process.env['NEXT_PUBLIC_BACKEND_URL'];

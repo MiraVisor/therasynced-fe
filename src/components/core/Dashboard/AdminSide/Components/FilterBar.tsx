@@ -61,7 +61,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         {/* Filters */}
         <div className="flex flex-wrap gap-2 flex-1">
           {filters.map((filter) => (
-            <Select key={filter.key} value={filter.value} onValueChange={filter.onValueChange}>
+            <Select
+              key={filter.key}
+              value={filter.value && filter.value !== '' ? filter.value : undefined}
+              onValueChange={filter.onValueChange}
+            >
               <SelectTrigger className="w-full md:w-[180px] font-inter">
                 <SelectValue placeholder={filter.label} />
               </SelectTrigger>

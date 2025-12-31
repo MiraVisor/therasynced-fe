@@ -1,109 +1,42 @@
-import api from './api';
-import { ENDPOINTS } from './endpoints';
+import api from '@/services/api';
+import {
+  ApiResponse,
+  CreateRatingDto,
+  FreelancerRatingsResponse,
+  MyRatingsResponse,
+  Rating,
+  RatingEligibility,
+} from '@/types/types';
 
-export interface CreateRatingDto {
-  bookingId: string;
-  rating: number; // 1-5 integer
-}
+export const createRating = async (data: CreateRatingDto): Promise<ApiResponse<Rating>> => {
+  const response = await api.post('/ratings', data);
+  return response.data;
+};
 
-export interface RatingResponse {
-  success: boolean;
-  message: string;
-  data: {
-    id: string;
-    bookingId: string;
-    freelancerId: string;
-    patientId: string;
-    rating: number;
-    createdAt: string;
-    updatedAt: string;
-  };
-}
+export const getFreelancerRatings = async (
+  freelancerId: string,
+  params?: {
+    page?: number;
+    limit?: number;
+    minRating?: number;
+    maxRating?: number;
+  },
+): Promise<FreelancerRatingsResponse> => {
+  const response = await api.get(`/ratings/freelancer/${freelancerId}`, { params });
+  return response.data;
+};
 
-export interface RatingEligibilityResponse {
-  canBeRated: boolean;
-  hasRating: boolean;
-  rating: {
-    id: string;
-    rating: number;
-    bookingId: string;
-    freelancerId: string;
-    patientId: string;
-    createdAt: string;
-    updatedAt: string;
-  } | null;
-  reason: string | null;
-}
+export const checkRatingEligibility = async (bookingId: string): Promise<RatingEligibility> => {
+  const response = await api.get(`/ratings/booking/${bookingId}`);
+  return response.data;
+};
 
-export interface FreelancerRating {
-  id: string;
-  bookingId: string;
-  freelancerId: string;
-  patientId: string;
-  rating: number;
-  createdAt: string;
-  updatedAt: string;
-  patient: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  booking: {
-    id: string;
-    slotId: string;
-    status: string;
-  };
-}
-
-export interface FreelancerRatingsResponse {
-  data: FreelancerRating[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-export interface GetRatingsParams {
+export const getMyRatings = async (params?: {
   page?: number;
   limit?: number;
   minRating?: number;
   maxRating?: number;
-}
-
-// Rating service
-export const ratingService = {
-  // Create a rating
-  createRating: async (data: CreateRatingDto): Promise<RatingResponse> => {
-    const response = await api.post(ENDPOINTS.ratings.create, data);
-    return response.data;
-  },
-
-  // Get ratings for a freelancer
-  getFreelancerRatings: async (
-    freelancerId: string,
-    params?: GetRatingsParams,
-  ): Promise<FreelancerRatingsResponse> => {
-    const response = await api.get(ENDPOINTS.ratings.getFreelancerRatings(freelancerId), {
-      params,
-    });
-    return response.data;
-  },
-
-  // Check if booking can be rated
-  checkRatingEligibility: async (bookingId: string): Promise<RatingEligibilityResponse> => {
-    const response = await api.get(ENDPOINTS.ratings.checkBookingEligibility(bookingId));
-    return response.data;
-  },
-
-  // Get patient's own ratings
-  getMyRatings: async (params?: GetRatingsParams): Promise<FreelancerRatingsResponse> => {
-    const response = await api.get(ENDPOINTS.ratings.getMyRatings, { params });
-    return response.data;
-  },
+}): Promise<MyRatingsResponse> => {
+  const response = await api.get('/ratings/my-ratings', { params });
+  return response.data;
 };
-
-export default ratingService;

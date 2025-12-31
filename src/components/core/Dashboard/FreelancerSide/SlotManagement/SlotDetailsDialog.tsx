@@ -16,8 +16,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import * as bookingService from '@/services/bookingService';
 import { InvoiceGenerationDialog } from '@/components/core/Dashboard/FreelancerSide/Appointment/InvoiceGenerationDialog';
-import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,6 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { bookingService } from '@/services/bookingService';
 import { Appointment, LocationType, Slot } from '@/types/types';
 
 interface SlotDetailsDialogProps {
@@ -128,7 +127,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
       });
 
       // Check if response is successful
-      if (response && response.success) {
+      if (response?.success) {
         successShown = true;
         toast.success(
           'Appointment marked as completed! ✅ The client will receive a stamp for this booking.',
@@ -155,12 +154,13 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         const errorMessage = response?.message || 'Failed to complete booking';
         toast.error(errorMessage);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Booking completion error:', error);
       // Only show error toast if we haven't already shown success
       if (!successShown) {
         const errorMessage =
-          error?.response?.data?.message || error?.message || 'Failed to complete booking';
-        console.error('Error completing booking:', error);
+          (error as any)?.response?.data?.message ||
+          (error instanceof Error ? error.message : 'Failed to complete booking');
         toast.error(errorMessage);
       } else {
         // Log the error but don't show toast since we already showed success
@@ -318,7 +318,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
               </div>
               <div>
                 <Label className="font-inter text-xs text-muted-foreground mb-1">Price</Label>
-                {slot.booking && slot.booking.discountAmount && slot.booking.discountAmount > 0 ? (
+                {slot.booking?.discountAmount && slot.booking.discountAmount > 0 ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <p className="font-poppins text-xl font-bold text-green-600">
@@ -339,29 +339,6 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                   </p>
                 )}
               </div>
-
-              {slot.location && (
-                <div>
-                  <Label className="font-inter text-xs text-muted-foreground mb-1">Address</Label>
-                  <p className="font-inter text-charcoal">{slot.location.address}</p>
-                  {slot.location.additionalFee > 0 && (
-                    <p className="font-inter text-sm text-muted-foreground mt-1">
-                      Additional Fee: EUR {slot.location.additionalFee}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {slot.reservedUntil && (
-                <div>
-                  <Label className="font-inter text-xs text-muted-foreground mb-1">
-                    Reserved Until
-                  </Label>
-                  <p className="font-poppins font-semibold text-charcoal">
-                    {safeFormatDate(slot.reservedUntil, 'MMM d, yyyy h:mm a')}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
@@ -402,106 +379,80 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
           )}
 
           {/* Booking Service Categories (if booked or completed) */}
-          {slot.booking &&
-            slot.booking.serviceCategories &&
-            slot.booking.serviceCategories.length > 0 && (
-              <div className="mt-6 pt-6 border-t">
-                <Label className="font-inter text-xs text-muted-foreground mb-2 block">
-                  {slot.booking.status && slot.booking.status.toUpperCase() === 'COMPLETED'
-                    ? 'Completed Service Categories'
-                    : 'Selected Service Categories'}
-                </Label>
-                <div className="space-y-2">
-                  {slot.booking.serviceCategories.map((category, index) => {
-                    const isCompleted =
-                      slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED';
-                    return (
-                      <div
-                        key={category.id || index}
-                        className={`flex items-start gap-3 p-3 rounded-lg border ${
-                          isCompleted
-                            ? 'bg-purple-50 border-purple-200'
-                            : 'bg-green-50 border-green-200'
-                        }`}
-                      >
-                        <div
-                          className={`p-2 rounded-lg mt-0.5 ${
-                            isCompleted ? 'bg-purple-100' : 'bg-green-100'
-                          }`}
-                        >
-                          <Package
-                            className={`h-4 w-4 ${isCompleted ? 'text-purple-600' : 'text-green-600'}`}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-poppins font-semibold text-charcoal mb-1">
-                            {category.name || 'Service Category'}
-                          </p>
-                          {category.description && (
-                            <p className="font-inter text-sm text-muted-foreground mb-1">
-                              {category.description}
-                            </p>
-                          )}
-                          {category.jobTitle && (
-                            <Badge variant="outline" className="text-xs mt-1">
-                              {category.jobTitle.name}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-          {/* Stamp Discount Information */}
-          {slot.booking &&
-            slot.booking.discountAmount !== undefined &&
-            slot.booking.discountAmount > 0 && (
-              <div className="mt-6 pt-6 border-t">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-green-100 mt-0.5">
-                      <Gift className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Award className="h-4 w-4 text-green-600" />
-                        <Label className="font-inter text-sm font-semibold text-green-900">
-                          Stamp Reward Applied
-                        </Label>
-                      </div>
-                      <p className="font-inter text-sm text-green-800 mb-1">
-                        Client received a {slot.booking.discountPercentage}% discount for earning
-                        enough stamps
-                      </p>
-                      <p className="font-poppins text-lg font-bold text-green-900">
-                        Discount: -EUR {slot.booking.discountAmount.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          {/* Client Rating (if booking has been rated) */}
-          {slot.booking?.rating && (
+          {slot.booking?.serviceCategories && slot.booking.serviceCategories.length > 0 && (
             <div className="mt-6 pt-6 border-t">
               <Label className="font-inter text-xs text-muted-foreground mb-2 block">
-                Client Rating
+                {slot.booking.status && slot.booking.status.toUpperCase() === 'COMPLETED'
+                  ? 'Completed Service Categories'
+                  : 'Selected Service Categories'}
               </Label>
-              <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                <div className="flex items-center gap-3">
-                  <RatingDisplay rating={slot.booking.rating.rating} size="md" showCount={false} />
-                  <span className="font-poppins font-semibold text-charcoal">
-                    {slot.booking.rating.rating}/5
-                  </span>
-                  {slot.booking.rating.createdAt && (
-                    <span className="font-inter text-sm text-muted-foreground ml-auto">
-                      Rated on {safeFormatDate(slot.booking.rating.createdAt, 'MMM d, yyyy')}
-                    </span>
-                  )}
+              <div className="space-y-2">
+                {slot.booking.serviceCategories.map((category, index) => {
+                  const isCompleted =
+                    slot.booking?.status && slot.booking.status.toUpperCase() === 'COMPLETED';
+                  return (
+                    <div
+                      key={category.id || index}
+                      className={`flex items-start gap-3 p-3 rounded-lg border ${
+                        isCompleted
+                          ? 'bg-purple-50 border-purple-200'
+                          : 'bg-green-50 border-green-200'
+                      }`}
+                    >
+                      <div
+                        className={`p-2 rounded-lg mt-0.5 ${
+                          isCompleted ? 'bg-purple-100' : 'bg-green-100'
+                        }`}
+                      >
+                        <Package
+                          className={`h-4 w-4 ${isCompleted ? 'text-purple-600' : 'text-green-600'}`}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-poppins font-semibold text-charcoal mb-1">
+                          {category.name || 'Service Category'}
+                        </p>
+                        {category.description && (
+                          <p className="font-inter text-sm text-muted-foreground mb-1">
+                            {category.description}
+                          </p>
+                        )}
+                        {category.jobTitle && (
+                          <Badge variant="outline" className="text-xs mt-1">
+                            {category.jobTitle.name}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Stamp Discount Information */}
+          {slot.booking?.discountAmount !== undefined && slot.booking.discountAmount > 0 && (
+            <div className="mt-6 pt-6 border-t">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-green-100 mt-0.5">
+                    <Gift className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Award className="h-4 w-4 text-green-600" />
+                      <Label className="font-inter text-sm font-semibold text-green-900">
+                        Stamp Reward Applied
+                      </Label>
+                    </div>
+                    <p className="font-inter text-sm text-green-800 mb-1">
+                      Client received a {slot.booking.discountPercentage}% discount for earning
+                      enough stamps
+                    </p>
+                    <p className="font-poppins text-lg font-bold text-green-900">
+                      Discount: -EUR {slot.booking.discountAmount.toFixed(2)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
