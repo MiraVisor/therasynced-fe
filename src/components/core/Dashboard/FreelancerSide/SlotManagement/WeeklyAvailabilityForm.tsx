@@ -61,7 +61,7 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
     locationType: LocationType;
     basePrice: number;
   }>({
-    locationType: LocationType.HOME,
+    locationType: undefined, // Optional - defaults to CLINIC if not provided
     basePrice: 50,
   });
 
@@ -174,11 +174,8 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate locationType is set (required by backend)
-    if (!formData.locationType) {
-      toast.error('Please select a location type (HOME or CLINIC)');
-      return;
-    }
+    // locationType is optional - defaults to CLINIC if not provided
+    // No validation needed
 
     if (!validateForm()) {
       return;
@@ -194,11 +191,11 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
     }
 
     // Convert to CreateSlotDto format
-    // locationType is required at slot level - include it in each slot
+    // locationType is optional - only include if specified (defaults to CLINIC on backend)
     const allSlots = generatedSlots.map((slot) => ({
       startTime: slot.startTime,
       endTime: slot.endTime,
-      locationType: formData.locationType, // Required at slot level - validated above
+      ...(formData.locationType && { locationType: formData.locationType }), // Optional
     }));
 
     // Filter out past slots
@@ -221,15 +218,35 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
     }
 
     const submitData: CreateSlotsDto = {
-      locationType: formData.locationType, // Keep for backward compatibility
+      ...(formData.locationType && { locationType: formData.locationType }), // Optional
       basePrice: formData.basePrice,
       duration: template.slotDuration,
       slots,
     };
 
     createSlot(submitData, {
-      onSuccess: () => {
-        toast.success(`Successfully created ${slots.length} slot${slots.length !== 1 ? 's' : ''}!`);
+      onSuccess: (response) => {
+        // Parse the message to check for skipped slots
+        const message = response.message ?? '';
+        const hasSkipped = message.toLowerCase().includes('skipped');
+        const hasUpdated = message.toLowerCase().includes('updated');
+
+        // Show appropriate notification based on the response
+        if (hasSkipped) {
+          // Show warning if slots were skipped
+          toast.warning(
+            message ?? 'Some slots could not be created due to overlaps with booked slots',
+          );
+        } else if (hasUpdated) {
+          // Show info if slots were updated
+          toast.info(message ?? 'Slots processed successfully');
+        } else {
+          // Show success for normal creation
+          toast.success(
+            message ?? `Successfully created ${slots.length} slot${slots.length !== 1 ? 's' : ''}!`,
+          );
+        }
+
         onSuccess?.();
       },
       onError: (error: unknown) => {
@@ -258,21 +275,28 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
         <h3 className="text-sm font-semibold text-charcoal">Global Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Location Type</Label>
+            <Label className="text-xs text-muted-foreground">Location Type (Optional)</Label>
             <Select
-              value={formData.locationType}
+              value={formData.locationType || 'default'}
               onValueChange={(value) =>
-                setFormData({ ...formData, locationType: value as LocationType })
+                setFormData({
+                  ...formData,
+                  locationType: value === 'default' ? undefined : (value as LocationType),
+                })
               }
             >
               <SelectTrigger className="h-9 text-xs">
-                <SelectValue />
+                <SelectValue placeholder="Default (Clinic)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="default">Default (Clinic)</SelectItem>
                 <SelectItem value={LocationType.HOME}>Home Visit</SelectItem>
                 <SelectItem value={LocationType.CLINIC}>Clinic</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Defaults to Clinic. Pricing determined during booking.
+            </p>
           </div>
 
           <div className="space-y-2">

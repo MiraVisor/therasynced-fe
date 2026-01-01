@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Info } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -30,6 +30,7 @@ import { PlanCard } from './PlanCard';
 import { SubscriptionTabs } from './SubscriptionTabs';
 
 export default function SubscriptionManagement() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -243,12 +244,26 @@ export default function SubscriptionManagement() {
     ? plans.find((p) => p.name === selectedPlanForCheckout)
     : null;
 
+  // Handle navigation to plans tab
+  const handleNavigateToPlans = () => {
+    const currentPath = window.location.pathname;
+    const params = new URLSearchParams(window.location.search);
+    params.set('view', 'plans');
+    // Ensure tab param is set for account page
+    if (!params.get('tab')) {
+      params.set('tab', 'subscription');
+    }
+    const queryString = params.toString();
+    const newUrl = queryString ? `${currentPath}?${queryString}` : `${currentPath}?view=plans`;
+    router.push(newUrl);
+  };
+
   // Overview Tab Content
   const overviewContent = (
     <OverviewTab
       subscription={currentSubscription || null}
       plan={currentSubscription?.plan}
-      onUpgrade={() => handleSelectPlan('SILVER')}
+      onUpgrade={handleNavigateToPlans}
       onManageBilling={handleOpenBillingPortal}
       onCancel={() => setIsCancellationDialogOpen(true)}
       isLoading={isLoading}

@@ -98,13 +98,120 @@ export const useFreelancerStats = () => {
 };
 
 /**
- * Hook to fetch freelancer analytics data
+ * Hook to fetch freelancer analytics data (legacy - kept for backward compatibility)
  */
 export const useFreelancerAnalytics = () => {
   return useQuery({
     queryKey: ['freelancerAnalytics'],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.freelancer.analytics);
+      return response.data.data;
+    },
+  });
+};
+
+/**
+ * Hook to fetch analytics overview
+ */
+export const useFreelancerAnalyticsOverview = (params?: {
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics', 'overview', params],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analyticsOverview, { params });
+      return response.data.data;
+    },
+  });
+};
+
+/**
+ * Hook to fetch revenue analytics
+ */
+export const useFreelancerRevenueAnalytics = (params?: {
+  timeframe?: 'daily' | 'weekly' | 'monthly';
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics', 'revenue', params],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analyticsRevenue, { params });
+      return response.data.data;
+    },
+  });
+};
+
+/**
+ * Hook to fetch client analytics
+ */
+export const useFreelancerClientAnalytics = (params?: { startDate?: string; endDate?: string }) => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics', 'clients', params],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analyticsClients, { params });
+      return response.data.data;
+    },
+  });
+};
+
+/**
+ * Hook to fetch booking performance analytics
+ */
+export const useFreelancerBookingAnalytics = (params?: {
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics', 'bookings', params],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analyticsBookings, { params });
+      return response.data.data;
+    },
+  });
+};
+
+/**
+ * Hook to fetch service analytics
+ */
+export const useFreelancerServiceAnalytics = (params?: {
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics', 'services', params],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analyticsServices, { params });
+      return response.data.data;
+    },
+  });
+};
+
+/**
+ * Hook to fetch rating analytics
+ */
+export const useFreelancerRatingAnalytics = () => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics', 'ratings'],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analyticsRatings);
+      return response.data.data;
+    },
+  });
+};
+
+/**
+ * Hook to fetch location analytics
+ */
+export const useFreelancerLocationAnalytics = (params?: {
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return useQuery({
+    queryKey: ['freelancerAnalytics', 'locations', params],
+    queryFn: async () => {
+      const response = await api.get(ENDPOINTS.freelancer.analyticsLocations, { params });
       return response.data.data;
     },
   });

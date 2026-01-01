@@ -4,24 +4,102 @@ import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import BookingPerformanceChart from '@/components/core/Dashboard/FreelancerSide/Analytics/BookingPerformanceChart';
 import CategoryBreakdownChart from '@/components/core/Dashboard/FreelancerSide/Analytics/CategoryBreakdownChart';
+import ClientEngagementChart from '@/components/core/Dashboard/FreelancerSide/Analytics/ClientEngagementChart';
+import PeakTimesChart from '@/components/core/Dashboard/FreelancerSide/Analytics/PeakTimesChart';
+import RatingDistributionChart from '@/components/core/Dashboard/FreelancerSide/Analytics/RatingDistributionChart';
+import RevenueTrendChart from '@/components/core/Dashboard/FreelancerSide/Analytics/RevenueTrendChart';
+import { UpgradeOverlay } from '@/components/core/Dashboard/FreelancerSide/Analytics/UpgradeOverlay';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
-import { useFreelancerAnalytics } from '@/hooks/queries/useFreelancers';
+import {
+  useFreelancerAnalyticsOverview,
+  useFreelancerBookingAnalytics,
+  useFreelancerClientAnalytics,
+  useFreelancerLocationAnalytics,
+  useFreelancerRatingAnalytics,
+  useFreelancerRevenueAnalytics,
+  useFreelancerServiceAnalytics,
+} from '@/hooks/queries/useFreelancers';
+import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { useAuthStore } from '@/stores/authStore';
 
 const AnalyticsPage = () => {
   const { role } = useAuthStore();
+  const { data: subscription, isLoading: isLoadingSubscription } = useMySubscription();
 
-  const { data: analyticsData, isLoading, error } = useFreelancerAnalytics();
+  // Check if user has GOLD tier subscription
+  const isGoldTier = subscription?.plan?.name === 'GOLD';
+  const isCheckingTier = isLoadingSubscription;
 
-  // Show error toast only when no cached data exists
+  // Fetch all analytics data using separate endpoints
+  const {
+    data: overviewData,
+    isLoading: isLoadingOverview,
+    error: overviewError,
+  } = useFreelancerAnalyticsOverview();
+
+  const {
+    data: revenueData,
+    isLoading: isLoadingRevenue,
+    error: revenueError,
+  } = useFreelancerRevenueAnalytics({ timeframe: 'monthly' });
+
+  const {
+    data: clientData,
+    isLoading: isLoadingClients,
+    error: clientError,
+  } = useFreelancerClientAnalytics();
+
+  const {
+    data: bookingData,
+    isLoading: isLoadingBookings,
+    error: bookingError,
+  } = useFreelancerBookingAnalytics();
+
+  const {
+    data: serviceData,
+    isLoading: isLoadingServices,
+    error: serviceError,
+  } = useFreelancerServiceAnalytics();
+
+  const {
+    data: ratingData,
+    isLoading: isLoadingRatings,
+    error: ratingError,
+  } = useFreelancerRatingAnalytics();
+
+  const {
+    data: locationData,
+    isLoading: isLoadingLocations,
+    error: locationError,
+  } = useFreelancerLocationAnalytics();
+
+  // Show error toasts
   useEffect(() => {
-    if (error && !analyticsData) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load analytics data';
-      toast.error(errorMessage);
+    if (overviewError && !overviewData) {
+      toast.error('Failed to load analytics overview');
     }
-  }, [error, analyticsData]);
+    if (revenueError && !revenueData) {
+      toast.error('Failed to load revenue analytics');
+    }
+    if (clientError && !clientData) {
+      toast.error('Failed to load client analytics');
+    }
+    if (bookingError && !bookingData) {
+      toast.error('Failed to load booking analytics');
+    }
+  }, [
+    overviewError,
+    revenueError,
+    clientError,
+    bookingError,
+    overviewData,
+    revenueData,
+    clientData,
+    bookingData,
+  ]);
 
   // Format currency
   const formatCurrency = (amount: number): string => {
@@ -30,6 +108,56 @@ const AnalyticsPage = () => {
       maximumFractionDigits: 0,
     })}`;
   };
+
+  // Calculate overall loading state
+  const isLoading = isLoadingOverview || isLoadingRevenue || isLoadingClients;
+
+  // Transform booking data for BookingPerformanceChart
+  const bookingPerformanceData = bookingData
+    ? {
+        cancellationRate: bookingData.cancellationRate || 0,
+        noShowRate: bookingData.noShowRate || 0,
+        reschedulingCount: bookingData.rescheduledBookings || 0,
+        conversionRate: bookingData.conversionRate || 0,
+        totalBookings: bookingData.totalBookings || 0,
+        cancelledBookings: bookingData.cancelledBookings || 0,
+        noShowBookings: bookingData.noShowBookings || 0,
+        rescheduledBookings: bookingData.rescheduledBookings || 0,
+        totalSlots: bookingData.totalBookings + (bookingData.cancelledBookings || 0),
+        bookedSlots: bookingData.completedBookings || 0,
+      }
+    : undefined;
+
+  // Transform client data for ClientEngagementChart
+  const clientEngagementData = clientData
+    ? {
+        retentionRate: clientData.retentionRate || 0,
+        repeatClientPercentage: clientData.repeatClientPercentage || 0,
+        newClients: clientData.newClients || 0,
+        returningClients: clientData.returningClients || 0,
+        averageSessionsPerClient: clientData.averageSessionsPerClient || 0,
+        clientLifetimeValue: clientData.clientLifetimeValue || 0,
+        totalClients: clientData.activeClients || 0,
+      }
+    : undefined;
+
+  // Transform peak times data
+  const peakTimesData = bookingData?.peakBookingTimes
+    ? {
+        hourlyData: bookingData.peakBookingTimes.byHour?.map(
+          (item: { hour: number; bookings: number }) => ({
+            hour: item.hour,
+            bookings: item.bookings,
+          }),
+        ),
+        dailyData: bookingData.peakBookingTimes.byDayOfWeek?.map(
+          (item: { day: string; bookings: number }) => ({
+            day: item.day,
+            bookings: item.bookings,
+          }),
+        ),
+      }
+    : undefined;
 
   return (
     <DashboardPageWrapper
@@ -43,98 +171,85 @@ const AnalyticsPage = () => {
         </div>
       }
     >
-      <div className="space-y-6">
-        {/* Stats Cards - Top Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <EnhancedStatCard
-            title="Completed Sessions"
-            value={(analyticsData?.completedSessions || 0).toString()}
-            trend={
-              analyticsData?.sessionsChange
-                ? {
-                    value: Math.abs(analyticsData.sessionsChange),
-                    isUp: analyticsData.sessionsChange > 0,
-                    label:
-                      analyticsData.sessionsChange > 0
-                        ? 'Up from last period'
-                        : 'Down from last period',
-                  }
-                : undefined
-            }
-            loading={isLoading && !analyticsData}
-          />
-          <EnhancedStatCard
-            title="Total Hours"
-            value={`${analyticsData?.totalHours.toFixed(1) || '0.0'}h`}
-            loading={isLoading && !analyticsData}
-          />
-          <EnhancedStatCard
-            title="Average Rating"
-            value={analyticsData?.averageRating ? analyticsData.averageRating.toFixed(1) : 'N/A'}
-            loading={isLoading && !analyticsData}
-          />
-          <EnhancedStatCard
-            title="Active Clients"
-            value={(analyticsData?.activeClients || 0).toString()}
-            loading={isLoading && !analyticsData}
-          />
-        </div>
+      <div className="space-y-8 relative">
+        {/* Upgrade Overlay for non-GOLD users */}
+        {!isCheckingTier && !isGoldTier && (
+          <UpgradeOverlay isBlocked={true} requiredTier="GOLD" featureName="Analytics & Insights" />
+        )}
 
-        {/* Middle Section - 2 Columns */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
-                <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
-                  <div className="min-h-[300px] bg-gray-100 rounded" />
-                </div>
-              </div>
-              <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
-                <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
-                  <div className="min-h-[300px] bg-gray-100 rounded" />
-                </div>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
-                <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
-                  <div className="min-h-[300px] bg-gray-100 rounded" />
-                </div>
-              </div>
-              <div className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl p-6">
-                <div className="animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
-                  <div className="min-h-[300px] bg-gray-100 rounded" />
-                </div>
-              </div>
-            </div>
+        {/* Blur effect for non-GOLD users - content is blurred and non-interactive */}
+        <div
+          className={!isCheckingTier && !isGoldTier ? 'pointer-events-none opacity-50 blur-sm' : ''}
+        >
+          {/* Stats Cards - Top Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <EnhancedStatCard
+              title="Completed Sessions"
+              value={(overviewData?.completedSessions || 0).toString()}
+              trend={
+                overviewData?.sessionsChange !== undefined && overviewData.sessionsChange !== 0
+                  ? {
+                      value: Math.abs(overviewData.sessionsChange),
+                      isUp: overviewData.sessionsChange > 0,
+                      label:
+                        overviewData.sessionsChange > 0
+                          ? 'Up from last period'
+                          : 'Down from last period',
+                    }
+                  : undefined
+              }
+              loading={isLoadingOverview && !overviewData}
+            />
+            <EnhancedStatCard
+              title="Total Hours"
+              value={`${(overviewData?.totalHours || 0).toFixed(1)}h`}
+              loading={isLoadingOverview && !overviewData}
+            />
+            <EnhancedStatCard
+              title="Average Rating"
+              value={
+                ratingData?.averageRating
+                  ? ratingData.averageRating.toFixed(1)
+                  : ratingData?.totalRatings === 0
+                    ? 'N/A'
+                    : 'N/A'
+              }
+              loading={isLoadingRatings && !ratingData}
+            />
+            <EnhancedStatCard
+              title="Active Clients"
+              value={(overviewData?.activeClients || 0).toString()}
+              loading={isLoadingOverview && !overviewData}
+            />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column: Revenue Analytics */}
-            <div className="space-y-6">
-              <Card className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
-                <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-                  <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
-                    Revenue Analytics
-                  </CardTitle>
-                  <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
-                    Revenue overview and trends
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6 min-h-[300px]">
-                  <div className="space-y-4 mb-6">
+
+          {/* Revenue & Service Analytics Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Revenue Analytics Card */}
+            <Card className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
+                <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
+                  Revenue Analytics
+                </CardTitle>
+                <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
+                  Revenue overview and trends
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 min-h-[300px]">
+                {isLoadingRevenue && !revenueData ? (
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  </div>
+                ) : revenueData ? (
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-inter text-muted-foreground">
                         Total Revenue
                       </span>
                       <span className="text-xl font-poppins font-bold text-charcoal">
-                        {analyticsData
-                          ? formatCurrency(analyticsData.revenueAnalytics.totalRevenue)
-                          : 'EUR 0'}
+                        {formatCurrency(revenueData.revenueAnalytics?.totalRevenue || 0)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -142,81 +257,158 @@ const AnalyticsPage = () => {
                         Average Session Price
                       </span>
                       <span className="text-lg font-poppins font-semibold text-charcoal">
-                        {analyticsData
-                          ? formatCurrency(analyticsData.revenueAnalytics.averageSessionPrice)
-                          : 'EUR 0'}
+                        {formatCurrency(revenueData.revenueAnalytics?.averageSessionPrice || 0)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-inter text-muted-foreground">Change</span>
                       <span
                         className={`text-sm font-medium ${
-                          analyticsData && analyticsData.revenueAnalytics.revenueChange > 0
+                          (revenueData.revenueAnalytics?.revenueChange || 0) > 0
                             ? 'text-emerald-600'
                             : 'text-red-600'
                         }`}
                       >
-                        {analyticsData
-                          ? `${analyticsData.revenueAnalytics.revenueChange > 0 ? '+' : ''}${analyticsData.revenueAnalytics.revenueChange.toFixed(1)}%`
-                          : '0%'}
+                        {(revenueData.revenueAnalytics?.revenueChange || 0) > 0 ? '+' : ''}
+                        {(revenueData.revenueAnalytics?.revenueChange || 0).toFixed(1)}%
                       </span>
                     </div>
                   </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">No revenue data available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Service Category Analytics */}
+            <CategoryBreakdownChart
+              data={serviceData?.serviceCategoryAnalytics || []}
+              isLoading={isLoadingServices && !serviceData}
+            />
+          </div>
+
+          {/* Booking Performance Section */}
+          <div className="space-y-4 mb-8">
+            <div className="mb-4">
+              <h3 className="text-xl font-poppins font-bold text-charcoal mb-2">
+                Booking Performance
+              </h3>
+              <p className="text-sm font-inter text-muted-foreground">
+                Track cancellation rates, no-shows, and booking conversion
+              </p>
+            </div>
+            <BookingPerformanceChart
+              data={bookingPerformanceData}
+              isLoading={isLoadingBookings && !bookingData}
+            />
+          </div>
+
+          {/* Client Engagement Section */}
+          <div className="space-y-4 mb-8">
+            <div className="mb-4">
+              <h3 className="text-xl font-poppins font-bold text-charcoal mb-2">
+                Client Engagement
+              </h3>
+              <p className="text-sm font-inter text-muted-foreground">
+                Monitor client retention, repeat bookings, and lifetime value
+              </p>
+            </div>
+            <ClientEngagementChart
+              data={clientEngagementData}
+              isLoading={isLoadingClients && !clientData}
+            />
+          </div>
+
+          {/* Revenue Trends & Rating Distribution */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {revenueData?.revenueTrends && revenueData.revenueTrends.length > 0 ? (
+              <RevenueTrendChart
+                data={revenueData.revenueTrends.map((item: { date: string; revenue: number }) => ({
+                  date: item.date,
+                  revenue: item.revenue,
+                }))}
+                isLoading={isLoadingRevenue && !revenueData}
+              />
+            ) : (
+              <Card className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
+                <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
+                  <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
+                    Revenue Trends
+                  </CardTitle>
+                  <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
+                    Revenue over time
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center min-h-[300px] p-6">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">No revenue trend data available</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Revenue trends will appear here once you have booking data
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
-            </div>
-
-            {/* Right Column: Service Analytics */}
-            <div className="space-y-6">
-              <CategoryBreakdownChart
-                data={analyticsData?.serviceCategoryAnalytics || []}
-                isLoading={false}
-              />
-            </div>
+            )}
+            <RatingDistributionChart
+              data={ratingData?.ratingDistribution}
+              isLoading={isLoadingRatings && !ratingData}
+            />
           </div>
-        )}
 
-        {/* Bottom Section: Top 5 Clients */}
-        <Card className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
-          <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-            <CardTitle className="font-poppins text-charcoal">Top Clients</CardTitle>
-            <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
-              Your top 5 clients by sessions
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6">
-            {isLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="animate-pulse">
-                    <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                        <div>
-                          <div className="h-4 bg-gray-200 rounded w-24 mb-1" />
-                          <div className="h-3 bg-gray-200 rounded w-16" />
+          {/* Peak Times Section */}
+          {peakTimesData && (peakTimesData.hourlyData || peakTimesData.dailyData) && (
+            <div className="space-y-4 mb-8">
+              <div className="mb-4">
+                <h3 className="text-xl font-poppins font-bold text-charcoal mb-2">
+                  Peak Booking Times
+                </h3>
+                <p className="text-sm font-inter text-muted-foreground">
+                  Identify your busiest times to optimize scheduling
+                </p>
+              </div>
+              <PeakTimesChart data={peakTimesData} isLoading={isLoadingBookings && !bookingData} />
+            </div>
+          )}
+
+          {/* Top Clients Section */}
+          <Card className="border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl mt-8">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
+              <CardTitle className="font-poppins text-charcoal">Top Clients</CardTitle>
+              <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
+                Your top clients by sessions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              {isLoadingClients && !clientData ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <div key={index} className="animate-pulse">
+                      <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-24 mb-1" />
+                            <div className="h-3 bg-gray-200 rounded w-16" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 mb-1">
-                          <div className="w-3 h-3 bg-gray-200 rounded" />
-                          <div className="h-4 bg-gray-200 rounded w-8" />
+                        <div className="text-right">
+                          <div className="h-4 bg-gray-200 rounded w-8 mb-1" />
+                          <div className="h-3 bg-gray-200 rounded w-12" />
                         </div>
-                        <div className="h-3 bg-gray-200 rounded w-12" />
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : analyticsData && analyticsData.topClients.length > 0 ? (
-              <div className="space-y-4">
-                {analyticsData.topClients
-                  .slice(0, 5)
-                  .map((client: { id: string; [key: string]: unknown }) => {
-                    const name = String(client['name'] || 'Unknown');
-                    const sessions = Number(client['sessions'] || 0);
-                    const averageRating = client['averageRating'] as number | null | undefined;
-                    const totalHours = Number(client['totalHours'] || 0);
+                  ))}
+                </div>
+              ) : clientData?.topClients && clientData.topClients.length > 0 ? (
+                <div className="space-y-4">
+                  {clientData.topClients.slice(0, 10).map((client: any) => {
+                    const name = String(client.name || 'Unknown');
+                    const sessions = Number(client.sessions || 0);
+                    const averageRating = client.averageRating as number | null | undefined;
+                    const totalHours = Number(client.totalHours || 0);
+                    const totalRevenue = client.totalRevenue as number | undefined;
 
                     return (
                       <div
@@ -237,22 +429,48 @@ const AnalyticsPage = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          {averageRating !== undefined && averageRating !== null ? (
-                            <p className="text-sm font-medium mb-1">{averageRating.toFixed(1)}</p>
-                          ) : null}
+                          {averageRating !== undefined && averageRating !== null && (
+                            <p className="text-sm font-medium mb-1">
+                              ⭐ {averageRating.toFixed(1)}
+                            </p>
+                          )}
                           <p className="text-xs text-gray-500">{totalHours.toFixed(1)}h</p>
+                          {totalRevenue !== undefined && (
+                            <p className="text-xs text-primary font-medium mt-1">
+                              {formatCurrency(totalRevenue)}
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
                   })}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground">No client data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                    <svg
+                      className="w-8 h-8 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-medium text-charcoal mb-1">No clients yet</p>
+                  <p className="text-xs text-muted-foreground">
+                    Client data will appear here once you start receiving bookings
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardPageWrapper>
   );

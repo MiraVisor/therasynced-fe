@@ -6,6 +6,7 @@ export * from './analytics';
 export * from './api';
 export * from './appointment';
 export * from './auth';
+export * from './availability';
 export * from './booking';
 export * from './chat';
 export * from './common';
@@ -18,7 +19,6 @@ export * from './loyalty';
 export * from './notification';
 export * from './pricing';
 export * from './rating';
-export * from './availability';
 export * from './service';
 export * from './slot';
 export * from './subscription';
@@ -106,6 +106,19 @@ export interface ServiceCategory {
   description?: string;
   icon?: string;
   jobTitle?: {
+    id: string;
+    name: string;
+  };
+}
+
+/**
+ * Category type as returned by the API.
+ */
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  jobTitle: {
     id: string;
     name: string;
   };
@@ -485,6 +498,7 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
+  action?: 'created' | 'updated'; // Optional: indicates if slot was created or updated
   availableServices?: Service[]; // Legacy: Services available for this slot
   availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
   booking?: {
@@ -548,7 +562,7 @@ export interface CreateSlotDto {
   slots: Array<{
     startTime: string;
     endTime: string;
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
@@ -567,6 +581,7 @@ export interface CreateServiceDto {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
   clientAddress?: string;
   notes?: string;
 }
@@ -581,7 +596,7 @@ export interface CreateSlotsDto {
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
@@ -647,6 +662,7 @@ export interface BackendApiResponse<T = unknown> {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
   clientAddress?: string;
   notes?: string;
 }

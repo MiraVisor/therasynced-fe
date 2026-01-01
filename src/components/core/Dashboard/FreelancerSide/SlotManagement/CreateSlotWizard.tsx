@@ -6,15 +6,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useCreateSlot } from '@/hooks/queries/useSlots';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
 import type { DaySlotConfiguration } from '@/types/slot';
@@ -33,7 +25,7 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [configurations, setConfigurations] = useState<Record<string, DaySlotConfiguration>>({});
-  const [locationType, setLocationType] = useState<LocationType>(LocationType.HOME);
+  const [locationType] = useState<LocationType | undefined>(undefined); // Optional - defaults to CLINIC
   const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
   const { data: currentSubscription } = useMySubscription();
   const tier = getTierFromSubscription(currentSubscription || null);
@@ -147,11 +139,11 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
     }
 
     // Convert to CreateSlotsDto format
-    // locationType is required at slot level - include it in each slot
+    // locationType is optional - only include if specified (defaults to CLINIC on backend)
     const allSlots = generatedSlots.map((slot) => ({
       startTime: slot.startTime,
       endTime: slot.endTime,
-      locationType: locationType, // Required at slot level
+      ...(locationType && { locationType }), // Optional - only include if specified
     }));
 
     // Filter out past slots
@@ -177,14 +169,34 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
     const defaultDuration = dayConfigs[0]?.slotDuration || 60;
 
     const submitData: CreateSlotsDto = {
-      locationType: locationType, // Keep for backward compatibility
+      ...(locationType && { locationType }), // Optional - only include if specified
       duration: defaultDuration,
       slots,
     };
 
     createSlot(submitData, {
-      onSuccess: () => {
-        toast.success(`Successfully created ${slots.length} slot${slots.length !== 1 ? 's' : ''}!`);
+      onSuccess: (response) => {
+        // Parse the message to check for skipped slots
+        const message = response.message || '';
+        const hasSkipped = message.toLowerCase().includes('skipped');
+        const hasUpdated = message.toLowerCase().includes('updated');
+
+        // Show appropriate notification based on the response
+        if (hasSkipped) {
+          // Show warning if slots were skipped
+          toast.warning(
+            message ?? 'Some slots could not be created due to overlaps with booked slots',
+          );
+        } else if (hasUpdated) {
+          // Show info if slots were updated
+          toast.info(message ?? 'Slots processed successfully');
+        } else {
+          // Show success for normal creation
+          toast.success(
+            message ?? `Successfully created ${slots.length} slot${slots.length !== 1 ? 's' : ''}!`,
+          );
+        }
+
         onSuccess?.();
       },
       onError: (error: unknown) => {
@@ -209,30 +221,34 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
   return (
     <div className="space-y-6">
       {/* Global Settings - Location Type */}
-      <div className="p-4 border rounded-lg bg-muted/30">
+      {/* <div className="p-4 border rounded-lg bg-muted/30">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Label className="text-sm font-medium text-charcoal whitespace-nowrap">
-              Location Type:
+              Location Type (Optional):
             </Label>
             <Select
-              value={locationType}
-              onValueChange={(value) => setLocationType(value as LocationType)}
+              value={locationType || 'default'}
+              onValueChange={(value) =>
+                setLocationType(value === 'default' ? undefined : (value as LocationType))
+              }
             >
               <SelectTrigger className="h-9 w-[140px]">
-                <SelectValue />
+                <SelectValue placeholder="Default (Clinic)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="default">Default (Clinic)</SelectItem>
                 <SelectItem value={LocationType.HOME}>Home Visit</SelectItem>
                 <SelectItem value={LocationType.CLINIC}>Clinic</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <p className="text-xs text-muted-foreground">
-            This location type will be applied to all generated slots
+            Optional. Defaults to Clinic if not specified. Pricing is determined by service category
+            pricing during booking.
           </p>
         </div>
-      </div>
+      </div> */}
 
       {/* Progress Indicator */}
       <div className="flex items-center justify-between pb-6 border-b">

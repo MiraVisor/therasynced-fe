@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { DurationPricingSection } from '@/components/core/Dashboard/FreelancerSide/Pricing/DurationPricingSection';
 import { ServicePricingSection } from '@/components/core/Dashboard/FreelancerSide/Pricing/ServicePricingSection';
 import { CreateSlotWizard } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/CreateSlotWizard';
+import { DeleteDaySlotsSection } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/DeleteDaySlotsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -50,11 +51,14 @@ export const AvailabilityPageContent = () => {
             </CardContent>
           </Card>
 
-          {/* Booking Page Preview */}
-          <BookingPagePreview />
+          {/* Delete Day Slots Section */}
+          <DeleteDaySlotsSection />
 
           {/* Blocked Dates Section */}
           <BlockedDatesSection />
+
+          {/* Booking Page Preview */}
+          <BookingPagePreview />
         </TabsContent>
       </Tabs>
     </div>

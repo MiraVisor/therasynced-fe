@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
-import { JobTitleEnum, ServiceCategory } from '@/types/types';
+import { ServiceCategory } from '@/types';
 
 /**
  * Hook to fetch all service categories
@@ -19,16 +19,23 @@ export const useServiceCategories = () => {
 };
 
 /**
- * Hook to fetch service categories by job title
+ * Hook to fetch service categories by freelancer ID.
+ * This gets categories for a specific freelancer based on their job title.
  */
-export const useServiceCategoriesByJobTitle = (jobTitle: JobTitleEnum | null) => {
+export const useServiceCategoriesByJobTitle = (freelancerId: string | null | undefined) => {
   return useQuery({
-    queryKey: ['serviceCategories', 'byJobTitle', jobTitle],
+    queryKey: ['serviceCategories', 'byFreelancerId', freelancerId],
     queryFn: async () => {
-      const response = await api.get(ENDPOINTS.serviceCategories.getByJobTitle(jobTitle!));
-      return response.data.data as ServiceCategory[];
+      if (!freelancerId) {
+        return [];
+      }
+      const response = await api.get(
+        ENDPOINTS.serviceCategories.getCategoryByFreelancerId(freelancerId),
+      );
+      // Response shape: { success: true, data: [ { ...ServiceCategory } ] }
+      return (response.data?.data ?? []) as ServiceCategory[];
     },
-    enabled: !!jobTitle,
+    enabled: !!freelancerId,
     staleTime: 10 * 60 * 1000,
   });
 };
