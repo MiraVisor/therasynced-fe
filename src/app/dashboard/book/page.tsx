@@ -3,7 +3,6 @@
 import { format, parseISO, startOfToday } from 'date-fns';
 import {
   Building2,
-  Calendar,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
@@ -20,6 +19,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { ExpertCardContent } from '@/components/core/Dashboard/UserSide/Overview/ExpertCardContent';
 import { ExpertProfileDialog } from '@/components/core/Dashboard/UserSide/Overview/ExpertProfileDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -473,7 +473,7 @@ export default function BookingPage() {
   return (
     <DashboardPageWrapper>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-6xl mx-auto px-4 space-y-6">
+        <div className="max-w-7xl mx-auto px-4 space-y-6">
           {/* Header */}
           <div>
             <h1 className="text-4xl font-bold text-charcoal dark:text-white mb-2">
@@ -505,616 +505,612 @@ export default function BookingPage() {
             </TabsList>
 
             {/* Search by Therapist Mode */}
-            <TabsContent value="search" className="space-y-6 mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-base font-semibold mb-2 block">
-                        Search Therapist by Name
-                      </Label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <Input
-                          type="text"
-                          placeholder="Type therapist name..."
-                          value={searchQuery}
-                          onChange={(e) => handleSearchInput(e.target.value)}
-                          className="pl-10"
-                          onFocus={() => {
-                            if (searchSuggestions.length > 0) setShowSuggestions(true);
-                          }}
-                        />
-                        {showSuggestions && searchSuggestions.length > 0 && (
-                          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
-                            {searchSuggestions.map((freelancer) => (
-                              <div
-                                key={freelancer.id}
-                                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0"
-                                onClick={() => handleSelectFreelancer(freelancer)}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-10 w-10">
-                                    <AvatarImage
-                                      src={
-                                        freelancer.profilePicture || freelancer.cardInfo?.initials
-                                      }
-                                    />
-                                    <AvatarFallback>
-                                      {freelancer.name?.charAt(0) || 'T'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-charcoal dark:text-white truncate">
-                                      {freelancer.name || freelancer.cardInfo?.name}
-                                    </p>
-                                    <p className="text-sm text-gray-500 truncate">
-                                      {freelancer.jobTitle?.name || freelancer.cardInfo?.title}
-                                    </p>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleViewProfile(freelancer);
-                                    }}
-                                  >
-                                    <Eye className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Selected Freelancer Info */}
-                    {selectedFreelancerData && (
-                      <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage
-                                src={
-                                  selectedFreelancerData.profilePicture ||
-                                  selectedFreelancerData.cardInfo?.initials
-                                }
-                              />
-                              <AvatarFallback>
-                                {selectedFreelancerData.name?.charAt(0) || 'T'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-semibold text-charcoal dark:text-white">
-                                {selectedFreelancerData.name ||
-                                  selectedFreelancerData.cardInfo?.name}
-                              </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {selectedFreelancerData.jobTitle?.name ||
-                                  selectedFreelancerData.cardInfo?.title}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewProfile(selectedFreelancerData)}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Profile
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedFreelancer(null);
-                                setSelectedFreelancerData(null);
-                                setSearchQuery('');
-                              }}
-                            >
-                              Change
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Calendar for Selected Freelancer */}
-                    {selectedFreelancerData && (
-                      <div>
-                        <Label className="text-base font-semibold mb-2 block">
-                          Select Date for {selectedFreelancerData.name || 'Therapist'}
-                        </Label>
-                        <div className="border rounded-lg p-4">
-                          <CalendarComponent
-                            mode="single"
-                            selected={selectedDate || undefined}
-                            onSelect={(date) => {
-                              if (date) {
-                                setSelectedDate(date);
-                                setSelectedSlot(null);
-                                setCurrentStep('time');
-                              }
-                            }}
-                            disabled={(date) => date < today}
-                            className="rounded-lg"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="search" className="mt-6">
+              {/* Empty - content moved to grid */}
             </TabsContent>
 
             {/* Browse by Date Mode */}
-            <TabsContent value="date" className="space-y-6 mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-base font-semibold mb-2 block">Select Date</Label>
-                      <div className="border rounded-lg p-4">
-                        <CalendarComponent
-                          mode="single"
-                          selected={selectedDate || undefined}
-                          onSelect={(date) => {
-                            if (date) {
-                              handleDateSelect(date);
-                            }
-                          }}
-                          disabled={(date) => date < today}
-                          modifiers={{
-                            hasSlots: (date) => {
-                              const dateStr = format(date, 'yyyy-MM-dd');
-                              return datesWithSlots.has(dateStr);
-                            },
-                          }}
-                          modifiersClassNames={{
-                            hasSlots:
-                              'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
-                          }}
-                          className="rounded-lg"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="date" className="mt-6">
+              {/* Empty - content moved to grid */}
             </TabsContent>
           </Tabs>
 
-          {/* Dynamic Booking Steps */}
-          {(selectedDate || selectedFreelancer) && (
-            <Card>
-              <CardContent className="p-6">
-                {/* Step 1: Therapist Selection (Date-first mode) */}
-                {currentStep === 'therapist' && mode === 'date' && selectedDate && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <User className="w-5 h-5 text-primary" />
-                      <h2 className="font-semibold text-lg">
-                        Select Therapist - {format(selectedDate, 'EEEE, MMMM d')}
-                      </h2>
-                    </div>
-                    {isLoadingSlotsForDate ? (
-                      <div className="flex justify-center items-center py-8">
-                        <LoadingSpinner size="lg" />
-                      </div>
-                    ) : freelancersWithSlots.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-600 dark:text-gray-400">
-                          No therapists available on this date
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {freelancersWithSlots.map((freelancer) => {
-                          const slotsCount = availableSlotsForDate.filter(
-                            (s) => s.freelancerId === freelancer.id,
-                          ).length;
-                          return (
-                            <div
-                              key={freelancer.id}
-                              className={cn(
-                                'p-4 border rounded-lg cursor-pointer transition-all',
-                                selectedFreelancer === freelancer.id
-                                  ? 'border-primary bg-primary/5'
-                                  : 'border-gray-200 dark:border-gray-700 hover:border-primary/50',
-                              )}
-                              onClick={() => handleTherapistSelect(freelancer.id)}
-                            >
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-12 w-12">
-                                  <AvatarImage
-                                    src={freelancer.profilePicture || freelancer.cardInfo?.initials}
-                                  />
-                                  <AvatarFallback>
-                                    {freelancer.name?.charAt(0) || 'T'}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <p className="font-semibold text-charcoal dark:text-white">
-                                      {freelancer.name || freelancer.cardInfo?.name}
-                                    </p>
-                                    <Badge variant="outline">{slotsCount} slots</Badge>
-                                  </div>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {freelancer.jobTitle?.name || freelancer.cardInfo?.title}
-                                  </p>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleViewProfile(freelancer);
-                                  }}
+          {/* 2-Column Grid Layout: Date (Left) | Steps (Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-250px)] min-h-[600px]">
+            {/* Left Column: Date Selection */}
+            <div className="flex flex-col h-full">
+              <Card className="flex-1 flex flex-col overflow-hidden h-full">
+                <CardContent className="p-6 flex flex-col overflow-y-auto h-full">
+                  {/* Search by Therapist Mode - Search Input */}
+                  {mode === 'search' && (
+                    <div className="space-y-4 mb-6">
+                      <div>
+                        <Label className="text-base font-semibold mb-2 block">
+                          Search Therapist by Name
+                        </Label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                          <Input
+                            type="text"
+                            placeholder="Type therapist name..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearchInput(e.target.value)}
+                            className="pl-10"
+                            onFocus={() => {
+                              if (searchSuggestions.length > 0) setShowSuggestions(true);
+                            }}
+                          />
+                          {showSuggestions && searchSuggestions.length > 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                              {searchSuggestions.map((freelancer) => (
+                                <div
+                                  key={freelancer.id}
+                                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0"
+                                  onClick={() => handleSelectFreelancer(freelancer)}
                                 >
-                                  <Eye className="w-4 h-4" />
-                                </Button>
+                                  <div className="flex items-center gap-3">
+                                    <Avatar className="h-10 w-10">
+                                      <AvatarImage
+                                        src={
+                                          freelancer.profilePicture || freelancer.cardInfo?.initials
+                                        }
+                                      />
+                                      <AvatarFallback>
+                                        {freelancer.name?.charAt(0) || 'T'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-charcoal dark:text-white truncate">
+                                        {freelancer.name || freelancer.cardInfo?.name}
+                                      </p>
+                                      <p className="text-sm text-gray-500 truncate">
+                                        {freelancer.jobTitle?.name || freelancer.cardInfo?.title}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleViewProfile(freelancer);
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Selected Freelancer Info */}
+                      {selectedFreelancerData && (
+                        <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage
+                                  src={
+                                    selectedFreelancerData.profilePicture ||
+                                    selectedFreelancerData.cardInfo?.initials
+                                  }
+                                />
+                                <AvatarFallback>
+                                  {selectedFreelancerData.name?.charAt(0) || 'T'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-semibold text-charcoal dark:text-white">
+                                  {selectedFreelancerData.name ||
+                                    selectedFreelancerData.cardInfo?.name}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {selectedFreelancerData.jobTitle?.name ||
+                                    selectedFreelancerData.cardInfo?.title}
+                                </p>
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Step 1.5: Calendar for Freelancer Mode (Search by Therapist) */}
-                {currentStep === 'therapist' && mode === 'freelancer' && selectedFreelancerData && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Calendar className="w-5 h-5 text-primary" />
-                      <h2 className="font-semibold text-lg">
-                        Select Date for {selectedFreelancerData.name || 'Therapist'}
-                      </h2>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewProfile(selectedFreelancerData)}
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                View Profile
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedFreelancer(null);
+                                  setSelectedFreelancerData(null);
+                                  setSearchQuery('');
+                                }}
+                              >
+                                Change
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="border rounded-lg p-4">
+                  )}
+
+                  {/* Date Selection Calendar */}
+                  <div className="flex-1 flex flex-col">
+                    <Label className="text-base font-semibold mb-2 block">
+                      {mode === 'search' && selectedFreelancerData
+                        ? `Select Date for ${selectedFreelancerData.name || 'Therapist'}`
+                        : 'Select Date'}
+                    </Label>
+                    <div className="border rounded-lg p-4 flex justify-center items-start">
                       <CalendarComponent
                         mode="single"
                         selected={selectedDate || undefined}
                         onSelect={(date) => {
                           if (date) {
-                            setSelectedDate(date);
-                            setSelectedSlot(null);
-                            setCurrentStep('time');
+                            if (mode === 'date') {
+                              handleDateSelect(date);
+                            } else {
+                              setSelectedDate(date);
+                              setSelectedSlot(null);
+                              setCurrentStep('time');
+                            }
                           }
                         }}
                         disabled={(date) => date < today}
-                        className="rounded-lg"
+                        modifiers={
+                          mode === 'date'
+                            ? {
+                                hasSlots: (date) => {
+                                  const dateStr = format(date, 'yyyy-MM-dd');
+                                  return datesWithSlots.has(dateStr);
+                                },
+                              }
+                            : undefined
+                        }
+                        modifiersClassNames={
+                          mode === 'date'
+                            ? {
+                                hasSlots:
+                                  'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
+                              }
+                            : undefined
+                        }
+                        className="rounded-lg w-full"
                       />
                     </div>
                   </div>
-                )}
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Step 2: Time Slot Selection */}
-                {currentStep === 'time' && (selectedDate || selectedFreelancer) && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Clock className="w-5 h-5 text-primary" />
-                      <h2 className="font-semibold text-lg">
-                        {selectedDate
-                          ? `Available Times - ${format(selectedDate, 'EEEE, MMMM d')}`
-                          : 'Select Time'}
-                        {selectedFreelancerData && (
-                          <span className="text-gray-600 dark:text-gray-400 ml-2">
-                            with {selectedFreelancerData.name}
-                          </span>
-                        )}
-                      </h2>
+            {/* Right Column: Booking Steps */}
+            <div className="flex flex-col h-full overflow-hidden">
+              <Card className="flex-1 flex flex-col overflow-hidden h-full">
+                <CardContent className="p-6 flex flex-col overflow-y-auto h-full">
+                  {/* Dynamic Booking Steps */}
+                  {!(selectedDate || selectedFreelancer) ? (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="text-gray-600 dark:text-gray-400 text-lg">
+                          {mode === 'search'
+                            ? 'Search for a therapist and select a date to continue'
+                            : 'Select a date to see available appointments'}
+                        </p>
+                      </div>
                     </div>
-                    {isLoadingFreelancerSlots && selectedFreelancer ? (
-                      <div className="flex justify-center items-center py-8">
-                        <LoadingSpinner size="lg" />
-                      </div>
-                    ) : !selectedDate ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-600 dark:text-gray-400">
-                          Please select a date from the calendar above
-                        </p>
-                      </div>
-                    ) : slotsToShow.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-600 dark:text-gray-400">
-                          No available slots for this selection
-                        </p>
-                        <p className="text-sm text-gray-500 mt-2">Try selecting a different date</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                        {slotsToShow.map((slot) => {
-                          const slotDate = parseISO(slot.startTime);
-                          const isSelected = selectedSlot === slot.id;
-                          return (
-                            <Button
-                              key={slot.id}
-                              variant={isSelected ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => handleSlotSelect(slot.id)}
-                              className={cn(
-                                'h-12',
-                                isSelected
-                                  ? 'bg-primary text-white'
-                                  : 'hover:border-primary hover:text-primary',
+                  ) : (
+                    <div>
+                      {/* Step 1: Therapist Selection (Date-first mode) */}
+                      {currentStep === 'therapist' && mode === 'date' && selectedDate && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <User className="w-5 h-5 text-primary" />
+                            <h2 className="font-semibold text-lg">
+                              Select Therapist - {format(selectedDate, 'EEEE, MMMM d')}
+                            </h2>
+                          </div>
+                          {isLoadingSlotsForDate ? (
+                            <div className="flex justify-center items-center py-8">
+                              <LoadingSpinner size="lg" />
+                            </div>
+                          ) : freelancersWithSlots.length === 0 ? (
+                            <div className="text-center py-8">
+                              <p className="text-gray-600 dark:text-gray-400">
+                                No therapists available on this date
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {freelancersWithSlots.map((freelancer) => {
+                                const slotsCount = availableSlotsForDate.filter(
+                                  (s) => s.freelancerId === freelancer.id,
+                                ).length;
+                                const expertData = mapOneFreelancerToExpert(freelancer);
+                                return (
+                                  <div
+                                    key={freelancer.id}
+                                    className={cn(
+                                      'cursor-pointer transition-all',
+                                      selectedFreelancer === freelancer.id
+                                        ? 'ring-2 ring-primary rounded-lg'
+                                        : '',
+                                    )}
+                                    onClick={() => handleTherapistSelect(freelancer.id)}
+                                  >
+                                    <ExpertCardContent
+                                      id={expertData.id}
+                                      name={expertData.name}
+                                      rating={expertData.rating}
+                                      isFavorite={expertData.isFavorite}
+                                      services={expertData.services}
+                                      availableSlots={slotsCount}
+                                      cardInfo={expertData.cardInfo}
+                                      slots={[]}
+                                      verificationStatus={expertData.verificationStatus}
+                                      tier={expertData.tier}
+                                      planFeatures={expertData.planFeatures}
+                                      stampInfo={expertData.stampInfo}
+                                      onViewProfile={() => handleViewProfile(freelancer)}
+                                      showBookNow={false}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Step 2: Time Slot Selection */}
+                      {currentStep === 'time' && (selectedDate || selectedFreelancer) && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <Clock className="w-5 h-5 text-primary" />
+                            <h2 className="font-semibold text-lg">
+                              {selectedDate
+                                ? `Available Times - ${format(selectedDate, 'EEEE, MMMM d')}`
+                                : 'Select Time'}
+                              {selectedFreelancerData && (
+                                <span className="text-gray-600 dark:text-gray-400 ml-2">
+                                  with {selectedFreelancerData.name}
+                                </span>
                               )}
+                            </h2>
+                          </div>
+                          {isLoadingFreelancerSlots && selectedFreelancer ? (
+                            <div className="flex justify-center items-center py-8">
+                              <LoadingSpinner size="lg" />
+                            </div>
+                          ) : !selectedDate ? (
+                            <div className="text-center py-8">
+                              <p className="text-gray-600 dark:text-gray-400">
+                                Please select a date from the calendar above
+                              </p>
+                            </div>
+                          ) : slotsToShow.length === 0 ? (
+                            <div className="text-center py-8">
+                              <p className="text-gray-600 dark:text-gray-400">
+                                No available slots for this selection
+                              </p>
+                              <p className="text-sm text-gray-500 mt-2">
+                                Try selecting a different date
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                              {slotsToShow.map((slot) => {
+                                const slotDate = parseISO(slot.startTime);
+                                const isSelected = selectedSlot === slot.id;
+                                return (
+                                  <Button
+                                    key={slot.id}
+                                    variant={isSelected ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => handleSlotSelect(slot.id)}
+                                    className={cn(
+                                      'h-12',
+                                      isSelected
+                                        ? 'bg-primary text-white'
+                                        : 'hover:border-primary hover:text-primary',
+                                    )}
+                                  >
+                                    {format(slotDate, 'h:mm a')}
+                                  </Button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Step 3: Service Selection */}
+                      {currentStep === 'services' && selectedSlot && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <Sparkles className="w-5 h-5 text-primary" />
+                            <h2 className="font-semibold text-lg">Select Service</h2>
+                          </div>
+                          {availableServices.length === 0 ? (
+                            <div className="text-center py-8">
+                              <p className="text-gray-600 dark:text-gray-400">
+                                No services available for this slot
+                              </p>
+                            </div>
+                          ) : (
+                            <RadioGroup
+                              value={selectedService}
+                              onValueChange={handleServiceSelect}
+                              className="space-y-3"
                             >
-                              {format(slotDate, 'h:mm a')}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
+                              {availableServices.map((service) => {
+                                const isSelected = selectedService === service.id;
+                                return (
+                                  <div
+                                    key={service.id}
+                                    className={cn(
+                                      'flex items-start gap-3 p-4 border rounded-lg transition-all cursor-pointer',
+                                      isSelected
+                                        ? 'border-primary bg-primary/5'
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50',
+                                    )}
+                                    onClick={() => handleServiceSelect(service.id)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        handleServiceSelect(service.id);
+                                      }
+                                    }}
+                                    aria-pressed={isSelected}
+                                  >
+                                    <RadioGroupItem
+                                      id={service.id}
+                                      value={service.id}
+                                      className="mt-1"
+                                    />
+                                    <div className="flex-1">
+                                      <Label
+                                        htmlFor={service.id}
+                                        className="font-medium text-charcoal dark:text-white cursor-pointer"
+                                      >
+                                        {service.name}
+                                      </Label>
+                                      {service.description && (
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                          {service.description}
+                                        </p>
+                                      )}
+                                      {service.locationTypes &&
+                                        service.locationTypes.length > 0 && (
+                                          <div className="flex items-center gap-2 mt-2">
+                                            {service.locationTypes.includes(LocationType.HOME) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <Home className="w-3 h-3 mr-1" />
+                                                Home
+                                              </Badge>
+                                            )}
+                                            {service.locationTypes.includes(
+                                              LocationType.CLINIC,
+                                            ) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <Building2 className="w-3 h-3 mr-1" />
+                                                Clinic
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </RadioGroup>
+                          )}
+                        </div>
+                      )}
 
-                {/* Step 3: Service Selection */}
-                {currentStep === 'services' && selectedSlot && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Sparkles className="w-5 h-5 text-primary" />
-                      <h2 className="font-semibold text-lg">Select Service</h2>
-                    </div>
-                    {availableServices.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-600 dark:text-gray-400">
-                          No services available for this slot
-                        </p>
-                      </div>
-                    ) : (
-                      <RadioGroup
-                        value={selectedService}
-                        onValueChange={handleServiceSelect}
-                        className="space-y-3"
-                      >
-                        {availableServices.map((service) => {
-                          const isSelected = selectedService === service.id;
-                          return (
-                            <div
-                              key={service.id}
-                              className={cn(
-                                'flex items-start gap-3 p-4 border rounded-lg transition-all cursor-pointer',
-                                isSelected
-                                  ? 'border-primary bg-primary/5'
-                                  : 'border-gray-200 dark:border-gray-700 hover:border-primary/50',
-                              )}
-                              onClick={() => handleServiceSelect(service.id)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  handleServiceSelect(service.id);
+                      {/* Step 4: Location Selection */}
+                      {currentStep === 'location' &&
+                        selectedSlot &&
+                        selectedService &&
+                        availableLocationTypes.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-4">
+                              <MapPin className="w-5 h-5 text-primary" />
+                              <h2 className="font-semibold text-lg">Choose Location</h2>
+                            </div>
+                            <RadioGroup
+                              value={locationType || undefined}
+                              onValueChange={(value) => {
+                                setLocationType(value as LocationType);
+                                if (value === LocationType.CLINIC) {
+                                  setHomeAddress('');
                                 }
                               }}
-                              aria-pressed={isSelected}
+                              className="space-y-3"
                             >
-                              <RadioGroupItem id={service.id} value={service.id} className="mt-1" />
-                              <div className="flex-1">
-                                <Label
-                                  htmlFor={service.id}
-                                  className="font-medium text-charcoal dark:text-white cursor-pointer"
-                                >
-                                  {service.name}
-                                </Label>
-                                {service.description && (
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                    {service.description}
-                                  </p>
-                                )}
-                                {service.locationTypes && service.locationTypes.length > 0 && (
-                                  <div className="flex items-center gap-2 mt-2">
-                                    {service.locationTypes.includes(LocationType.HOME) && (
-                                      <Badge variant="outline" className="text-xs">
-                                        <Home className="w-3 h-3 mr-1" />
-                                        Home
-                                      </Badge>
-                                    )}
-                                    {service.locationTypes.includes(LocationType.CLINIC) && (
-                                      <Badge variant="outline" className="text-xs">
-                                        <Building2 className="w-3 h-3 mr-1" />
-                                        Clinic
-                                      </Badge>
+                              {availableLocationTypes.includes(LocationType.HOME) && (
+                                <div className="flex items-start gap-3 p-4 border rounded-lg">
+                                  <RadioGroupItem
+                                    value={LocationType.HOME}
+                                    id="home"
+                                    className="mt-1"
+                                  />
+                                  <div className="flex-1">
+                                    <Label
+                                      htmlFor="home"
+                                      className="font-medium cursor-pointer flex items-center gap-2"
+                                    >
+                                      <Home className="w-5 h-5" />
+                                      At Home
+                                    </Label>
+                                  </div>
+                                </div>
+                              )}
+                              {availableLocationTypes.includes(LocationType.CLINIC) && (
+                                <div className="flex items-start gap-3 p-4 border rounded-lg">
+                                  <RadioGroupItem
+                                    value={LocationType.CLINIC}
+                                    id="clinic"
+                                    className="mt-1"
+                                  />
+                                  <div className="flex-1">
+                                    <Label
+                                      htmlFor="clinic"
+                                      className="font-medium cursor-pointer flex items-center gap-2"
+                                    >
+                                      <Building2 className="w-5 h-5" />
+                                      At Clinic
+                                    </Label>
+                                    {selectedSlotData?.location?.address && (
+                                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                        {selectedSlotData.location.address}
+                                      </p>
                                     )}
                                   </div>
+                                </div>
+                              )}
+                            </RadioGroup>
+
+                            {/* Address Input for Home Visits */}
+                            {availableLocationTypes.includes(LocationType.HOME) && (
+                              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <Label
+                                  htmlFor="home-address"
+                                  className="text-sm font-medium mb-2 block"
+                                >
+                                  Your Address{' '}
+                                  {locationType === LocationType.HOME && (
+                                    <span className="text-red-500">*</span>
+                                  )}
+                                </Label>
+                                <Input
+                                  id="home-address"
+                                  placeholder="Enter your full address"
+                                  value={homeAddress}
+                                  onChange={(e) => setHomeAddress(e.target.value)}
+                                  className="mt-1"
+                                />
+                                {locationType === LocationType.HOME && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                    Required for home visit bookings
+                                  </p>
                                 )}
                               </div>
-                            </div>
-                          );
-                        })}
-                      </RadioGroup>
-                    )}
-                  </div>
-                )}
-
-                {/* Step 4: Location Selection */}
-                {currentStep === 'location' &&
-                  selectedSlot &&
-                  selectedService &&
-                  availableLocationTypes.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <h2 className="font-semibold text-lg">Choose Location</h2>
-                      </div>
-                      <RadioGroup
-                        value={locationType || undefined}
-                        onValueChange={(value) => {
-                          setLocationType(value as LocationType);
-                          if (value === LocationType.CLINIC) {
-                            setHomeAddress('');
-                          }
-                        }}
-                        className="space-y-3"
-                      >
-                        {availableLocationTypes.includes(LocationType.HOME) && (
-                          <div className="flex items-start gap-3 p-4 border rounded-lg">
-                            <RadioGroupItem value={LocationType.HOME} id="home" className="mt-1" />
-                            <div className="flex-1">
-                              <Label
-                                htmlFor="home"
-                                className="font-medium cursor-pointer flex items-center gap-2"
-                              >
-                                <Home className="w-5 h-5" />
-                                At Home
-                              </Label>
-                            </div>
-                          </div>
-                        )}
-                        {availableLocationTypes.includes(LocationType.CLINIC) && (
-                          <div className="flex items-start gap-3 p-4 border rounded-lg">
-                            <RadioGroupItem
-                              value={LocationType.CLINIC}
-                              id="clinic"
-                              className="mt-1"
-                            />
-                            <div className="flex-1">
-                              <Label
-                                htmlFor="clinic"
-                                className="font-medium cursor-pointer flex items-center gap-2"
-                              >
-                                <Building2 className="w-5 h-5" />
-                                At Clinic
-                              </Label>
-                              {selectedSlotData?.location?.address && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                  {selectedSlotData.location.address}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </RadioGroup>
-
-                      {/* Address Input for Home Visits */}
-                      {availableLocationTypes.includes(LocationType.HOME) && (
-                        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                          <Label htmlFor="home-address" className="text-sm font-medium mb-2 block">
-                            Your Address{' '}
-                            {locationType === LocationType.HOME && (
-                              <span className="text-red-500">*</span>
                             )}
-                          </Label>
-                          <Input
-                            id="home-address"
-                            placeholder="Enter your full address"
-                            value={homeAddress}
-                            onChange={(e) => setHomeAddress(e.target.value)}
-                            className="mt-1"
-                          />
-                          {locationType === LocationType.HOME && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                              Required for home visit bookings
+                          </div>
+                        )}
+
+                      {/* Step 5: Summary */}
+                      {currentStep === 'summary' && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <CheckCircle className="w-5 h-5 text-primary" />
+                            <h2 className="font-semibold text-lg">Review & Confirm</h2>
+                          </div>
+                          <div className="space-y-4">
+                            {selectedFreelancerData && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Therapist:</span>
+                                <span className="font-medium">
+                                  {selectedFreelancerData.name ||
+                                    selectedFreelancerData.cardInfo?.name}
+                                </span>
+                              </div>
+                            )}
+                            {selectedDate && selectedSlotData && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  Date & Time:
+                                </span>
+                                <span className="font-medium">
+                                  {format(parseISO(selectedSlotData.startTime), 'MMM d, h:mm a')}
+                                </span>
+                              </div>
+                            )}
+                            {selectedServiceData && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Service:</span>
+                                <span className="font-medium">{selectedServiceData.name}</span>
+                              </div>
+                            )}
+                            {locationType && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Location:</span>
+                                <span className="font-medium">
+                                  {locationType === LocationType.HOME ? 'At Home' : 'At Clinic'}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex justify-between text-lg font-bold pt-4 border-t">
+                              <span>Total:</span>
+                              <span className="text-primary">€{totalPrice.toFixed(2)}</span>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={handleConfirm}
+                            disabled={
+                              isCreating ||
+                              (locationType === LocationType.HOME && !homeAddress.trim())
+                            }
+                            className="w-full mt-6"
+                            size="lg"
+                          >
+                            {isCreating ? 'Confirming...' : 'Confirm Booking'}
+                          </Button>
+                          {locationType === LocationType.HOME && !homeAddress.trim() && (
+                            <p className="text-sm text-red-500 mt-2 text-center">
+                              Please enter your address to continue
                             </p>
                           )}
                         </div>
                       )}
-                    </div>
-                  )}
 
-                {/* Step 5: Summary */}
-                {currentStep === 'summary' && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <CheckCircle className="w-5 h-5 text-primary" />
-                      <h2 className="font-semibold text-lg">Review & Confirm</h2>
-                    </div>
-                    <div className="space-y-4">
-                      {selectedFreelancerData && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Therapist:</span>
-                          <span className="font-medium">
-                            {selectedFreelancerData.name || selectedFreelancerData.cardInfo?.name}
-                          </span>
-                        </div>
-                      )}
-                      {selectedDate && selectedSlotData && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Date & Time:</span>
-                          <span className="font-medium">
-                            {format(parseISO(selectedSlotData.startTime), 'MMM d, h:mm a')}
-                          </span>
-                        </div>
-                      )}
-                      {selectedServiceData && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Service:</span>
-                          <span className="font-medium">{selectedServiceData.name}</span>
-                        </div>
-                      )}
-                      {locationType && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Location:</span>
-                          <span className="font-medium">
-                            {locationType === LocationType.HOME ? 'At Home' : 'At Clinic'}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-lg font-bold pt-4 border-t">
-                        <span>Total:</span>
-                        <span className="text-primary">€{totalPrice.toFixed(2)}</span>
+                      {/* Navigation Buttons */}
+                      <div className="flex items-center justify-between mt-6 pt-6 border-t">
+                        {currentStep !== 'summary' ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              onClick={handlePrevious}
+                              disabled={!canGoPrevious()}
+                              className="flex items-center gap-2"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                              Previous
+                            </Button>
+                            <Button
+                              onClick={handleNext}
+                              disabled={!canGoNext()}
+                              className="flex items-center gap-2"
+                            >
+                              Next
+                              <ChevronRight className="w-4 h-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            onClick={handlePrevious}
+                            disabled={!canGoPrevious()}
+                            className="flex items-center gap-2"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                            Previous
+                          </Button>
+                        )}
                       </div>
                     </div>
-                    <Button
-                      onClick={handleConfirm}
-                      disabled={
-                        isCreating || (locationType === LocationType.HOME && !homeAddress.trim())
-                      }
-                      className="w-full mt-6"
-                      size="lg"
-                    >
-                      {isCreating ? 'Confirming...' : 'Confirm Booking'}
-                    </Button>
-                    {locationType === LocationType.HOME && !homeAddress.trim() && (
-                      <p className="text-sm text-red-500 mt-2 text-center">
-                        Please enter your address to continue
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Navigation Buttons */}
-                <div className="flex items-center justify-between mt-6 pt-6 border-t">
-                  {currentStep !== 'summary' ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        onClick={handlePrevious}
-                        disabled={!canGoPrevious()}
-                        className="flex items-center gap-2"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        Previous
-                      </Button>
-                      <Button
-                        onClick={handleNext}
-                        disabled={!canGoNext()}
-                        className="flex items-center gap-2"
-                      >
-                        Next
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      onClick={handlePrevious}
-                      disabled={!canGoPrevious()}
-                      className="flex items-center gap-2"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                      Previous
-                    </Button>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           {/* Address Dialog */}
           <Dialog open={showAddressDialog} onOpenChange={setShowAddressDialog}>
