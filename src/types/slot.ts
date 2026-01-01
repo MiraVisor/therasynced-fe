@@ -37,6 +37,7 @@ export interface Slot {
       id: string;
       name: string;
     };
+    locationTypes: ('HOME' | 'CLINIC')[]; // REQUIRED: Location types this service supports (always present in slot responses)
   }>; // Service categories available for this slot (matches API response structure)
   booking?: {
     id: string;

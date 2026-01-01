@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBookings/BookingDetailsModal';
 import { DayBookingSection } from '@/components/core/Dashboard/UserSide/MyBookings/DayBookingSection';
+import { RescheduleBookingDialog } from '@/components/core/Dashboard/UserSide/MyBookings/RescheduleBookingDialog';
 import { RatingModal } from '@/components/core/Dashboard/UserSide/Ratings/RatingModal';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -152,11 +153,10 @@ export default function MyBookingsPage() {
     router.push(`/dashboard/messages?freelancerId=${booking.slot.freelancer.id}`);
   };
 
+  const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
+
   const handleReschedule = (booking: Booking) => {
-    // Navigate to freelancer page for rescheduling
-    if (booking.slot?.freelancer?.id) {
-      router.push(`/dashboard/freelancer/${booking.slot.freelancer.id}`);
-    }
+    setRescheduleBooking(booking);
   };
 
   const handleCancel = (booking: Booking) => {
@@ -521,6 +521,9 @@ export default function MyBookingsPage() {
         onCancel={handleCancel}
         onReview={handleReview}
         cancellingBookingId={cancellingBookingId}
+        onRescheduleSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['bookings'] });
+        }}
       />
 
       {/* Rating Modal */}
@@ -530,6 +533,21 @@ export default function MyBookingsPage() {
         booking={bookingToRate}
         onSuccess={handleRatingSuccess}
       />
+
+      {/* Reschedule Booking Dialog */}
+      {rescheduleBooking && (
+        <RescheduleBookingDialog
+          open={!!rescheduleBooking}
+          onOpenChange={(open) => {
+            if (!open) setRescheduleBooking(null);
+          }}
+          booking={rescheduleBooking}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['bookings'] });
+            setRescheduleBooking(null);
+          }}
+        />
+      )}
     </DashboardPageWrapper>
   );
 }

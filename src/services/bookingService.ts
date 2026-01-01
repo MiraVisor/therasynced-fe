@@ -50,7 +50,7 @@ export const completeBooking = async (data: CompleteBookingDto) => {
 };
 
 export const rescheduleBooking = async (data: RescheduleBookingDto) => {
-  const response = await api.patch('/booking/reschedule', data);
+  const response = await api.post('/booking/reschedule-by-cancellation', data);
   return response.data;
 };
 

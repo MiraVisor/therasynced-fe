@@ -60,6 +60,7 @@ export const getMySlotsStats = async (): Promise<ApiResponse<SlotStats>> => {
 export const getAvailableSlots = async (
   freelancerId: string,
   params?: {
+    date?: string; // ISO date format YYYY-MM-DD
     page?: number;
     limit?: number;
     sortBy?: string;
@@ -67,5 +68,18 @@ export const getAvailableSlots = async (
   },
 ): Promise<ApiResponse<Slot[]>> => {
   const response = await api.get(`/slot/available/${freelancerId}`, { params });
+  return response.data;
+};
+
+/**
+ * Get available slots by date (across all freelancers or filtered by freelancer)
+ */
+export const getAvailableSlotsByDate = async (params: {
+  date: string; // ISO date format YYYY-MM-DD (required)
+  freelancerId?: string; // Optional: Filter by specific freelancer
+  page?: number;
+  limit?: number;
+}): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.get('/slot/available-by-date', { params });
   return response.data;
 };

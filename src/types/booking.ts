@@ -84,7 +84,11 @@ export interface CreateBookingDto {
 export interface RescheduleBookingDto {
   bookingId: string;
   newSlotId: string;
-  reason?: string;
+  serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
+  clientAddress?: string;
+  notes?: string;
+  cancellationReason?: string;
 }
 
 export interface CancelBookingDto {

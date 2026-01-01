@@ -75,8 +75,8 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: Home,
     },
     {
-      name: 'Explore',
-      url: '/dashboard/explore',
+      name: 'Book Now',
+      url: '/dashboard/book',
       icon: Map,
     },
     {

@@ -109,6 +109,7 @@ export interface ServiceCategory {
     id: string;
     name: string;
   };
+  locationTypes?: ('HOME' | 'CLINIC')[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
 }
 
 /**
@@ -145,6 +146,7 @@ export interface registerUserTypes {
   gender?: string;
   dob?: string;
   city?: string;
+  homeAddress?: string; // NEW: Home address for bookings
   // New optional fields for freelancers
   mainJobTitleId?: string;
   clinicAddress?: string;
@@ -166,6 +168,7 @@ export interface SignUpDto {
   gender?: string;
   dob?: string;
   city?: string;
+  homeAddress?: string; // NEW: Home address for bookings
   // New optional fields for freelancers
   mainJobTitleId?: string;
   clinicAddress?: string;
@@ -212,6 +215,7 @@ export interface UpdateProfileDto {
   // New fields for freelancers
   mainJobTitleId?: string | null; // Allow null to clear selection
   clinicAddress?: string;
+  homeAddress?: string; // NEW: Home address for bookings
 }
 
 // Backend response types
@@ -245,6 +249,7 @@ export interface BackendProfileResponse {
       // New fields for enhanced user profile
       mainJobTitle?: JobTitle;
       clinicAddress?: string;
+      homeAddress?: string; // NEW: Home address for bookings
       verificationDocuments?: string[];
       verificationRequestedAt?: Date | null;
       verificationApprovedAt?: Date | null;
@@ -654,7 +659,11 @@ export interface CreateBookingDto {
 export interface RescheduleBookingDto {
   bookingId: string;
   newSlotId: string;
-  reason?: string;
+  serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
+  clientAddress?: string;
+  notes?: string;
+  cancellationReason?: string;
 }
 
 export interface CancelBookingDto {

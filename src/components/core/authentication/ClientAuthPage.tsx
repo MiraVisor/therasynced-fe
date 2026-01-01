@@ -1,5 +1,6 @@
 'use client';
 
+import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -90,6 +91,7 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
               dob: data.dob,
               gender: data.gender,
               city: data.city,
+              homeAddress: data.homeAddress,
               clinicAddress: data.clinicAddress,
               mainJobTitleId: data.mainJobTitleId,
             };
@@ -115,11 +117,27 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     return null;
   };
 
+  const handleBackToLanding = () => {
+    router.push('/');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Full Page Content - Centered */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
         <div className="w-full max-w-lg">
+          {/* Back Button */}
+          <div className="flex justify-start mb-4">
+            <button
+              onClick={handleBackToLanding}
+              className="inline-flex items-center gap-2 text-sm font-inter text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              aria-label="Back to landing page"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+          </div>
+
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <Image
