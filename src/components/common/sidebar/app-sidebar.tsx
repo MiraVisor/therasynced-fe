@@ -229,11 +229,6 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: Database,
       subItems: [
         {
-          name: 'Audit & Compliance',
-          url: '/dashboard/admin/audit',
-          icon: Shield,
-        },
-        {
           name: 'Health Data Logs',
           url: '/dashboard/admin/health-data-logs',
           icon: Activity,
