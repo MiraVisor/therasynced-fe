@@ -8,16 +8,19 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Eye,
   Home,
   MapPin,
   Search,
   Sparkles,
+  User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { ExpertProfileDialog } from '@/components/core/Dashboard/UserSide/Overview/ExpertProfileDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,22 +38,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
-import { useBookingSearch } from '@/hooks/queries/useBookingSearch';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/useProfile';
 import { useAvailableSlots, useAvailableSlotsByDate } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
+import { searchFreelancersAutocomplete } from '@/services/freelancerService';
 import { getApiErrorMessage } from '@/types/common';
 import { LocationType } from '@/types/enums';
 import { Expert } from '@/types/types';
+import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
+type BookingMode = 'search' | 'freelancer' | 'date';
 type Step = 'therapist' | 'time' | 'services' | 'location' | 'summary';
 
 export default function BookingPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<BookingMode>('search');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState<Expert[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedFreelancer, setSelectedFreelancer] = useState<string | null>(null);
+  const [selectedFreelancerData, setSelectedFreelancerData] = useState<Expert | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string>('');
   const [locationType, setLocationType] = useState<LocationType | null>(null);
@@ -59,29 +69,28 @@ export default function BookingPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showAddressDialog, setShowAddressDialog] = useState(false);
   const [tempAddress, setTempAddress] = useState('');
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [profileFreelancer, setProfileFreelancer] = useState<Expert | null>(null);
 
   const { mutate: createBooking, isPending: isCreating } = useCreateBooking();
   const { data: userProfile } = useProfile();
   const { mutate: updateProfile } = useUpdateProfile();
 
-  // Pre-populate address from user profile when available
+  // Pre-populate address from user profile
   useEffect(() => {
     if (userProfile && !homeAddress) {
-      // Use homeAddress from profile if available
       if (userProfile.homeAddress) {
         setHomeAddress(userProfile.homeAddress);
       }
     }
   }, [userProfile, homeAddress]);
 
-  // Get today's date for calendar min date
   const today = startOfToday();
 
-  // Fetch slots for calendar to show availability indicators
-  // Note: This is a simplified approach - in production, you might want to fetch slots for a date range
-  const { data: allSlotsByDate = [], isLoading: isLoadingCalendarSlots } = useAvailableSlotsByDate({
+  // Fetch slots for calendar indicators
+  const { data: allSlotsByDate = [] } = useAvailableSlotsByDate({
     date: format(today, 'yyyy-MM-dd'),
-    limit: 1000, // Get many slots to check all dates
+    limit: 1000,
   });
 
   // Get slots for selected date
@@ -90,38 +99,66 @@ export default function BookingPage() {
     limit: 100,
   });
 
-  // Search freelancers with date filter
-  const { data: searchResults, isLoading: isLoadingFreelancers } = useBookingSearch({
-    query: searchQuery || undefined,
-    preferredDate: selectedDate,
-    enabled: !!selectedDate || !!searchQuery,
-  });
+  // Search freelancers by name (autocomplete)
+  const handleSearchInput = async (value: string) => {
+    setSearchQuery(value);
+    if (value.trim().length < 2) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
 
-  // Get slots for selected freelancer and date
-  const { data: freelancerSlots = [], isLoading: isLoadingFreelancerSlots } = useAvailableSlots(
-    selectedFreelancer,
-    {
-      date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
-    },
-  );
+    try {
+      const response = await searchFreelancersAutocomplete(value, 8);
+      if (response.success && response.data) {
+        const mapped = response.data.map(mapOneFreelancerToExpert);
+        setSearchSuggestions(mapped);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setSearchSuggestions([]);
+    }
+  };
+
+  // Handle freelancer selection from search
+  const handleSelectFreelancer = (freelancer: Expert) => {
+    setSelectedFreelancer(freelancer.id);
+    setSelectedFreelancerData(freelancer);
+    setSearchQuery('');
+    setShowSuggestions(false);
+    setMode('freelancer');
+    // Reset other selections
+    setSelectedSlot(null);
+    setSelectedService('');
+    setLocationType(null);
+    // If date already selected, go to time step, otherwise stay at calendar
+    if (selectedDate) {
+      setCurrentStep('time');
+    } else {
+      setCurrentStep('therapist'); // This will show calendar in search mode
+    }
+  };
+
+  // Handle date selection in date-first mode
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setSelectedFreelancer(null);
+    setSelectedFreelancerData(null);
+    setSelectedSlot(null);
+    setSelectedService('');
+    setLocationType(null);
+    setHomeAddress('');
+    setCurrentStep('therapist');
+    setMode('date');
+  };
 
   // Get unique freelancers with slots for selected date
   const freelancersWithSlots = useMemo(() => {
     if (!selectedDate || !slotsForDate.length) return [];
 
-    const freelancerIds = new Set(slotsForDate.map((s) => s.freelancerId));
     const freelancersMap = new Map<string, Expert>();
 
-    // Get freelancers from search results if available
-    if (searchResults?.freelancers) {
-      searchResults.freelancers.forEach((f) => {
-        if (freelancerIds.has(f.id)) {
-          freelancersMap.set(f.id, f);
-        }
-      });
-    }
-
-    // If search didn't return all freelancers, create basic objects from slots
     slotsForDate.forEach((slot) => {
       if (!freelancersMap.has(slot.freelancerId)) {
         freelancersMap.set(slot.freelancerId, {
@@ -133,62 +170,51 @@ export default function BookingPage() {
           description: '',
           profilePicture: slot.profilePicture,
           jobTitle: { id: '', name: slot.freelancerName || '' },
+          cardInfo: {
+            name: slot.freelancerName || 'Unknown',
+            averageRating: slot.averageRating || 0,
+            totalRatings: slot.numberOfRatings || 0,
+          },
         } as Expert);
       }
     });
 
     return Array.from(freelancersMap.values());
-  }, [selectedDate, slotsForDate, searchResults]);
+  }, [selectedDate, slotsForDate]);
 
-  // Get available slots for selected date and freelancer
-  const availableSlots = useMemo(() => {
+  // Get slots for selected freelancer and date
+  const { data: freelancerSlots = [], isLoading: isLoadingFreelancerSlots } = useAvailableSlots(
+    selectedFreelancer ?? null,
+    {
+      date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
+    },
+  );
+
+  // Get available slots for selected date (all freelancers)
+  const availableSlotsForDate = useMemo(() => {
     if (!selectedDate) return [];
-
-    if (selectedFreelancer) {
-      // Use freelancer-specific slots
-      return freelancerSlots.filter((slot) => {
-        const slotDate = format(parseISO(slot.startTime), 'yyyy-MM-dd');
-        const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-        return slotDate === selectedDateStr && slot.status === 'AVAILABLE';
-      });
-    }
-
-    // Use all slots for date
     return slotsForDate.filter((slot) => {
       const slotDate = format(parseISO(slot.startTime), 'yyyy-MM-dd');
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
       return slotDate === selectedDateStr && slot.status === 'AVAILABLE';
     });
-  }, [selectedDate, selectedFreelancer, slotsForDate, freelancerSlots]);
+  }, [selectedDate, slotsForDate]);
 
   // Get selected slot data
   const selectedSlotData = useMemo(() => {
     if (!selectedSlot) return null;
-
-    const slot = [...slotsForDate, ...freelancerSlots].find((s) => s.id === selectedSlot);
-    if (!slot) return null;
-
-    const freelancer =
-      freelancersWithSlots.find((f) => f.id === slot.freelancerId) ??
-      ({
-        id: slot.freelancerId,
-        name: slot.freelancerName ?? 'Unknown',
-        specialty: '',
-        rating: slot.averageRating ?? 0,
-        reviews: slot.numberOfRatings ?? 0,
-        description: '',
-        profilePicture: slot.profilePicture,
-        jobTitle: { id: '', name: '' },
-        location: slot.location?.address,
-      } as Expert);
-
-    return { slot, freelancer };
-  }, [selectedSlot, slotsForDate, freelancerSlots, freelancersWithSlots]);
+    // Check in all possible slot arrays to find the selected slot with full data
+    // Priority: freelancerSlots > availableSlotsForDate > slotsForDate
+    const allSlots = [...freelancerSlots, ...availableSlotsForDate, ...slotsForDate];
+    // Remove duplicates by ID, keeping first occurrence
+    const uniqueSlots = Array.from(new Map(allSlots.map((slot) => [slot.id, slot])).values());
+    const foundSlot = uniqueSlots.find((s) => s.id === selectedSlot);
+    return foundSlot || null;
+  }, [selectedSlot, freelancerSlots, availableSlotsForDate, slotsForDate]);
 
   // Get available services from selected slot
   const availableServices = useMemo(() => {
-    if (!selectedSlotData?.slot?.availableServiceCategories) return [];
-    return selectedSlotData.slot.availableServiceCategories;
+    return selectedSlotData?.availableServiceCategories || [];
   }, [selectedSlotData]);
 
   // Get selected service data
@@ -205,66 +231,12 @@ export default function BookingPage() {
 
   // Auto-select location if only one option
   useEffect(() => {
-    if (availableLocationTypes.length === 1 && locationType !== availableLocationTypes[0]) {
-      setLocationType(availableLocationTypes[0] ?? null);
+    if (availableLocationTypes.length === 1 && !locationType) {
+      setLocationType(availableLocationTypes[0] || null);
     }
   }, [availableLocationTypes, locationType]);
 
-  // Determine current step based on selections
-  useEffect(() => {
-    if (!selectedDate) {
-      setCurrentStep('therapist');
-    } else if (!selectedFreelancer) {
-      setCurrentStep('therapist');
-    } else if (!selectedSlot) {
-      setCurrentStep('time');
-    } else if (!selectedService) {
-      setCurrentStep('services');
-    } else if (!locationType) {
-      setCurrentStep('location');
-    } else {
-      setCurrentStep('summary');
-    }
-  }, [selectedDate, selectedFreelancer, selectedSlot, selectedService, locationType]);
-
-  // Check which dates have slots (for calendar display with modifiers)
-  const datesWithSlots = useMemo(() => {
-    const dateSet = new Set<string>();
-    allSlotsByDate.forEach((slot) => {
-      const date = format(parseISO(slot.startTime), 'yyyy-MM-dd');
-      dateSet.add(date);
-    });
-    return dateSet;
-  }, [allSlotsByDate]);
-
-  // Get slot count for a specific date
-  const getSlotCountForDate = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return allSlotsByDate.filter((s) => {
-      const slotDate = format(parseISO(s.startTime), 'yyyy-MM-dd');
-      return slotDate === dateStr;
-    }).length;
-  };
-
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-    setSelectedFreelancer(null);
-    setSelectedSlot(null);
-    setSelectedService('');
-    setLocationType(null);
-    setHomeAddress('');
-    setCurrentStep('therapist');
-  };
-
-  const handleTherapistSelect = (freelancerId: string) => {
-    setSelectedFreelancer(freelancerId);
-    setSelectedSlot(null);
-    setSelectedService('');
-    setLocationType(null);
-    setHomeAddress('');
-    setCurrentStep('time');
-  };
-
+  // Handle slot selection
   const handleSlotSelect = (slotId: string) => {
     setSelectedSlot(slotId);
     setSelectedService('');
@@ -273,17 +245,37 @@ export default function BookingPage() {
     setCurrentStep('services');
   };
 
+  // Handle service selection
   const handleServiceSelect = (serviceId: string) => {
-    // Single selection: if clicking the same service, deselect it; otherwise select the new one
     setSelectedService((prev) => (prev === serviceId ? '' : serviceId));
-    // Reset location when service changes
     setLocationType(null);
     setHomeAddress('');
   };
 
+  // Handle therapist selection in date-first mode
+  const handleTherapistSelect = (freelancerId: string) => {
+    const freelancer = freelancersWithSlots.find((f) => f.id === freelancerId);
+    if (freelancer) {
+      setSelectedFreelancer(freelancerId);
+      setSelectedFreelancerData(freelancer);
+      // Filter slots for this freelancer
+      const slots = availableSlotsForDate.filter((s) => s.freelancerId === freelancerId);
+      if (slots.length > 0) {
+        setCurrentStep('time');
+      }
+    }
+  };
+
+  // Navigation handlers
   const handleNext = () => {
-    if (currentStep === 'therapist' && selectedFreelancer) {
-      setCurrentStep('time');
+    if (currentStep === 'therapist') {
+      // In freelancer mode, move to time after date is selected
+      // In date mode, move to time after freelancer is selected
+      if (mode === 'freelancer' && selectedDate) {
+        setCurrentStep('time');
+      } else if (mode === 'date' && selectedFreelancer) {
+        setCurrentStep('time');
+      }
     } else if (currentStep === 'time' && selectedSlot) {
       setCurrentStep('services');
     } else if (currentStep === 'services' && selectedService) {
@@ -301,12 +293,16 @@ export default function BookingPage() {
     } else if (currentStep === 'location') {
       setCurrentStep('services');
     } else if (currentStep === 'summary') {
-      setCurrentStep('services');
+      setCurrentStep('location');
     }
   };
 
   const canGoNext = () => {
-    if (currentStep === 'therapist') return !!selectedFreelancer;
+    if (currentStep === 'therapist') {
+      // In freelancer mode, need date selected; in date mode, need freelancer selected
+      if (mode === 'freelancer') return !!selectedDate;
+      return !!selectedFreelancer;
+    }
     if (currentStep === 'time') return !!selectedSlot;
     if (currentStep === 'services') return !!selectedService;
     if (currentStep === 'location') return !!locationType;
@@ -317,33 +313,27 @@ export default function BookingPage() {
     return currentStep !== 'therapist';
   };
 
-  const handleConfirm = () => {
-    if (!selectedSlot) {
-      toast.error('Please select a time slot');
-      return;
+  // Get dates with slots for calendar
+  const datesWithSlots = useMemo(() => {
+    const dateSet = new Set<string>();
+    allSlotsByDate.forEach((slot) => {
+      const date = format(parseISO(slot.startTime), 'yyyy-MM-dd');
+      dateSet.add(date);
+    });
+    return dateSet;
+  }, [allSlotsByDate]);
+
+  // Calculate total price
+  const totalPrice = useMemo(() => {
+    if (!selectedSlotData) return 0;
+    let price = selectedSlotData.basePrice || 0;
+    if (selectedSlotData.location?.additionalFee && locationType === LocationType.CLINIC) {
+      price += selectedSlotData.location.additionalFee;
     }
+    return price;
+  }, [selectedSlotData, locationType]);
 
-    if (!selectedService) {
-      toast.error('Please select a service');
-      return;
-    }
-
-    if (!locationType) {
-      toast.error('Please select a location');
-      return;
-    }
-
-    if (locationType === LocationType.HOME && !homeAddress.trim()) {
-      // Show dialog to collect address
-      setTempAddress(homeAddress);
-      setShowAddressDialog(true);
-      return;
-    }
-
-    // Proceed with booking
-    proceedWithBooking();
-  };
-
+  // Booking confirmation
   const proceedWithBooking = () => {
     if (!selectedSlot || !locationType) return;
 
@@ -368,6 +358,27 @@ export default function BookingPage() {
     );
   };
 
+  const handleConfirm = () => {
+    if (!selectedSlot) {
+      toast.error('Please select a time slot');
+      return;
+    }
+    if (!selectedService) {
+      toast.error('Please select a service');
+      return;
+    }
+    if (!locationType) {
+      toast.error('Please select a location');
+      return;
+    }
+    if (locationType === LocationType.HOME && !homeAddress.trim()) {
+      setTempAddress(homeAddress);
+      setShowAddressDialog(true);
+      return;
+    }
+    proceedWithBooking();
+  };
+
   const handleSaveAddress = () => {
     if (tempAddress.trim()) {
       const addressToSave = tempAddress.trim();
@@ -375,25 +386,66 @@ export default function BookingPage() {
       setShowAddressDialog(false);
       setTempAddress('');
 
-      // Optionally save address to user profile for future use
       if (userProfile && userProfile.homeAddress !== addressToSave) {
         updateProfile(
           { homeAddress: addressToSave },
           {
             onError: () => {
-              // Don't block booking if profile update fails
               console.warn('Failed to save address to profile');
             },
           },
         );
       }
 
-      // Retry booking confirmation
       proceedWithBooking();
     } else {
       toast.error('Please enter a valid address');
     }
   };
+
+  // Show profile dialog
+  const handleViewProfile = (freelancer: Expert) => {
+    setProfileFreelancer(freelancer);
+    setShowProfileDialog(true);
+  };
+
+  // Get slots for current view
+  const slotsToShow = useMemo(() => {
+    if (mode === 'freelancer' && selectedFreelancer && selectedDate) {
+      // Use freelancerSlots if available, otherwise fall back to slotsForDate filtered by freelancer
+      if (freelancerSlots.length > 0) {
+        return freelancerSlots.filter((slot) => {
+          const slotDate = format(parseISO(slot.startTime), 'yyyy-MM-dd');
+          const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+          return slotDate === selectedDateStr && slot.status === 'AVAILABLE';
+        });
+      }
+      // Fallback to slotsForDate if freelancerSlots is empty
+      return slotsForDate.filter((slot) => {
+        const slotDate = format(parseISO(slot.startTime), 'yyyy-MM-dd');
+        const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+        return (
+          slotDate === selectedDateStr &&
+          slot.freelancerId === selectedFreelancer &&
+          slot.status === 'AVAILABLE'
+        );
+      });
+    }
+    if (mode === 'date' && selectedDate) {
+      if (selectedFreelancer) {
+        return availableSlotsForDate.filter((s) => s.freelancerId === selectedFreelancer);
+      }
+      return availableSlotsForDate;
+    }
+    return [];
+  }, [
+    mode,
+    selectedFreelancer,
+    selectedDate,
+    freelancerSlots,
+    availableSlotsForDate,
+    slotsForDate,
+  ]);
 
   if (showSuccess) {
     return (
@@ -421,183 +473,292 @@ export default function BookingPage() {
   return (
     <DashboardPageWrapper>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-4xl mx-auto px-4 space-y-6">
+        <div className="max-w-6xl mx-auto px-4 space-y-6">
           {/* Header */}
           <div>
             <h1 className="text-4xl font-bold text-charcoal dark:text-white mb-2">
               Book Your Appointment
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Choose a date, select a therapist, pick services, and book in seconds
+              Search by therapist name or browse available dates
             </p>
           </div>
 
-          {/* Search - Always Visible */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder="Search therapist by name or specialty..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Mode Selection Tabs */}
+          <Tabs
+            value={mode}
+            onValueChange={(value) => {
+              setMode(value as BookingMode);
+              if (value === 'search') {
+                setSelectedFreelancer(null);
+                setSelectedFreelancerData(null);
+                setSelectedDate(null);
+                setSelectedSlot(null);
+                setCurrentStep('therapist');
+              }
+            }}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="search">Search by Therapist</TabsTrigger>
+              <TabsTrigger value="date">Browse by Date</TabsTrigger>
+            </TabsList>
 
-          {/* Calendar - Always Visible */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="w-5 h-5 text-primary" />
-                <h2 className="font-semibold text-lg">Select Date</h2>
-              </div>
-              {isLoadingCalendarSlots ? (
-                <div className="flex justify-center items-center py-8">
-                  <LoadingSpinner size="lg" />
-                </div>
-              ) : (
-                <div className="flex justify-center">
-                  <CalendarComponent
-                    mode="single"
-                    selected={selectedDate || undefined}
-                    onSelect={(date) => {
-                      if (date) {
-                        handleDateSelect(date);
-                      }
-                    }}
-                    disabled={(date) => {
-                      // Only disable past dates, allow all future dates
-                      const today = startOfToday();
-                      return date < today;
-                    }}
-                    modifiers={{
-                      hasSlots: (date) => {
-                        const dateStr = format(date, 'yyyy-MM-dd');
-                        return datesWithSlots.has(dateStr);
-                      },
-                    }}
-                    modifiersClassNames={{
-                      hasSlots:
-                        'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
-                    }}
-                    className="rounded-md border-0"
-                    captionLayout="dropdown"
-                    fromYear={new Date().getFullYear()}
-                    toYear={new Date().getFullYear() + 1}
-                    components={{
-                      DayButton: ({ day, modifiers, ...props }) => {
-                        const slotCount = getSlotCountForDate(day.date);
-                        const hasSlots = datesWithSlots.has(format(day.date, 'yyyy-MM-dd'));
-                        const isSelected = modifiers?.['selected'] ?? false;
-                        const isDisabled = modifiers?.['disabled'] ?? false;
-                        return (
-                          <div className="relative w-full h-full">
-                            <button
-                              {...props}
-                              className={cn(
-                                'w-full h-full rounded-md text-sm font-medium transition-all',
-                                isSelected && 'bg-primary text-white shadow-lg font-semibold',
-                                !isSelected &&
-                                  hasSlots &&
-                                  'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-900/50',
-                                !isSelected &&
-                                  !hasSlots &&
-                                  'hover:bg-gray-100 dark:hover:bg-gray-800',
-                                isDisabled && 'opacity-50 cursor-not-allowed',
-                              )}
-                            >
-                              <span>{format(day.date, 'd')}</span>
-                              {hasSlots && !isSelected && slotCount > 0 && (
-                                <span className="absolute bottom-0.5 left-1/2 transform -translate-x-1/2 text-[10px] opacity-70">
-                                  {slotCount}
-                                </span>
-                              )}
-                            </button>
+            {/* Search by Therapist Mode */}
+            <TabsContent value="search" className="space-y-6 mt-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-base font-semibold mb-2 block">
+                        Search Therapist by Name
+                      </Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <Input
+                          type="text"
+                          placeholder="Type therapist name..."
+                          value={searchQuery}
+                          onChange={(e) => handleSearchInput(e.target.value)}
+                          className="pl-10"
+                          onFocus={() => {
+                            if (searchSuggestions.length > 0) setShowSuggestions(true);
+                          }}
+                        />
+                        {showSuggestions && searchSuggestions.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                            {searchSuggestions.map((freelancer) => (
+                              <div
+                                key={freelancer.id}
+                                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0"
+                                onClick={() => handleSelectFreelancer(freelancer)}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage
+                                      src={
+                                        freelancer.profilePicture || freelancer.cardInfo?.initials
+                                      }
+                                    />
+                                    <AvatarFallback>
+                                      {freelancer.name?.charAt(0) || 'T'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-charcoal dark:text-white truncate">
+                                      {freelancer.name || freelancer.cardInfo?.name}
+                                    </p>
+                                    <p className="text-sm text-gray-500 truncate">
+                                      {freelancer.jobTitle?.name || freelancer.cardInfo?.title}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewProfile(freelancer);
+                                    }}
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        );
-                      },
-                    }}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                        )}
+                      </div>
+                    </div>
 
-          {/* Dynamic Section - Changes based on step */}
-          {selectedDate && (
+                    {/* Selected Freelancer Info */}
+                    {selectedFreelancerData && (
+                      <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage
+                                src={
+                                  selectedFreelancerData.profilePicture ||
+                                  selectedFreelancerData.cardInfo?.initials
+                                }
+                              />
+                              <AvatarFallback>
+                                {selectedFreelancerData.name?.charAt(0) || 'T'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-semibold text-charcoal dark:text-white">
+                                {selectedFreelancerData.name ||
+                                  selectedFreelancerData.cardInfo?.name}
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {selectedFreelancerData.jobTitle?.name ||
+                                  selectedFreelancerData.cardInfo?.title}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewProfile(selectedFreelancerData)}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Profile
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedFreelancer(null);
+                                setSelectedFreelancerData(null);
+                                setSearchQuery('');
+                              }}
+                            >
+                              Change
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Calendar for Selected Freelancer */}
+                    {selectedFreelancerData && (
+                      <div>
+                        <Label className="text-base font-semibold mb-2 block">
+                          Select Date for {selectedFreelancerData.name || 'Therapist'}
+                        </Label>
+                        <div className="border rounded-lg p-4">
+                          <CalendarComponent
+                            mode="single"
+                            selected={selectedDate || undefined}
+                            onSelect={(date) => {
+                              if (date) {
+                                setSelectedDate(date);
+                                setSelectedSlot(null);
+                                setCurrentStep('time');
+                              }
+                            }}
+                            disabled={(date) => date < today}
+                            className="rounded-lg"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Browse by Date Mode */}
+            <TabsContent value="date" className="space-y-6 mt-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-base font-semibold mb-2 block">Select Date</Label>
+                      <div className="border rounded-lg p-4">
+                        <CalendarComponent
+                          mode="single"
+                          selected={selectedDate || undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              handleDateSelect(date);
+                            }
+                          }}
+                          disabled={(date) => date < today}
+                          modifiers={{
+                            hasSlots: (date) => {
+                              const dateStr = format(date, 'yyyy-MM-dd');
+                              return datesWithSlots.has(dateStr);
+                            },
+                          }}
+                          modifiersClassNames={{
+                            hasSlots:
+                              'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
+                          }}
+                          className="rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {/* Dynamic Booking Steps */}
+          {(selectedDate || selectedFreelancer) && (
             <Card>
               <CardContent className="p-6">
-                {/* Step 1: Therapist Selection */}
-                {currentStep === 'therapist' && (
+                {/* Step 1: Therapist Selection (Date-first mode) */}
+                {currentStep === 'therapist' && mode === 'date' && selectedDate && (
                   <div>
                     <div className="flex items-center gap-2 mb-4">
-                      <Sparkles className="w-5 h-5 text-primary" />
+                      <User className="w-5 h-5 text-primary" />
                       <h2 className="font-semibold text-lg">
                         Select Therapist - {format(selectedDate, 'EEEE, MMMM d')}
                       </h2>
                     </div>
-                    {isLoadingFreelancers || isLoadingSlotsForDate ? (
+                    {isLoadingSlotsForDate ? (
                       <div className="flex justify-center items-center py-8">
                         <LoadingSpinner size="lg" />
                       </div>
                     ) : freelancersWithSlots.length === 0 ? (
                       <div className="text-center py-8">
                         <p className="text-gray-600 dark:text-gray-400">
-                          No therapists available for this date. Please select another date.
+                          No therapists available on this date
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {freelancersWithSlots.map((freelancer) => {
-                          const slots = availableSlots.filter(
+                          const slotsCount = availableSlotsForDate.filter(
                             (s) => s.freelancerId === freelancer.id,
-                          );
-                          const isSelected = selectedFreelancer === freelancer.id;
+                          ).length;
                           return (
-                            <Card
+                            <div
                               key={freelancer.id}
                               className={cn(
-                                'cursor-pointer hover:shadow-md transition-all',
-                                isSelected && 'ring-2 ring-primary',
+                                'p-4 border rounded-lg cursor-pointer transition-all',
+                                selectedFreelancer === freelancer.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-primary/50',
                               )}
                               onClick={() => handleTherapistSelect(freelancer.id)}
                             >
-                              <CardContent className="p-4">
-                                <div className="flex items-center gap-3">
-                                  <Avatar>
-                                    <AvatarImage src={freelancer.profilePicture || undefined} />
-                                    <AvatarFallback>
-                                      {freelancer.name
-                                        .split(' ')
-                                        .map((n) => n[0])
-                                        .join('')}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold">{freelancer.name}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                      {freelancer.jobTitle?.name ??
-                                        freelancer.specialty ??
-                                        'Therapist'}
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-12 w-12">
+                                  <AvatarImage
+                                    src={freelancer.profilePicture || freelancer.cardInfo?.initials}
+                                  />
+                                  <AvatarFallback>
+                                    {freelancer.name?.charAt(0) || 'T'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-semibold text-charcoal dark:text-white">
+                                      {freelancer.name || freelancer.cardInfo?.name}
                                     </p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="text-sm font-medium">
-                                        ⭐ {freelancer.rating?.toFixed(1) || 'N/A'}
-                                      </span>
-                                      <span className="text-xs text-gray-500">
-                                        ({freelancer.reviews || 0} reviews)
-                                      </span>
-                                    </div>
+                                    <Badge variant="outline">{slotsCount} slots</Badge>
                                   </div>
-                                  <Badge variant="secondary">{slots.length} slots</Badge>
-                                  {isSelected && <CheckCircle className="w-5 h-5 text-primary" />}
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {freelancer.jobTitle?.name || freelancer.cardInfo?.title}
+                                  </p>
                                 </div>
-                              </CardContent>
-                            </Card>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewProfile(freelancer);
+                                  }}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
@@ -605,76 +766,88 @@ export default function BookingPage() {
                   </div>
                 )}
 
-                {/* Step 2: Time Slot Selection */}
-                {currentStep === 'time' && selectedFreelancer && (
+                {/* Step 1.5: Calendar for Freelancer Mode (Search by Therapist) */}
+                {currentStep === 'therapist' && mode === 'freelancer' && selectedFreelancerData && (
                   <div>
-                    {(() => {
-                      const freelancer = freelancersWithSlots.find(
-                        (f) => f.id === selectedFreelancer,
-                      );
-                      return (
-                        <div className="mb-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Clock className="w-5 h-5 text-primary" />
-                            <h2 className="font-semibold text-lg">Select Time</h2>
-                          </div>
-                          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
-                            <Avatar>
-                              <AvatarImage src={freelancer?.profilePicture || undefined} />
-                              <AvatarFallback>
-                                {freelancer?.name
-                                  .split(' ')
-                                  .map((n) => n[0])
-                                  .join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold">{freelancer?.name}</h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {format(selectedDate, 'EEEE, MMMM d')}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                    {isLoadingFreelancerSlots ? (
+                    <div className="flex items-center gap-2 mb-4">
+                      <Calendar className="w-5 h-5 text-primary" />
+                      <h2 className="font-semibold text-lg">
+                        Select Date for {selectedFreelancerData.name || 'Therapist'}
+                      </h2>
+                    </div>
+                    <div className="border rounded-lg p-4">
+                      <CalendarComponent
+                        mode="single"
+                        selected={selectedDate || undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            setSelectedDate(date);
+                            setSelectedSlot(null);
+                            setCurrentStep('time');
+                          }
+                        }}
+                        disabled={(date) => date < today}
+                        className="rounded-lg"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Time Slot Selection */}
+                {currentStep === 'time' && (selectedDate || selectedFreelancer) && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Clock className="w-5 h-5 text-primary" />
+                      <h2 className="font-semibold text-lg">
+                        {selectedDate
+                          ? `Available Times - ${format(selectedDate, 'EEEE, MMMM d')}`
+                          : 'Select Time'}
+                        {selectedFreelancerData && (
+                          <span className="text-gray-600 dark:text-gray-400 ml-2">
+                            with {selectedFreelancerData.name}
+                          </span>
+                        )}
+                      </h2>
+                    </div>
+                    {isLoadingFreelancerSlots && selectedFreelancer ? (
                       <div className="flex justify-center items-center py-8">
                         <LoadingSpinner size="lg" />
                       </div>
-                    ) : availableSlots.filter((s) => s.freelancerId === selectedFreelancer)
-                        .length === 0 ? (
+                    ) : !selectedDate ? (
                       <div className="text-center py-8">
                         <p className="text-gray-600 dark:text-gray-400">
-                          No available time slots for this therapist on this date.
+                          Please select a date from the calendar above
                         </p>
                       </div>
+                    ) : slotsToShow.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600 dark:text-gray-400">
+                          No available slots for this selection
+                        </p>
+                        <p className="text-sm text-gray-500 mt-2">Try selecting a different date</p>
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                        {availableSlots
-                          .filter((s) => s.freelancerId === selectedFreelancer)
-                          .map((slot) => {
-                            const isSelected = selectedSlot === slot.id;
-                            const time = format(parseISO(slot.startTime), 'h:mm a');
-                            return (
-                              <button
-                                key={slot.id}
-                                type="button"
-                                onClick={() => handleSlotSelect(slot.id)}
-                                className={cn(
-                                  'p-3 rounded-lg border-2 font-medium text-sm transition-all',
-                                  isSelected
-                                    ? 'border-primary bg-primary text-white shadow-lg'
-                                    : 'border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5 dark:bg-gray-800 dark:text-white dark:hover:bg-primary/10',
-                                )}
-                              >
-                                <div className="text-center">
-                                  <div>{time}</div>
-                                  {isSelected && <CheckCircle className="w-4 h-4 mx-auto mt-1" />}
-                                </div>
-                              </button>
-                            );
-                          })}
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                        {slotsToShow.map((slot) => {
+                          const slotDate = parseISO(slot.startTime);
+                          const isSelected = selectedSlot === slot.id;
+                          return (
+                            <Button
+                              key={slot.id}
+                              variant={isSelected ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => handleSlotSelect(slot.id)}
+                              className={cn(
+                                'h-12',
+                                isSelected
+                                  ? 'bg-primary text-white'
+                                  : 'hover:border-primary hover:text-primary',
+                              )}
+                            >
+                              {format(slotDate, 'h:mm a')}
+                            </Button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -685,17 +858,13 @@ export default function BookingPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <Sparkles className="w-5 h-5 text-primary" />
-                      <h2 className="font-semibold text-lg">Select Services</h2>
+                      <h2 className="font-semibold text-lg">Select Service</h2>
                     </div>
                     {availableServices.length === 0 ? (
                       <div className="text-center py-8">
                         <p className="text-gray-600 dark:text-gray-400">
-                          No services available for this slot. You can proceed without selecting
-                          services.
+                          No services available for this slot
                         </p>
-                        <Button onClick={handleNext} className="mt-4">
-                          Continue
-                        </Button>
                       </div>
                     ) : (
                       <RadioGroup
@@ -765,6 +934,7 @@ export default function BookingPage() {
 
                 {/* Step 4: Location Selection */}
                 {currentStep === 'location' &&
+                  selectedSlot &&
                   selectedService &&
                   availableLocationTypes.length > 0 && (
                     <div>
@@ -772,204 +942,139 @@ export default function BookingPage() {
                         <MapPin className="w-5 h-5 text-primary" />
                         <h2 className="font-semibold text-lg">Choose Location</h2>
                       </div>
-
-                      {availableLocationTypes.length === 1 ? (
-                        <div className="space-y-4">
-                          {availableLocationTypes[0] === LocationType.HOME ? (
-                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Home className="w-5 h-5 text-primary" />
-                                <span className="font-medium">Home Visit</span>
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="home-address" className="text-sm font-medium">
-                                  Your Address <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                  id="home-address"
-                                  placeholder="Enter your full address (street, city, postal code)"
-                                  value={homeAddress}
-                                  onChange={(e) => setHomeAddress(e.target.value)}
-                                  className="mt-1"
-                                />
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  Required for home visit bookings
-                                </p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Building2 className="w-5 h-5 text-primary" />
-                                <span className="font-medium">At Clinic</span>
-                              </div>
-                              {selectedSlotData?.slot?.location?.address && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                  {selectedSlotData.slot.location.address}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <RadioGroup
-                            value={locationType || undefined}
-                            onValueChange={(value) => {
-                              setLocationType(value as LocationType);
-                              if (value === LocationType.CLINIC) {
-                                setHomeAddress('');
-                              }
-                            }}
-                            className="space-y-4"
-                          >
-                            {availableLocationTypes.includes(LocationType.HOME) && (
-                              <div className="flex items-start gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                <RadioGroupItem
-                                  value={LocationType.HOME}
-                                  id="home"
-                                  className="mt-1"
-                                />
-                                <div className="flex-1">
-                                  <Label
-                                    htmlFor="home"
-                                    className="font-medium cursor-pointer flex items-center gap-2"
-                                  >
-                                    <Home className="w-5 h-5" />
-                                    At Home
-                                  </Label>
-                                </div>
-                              </div>
-                            )}
-
-                            {availableLocationTypes.includes(LocationType.CLINIC) && (
-                              <div className="flex items-start gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                <RadioGroupItem
-                                  value={LocationType.CLINIC}
-                                  id="clinic"
-                                  className="mt-1"
-                                />
-                                <div className="flex-1">
-                                  <Label
-                                    htmlFor="clinic"
-                                    className="font-medium cursor-pointer flex items-center gap-2"
-                                  >
-                                    <Building2 className="w-5 h-5" />
-                                    At Clinic
-                                  </Label>
-                                  {selectedSlotData?.slot?.location?.address && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                      {selectedSlotData.slot.location.address}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </RadioGroup>
-
-                          {/* Address field - always visible when HOME is an option */}
-                          {availableLocationTypes.includes(LocationType.HOME) && (
-                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <RadioGroup
+                        value={locationType || undefined}
+                        onValueChange={(value) => {
+                          setLocationType(value as LocationType);
+                          if (value === LocationType.CLINIC) {
+                            setHomeAddress('');
+                          }
+                        }}
+                        className="space-y-3"
+                      >
+                        {availableLocationTypes.includes(LocationType.HOME) && (
+                          <div className="flex items-start gap-3 p-4 border rounded-lg">
+                            <RadioGroupItem value={LocationType.HOME} id="home" className="mt-1" />
+                            <div className="flex-1">
                               <Label
-                                htmlFor="home-address"
-                                className="text-sm font-medium mb-2 block"
+                                htmlFor="home"
+                                className="font-medium cursor-pointer flex items-center gap-2"
                               >
-                                Your Address{' '}
-                                {locationType === LocationType.HOME && (
-                                  <span className="text-red-500">*</span>
-                                )}
+                                <Home className="w-5 h-5" />
+                                At Home
                               </Label>
-                              <Input
-                                id="home-address"
-                                placeholder="Enter your full address (street, city, postal code)"
-                                value={homeAddress}
-                                onChange={(e) => setHomeAddress(e.target.value)}
-                                className="mt-1"
-                              />
-                              {locationType === LocationType.HOME && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                  Required for home visit bookings. We'll use this address for the
-                                  therapist to visit you.
-                                </p>
-                              )}
-                              {locationType !== LocationType.HOME && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                  This address will be used if you select "At Home" location.
+                            </div>
+                          </div>
+                        )}
+                        {availableLocationTypes.includes(LocationType.CLINIC) && (
+                          <div className="flex items-start gap-3 p-4 border rounded-lg">
+                            <RadioGroupItem
+                              value={LocationType.CLINIC}
+                              id="clinic"
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <Label
+                                htmlFor="clinic"
+                                className="font-medium cursor-pointer flex items-center gap-2"
+                              >
+                                <Building2 className="w-5 h-5" />
+                                At Clinic
+                              </Label>
+                              {selectedSlotData?.location?.address && (
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                  {selectedSlotData.location.address}
                                 </p>
                               )}
                             </div>
+                          </div>
+                        )}
+                      </RadioGroup>
+
+                      {/* Address Input for Home Visits */}
+                      {availableLocationTypes.includes(LocationType.HOME) && (
+                        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <Label htmlFor="home-address" className="text-sm font-medium mb-2 block">
+                            Your Address{' '}
+                            {locationType === LocationType.HOME && (
+                              <span className="text-red-500">*</span>
+                            )}
+                          </Label>
+                          <Input
+                            id="home-address"
+                            placeholder="Enter your full address"
+                            value={homeAddress}
+                            onChange={(e) => setHomeAddress(e.target.value)}
+                            className="mt-1"
+                          />
+                          {locationType === LocationType.HOME && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                              Required for home visit bookings
+                            </p>
                           )}
                         </div>
                       )}
                     </div>
                   )}
 
-                {/* Step 5: Booking Summary */}
+                {/* Step 5: Summary */}
                 {currentStep === 'summary' && (
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <CheckCircle className="w-5 h-5 text-primary" />
                       <h2 className="font-semibold text-lg">Review & Confirm</h2>
                     </div>
-
                     <div className="space-y-4">
-                      {selectedSlotData && (
-                        <>
-                          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">Therapist:</span>
-                              <span className="font-medium">
-                                {selectedSlotData.freelancer?.name}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">Date & Time:</span>
-                              <span className="font-medium">
-                                {format(parseISO(selectedSlotData.slot.startTime), 'MMM d, h:mm a')}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">Services:</span>
-                              <span className="font-medium text-right">
-                                {selectedServiceData ? selectedServiceData.name : 'None selected'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">Location:</span>
-                              <span className="font-medium">
-                                {locationType === LocationType.HOME ? 'At Home' : 'At Clinic'}
-                              </span>
-                            </div>
-                            {locationType === LocationType.HOME && homeAddress && (
-                              <div className="text-sm text-gray-600 dark:text-gray-400 pt-2 border-t">
-                                <strong>Address:</strong> {homeAddress}
-                              </div>
-                            )}
-                            {locationType === LocationType.CLINIC &&
-                              selectedSlotData.slot.location?.address && (
-                                <div className="text-sm text-gray-600 dark:text-gray-400 pt-2 border-t">
-                                  <strong>Clinic:</strong> {selectedSlotData.slot.location.address}
-                                </div>
-                              )}
-                            <div className="flex justify-between pt-3 border-t">
-                              <span className="font-semibold text-lg">Total:</span>
-                              <span className="text-2xl font-bold text-primary">
-                                €{selectedSlotData.slot.basePrice.toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-
-                          <Button
-                            onClick={handleConfirm}
-                            disabled={isCreating}
-                            className="w-full"
-                            size="lg"
-                          >
-                            {isCreating ? 'Booking...' : 'Confirm Booking'}
-                          </Button>
-                        </>
+                      {selectedFreelancerData && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Therapist:</span>
+                          <span className="font-medium">
+                            {selectedFreelancerData.name || selectedFreelancerData.cardInfo?.name}
+                          </span>
+                        </div>
                       )}
+                      {selectedDate && selectedSlotData && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Date & Time:</span>
+                          <span className="font-medium">
+                            {format(parseISO(selectedSlotData.startTime), 'MMM d, h:mm a')}
+                          </span>
+                        </div>
+                      )}
+                      {selectedServiceData && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Service:</span>
+                          <span className="font-medium">{selectedServiceData.name}</span>
+                        </div>
+                      )}
+                      {locationType && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Location:</span>
+                          <span className="font-medium">
+                            {locationType === LocationType.HOME ? 'At Home' : 'At Clinic'}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-lg font-bold pt-4 border-t">
+                        <span>Total:</span>
+                        <span className="text-primary">€{totalPrice.toFixed(2)}</span>
+                      </div>
                     </div>
+                    <Button
+                      onClick={handleConfirm}
+                      disabled={
+                        isCreating || (locationType === LocationType.HOME && !homeAddress.trim())
+                      }
+                      className="w-full mt-6"
+                      size="lg"
+                    >
+                      {isCreating ? 'Confirming...' : 'Confirm Booking'}
+                    </Button>
+                    {locationType === LocationType.HOME && !homeAddress.trim() && (
+                      <p className="text-sm text-red-500 mt-2 text-center">
+                        Please enter your address to continue
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -1011,68 +1116,87 @@ export default function BookingPage() {
             </Card>
           )}
 
-          {/* Show message if no date selected */}
-          {!selectedDate && (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="font-semibold text-lg mb-2">Select a Date</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Choose a date from the calendar above to continue
-                </p>
-              </CardContent>
-            </Card>
+          {/* Address Dialog */}
+          <Dialog open={showAddressDialog} onOpenChange={setShowAddressDialog}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Enter Your Address</DialogTitle>
+                <DialogDescription>
+                  Please provide your full address for the home visit booking.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dialog-address">Your Address</Label>
+                  <Input
+                    id="dialog-address"
+                    placeholder="Enter your full address (street, city, postal code)"
+                    value={tempAddress}
+                    onChange={(e) => setTempAddress(e.target.value)}
+                    className="w-full"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && tempAddress.trim()) {
+                        handleSaveAddress();
+                      }
+                    }}
+                  />
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <MapPin className="w-4 h-4" />
+                  <span>Location: At Home</span>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAddressDialog(false);
+                    setTempAddress('');
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveAddress} disabled={!tempAddress.trim()}>
+                  Save & Continue
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Profile Dialog */}
+          {profileFreelancer && (
+            <ExpertProfileDialog
+              isOpen={showProfileDialog}
+              onClose={() => {
+                setShowProfileDialog(false);
+                setProfileFreelancer(null);
+              }}
+              expert={{
+                id: profileFreelancer.id,
+                name: profileFreelancer.name,
+                jobTitle: profileFreelancer.jobTitle,
+                rating: profileFreelancer.rating,
+                services: profileFreelancer.services,
+                sessionTypes: profileFreelancer.sessionTypes,
+                pricing: profileFreelancer.pricing,
+                availableSlots: profileFreelancer.availableSlots,
+                cardInfo: profileFreelancer.cardInfo,
+                verificationStatus: profileFreelancer.verificationStatus,
+                firstAidCertificateStatus: profileFreelancer.firstAidCertificateStatus,
+                onBookNow: () => {
+                  setShowProfileDialog(false);
+                  if (profileFreelancer) {
+                    handleSelectFreelancer(profileFreelancer);
+                  }
+                },
+                hasAvailableSlots: true,
+                stampInfo: profileFreelancer.stampInfo || undefined,
+              }}
+            />
           )}
         </div>
       </div>
-
-      {/* Address Dialog */}
-      <Dialog open={showAddressDialog} onOpenChange={setShowAddressDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Enter Your Address</DialogTitle>
-            <DialogDescription>
-              Please provide your full address for the home visit booking.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="dialog-address">Your Address</Label>
-              <Input
-                id="dialog-address"
-                placeholder="Enter your full address (street, city, postal code)"
-                value={tempAddress}
-                onChange={(e) => setTempAddress(e.target.value)}
-                className="w-full"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && tempAddress.trim()) {
-                    handleSaveAddress();
-                  }
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <MapPin className="w-4 h-4" />
-              <span>Location: At Home</span>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAddressDialog(false);
-                setTempAddress('');
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleSaveAddress} disabled={!tempAddress.trim()}>
-              Save & Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardPageWrapper>
   );
 }
