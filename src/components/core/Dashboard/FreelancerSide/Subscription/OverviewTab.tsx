@@ -93,9 +93,9 @@ export function OverviewTab({
       calculateDaysRemaining();
       const interval = setInterval(calculateDaysRemaining, 1000 * 60 * 60); // Update hourly
       return () => clearInterval(interval);
-    } else {
-      setGracePeriodDaysRemaining(null);
     }
+    setGracePeriodDaysRemaining(null);
+    return undefined;
   }, [gracePeriodEndDate]);
 
   if (isLoading) {

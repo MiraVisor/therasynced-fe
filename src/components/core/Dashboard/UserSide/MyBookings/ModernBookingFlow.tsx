@@ -201,7 +201,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
 
     const commonLocations = locationSets.reduce((intersection, locationSet) => {
       if (intersection.size === 0) return locationSet;
-      return new Set([...intersection].filter((loc) => locationSet.has(loc)));
+      return new Set(Array.from(intersection).filter((loc) => locationSet.has(loc)));
     });
 
     const result = Array.from(commonLocations);
@@ -225,13 +225,13 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
 
     if (availableLocationTypes.length === 1) {
       // Auto-select single available location
-      setSelectedLocationType(availableLocationTypes[0]);
+      setSelectedLocationType(availableLocationTypes[0] ?? null);
     } else if (availableLocationTypes.length > 1) {
       // Multiple options - default to CLINIC if available, otherwise first option
       if (availableLocationTypes.includes('CLINIC')) {
         setSelectedLocationType('CLINIC');
       } else {
-        setSelectedLocationType(availableLocationTypes[0]);
+        setSelectedLocationType(availableLocationTypes[0] ?? null);
       }
     }
   }, [availableLocationTypes]);

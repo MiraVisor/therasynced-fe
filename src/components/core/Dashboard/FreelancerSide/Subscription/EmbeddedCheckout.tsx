@@ -1,7 +1,7 @@
 'use client';
 
 import { StripeEmbeddedCheckout } from '@stripe/stripe-js';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   Dialog,
@@ -55,7 +55,7 @@ export function EmbeddedCheckout({
         }
 
         // Initialize embedded checkout with client secret
-        const checkout = await stripe.initEmbeddedCheckout({
+        const checkout: StripeEmbeddedCheckout = await stripe.initEmbeddedCheckout({
           clientSecret: clientSecret,
         });
 
@@ -67,13 +67,17 @@ export function EmbeddedCheckout({
         embeddedCheckoutRef.current = checkout;
 
         // Listen for checkout completion
-        checkout.on('complete', () => {
-          if (mounted) {
-            onSuccess();
-          }
-        });
+        // Type assertion needed as StripeEmbeddedCheckout type definition may be incomplete
+        (checkout as unknown as { on: (event: string, handler: () => void) => void }).on(
+          'complete',
+          () => {
+            if (mounted) {
+              onSuccess();
+            }
+          },
+        );
 
-        // Mount the checkout to the container
+        // Mount th e checkout to the container
         if (checkoutRef.current) {
           checkout.mount(checkoutRef.current);
         }
@@ -87,7 +91,7 @@ export function EmbeddedCheckout({
       }
     };
 
-    initializeCheckout();
+    void initializeCheckout();
 
     return () => {
       mounted = false;
@@ -98,13 +102,13 @@ export function EmbeddedCheckout({
     };
   }, [isOpen, clientSecret, onSuccess]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (embeddedCheckoutRef.current) {
       embeddedCheckoutRef.current.unmount();
       embeddedCheckoutRef.current = null;
     }
     onClose();
-  };
+  }, [onClose]);
 
   // Handle escape key
   useEffect(() => {
@@ -115,7 +119,7 @@ export function EmbeddedCheckout({
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [isOpen]);
+  }, [isOpen, handleClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

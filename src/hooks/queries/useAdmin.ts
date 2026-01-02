@@ -271,6 +271,13 @@ export const useAdminSubscriptions = () => {
   });
 };
 
+export const useSubscriptionMetrics = (startDate?: Date | string, endDate?: Date | string) => {
+  return useQuery({
+    queryKey: ['adminFinance', 'subscriptionMetrics', startDate, endDate],
+    queryFn: () => adminFinanceService.getSubscriptionMetrics(startDate, endDate),
+  });
+};
+
 // Admin User Subscription Management
 export const useAdminUserSubscriptions = (filters?: AdminSubscriptionFilters) => {
   return useQuery({

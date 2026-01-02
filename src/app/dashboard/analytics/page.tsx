@@ -17,7 +17,6 @@ import {
   useFreelancerAnalyticsOverview,
   useFreelancerBookingAnalytics,
   useFreelancerClientAnalytics,
-  useFreelancerLocationAnalytics,
   useFreelancerRatingAnalytics,
   useFreelancerRevenueAnalytics,
   useFreelancerServiceAnalytics,
@@ -58,24 +57,9 @@ const AnalyticsPage = () => {
     error: bookingError,
   } = useFreelancerBookingAnalytics();
 
-  const {
-    data: serviceData,
-    isLoading: isLoadingServices,
-    error: serviceError,
-  } = useFreelancerServiceAnalytics();
+  const { data: serviceData, isLoading: isLoadingServices } = useFreelancerServiceAnalytics();
 
-  const {
-    data: ratingData,
-    isLoading: isLoadingRatings,
-    error: ratingError,
-  } = useFreelancerRatingAnalytics();
-
-  const {
-    data: locationData,
-    isLoading: isLoadingLocations,
-    error: locationError,
-  } = useFreelancerLocationAnalytics();
-
+  const { data: ratingData, isLoading: isLoadingRatings } = useFreelancerRatingAnalytics();
   // Show error toasts
   useEffect(() => {
     if (overviewError && !overviewData) {
@@ -108,9 +92,6 @@ const AnalyticsPage = () => {
       maximumFractionDigits: 0,
     })}`;
   };
-
-  // Calculate overall loading state
-  const isLoading = isLoadingOverview || isLoadingRevenue || isLoadingClients;
 
   // Transform booking data for BookingPerformanceChart
   const bookingPerformanceData = bookingData

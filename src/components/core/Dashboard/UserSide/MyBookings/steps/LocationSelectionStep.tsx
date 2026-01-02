@@ -28,7 +28,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
 
   // If only one location type is available, auto-select it
   if (availableLocationTypes.length === 1 && !selectedLocationType) {
-    setSelectedLocationType(availableLocationTypes[0]);
+    setSelectedLocationType(availableLocationTypes[0] ?? null);
   }
 
   const handleLocationChange = (value: string) => {

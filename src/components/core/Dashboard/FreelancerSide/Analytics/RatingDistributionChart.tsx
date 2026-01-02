@@ -124,9 +124,12 @@ const RatingDistributionChart = ({ data, isLoading = false }: RatingDistribution
                 }}
                 formatter={(
                   value: number,
-                  name: string,
-                  props: { payload: (typeof chartData)[0] },
-                ) => [`${value} (${props.payload.percentage.toFixed(1)}%)`, 'Ratings']}
+                  _name: string,
+                  entry?: { payload?: { rating: string; count: number; percentage: number } },
+                ) => {
+                  const percentage = entry?.payload?.percentage ?? 0;
+                  return [`${value} (${percentage.toFixed(1)}%)`, 'Ratings'];
+                }}
               />
               <Bar
                 dataKey="count"

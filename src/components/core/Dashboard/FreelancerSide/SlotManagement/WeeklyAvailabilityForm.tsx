@@ -58,7 +58,7 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
   });
 
   const [formData, setFormData] = useState<{
-    locationType: LocationType;
+    locationType: LocationType | undefined;
     basePrice: number;
   }>({
     locationType: undefined, // Optional - defaults to CLINIC if not provided

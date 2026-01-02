@@ -193,8 +193,11 @@ const BookingPerformanceChart = ({ data, isLoading = false }: BookingPerformance
                 formatter={(
                   value: number,
                   name: string,
-                  props: { payload: (typeof chartData)[0] },
-                ) => [`${value.toFixed(1)}%`, props.payload.name]}
+                  entry?: { payload?: { name: string } },
+                ) => {
+                  const displayName = entry?.payload?.name ?? name;
+                  return [`${value.toFixed(1)}%`, displayName];
+                }}
               />
               <Bar
                 dataKey="value"
@@ -202,8 +205,8 @@ const BookingPerformanceChart = ({ data, isLoading = false }: BookingPerformance
                 maxBarSize={60}
                 className="hover:opacity-80 transition-all duration-200"
               >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {chartData.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>

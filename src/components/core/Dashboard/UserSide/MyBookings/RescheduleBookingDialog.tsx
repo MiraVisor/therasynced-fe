@@ -123,7 +123,7 @@ export function RescheduleBookingDialog({
         setSelectedServiceCategoryId(matchingCategory.id);
       } else if (availableServiceCategories.length === 1) {
         // Auto-select if only one option
-        setSelectedServiceCategoryId(availableServiceCategories[0].id);
+        setSelectedServiceCategoryId(availableServiceCategories[0]?.id ?? null);
       }
     }
   }, [availableServiceCategories, selectedServiceCategoryId, booking]);
@@ -207,11 +207,6 @@ export function RescheduleBookingDialog({
   const today = startOfToday();
 
   // Get dates with available slots for calendar display
-  const datesWithSlots = useMemo(() => {
-    // This would ideally come from a separate API call that returns dates with slots
-    // For now, we'll just enable all future dates
-    return new Set<string>();
-  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

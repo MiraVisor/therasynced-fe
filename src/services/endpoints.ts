@@ -295,6 +295,7 @@ export const ENDPOINTS = {
     finance: {
       getRevenue: '/admin/finance/revenue',
       getSubscriptions: '/admin/finance/subscriptions',
+      getMetrics: '/subscription/metrics',
       getTransactions: '/admin/transactions',
       getTransactionDetails: (id: string) => `/admin/transactions/${id}`,
       getTransactionInvoice: (id: string) => `/admin/transactions/${id}/invoice`,
