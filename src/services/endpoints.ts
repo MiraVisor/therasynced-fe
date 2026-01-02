@@ -29,6 +29,7 @@ export const ENDPOINTS = {
     mySlots: '/slot/my-slots', // For freelancer's own slots
     bookedSlots: '/slot/booked-slots',
     available: (freelancerId: string) => `/slot/available/${freelancerId}`,
+    availableByDate: '/slot/available-by-date', // NEW: Get slots by date
     update: (id: string) => `/slot/${id}`,
     delete: (id: string) => `/slot/${id}`,
     deleteDay: (date: string) => `/slot/day/${date}`, // Delete all slots for a specific day

@@ -42,6 +42,7 @@ interface UserProfile {
   mainJobTitle?: JobTitle;
   mainJobTitleId?: string;
   clinicAddress?: string;
+  homeAddress?: string; // Home address for bookings
 }
 
 export function ProfileSection() {
@@ -62,6 +63,7 @@ export function ProfileSection() {
     mainJobTitle: undefined,
     mainJobTitleId: undefined,
     clinicAddress: '',
+    homeAddress: '',
   });
 
   useEffect(() => {
@@ -107,6 +109,7 @@ export function ProfileSection() {
         mainJobTitleId: profileData.mainJobTitle?.id,
         mainJobTitle: profileData.mainJobTitle,
         clinicAddress: profileData.clinicAddress || '',
+        homeAddress: profileData.homeAddress || '',
       });
     }
   }, [profileData]);
@@ -179,6 +182,7 @@ export function ProfileSection() {
         gender?: string;
         dob?: string;
         description?: string;
+        homeAddress?: string;
       } = {
         name: formData.name.trim(),
       };
@@ -194,6 +198,9 @@ export function ProfileSection() {
       }
       if (formData.description?.trim()) {
         updateData.description = formData.description.trim();
+      }
+      if (formData.homeAddress?.trim()) {
+        updateData.homeAddress = formData.homeAddress.trim();
       }
 
       updateProfile(updateData, {
@@ -315,6 +322,27 @@ export function ProfileSection() {
               />
             </div>
           </div>
+
+          {/* Home Address - Only for patients */}
+          {role === ROLES.PATIENT && (
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="homeAddress" className="text-sm font-medium text-gray-700">
+                Home Address
+              </Label>
+              <Input
+                id="homeAddress"
+                placeholder="Enter your home address for bookings"
+                value={formData.homeAddress || ''}
+                onChange={(e) => handleInputChange('homeAddress', e.target.value)}
+                className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+                disabled={((initialLoading || loading) && !profileData) || isPersonalInfoLoading}
+              />
+              <p className="text-xs text-gray-500">
+                This address will be used for home visit bookings. You can leave it empty and
+                provide it when booking.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="gender" className="text-sm font-medium text-gray-700">

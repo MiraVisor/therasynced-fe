@@ -30,6 +30,7 @@ export interface UserProfileData {
   mainJobTitle?: JobTitle;
   mainJobTitleId?: string;
   clinicAddress?: string;
+  homeAddress?: string; // NEW: Home address for bookings
   verificationDocuments?: string[];
   verificationRequestedAt?: Date | null;
   verificationApprovedAt?: Date | null;

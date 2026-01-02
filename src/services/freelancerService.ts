@@ -77,6 +77,7 @@ export interface SearchFreelancersParams {
   minRating?: number;
   tier?: string[];
   query?: string;
+  date?: string; // NEW: ISO date format YYYY-MM-DD - filter by date
 }
 
 export const searchFreelancers = async (

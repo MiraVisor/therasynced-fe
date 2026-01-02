@@ -1,15 +1,17 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { DataTable, FilterOption } from '@/components/common/DataTable/data-table';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBookings/BookingDetailsModal';
-import { DayBookingSection } from '@/components/core/Dashboard/UserSide/MyBookings/DayBookingSection';
+import { createBookingColumns } from '@/components/core/Dashboard/UserSide/MyBookings/BookingTableColumns';
+import { RescheduleBookingDialog } from '@/components/core/Dashboard/UserSide/MyBookings/RescheduleBookingDialog';
 import { RatingModal } from '@/components/core/Dashboard/UserSide/Ratings/RatingModal';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -24,12 +26,19 @@ import {
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { BookingCardSkeleton } from '@/components/ui/skeletons/BookingCardSkeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   useCancelBooking,
   usePatientBookings,
   usePatientBookingStats,
 } from '@/hooks/queries/useBookings';
+import { cn } from '@/lib/utils';
 import { Booking, BookingStats } from '@/types/types';
 
 // Stats Section Component
@@ -91,36 +100,30 @@ const BookingStatsComponent = ({
 
 export default function MyBookingsPage() {
   const router = useRouter();
-  const [searchTerm, _setSearchTerm] = useState('');
-  const [statusFilter, _setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [serviceCategoryFilter, setServiceCategoryFilter] = useState<string>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [currentWeekStart, setCurrentWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 }),
-  );
-  const [isNavigatingWeek, setIsNavigatingWeek] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [bookingToRate, setBookingToRate] = useState<Booking | null>(null);
 
-  // Calculate week date for query
-  const weekDate = currentWeekStart.toISOString().split('T')[0];
-
-  // Use React Query hooks
+  // Use React Query hooks - fetch all bookings without date filter
   const {
     data: bookings = [],
-    isLoading: loading,
     isFetching: initialLoading,
     error,
   } = usePatientBookings({
     page: 1,
     limit: 1000,
     sortBy: 'slot.startTime',
-    sortOrder: 'asc',
-    date: weekDate,
+    sortOrder: 'desc', // Show newest first
   });
 
   const {
@@ -131,20 +134,16 @@ export default function MyBookingsPage() {
   const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
 
   // Show error toast only when no cached data exists
-  useEffect(() => {
-    if (error && bookings.length === 0) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load bookings';
-      toast.error(errorMessage);
-    }
-  }, [error, bookings]);
+  if (error && bookings.length === 0) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to load bookings';
+    toast.error(errorMessage);
+  }
 
-  useEffect(() => {
-    if (statsError && !bookingStats) {
-      const errorMessage =
-        statsError instanceof Error ? statsError.message : 'Failed to load booking stats';
-      toast.error(errorMessage);
-    }
-  }, [statsError, bookingStats]);
+  if (statsError && !bookingStats) {
+    const errorMessage =
+      statsError instanceof Error ? statsError.message : 'Failed to load booking stats';
+    toast.error(errorMessage);
+  }
 
   // Handler functions for booking actions
   const handleMessage = (booking: Booking) => {
@@ -152,11 +151,10 @@ export default function MyBookingsPage() {
     router.push(`/dashboard/messages?freelancerId=${booking.slot.freelancer.id}`);
   };
 
+  const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
+
   const handleReschedule = (booking: Booking) => {
-    // Navigate to freelancer page for rescheduling
-    if (booking.slot?.freelancer?.id) {
-      router.push(`/dashboard/freelancer/${booking.slot.freelancer.id}`);
-    }
+    setRescheduleBooking(booking);
   };
 
   const handleCancel = (booking: Booking) => {
@@ -205,80 +203,129 @@ export default function MyBookingsPage() {
 
   const queryClient = useQueryClient();
 
-  const navigateWeek = (direction: 'prev' | 'next') => {
-    setIsNavigatingWeek(true);
-    if (direction === 'prev') {
-      const newWeekStart = addDays(currentWeekStart, -7);
-      setCurrentWeekStart(newWeekStart);
-    } else {
-      const newWeekStart = addDays(currentWeekStart, 7);
-      setCurrentWeekStart(newWeekStart);
-    }
-    // React Query will automatically refetch when currentWeekStart changes
-    setTimeout(() => setIsNavigatingWeek(false), 500);
-  };
+  // Get unique service categories from bookings
+  const uniqueServiceCategories = useMemo(() => {
+    const categories = new Map<string, string>();
+    bookings.forEach((booking) => {
+      const serviceCats = booking.serviceCategories || booking.services || [];
+      serviceCats.forEach((cat) => {
+        if (!categories.has(cat.id)) {
+          categories.set(cat.id, cat.name);
+        }
+      });
+    });
+    return Array.from(categories.entries()).map(([id, name]) => ({ id, name }));
+  }, [bookings]);
 
-  // Calendar date picker handler
-  const handleCalendarDateSelect = (date: Date | undefined) => {
-    if (date) {
-      const newWeekStart = startOfWeek(date, { weekStartsOn: 1 });
-      setCurrentWeekStart(newWeekStart);
-      // React Query will automatically refetch
-    }
-  };
+  // Filter bookings based on all filters
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((booking: Booking) => {
+      const bookingDate = new Date(booking.slot.startTime);
+      const now = new Date();
+      const isPast = bookingDate < now;
+      const isUpcoming = booking.status === 'CONFIRMED' && !isPast;
 
-  // Get all days in the current week for highlighting
-
-  // Filter and sort bookings based on search, status, and date
-  const filteredBookings = bookings
-    .filter((booking: Booking) => {
-      const matchesSearch =
-        booking.slot.freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (booking.serviceCategories &&
-          booking.serviceCategories.length > 0 &&
-          booking.serviceCategories.some((cat) =>
-            cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
-          )) ||
-        (booking.services &&
-          booking.services.length > 0 &&
-          booking.services[0]?.name.toLowerCase().includes(searchTerm.toLowerCase()));
-
+      // Status filter
       const matchesStatus = (() => {
-        if (!statusFilter) return true;
-        if (statusFilter === 'upcoming') {
-          return booking.status === 'CONFIRMED' && new Date(booking.slot.startTime) > new Date();
+        if (statusFilter === 'all') return true;
+        if (statusFilter === 'upcoming') return isUpcoming;
+        if (statusFilter === 'completed') return isPast || booking.status === 'COMPLETED';
+        if (statusFilter === 'cancelled') return booking.status === 'CANCELLED';
+        if (statusFilter === 'rescheduled') return booking.status === 'RESCHEDULED';
+        return true;
+      })();
+
+      // Date range filter
+      const matchesDateRange = (() => {
+        if (dateRangeFilter === 'all') return true;
+        const daysDiff = Math.ceil((bookingDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        if (dateRangeFilter === 'today') {
+          return format(bookingDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
         }
-        if (statusFilter === 'completed') {
-          return new Date(booking.slot.startTime) < new Date();
+        if (dateRangeFilter === 'thisWeek') {
+          return daysDiff >= 0 && daysDiff <= 7;
         }
-        if (statusFilter === 'cancelled') {
-          return booking.status === 'CANCELLED';
+        if (dateRangeFilter === 'thisMonth') {
+          return daysDiff >= 0 && daysDiff <= 30;
+        }
+        if (dateRangeFilter === 'past') {
+          return isPast;
         }
         return true;
       })();
 
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a: Booking, b: Booking) => {
-      // Sort by date: closest to furthest
-      const dateA = new Date(a.slot.startTime).getTime();
-      const dateB = new Date(b.slot.startTime).getTime();
-      return dateA - dateB;
+      // Specific date filter
+      const matchesSpecificDate = (() => {
+        if (!selectedDate) return true;
+        return format(bookingDate, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+      })();
+
+      // Service category filter
+      const matchesServiceCategory = (() => {
+        if (serviceCategoryFilter === 'all') return true;
+        const serviceCats = booking.serviceCategories || booking.services || [];
+        return serviceCats.some((cat) => cat.id === serviceCategoryFilter);
+      })();
+
+      // Location filter
+      const matchesLocation = (() => {
+        if (locationFilter === 'all') return true;
+        return booking.slot.locationType === locationFilter;
+      })();
+
+      return (
+        matchesStatus &&
+        matchesDateRange &&
+        matchesSpecificDate &&
+        matchesServiceCategory &&
+        matchesLocation
+      );
     });
+  }, [
+    bookings,
+    statusFilter,
+    dateRangeFilter,
+    selectedDate,
+    serviceCategoryFilter,
+    locationFilter,
+  ]);
 
-  const getWeekDays = () => {
-    const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
-    return eachDayOfInterval({ start: currentWeekStart, end: weekEnd });
-  };
+  // Create table columns
+  const columns = useMemo(
+    () =>
+      createBookingColumns({
+        onBookingClick: handleBookingClick,
+        onMessage: handleMessage,
+        onReschedule: handleReschedule,
+        onCancel: handleCancel,
+        onRate: handleReview,
+        cancellingBookingId,
+      }),
+    [cancellingBookingId],
+  );
 
-  const getBookingsForDate = (date: Date) => {
-    return filteredBookings.filter((booking: Booking) => {
-      const bookingDate = new Date(booking.slot.startTime);
-      return isSameDay(bookingDate, date);
-    });
-  };
+  // Filter options
+  const statusFilterOptions: FilterOption[] = [
+    { label: 'All Bookings', value: 'all' },
+    { label: 'Upcoming', value: 'upcoming' },
+    { label: 'Completed', value: 'completed' },
+    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'Rescheduled', value: 'rescheduled' },
+  ];
 
-  const weekDays = getWeekDays();
+  const dateRangeFilterOptions: FilterOption[] = [
+    { label: 'All Dates', value: 'all' },
+    { label: 'Today', value: 'today' },
+    { label: 'This Week', value: 'thisWeek' },
+    { label: 'This Month', value: 'thisMonth' },
+    { label: 'Past', value: 'past' },
+  ];
+
+  const locationFilterOptions: FilterOption[] = [
+    { label: 'All Locations', value: 'all' },
+    { label: 'Home', value: 'HOME' },
+    { label: 'Clinic', value: 'CLINIC' },
+  ];
 
   return (
     <DashboardPageWrapper
@@ -318,120 +365,139 @@ export default function MyBookingsPage() {
           {/* Stats Section */}
           <BookingStatsComponent stats={bookingStats || null} isLoading={isLoadingStats} />
 
-          {/* Week Navigation */}
-          <div className="flex items-center justify-between gap-4 w-full">
-            <div className="flex items-center justify-between gap-4 w-full">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateWeek('prev')}
-                className="h-10 w-10 p-0"
-                disabled={isNavigatingWeek}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
+          {/* Bookings Table with Filters Inside */}
+          <div className="border rounded-lg overflow-hidden">
+            {/* Table Header with Title */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-b bg-white">
+              <h2 className="font-poppins text-[22px] font-bold tracking-tight text-charcoal">
+                My Bookings
+              </h2>
+            </div>
 
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="text-base lg:text-lg font-semibold text-charcoal hover:bg-gray-100 px-4 py-2"
-                    disabled={isNavigatingWeek}
-                  >
-                    {format(currentWeekStart, 'MMM d')} -{' '}
-                    {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center">
-                  <Calendar
-                    mode="single"
-                    selected={currentWeekStart}
-                    onSelect={(date) => {
-                      if (date) {
-                        handleCalendarDateSelect(date);
-                      }
-                    }}
-                    initialFocus
-                    className="rounded-md border"
-                    captionLayout="dropdown"
-                    fromYear={2020}
-                    toYear={2030}
-                  />
-                </PopoverContent>
-              </Popover>
+            {/* Filters Section Inside Table */}
+            <div className="px-4 py-4 border-b bg-gray-50">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  {/* Status Filter */}
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[160px] h-9">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusFilterOptions.map((option) => (
+                        <SelectItem key={option.value} value={String(option.value)}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateWeek('next')}
-                className="h-10 w-10 p-0"
-                disabled={isNavigatingWeek}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+                  {/* Date Range Filter */}
+                  <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
+                    <SelectTrigger className="w-full sm:w-[160px] h-9">
+                      <SelectValue placeholder="Filter by date range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dateRangeFilterOptions.map((option) => (
+                        <SelectItem key={option.value} value={String(option.value)}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Specific Date Filter */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          'w-full sm:w-[160px] h-9 justify-start text-left font-normal',
+                          !selectedDate && 'text-muted-foreground',
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, 'MMM d, yyyy') : 'Select date'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => {
+                          setSelectedDate(date);
+                          if (date) {
+                            setDateRangeFilter('all'); // Reset date range when specific date is selected
+                          }
+                        }}
+                        initialFocus
+                      />
+                      {selectedDate && (
+                        <div className="p-3 border-t">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => {
+                              setSelectedDate(undefined);
+                            }}
+                          >
+                            Clear Date
+                          </Button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Service Category Filter */}
+                  <Select value={serviceCategoryFilter} onValueChange={setServiceCategoryFilter}>
+                    <SelectTrigger className="w-full sm:w-[160px] h-9">
+                      <SelectValue placeholder="Filter by service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Services</SelectItem>
+                      {uniqueServiceCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Location Filter */}
+                  <Select value={locationFilter} onValueChange={setLocationFilter}>
+                    <SelectTrigger className="w-full sm:w-[160px] h-9">
+                      <SelectValue placeholder="Filter by location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locationFilterOptions.map((option) => (
+                        <SelectItem key={option.value} value={String(option.value)}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Content - Use DataTable but without its border */}
+            <div className="[&>div]:border-0 [&>div]:rounded-none">
+              <DataTable
+                columns={columns}
+                data={filteredBookings}
+                title=""
+                enableSorting={false}
+                enableFiltering={false}
+                enablePagination={true}
+                pageSize={10}
+                showSearch={false}
+                showSorting={false}
+                loading={initialLoading}
+                initialLoading={initialLoading}
+              />
             </div>
           </div>
-
-          {/* Day Sections */}
-          {initialLoading || (loading && bookings.length === 0) ? (
-            <div className="space-y-4">
-              {weekDays.map((date) => (
-                <div key={date.toISOString()}>
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-soft overflow-hidden">
-                    <div className="p-4 lg:p-6">
-                      <div className="flex items-center gap-3 lg:gap-4 flex-1 text-left">
-                        <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded animate-pulse w-32" />
-                        <div className="flex gap-2">
-                          <div className="h-5 bg-gray-200 dark:bg-gray-700/20 rounded animate-pulse w-16" />
-                          <div className="h-5 bg-gray-200 dark:bg-gray-700/20 rounded animate-pulse w-16" />
-                          <div className="h-5 bg-gray-200 dark:bg-gray-700/20 rounded animate-pulse w-16" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="px-4 lg:px-6 pb-4 lg:pb-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                          <BookingCardSkeleton key={i} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : bookings.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <CalendarIcon className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
-                No bookings this week
-              </h3>
-              <p className="font-inter text-muted-foreground">
-                You don&apos;t have any bookings for this week. Try navigating to a different week.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {weekDays.map((date) => {
-                const dayBookings = getBookingsForDate(date);
-                return (
-                  <div key={date.toISOString()}>
-                    <DayBookingSection
-                      date={date}
-                      bookings={dayBookings}
-                      onBookingClick={handleBookingClick}
-                      onMessage={handleMessage}
-                      onReschedule={handleReschedule}
-                      onCancel={handleCancel}
-                      onRate={handleReview}
-                      cancellingBookingId={cancellingBookingId}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       )}
 
@@ -530,6 +596,21 @@ export default function MyBookingsPage() {
         booking={bookingToRate}
         onSuccess={handleRatingSuccess}
       />
+
+      {/* Reschedule Booking Dialog */}
+      {rescheduleBooking && (
+        <RescheduleBookingDialog
+          open={!!rescheduleBooking}
+          onOpenChange={(open) => {
+            if (!open) setRescheduleBooking(null);
+          }}
+          booking={rescheduleBooking}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['bookings'] });
+            setRescheduleBooking(null);
+          }}
+        />
+      )}
     </DashboardPageWrapper>
   );
 }

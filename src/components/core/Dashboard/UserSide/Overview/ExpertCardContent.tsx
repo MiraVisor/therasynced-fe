@@ -46,6 +46,7 @@ interface ExpertCardContentProps extends Partial<Expert> {
     customConfigApplied: boolean;
   } | null;
   onViewProfile: () => void;
+  showBookNow?: boolean;
 }
 
 export const ExpertCardContent = memo(
@@ -64,6 +65,7 @@ export const ExpertCardContent = memo(
     planFeatures,
     stampInfo,
     onViewProfile,
+    showBookNow = true,
   }: ExpertCardContentProps) => {
     const router = useRouter();
     const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
@@ -233,39 +235,50 @@ export const ExpertCardContent = memo(
                 <Button
                   variant="outline"
                   className="flex-1 border-primary text-primary  h-9 text-sm"
-                  onClick={onViewProfile}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewProfile();
+                  }}
                 >
                   View Profile
                 </Button>
-                {hasAvailableSlots ? (
-                  <Button
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
-                    onClick={handleBookNow}
-                  >
-                    Book Now
-                  </Button>
-                ) : (
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="flex-1">
-                          <Button
-                            className="w-full !bg-primary/50 !text-white shadow-sm h-9 text-sm opacity-60 cursor-not-allowed hover:!bg-primary/50"
-                            disabled
-                            style={{ cursor: 'disabled' }}
-                          >
-                            Book Now
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
-                        <div className="flex items-center gap-2">
-                          <span className="text-orange-400">⚠️</span>
-                          <span>No slots available</span>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                {showBookNow && (
+                  <>
+                    {hasAvailableSlots ? (
+                      <Button
+                        className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookNow();
+                        }}
+                      >
+                        Book Now
+                      </Button>
+                    ) : (
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="flex-1">
+                              <Button
+                                className="w-full !bg-primary/50 !text-white shadow-sm h-9 text-sm opacity-60 cursor-not-allowed hover:!bg-primary/50"
+                                disabled
+                                style={{ cursor: 'disabled' }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Book Now
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
+                            <div className="flex items-center gap-2">
+                              <span className="text-orange-400">⚠️</span>
+                              <span>No slots available</span>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -68,6 +68,7 @@ export interface ServiceCategory {
     id: string;
     name: string;
   };
+  locationTypes?: ('HOME' | 'CLINIC')[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
 }
 
 /**
