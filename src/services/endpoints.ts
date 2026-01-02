@@ -31,6 +31,7 @@ export const ENDPOINTS = {
     available: (freelancerId: string) => `/slot/available/${freelancerId}`,
     update: (id: string) => `/slot/${id}`,
     delete: (id: string) => `/slot/${id}`,
+    deleteDay: (date: string) => `/slot/day/${date}`, // Delete all slots for a specific day
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
     reserve: (slotId: string) => `/slots/${slotId}/reserve`,
     release: (slotId: string) => `/slots/${slotId}/release`,
@@ -83,7 +84,14 @@ export const ENDPOINTS = {
     // Form templates
     formSignedUrl: (id: string) => `/freelancer/forms/${id}/signed-url`,
     stats: '/freelancer/admin/stats',
-    analytics: '/freelancer/analytics',
+    analytics: '/freelancer/analytics', // Legacy endpoint - kept for backward compatibility
+    analyticsOverview: '/freelancer/analytics/overview',
+    analyticsRevenue: '/freelancer/analytics/revenue',
+    analyticsClients: '/freelancer/analytics/clients',
+    analyticsBookings: '/freelancer/analytics/bookings',
+    analyticsServices: '/freelancer/analytics/services',
+    analyticsRatings: '/freelancer/analytics/ratings',
+    analyticsLocations: '/freelancer/analytics/locations',
     tierBronze: '/freelancer/tier/bronze',
     tierSilver: '/freelancer/tier/silver',
     tierGold: '/freelancer/tier/gold',
@@ -107,6 +115,8 @@ export const ENDPOINTS = {
     getAll: '/service/categories/all', // Flat list (recommended for pricing setup)
     getGrouped: '/service/categories', // Grouped by job title
     getByJobTitle: (jobTitle: string) => `/service-categories/${jobTitle}`,
+    getCategoryByFreelancerId: (freelancerId: string) =>
+      `/service/categories/freelancer/${freelancerId}`, // Get categories by freelancer ID
   },
   // Job titles endpoints
   jobTitles: {

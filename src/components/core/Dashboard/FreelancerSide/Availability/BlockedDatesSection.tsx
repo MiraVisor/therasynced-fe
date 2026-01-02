@@ -1,8 +1,8 @@
 'use client';
 
 import { format, startOfDay } from 'date-fns';
-import { CalendarIcon, X } from 'lucide-react';
-import { useState } from 'react';
+import { X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -10,25 +10,73 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useBlockDates, useBlockedDates, useUnblockDates } from '@/hooks/queries/useAvailability';
-import { cn } from '@/lib/utils';
+import { useMySlots } from '@/hooks/queries/useSlots';
+import type { Slot } from '@/types/types';
 import { formatDateForAPI } from '@/utils/slotUtils';
 
 export const BlockedDatesSection = () => {
-  const { data: blockedDates = [], isLoading } = useBlockedDates();
+  const { data: blockedDates = [], isLoading: isLoadingBlocked } = useBlockedDates();
   const { mutate: blockDates, isPending: isBlocking } = useBlockDates();
   const { mutate: unblockDates, isPending: isUnblocking } = useUnblockDates();
 
+  // Fetch all slots to show on calendar
+  const { data: allSlots = [], isLoading: isLoadingSlots } = useMySlots({
+    page: 1,
+    limit: 1000,
+    sortBy: 'startTime',
+    sortOrder: 'asc',
+  });
+
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [reason, setReason] = useState('');
+
+  const isLoading = isLoadingBlocked || isLoadingSlots;
+
+  // Group slots by date
+  const slotsByDate = useMemo(() => {
+    const grouped: Record<string, Slot[]> = {};
+    allSlots.forEach((slot: Slot) => {
+      const dateString = formatDateForAPI(new Date(slot.startTime));
+      if (!grouped[dateString]) {
+        grouped[dateString] = [];
+      }
+      grouped[dateString].push(slot);
+    });
+    return grouped;
+  }, [allSlots]);
+
+  // Get dates with slots
+  const datesWithSlots = useMemo(() => {
+    return new Set(Object.keys(slotsByDate));
+  }, [slotsByDate]);
+
+  // Get blocked dates as Date objects
+  const blockedDatesAsDates = useMemo(() => {
+    return blockedDates.map((bd) => new Date(bd.date));
+  }, [blockedDates]);
+
+  // Get blocked dates set for quick lookup
+  const blockedDatesSet = useMemo(() => {
+    return new Set(blockedDates.map((bd) => formatDateForAPI(new Date(bd.date))));
+  }, [blockedDates]);
 
   const handleBlockDates = () => {
     if (selectedDates.length === 0) {
       return;
     }
 
-    const dateStrings = selectedDates.map((date) => formatDateForAPI(date));
+    // Filter out dates that are already blocked
+    const datesToBlock = selectedDates.filter((date) => {
+      const dateString = formatDateForAPI(date);
+      return !blockedDatesSet.has(dateString);
+    });
+
+    if (datesToBlock.length === 0) {
+      return;
+    }
+
+    const dateStrings = datesToBlock.map((date) => formatDateForAPI(date));
     blockDates(
       {
         dates: dateStrings,
@@ -82,40 +130,48 @@ export const BlockedDatesSection = () => {
             </p>
           </div>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  'w-full justify-start text-left font-normal',
-                  selectedDates.length === 0 && 'text-muted-foreground',
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDates.length === 0
-                  ? 'Select dates'
-                  : `${selectedDates.length} date${selectedDates.length !== 1 ? 's' : ''} selected`}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="multiple"
-                selected={selectedDates}
-                onSelect={(dates) => setSelectedDates(dates || [])}
-                disabled={(date) => {
-                  const today = startOfDay(new Date());
-                  return date < today;
-                }}
-                modifiers={{
-                  blocked: blockedDates.map((bd) => new Date(bd.date)),
-                }}
-                modifiersClassNames={{
-                  blocked: 'bg-red-100 text-red-800 line-through',
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          {/* Calendar with slot indicators - same as BookingPagePreview */}
+          <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <Calendar
+              mode="multiple"
+              selected={selectedDates}
+              onSelect={(dates) => setSelectedDates(dates || [])}
+              disabled={(date) => {
+                const today = startOfDay(new Date());
+                const dateToCheck = startOfDay(date);
+                const dateString = formatDateForAPI(dateToCheck);
+                // Disable past dates and already-blocked dates
+                return dateToCheck < today || blockedDatesSet.has(dateString);
+              }}
+              modifiers={{
+                hasSlots: Array.from(datesWithSlots).map((d) => {
+                  const [yearStr, monthStr, dayStr] = d.split('-');
+                  const year = Number(yearStr) || 0;
+                  const month = Number(monthStr) || 0;
+                  const day = Number(dayStr) || 0;
+                  // JavaScript Date months are 0-indexed (0-11), but parsed month is 1-indexed (1-12)
+                  return new Date(year, month - 1, day);
+                }),
+                blocked: blockedDatesAsDates,
+              }}
+              modifiersClassNames={{
+                hasSlots: 'bg-primary/10 text-primary font-semibold',
+                blocked: 'bg-red-100 text-red-800 line-through border-red-300',
+              }}
+              captionLayout="dropdown"
+              className="rounded-lg"
+            />
+          </div>
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-primary border border-primary/20 rounded" />
+              <span>Has slots</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-100 border border-red-300 rounded line-through" />
+              <span>Blocked</span>
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="reason" className="text-sm font-semibold text-charcoal">

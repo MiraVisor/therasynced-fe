@@ -77,6 +77,7 @@ export interface BookingStats {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
   clientAddress?: string;
   notes?: string;
 }

@@ -2,11 +2,21 @@
  * Pricing-related types
  */
 
+export type LocationType = 'HOME' | 'CLINIC';
+
+export interface LocationPricing {
+  locationType: LocationType;
+  price: number;
+  currency?: string; // Default: EUR
+}
+
 export interface ServicePricing {
   serviceId: string;
   serviceName: string;
-  price: number;
+  price: number; // Legacy field for backward compatibility
   currency?: string; // Default: EUR
+  // New location-based structure
+  locations?: LocationPricing[];
 }
 
 export interface DurationPricing {
@@ -22,7 +32,13 @@ export interface FreelancerPricing {
 
 export interface UpdateServicePricingDto {
   serviceCategoryId: string; // Service Category ID (matches API request)
-  price: number;
+  price: number; // Legacy field for backward compatibility
+}
+
+export interface UpdateLocationPricingDto {
+  serviceCategoryId: string;
+  locationType: LocationType;
+  price: number; // Must be > 0
 }
 
 export interface UpdateDurationPricingDto {
@@ -32,6 +48,10 @@ export interface UpdateDurationPricingDto {
 
 export interface UpdateServicePricingRequest {
   pricing: UpdateServicePricingDto[];
+}
+
+export interface UpdateLocationPricingRequest {
+  pricing: UpdateLocationPricingDto[];
 }
 
 export interface UpdateDurationPricingRequest {

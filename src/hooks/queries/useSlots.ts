@@ -132,6 +132,36 @@ export const useDeleteSlot = () => {
 };
 
 /**
+ * Hook to delete all slots for a specific day
+ */
+export const useDeleteDaySlots = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ date, deleteByDayOfWeek }: { date: string; deleteByDayOfWeek?: boolean }) =>
+      slotApi.deleteDaySlots(date, deleteByDayOfWeek),
+    onSuccess: (data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
+      const deletedCount = data.data?.deletedCount ?? 0;
+      if (deletedCount > 0) {
+        if (variables.deleteByDayOfWeek) {
+          const dayName = new Date(variables.date).toLocaleDateString('en-US', { weekday: 'long' });
+          toast.success(`Successfully deleted ${deletedCount} slot(s) for all future ${dayName}s`);
+        } else {
+          toast.success(`Successfully deleted ${deletedCount} slot(s) for ${data.data?.date}`);
+        }
+      } else {
+        toast.info('No slots found for the specified criteria');
+      }
+    },
+    onError: (error: unknown) => {
+      const errorMessage = getApiErrorMessage(error);
+      toast.error(errorMessage || 'Failed to delete slots');
+    },
+  });
+};
+
+/**
  * Hook to reserve a slot
  */
 export const useReserveSlot = () => {

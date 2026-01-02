@@ -120,7 +120,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
   const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
 
   const [formData, setFormData] = useState<CreateSlotDto>({
-    locationType: LocationType.HOME,
+    locationType: undefined, // Optional - defaults to CLINIC if not provided
     locationId: undefined,
     basePrice: 0,
     duration: 60,
@@ -282,14 +282,8 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       newErrors.price = 'All manually provided prices must be greater than 0';
     }
 
-    // Validate that every slot has a locationType (required by backend)
-    // Each slot must have either its own locationType or use the form default
-    const slotsWithoutLocation = slotEntries.filter(
-      (entry) => !entry.locationType && !formData.locationType,
-    );
-    if (slotsWithoutLocation.length > 0 || !formData.locationType) {
-      newErrors.slots = 'Please specify a location type (HOME or CLINIC)';
-    }
+    // locationType is optional - defaults to CLINIC if not provided
+    // No validation needed for locationType
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -328,16 +322,13 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
         0,
       );
 
-      // locationType is required at slot level - use entry's locationType or fall back to form default
+      // locationType is optional - use entry's locationType, form default, or undefined (will default to CLINIC on backend)
       const slotLocationType = entry.locationType || formData.locationType;
-      if (!slotLocationType) {
-        throw new Error('Location type is required for all slots');
-      }
 
       return {
         startTime: localStartDate.toISOString(),
         endTime: localEndDate.toISOString(),
-        locationType: slotLocationType, // Required - always include locationType
+        ...(slotLocationType && { locationType: slotLocationType }), // Optional - only include if specified
         ...(entry.basePrice !== undefined && entry.basePrice > 0 && { basePrice: entry.basePrice }),
         ...(entry.serviceCategoryIds &&
           entry.serviceCategoryIds.length > 0 && { serviceCategoryIds: entry.serviceCategoryIds }),
@@ -371,8 +362,28 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
     };
 
     createSlot(submitData, {
-      onSuccess: () => {
-        toast.success(`Successfully created ${slots.length} slot${slots.length !== 1 ? 's' : ''}!`);
+      onSuccess: (response) => {
+        // Parse the message to check for skipped slots
+        const message = response.message || '';
+        const hasSkipped = message.toLowerCase().includes('skipped');
+        const hasUpdated = message.toLowerCase().includes('updated');
+
+        // Show appropriate notification based on the response
+        if (hasSkipped) {
+          // Show warning if slots were skipped
+          toast.warning(
+            message ?? 'Some slots could not be created due to overlaps with booked slots',
+          );
+        } else if (hasUpdated) {
+          // Show info if slots were updated
+          toast.info(message ?? 'Slots processed successfully');
+        } else {
+          // Show success for normal creation
+          toast.success(
+            message ?? `Successfully created ${slots.length} slot${slots.length !== 1 ? 's' : ''}!`,
+          );
+        }
+
         onSuccess?.();
       },
       onError: (error: unknown) => {
@@ -429,17 +440,23 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       <div className="flex items-center justify-between gap-4 pb-3 border-b">
         <div className="flex items-center gap-4 flex-1">
           <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground whitespace-nowrap">Location:</Label>
+            <Label className="text-xs text-muted-foreground whitespace-nowrap">
+              Location (Optional):
+            </Label>
             <Select
-              value={formData.locationType}
+              value={formData.locationType || 'default'}
               onValueChange={(value) =>
-                setFormData({ ...formData, locationType: value as LocationType })
+                setFormData({
+                  ...formData,
+                  locationType: value === 'default' ? undefined : (value as LocationType),
+                })
               }
             >
               <SelectTrigger className="h-8 w-[120px] text-xs">
-                <SelectValue />
+                <SelectValue placeholder="Default (Clinic)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="default">Default (Clinic)</SelectItem>
                 <SelectItem value={LocationType.HOME}>Home Visit</SelectItem>
                 <SelectItem value={LocationType.CLINIC}>Clinic</SelectItem>
               </SelectContent>
@@ -577,7 +594,7 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
               </div>
 
               <div className="flex flex-col">
-                <Label className="text-xs text-muted-foreground mb-0.5">Location</Label>
+                <Label className="text-xs text-muted-foreground mb-0.5">Location (Optional)</Label>
                 <Select
                   value={entry.locationType || 'default'}
                   onValueChange={(value) =>
@@ -587,10 +604,10 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
                   }
                 >
                   <SelectTrigger className="h-8 w-[100px] text-xs">
-                    <SelectValue />
+                    <SelectValue placeholder="Default (Clinic)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="default">Default</SelectItem>
+                    <SelectItem value="default">Default (Clinic)</SelectItem>
                     <SelectItem value={LocationType.HOME}>Home</SelectItem>
                     <SelectItem value={LocationType.CLINIC}>Clinic</SelectItem>
                   </SelectContent>

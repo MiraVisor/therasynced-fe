@@ -29,6 +29,15 @@ export const deleteSlot = async (id: string): Promise<ApiResponse<void>> => {
   return response.data;
 };
 
+export const deleteDaySlots = async (
+  date: string,
+  deleteByDayOfWeek?: boolean,
+): Promise<ApiResponse<{ deletedCount: number; date: string }>> => {
+  const params = deleteByDayOfWeek ? { deleteByDayOfWeek: 'true' } : undefined;
+  const response = await api.delete(`/slot/day/${date}`, { params });
+  return response.data;
+};
+
 export const getSlot = async (id: string): Promise<ApiResponse<Slot>> => {
   const response = await api.post('/slot/get', { id });
   return response.data;

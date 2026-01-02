@@ -83,7 +83,7 @@ export interface CreateSlotDto {
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
@@ -100,7 +100,7 @@ export interface CreateSlotsDto {
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
