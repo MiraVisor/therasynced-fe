@@ -9,8 +9,22 @@ interface PlansOverviewProps {
 }
 
 export function PlansOverview({ subscriptionData, isLoading }: PlansOverviewProps) {
-  const formatNumber = (value: number): string => {
+  const formatNumber = (value: number | undefined): string => {
+    if (value === undefined || value === null || isNaN(value)) {
+      return '0';
+    }
     return new Intl.NumberFormat('en-US').format(value);
+  };
+
+  const getPlanCount = (plan: 'BRONZE' | 'SILVER' | 'GOLD'): number => {
+    return subscriptionData?.subscriptionsByPlan?.[plan] ?? 0;
+  };
+
+  const getPercentage = (plan: 'BRONZE' | 'SILVER' | 'GOLD'): number => {
+    const count = getPlanCount(plan);
+    const total = subscriptionData?.totalActive ?? 0;
+    if (total === 0) return 0;
+    return Math.round((count / total) * 100);
   };
 
   if (isLoading) {
@@ -41,31 +55,19 @@ export function PlansOverview({ subscriptionData, isLoading }: PlansOverviewProp
               </div>
             </div>
             <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
-              {subscriptionData ? formatNumber(subscriptionData.subscriptionsByPlan.BRONZE) : '0'}
+              {formatNumber(getPlanCount('BRONZE'))}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">of active plans</span>
-                <span className="font-semibold text-primary">
-                  {subscriptionData && subscriptionData.totalActive > 0
-                    ? `${Math.round((subscriptionData.subscriptionsByPlan.BRONZE / subscriptionData.totalActive) * 100)}%`
-                    : '0%'}
-                </span>
+                <span className="font-semibold text-primary">{getPercentage('BRONZE')}%</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full"
                     style={{
-                      width: `${
-                        subscriptionData && subscriptionData.totalActive > 0
-                          ? Math.round(
-                              (subscriptionData.subscriptionsByPlan.BRONZE /
-                                subscriptionData.totalActive) *
-                                100,
-                            )
-                          : 0
-                      }%`,
+                      width: `${getPercentage('BRONZE')}%`,
                     }}
                   />
                 </div>
@@ -87,31 +89,19 @@ export function PlansOverview({ subscriptionData, isLoading }: PlansOverviewProp
               </div>
             </div>
             <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
-              {subscriptionData ? formatNumber(subscriptionData.subscriptionsByPlan.SILVER) : '0'}
+              {formatNumber(getPlanCount('SILVER'))}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">of active plans</span>
-                <span className="font-semibold text-info">
-                  {subscriptionData && subscriptionData.totalActive > 0
-                    ? `${Math.round((subscriptionData.subscriptionsByPlan.SILVER / subscriptionData.totalActive) * 100)}%`
-                    : '0%'}
-                </span>
+                <span className="font-semibold text-info">{getPercentage('SILVER')}%</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-info to-info/70 h-full rounded-full"
                     style={{
-                      width: `${
-                        subscriptionData && subscriptionData.totalActive > 0
-                          ? Math.round(
-                              (subscriptionData.subscriptionsByPlan.SILVER /
-                                subscriptionData.totalActive) *
-                                100,
-                            )
-                          : 0
-                      }%`,
+                      width: `${getPercentage('SILVER')}%`,
                     }}
                   />
                 </div>
@@ -133,31 +123,19 @@ export function PlansOverview({ subscriptionData, isLoading }: PlansOverviewProp
               </div>
             </div>
             <div className="font-poppins text-5xl font-bold text-charcoal mb-3">
-              {subscriptionData ? formatNumber(subscriptionData.subscriptionsByPlan.GOLD) : '0'}
+              {formatNumber(getPlanCount('GOLD'))}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">of active plans</span>
-                <span className="font-semibold text-success">
-                  {subscriptionData && subscriptionData.totalActive > 0
-                    ? `${Math.round((subscriptionData.subscriptionsByPlan.GOLD / subscriptionData.totalActive) * 100)}%`
-                    : '0%'}
-                </span>
+                <span className="font-semibold text-success">{getPercentage('GOLD')}%</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-success to-success/70 h-full rounded-full"
                     style={{
-                      width: `${
-                        subscriptionData && subscriptionData.totalActive > 0
-                          ? Math.round(
-                              (subscriptionData.subscriptionsByPlan.GOLD /
-                                subscriptionData.totalActive) *
-                                100,
-                            )
-                          : 0
-                      }%`,
+                      width: `${getPercentage('GOLD')}%`,
                     }}
                   />
                 </div>
