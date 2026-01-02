@@ -66,13 +66,39 @@ export function ProfileSection() {
 
   useEffect(() => {
     if (profileData) {
+      // Normalize date of birth to YYYY-MM-DD format
+      let normalizedDob = '';
+      if (profileData.dob) {
+        try {
+          const date = new Date(profileData.dob);
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            normalizedDob = `${year}-${month}-${day}`;
+          } else {
+            // If it's already in YYYY-MM-DD format, use it as is
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (dateRegex.test(profileData.dob)) {
+              normalizedDob = profileData.dob;
+            }
+          }
+        } catch (error) {
+          // If parsing fails, try to use the original value if it matches YYYY-MM-DD
+          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          if (dateRegex.test(profileData.dob)) {
+            normalizedDob = profileData.dob;
+          }
+        }
+      }
+
       setFormData({
         id: profileData.id,
         name: profileData.name || '',
         email: profileData.email || '',
         profilePicture: profileData.profilePicture,
         gender: profileData.gender || '',
-        dob: profileData.dob || '',
+        dob: normalizedDob,
         city: profileData.city || '',
         description: profileData.description || '',
         isEmailVerified: profileData.isEmailVerified,
