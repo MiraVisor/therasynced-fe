@@ -49,7 +49,7 @@ export const useCreateSubscription = () => {
     mutationFn: (planType: PlanType) => api.post(ENDPOINTS.subscription.subscribe, { planType }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      toast.success('Subscription created successfully!');
+      // Toast handled by component
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to create subscription');
@@ -67,7 +67,7 @@ export const useUpdateSubscription = () => {
     mutationFn: (data: UpdateSubscriptionDto) => api.put(ENDPOINTS.subscription.update, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      toast.success('Subscription updated successfully!');
+      // Toast handled by component
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to update subscription');
@@ -85,7 +85,7 @@ export const useCancelSubscription = () => {
     mutationFn: (data: CancelSubscriptionDto = {}) => api.post(ENDPOINTS.subscription.cancel, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      toast.success('Subscription cancelled successfully');
+      // Toast handled by component
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to cancel subscription');
@@ -103,7 +103,7 @@ export const useResumeSubscription = () => {
     mutationFn: () => api.post(ENDPOINTS.subscription.resume),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      toast.success('Subscription resumed successfully!');
+      // Toast handled by component
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to resume subscription');
@@ -161,7 +161,7 @@ export const useVerifyCheckoutSession = () => {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      toast.success('Payment verified successfully!');
+      // Toast handled by component/page
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to verify checkout session');

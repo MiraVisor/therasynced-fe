@@ -4,11 +4,13 @@ import { AlertCircle, Clock, Crown, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import { SubscriptionStatus } from '@/types/subscription';
+import { Subscription, SubscriptionStatus } from '@/types/subscription';
+import { getTrialEndDate } from '@/utils/subscriptionHelpers';
 
 interface StatusBadgeProps {
   status: SubscriptionStatus;
   trialEndsAt?: string | null;
+  subscription?: Subscription | null; // Pass full subscription to use helper
   className?: string;
   showCountdown?: boolean;
   size?: 'sm' | 'md' | 'lg';
@@ -17,6 +19,7 @@ interface StatusBadgeProps {
 export function StatusBadge({
   status,
   trialEndsAt,
+  subscription,
   className = '',
   showCountdown = false,
   size = 'md',
@@ -24,11 +27,21 @@ export function StatusBadge({
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    if (showCountdown && trialEndsAt && status === 'TRIALING') {
+    if (showCountdown && status === 'TRIALING') {
+      // Use helper function to get correct trial end date
+      const trialEndDate = subscription
+        ? getTrialEndDate(subscription)
+        : trialEndsAt
+          ? new Date(trialEndsAt)
+          : null;
+
       const calculateDaysRemaining = () => {
-        const endDate = new Date(trialEndsAt);
+        if (!trialEndDate) {
+          setDaysRemaining(null);
+          return;
+        }
         const now = new Date();
-        const diff = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const diff = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
         setDaysRemaining(diff > 0 ? diff : 0);
       };
 
@@ -38,7 +51,7 @@ export function StatusBadge({
       return () => clearInterval(interval);
     }
     return undefined; // Explicit return for else case
-  }, [trialEndsAt, status, showCountdown]);
+  }, [trialEndsAt, status, showCountdown, subscription]);
 
   const getStatusConfig = () => {
     switch (status) {
@@ -50,11 +63,15 @@ export function StatusBadge({
           label: 'Active',
         };
       case 'TRIALING':
+        // Check if subscription is canceled during trial
+        const isCanceledDuringTrial = subscription?.cancelAtPeriodEnd === true;
         return {
           color:
             'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border-orange-300 dark:border-orange-700',
           icon: Clock,
-          label: 'Trial',
+          label: isCanceledDuringTrial
+            ? 'Trial Active - Subscription Canceled'
+            : 'Trial Active - Subscription Starts After Trial',
         };
       case 'TRIAL_EXPIRED':
         return {

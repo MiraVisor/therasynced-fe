@@ -70,11 +70,22 @@ export interface Subscription {
   subscription?: Subscription | null; // Nested subscription details if active
   isInTrial?: boolean;
   trialExpired?: boolean; // true if trial has expired
+  gracePeriodEndsAt?: string | null; // Grace period end date (7 days after payment failure)
   canCreateSlots: boolean; // Required field from API
   canAcceptBookings: boolean; // Required field from API
   slotsUsed: number; // Required field from API - Current active slots count
   slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
   message: string; // Required field from API - Status message
+}
+
+export interface SubscriptionState {
+  isInTrial: boolean;
+  isActive: boolean;
+  isCanceled: boolean;
+  isInGracePeriod: boolean;
+  canResume: boolean;
+  trialEndDate: Date | null;
+  gracePeriodEndDate: Date | null;
 }
 
 export interface SubscriptionCreationData {

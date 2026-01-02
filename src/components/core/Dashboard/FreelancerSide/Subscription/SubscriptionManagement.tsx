@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Info } from 'lucide-react';
+import { AlertTriangle, CreditCard, Info, Shield } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -14,11 +14,18 @@ import {
   useCancelSubscription,
   useCreateCheckoutSession,
   useMySubscription,
+  useResumeSubscription,
   useSubscriptionPlans,
   useUpdateSubscription,
 } from '@/hooks/queries/useSubscription';
 import { getDecodedToken } from '@/lib/utils';
 import { PlanType, SubscriptionStatus } from '@/types/types';
+import {
+  getGracePeriodEndDate,
+  getTrialEndDate,
+  isInGracePeriod,
+  isInTrial,
+} from '@/utils/subscriptionHelpers';
 
 import { BillingTab } from './BillingTab';
 import { CancellationDialog } from './CancellationDialog';
@@ -56,6 +63,7 @@ export default function SubscriptionManagement() {
   const { mutate: createCheckout, isPending: isSubscribing } = useCreateCheckoutSession();
   const { mutate: updateSubscriptionMutation, isPending: isUpdating } = useUpdateSubscription();
   const { mutate: cancelSubscriptionMutation, isPending: isCanceling } = useCancelSubscription();
+  const { mutate: resumeSubscriptionMutation, isPending: isResuming } = useResumeSubscription();
 
   // For billing portal, we need to use query with enabled: false and refetch
   const { refetch: refetchBillingPortal } = useBillingPortal();
@@ -94,7 +102,7 @@ export default function SubscriptionManagement() {
   const decodedToken = getDecodedToken();
   const subscriptionStatus = decodedToken?.subscriptionStatus;
 
-  const handleSelectPlan = async (planType: PlanType) => {
+  const handleSelectPlan = (planType: PlanType) => {
     try {
       const statusFromState = currentSubscription?.status;
       const hasSubscription = !!currentSubscription;
@@ -116,8 +124,8 @@ export default function SubscriptionManagement() {
             onError: (error: unknown) => {
               const errorMessage =
                 error && typeof error === 'object' && 'response' in error
-                  ? (error as { response?: { data?: { message?: string } } }).response?.data
-                      ?.message || 'Failed to update subscription'
+                  ? ((error as { response?: { data?: { message?: string } } }).response?.data
+                      ?.message ?? 'Failed to update subscription')
                   : 'Failed to update subscription';
               if (
                 errorMessage.includes('No active subscription') ||
@@ -126,8 +134,10 @@ export default function SubscriptionManagement() {
               ) {
                 toast.info('Creating new subscription...');
                 handleCheckout(planType);
+              } else if (errorMessage.includes('rate limit') || errorMessage.includes('too many')) {
+                toast.error('Too many requests. Please wait a moment and try again.');
               } else {
-                toast.error(errorMessage);
+                toast.error(errorMessage || 'Failed to update subscription. Please try again.');
               }
             },
           },
@@ -172,8 +182,8 @@ export default function SubscriptionManagement() {
       onError: (error: unknown) => {
         const errorMessage =
           error && typeof error === 'object' && 'response' in error
-            ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
-              ''
+            ? ((error as { response?: { data?: { message?: string } } }).response?.data?.message ??
+              '')
             : '';
         if (
           errorMessage.includes('already have an active subscription') ||
@@ -181,28 +191,53 @@ export default function SubscriptionManagement() {
         ) {
           toast.info('Updating existing subscription...');
           updateSubscriptionMutation({ planType });
+        } else if (errorMessage.includes('rate limit') || errorMessage.includes('too many')) {
+          toast.error('Too many requests. Please wait a moment and try again.');
+        } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+          toast.error('Connection issue. Please check your internet and try again.');
+        } else if (errorMessage.includes('payment') || errorMessage.includes('card')) {
+          toast.error('Payment issue. Please check your payment method and try again.');
         } else {
-          toast.error('Failed to create checkout session');
+          toast.error(
+            errorMessage ||
+              'Failed to create checkout session. Please try again or contact support.',
+          );
         }
       },
     });
   };
 
   const handleCancel = (reason?: string) => {
+    const isTrialing = currentSubscription?.status === 'TRIALING';
     cancelSubscriptionMutation(
       { reason },
       {
         onSuccess: () => {
-          toast.success('Subscription will be cancelled at the end of the current period.');
+          if (isTrialing) {
+            toast.success(
+              "Subscription canceled. You'll continue with trial access until your trial ends.",
+            );
+          } else {
+            toast.success('Subscription will be cancelled at the end of the current period.');
+          }
           setIsCancellationDialogOpen(false);
         },
         onError: (error: unknown) => {
           const errorMessage =
             error && typeof error === 'object' && 'response' in error
-              ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
-                'Failed to cancel subscription'
+              ? ((error as { response?: { data?: { message?: string } } }).response?.data
+                  ?.message ?? 'Failed to cancel subscription')
               : 'Failed to cancel subscription';
-          toast.error(errorMessage);
+          if (errorMessage.includes('rate limit') || errorMessage.includes('too many')) {
+            toast.error('Too many requests. Please wait a moment and try again.');
+          } else if (
+            errorMessage.includes('not found') ||
+            errorMessage.includes('does not exist')
+          ) {
+            toast.error('Subscription not found. Please contact support if this continues.');
+          } else {
+            toast.error(errorMessage || 'Failed to cancel subscription. Please try again.');
+          }
         },
       },
     );
@@ -215,14 +250,74 @@ export default function SubscriptionManagement() {
         window.open(result.data, '_blank', 'noopener,noreferrer');
       }
     } catch (err: unknown) {
-      toast.error('Failed to open billing portal');
+      const errorMessage =
+        err && typeof err === 'object' && 'message' in err
+          ? (err as { message?: string }).message
+          : 'Failed to open billing portal';
+      if (
+        errorMessage &&
+        (errorMessage.includes('network') || errorMessage.includes('connection'))
+      ) {
+        toast.error('Connection issue. Please check your internet and try again.');
+      } else {
+        toast.error('Failed to open billing portal. Please try again or contact support.');
+      }
     }
+  };
+
+  const handleResume = () => {
+    resumeSubscriptionMutation(undefined, {
+      onSuccess: () => {
+        toast.success('Subscription resumed successfully!');
+        void refetchSubscription();
+      },
+      onError: (error: unknown) => {
+        const errorMessage =
+          error && typeof error === 'object' && 'response' in error
+            ? ((error as { response?: { data?: { message?: string } } }).response?.data?.message ??
+              'Failed to resume subscription')
+            : 'Failed to resume subscription';
+        if (errorMessage.includes('rate limit') || errorMessage.includes('too many')) {
+          toast.error('Too many requests. Please wait a moment and try again.');
+        } else if (errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+          toast.error('Subscription not found. Please contact support if this continues.');
+        } else {
+          toast.error(errorMessage || 'Failed to resume subscription. Please try again.');
+        }
+      },
+    });
   };
 
   const status: SubscriptionStatus = subscriptionStatus as SubscriptionStatus;
   const isTrial = status === 'TRIALING';
-  const isInactive = status === 'INACTIVE' || status === 'UNPAID' || status === 'TRIAL_EXPIRED';
+  const isPastDue = status === 'PAST_DUE';
+  const inGracePeriod = isInGracePeriod(currentSubscription ?? null);
+  const gracePeriodEndDate = getGracePeriodEndDate(currentSubscription ?? null);
   const userHasActiveSubscription = status === 'ACTIVE' && !!currentSubscription?.plan;
+
+  // Check if user is actually in trial based on trial end date (more accurate than status alone)
+  const actuallyInTrial = isInTrial(currentSubscription ?? null);
+  const trialEndDate = getTrialEndDate(currentSubscription ?? null);
+  const trialHasExpired = trialEndDate ? trialEndDate <= new Date() : false;
+
+  // Calculate days remaining in grace period
+  const [gracePeriodDaysRemaining, setGracePeriodDaysRemaining] = useState<number | null>(null);
+  useEffect(() => {
+    if (gracePeriodEndDate) {
+      const calculateDaysRemaining = () => {
+        const now = new Date();
+        const diff = Math.ceil(
+          (gracePeriodEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        setGracePeriodDaysRemaining(diff > 0 ? diff : 0);
+      };
+      calculateDaysRemaining();
+      const interval = setInterval(calculateDaysRemaining, 1000 * 60 * 60); // Update hourly
+      return () => clearInterval(interval);
+    }
+    setGracePeriodDaysRemaining(null);
+    return undefined;
+  }, [gracePeriodEndDate]);
 
   if (isLoadingPlans) {
     return (
@@ -261,12 +356,16 @@ export default function SubscriptionManagement() {
   // Overview Tab Content
   const overviewContent = (
     <OverviewTab
-      subscription={currentSubscription || null}
+      subscription={currentSubscription ?? null}
       plan={currentSubscription?.plan}
       onUpgrade={handleNavigateToPlans}
-      onManageBilling={handleOpenBillingPortal}
+      onManageBilling={() => {
+        void handleOpenBillingPortal();
+      }}
       onCancel={() => setIsCancellationDialogOpen(true)}
+      onResume={handleResume}
       isLoading={isLoading}
+      isResuming={isResuming}
     />
   );
 
@@ -330,10 +429,12 @@ export default function SubscriptionManagement() {
       </div>
 
       {/* Inactive/Trial Alerts - More Integrated Design */}
-      {/* Only show trial expired alert if status is not ACTIVE or there's no plan */}
+      {/* Only show trial expired alert if trial has actually expired (not just based on status) */}
       {currentSubscription &&
-        isInactive &&
-        !(status === 'INACTIVE' && currentSubscription?.plan) && (
+        !actuallyInTrial &&
+        trialHasExpired &&
+        !(status === 'INACTIVE' && currentSubscription?.plan) &&
+        (status === 'TRIAL_EXPIRED' || status === 'INACTIVE' || !currentSubscription?.plan) && (
           <Alert className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 shadow-sm">
             <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             <AlertTitle className="text-base font-poppins font-semibold text-orange-900 dark:text-orange-100">
@@ -345,15 +446,74 @@ export default function SubscriptionManagement() {
                   'Your trial has expired. Please subscribe to continue creating slots.'}
               </div>
               <Button
-                onClick={() => handleSelectPlan('SILVER')}
+                onClick={handleNavigateToPlans}
                 size="sm"
-                className="bg-primary hover:bg-primary/90 text-white mt-2"
+                className="bg-primary hover:bg-primary/90 text-white mt-2 transition-all duration-200 hover:scale-105"
               >
                 Subscribe Now
               </Button>
             </AlertDescription>
           </Alert>
         )}
+
+      {/* Grace Period / PAST_DUE Warning Banner */}
+      {(isPastDue || inGracePeriod) && (
+        <Alert className="border-red-400 dark:border-red-700 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 shadow-sm animate-in slide-in-from-top duration-300">
+          <div className="flex items-start gap-3">
+            <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0">
+              <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1">
+              <AlertTitle className="text-base font-poppins font-semibold text-red-900 dark:text-red-100 mb-2">
+                Payment Update Required
+              </AlertTitle>
+              <AlertDescription className="text-sm text-red-800 dark:text-red-200 space-y-3">
+                <p>
+                  We couldn&apos;t process your payment. Update your payment method to continue your
+                  subscription.
+                </p>
+                {gracePeriodDaysRemaining !== null && gracePeriodDaysRemaining > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      {gracePeriodDaysRemaining} {gracePeriodDaysRemaining === 1 ? 'day' : 'days'}{' '}
+                      remaining
+                    </span>
+                    <div className="flex-1 h-2 bg-red-200 dark:bg-red-900/50 rounded-full overflow-hidden max-w-xs">
+                      <div
+                        className="h-full bg-red-500 dark:bg-red-400 transition-all duration-500"
+                        style={{
+                          width: `${Math.max(0, Math.min(100, (gracePeriodDaysRemaining / 7) * 100))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {gracePeriodEndDate && (
+                  <p className="text-xs">
+                    Your subscription will pause on{' '}
+                    {gracePeriodEndDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                    .
+                  </p>
+                )}
+                <Button
+                  onClick={() => {
+                    void handleOpenBillingPortal();
+                  }}
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white mt-2 transition-all duration-200 hover:scale-105"
+                >
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Update Payment Method
+                </Button>
+              </AlertDescription>
+            </div>
+          </div>
+        </Alert>
+      )}
 
       {currentSubscription && isTrial && (
         <Alert className="border-primary/30 dark:border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-sm">
@@ -362,8 +522,17 @@ export default function SubscriptionManagement() {
             Trial Period Active
           </AlertTitle>
           <AlertDescription className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-            {currentSubscription.message ||
-              'You are currently on a free trial. Subscribe to a plan to continue using the platform after your trial ends.'}
+            {currentSubscription.cancelAtPeriodEnd ? (
+              <>
+                Your subscription has been canceled. You&apos;ll continue with trial access until
+                your trial ends. No payment will be required.
+              </>
+            ) : (
+              <>
+                You&apos;re currently in your trial period. Your subscription will start after the
+                trial ends. You won&apos;t be charged until then.
+              </>
+            )}
           </AlertDescription>
         </Alert>
       )}
@@ -399,8 +568,8 @@ export default function SubscriptionManagement() {
               <div>
                 <h4 className="mb-2 font-poppins font-semibold">Features included:</h4>
                 <ul className="space-y-1 text-sm">
-                  {selectedPlan.features.slice(0, 5).map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
+                  {selectedPlan.features.slice(0, 5).map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
                       <span>{feature}</span>
                     </li>
@@ -442,6 +611,8 @@ export default function SubscriptionManagement() {
         subscriptionEndDate={currentSubscription?.currentPeriodEnd}
         currentPlan={currentSubscription?.plan}
         isLoading={isCanceling}
+        isTrialing={currentSubscription?.status === 'TRIALING'}
+        trialEndDate={currentSubscription?.trialEnd ?? currentSubscription?.trialEndsAt}
       />
 
       {/* Embedded Checkout Modal */}

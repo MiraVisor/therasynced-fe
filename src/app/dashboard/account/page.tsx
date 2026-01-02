@@ -2,7 +2,7 @@
 
 import { Award, CreditCard, HelpCircle, Shield, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { EmailSection } from '@/components/core/Dashboard/Account/EmailSection';
@@ -39,6 +39,7 @@ function AccountPageContent() {
   const [isSubscriptionLoading] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const { role, logout } = useAuth();
+  const hasShownSubscriptionToast = useRef(false);
 
   // Use React Query hooks
   const { data: profileData, isLoading: loading, isFetching: initialLoading } = useProfile();
@@ -65,9 +66,10 @@ function AccountPageContent() {
       setActiveSection(section);
     }
 
-    // Show subscription success toast
+    // Show subscription success toast (only once)
     const subscriptionSuccess = searchParams.get('subscription');
-    if (subscriptionSuccess === 'success') {
+    if (subscriptionSuccess === 'success' && !hasShownSubscriptionToast.current) {
+      hasShownSubscriptionToast.current = true;
       const url = new URL(window.location.href);
       url.searchParams.delete('subscription');
       window.history.replaceState({}, '', url.pathname + url.search);

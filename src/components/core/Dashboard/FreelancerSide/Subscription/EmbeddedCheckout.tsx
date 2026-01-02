@@ -66,6 +66,13 @@ export function EmbeddedCheckout({
 
         embeddedCheckoutRef.current = checkout;
 
+        // Listen for checkout completion
+        checkout.on('complete', () => {
+          if (mounted) {
+            onSuccess();
+          }
+        });
+
         // Mount the checkout to the container
         if (checkoutRef.current) {
           checkout.mount(checkoutRef.current);
@@ -99,32 +106,54 @@ export function EmbeddedCheckout({
     onClose();
   };
 
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
         <DialogHeader>
-          <DialogTitle>Complete Your Subscription</DialogTitle>
-          <DialogDescription>
-            Enter your payment details to complete your subscription.
+          <DialogTitle className="text-xl font-poppins font-bold">
+            Complete Your Subscription
+          </DialogTitle>
+          <DialogDescription className="text-sm">
+            Enter your payment details to complete your subscription. Your payment is processed
+            securely by Stripe.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-auto">
           {isLoading && (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
               <LoadingSpinner size="lg" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">Loading checkout...</p>
             </div>
           )}
 
           {error && (
-            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 animate-in slide-in-from-top duration-200">
+              <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">Error</p>
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <button
+                onClick={handleClose}
+                className="mt-3 text-sm text-red-700 dark:text-red-300 hover:underline"
+              >
+                Close and try again
+              </button>
             </div>
           )}
 
           <div
             ref={checkoutRef}
-            className={isLoading || error ? 'hidden' : ''}
+            className={isLoading || error ? 'hidden' : 'animate-in fade-in duration-300'}
             id="embedded-checkout"
           />
         </div>

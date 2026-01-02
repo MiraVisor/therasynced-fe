@@ -89,7 +89,7 @@ export const PlanCard = ({
       className={`group relative flex h-full flex-col transition-all duration-300 ${
         isCurrentPlan
           ? `border-2 ${planColors.border} ${planColors.bg} shadow-md`
-          : 'border border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:shadow-lg'
+          : 'border border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02]'
       } ${isRecommended && !isCurrentPlan ? 'ring-2 ring-primary/30 ring-offset-2' : ''}`}
     >
       {isRecommended && !isCurrentPlan && (
@@ -142,13 +142,13 @@ export const PlanCard = ({
         <div className="mb-4">
           <div className="flex items-baseline gap-2">
             <span
-              className={`text-4xl font-poppins font-bold ${
+              className={`text-5xl font-poppins font-bold ${
                 isCurrentPlan ? planColors.text : 'text-charcoal'
               }`}
             >
-              EUR {plan.price}
+              EUR {plan.price.toFixed(2)}
             </span>
-            <span className="text-base font-inter text-gray-600 dark:text-gray-400">/month</span>
+            <span className="text-lg font-inter text-gray-600 dark:text-gray-400">/month</span>
           </div>
         </div>
 
@@ -199,8 +199,8 @@ export const PlanCard = ({
             disabled={isCurrentPlan || isLoading}
             className={`w-full transition-all duration-200 font-medium ${
               isCurrentPlan
-                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                : 'bg-primary hover:bg-primary/90 hover:shadow-md active:scale-[0.98] text-white'
+                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60'
+                : 'bg-primary hover:bg-primary/90 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] text-white'
             }`}
             size="lg"
           >

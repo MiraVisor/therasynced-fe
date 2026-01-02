@@ -1,4 +1,4 @@
-import { CheckCircle2, Gift, Heart, Stamp } from 'lucide-react';
+import { CheckCircle2, Clock, Gift, Heart, Stamp } from 'lucide-react';
 import { useState } from 'react';
 
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useFavoriteFreelancer } from '@/hooks/queries/useFreelancers';
+import type { DurationPricing, ServicePricing } from '@/types/pricing';
 import { Expert } from '@/types/types';
 
 interface ExpertProfileDialogProps {
@@ -62,6 +63,8 @@ interface ExpertProfileDialogProps {
       discountPercentage: number;
       customConfigApplied: boolean;
     };
+    durationPricing?: DurationPricing[];
+    serviceCategoryPricing?: ServicePricing[];
   };
 }
 
@@ -85,6 +88,8 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
     hasAvailableSlots,
     description,
     stampInfo,
+    durationPricing = [],
+    serviceCategoryPricing = [],
   } = expert;
 
   const freelancerName = name || cardInfo?.name;
@@ -149,12 +154,12 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
             <div className="p-6 space-y-6">
               {/* Bio/Description */}
               {description && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent dark:from-primary/10 dark:via-primary/5 rounded-lg p-5 border border-primary/20">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-lg flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full" />
-                    About
+                    About {freelancerName}
                   </h4>
-                  <p className="text-sm font-inter text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <p className="text-sm font-inter text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                     {description}
                   </p>
                 </div>
@@ -266,8 +271,88 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                 </div>
               )}
 
-              {/* Pricing Information */}
-              {pricing && (
+              {/* Duration Pricing */}
+              {durationPricing && durationPricing.length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    Pricing by Duration
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {durationPricing
+                      .sort((a, b) => a.duration - b.duration)
+                      .map((dp) => (
+                        <div
+                          key={dp.duration}
+                          className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 text-center"
+                        >
+                          <div className="text-xs font-inter text-gray-600 dark:text-gray-400 mb-1">
+                            {dp.duration} min
+                          </div>
+                          <div className="text-lg font-poppins font-bold text-primary">
+                            €{dp.price.toFixed(2)}
+                          </div>
+                          {dp.currency && dp.currency !== 'EUR' && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {dp.currency}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Service Category Pricing */}
+              {serviceCategoryPricing && serviceCategoryPricing.length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full" />
+                    Pricing by Service Category
+                  </h4>
+                  <div className="space-y-3">
+                    {serviceCategoryPricing.map((sp) => (
+                      <div
+                        key={sp.serviceId}
+                        className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+                      >
+                        <div className="font-poppins font-semibold text-gray-900 dark:text-white mb-2">
+                          {sp.serviceName}
+                        </div>
+                        {sp.locations && sp.locations.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            {sp.locations.map((location, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded"
+                              >
+                                <span className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                                  {location.locationType === 'HOME' ? 'Home Visit' : 'Clinic'}
+                                </span>
+                                <span className="text-base font-poppins font-bold text-primary">
+                                  €{location.price.toFixed(2)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                              Standard Price
+                            </span>
+                            <span className="text-base font-poppins font-bold text-primary">
+                              €{sp.price.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Legacy Pricing Information (fallback) */}
+              {pricing && (!durationPricing || durationPricing.length === 0) && (
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
                   <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full" />

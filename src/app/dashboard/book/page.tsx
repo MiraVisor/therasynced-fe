@@ -76,14 +76,12 @@ export default function BookingPage() {
   const { data: userProfile } = useProfile();
   const { mutate: updateProfile } = useUpdateProfile();
 
-  // Pre-populate address from user profile
+  // Pre-populate address from user profile (only when no slot is selected and no address is set)
   useEffect(() => {
-    if (userProfile && !homeAddress) {
-      if (userProfile.homeAddress) {
-        setHomeAddress(userProfile.homeAddress);
-      }
+    if (!selectedSlot && !homeAddress && userProfile?.homeAddress) {
+      setHomeAddress(userProfile.homeAddress);
     }
-  }, [userProfile, homeAddress]);
+  }, [userProfile, selectedSlot, homeAddress]);
 
   const today = startOfToday();
 
@@ -212,6 +210,20 @@ export default function BookingPage() {
     return foundSlot || null;
   }, [selectedSlot, freelancerSlots, availableSlotsForDate, slotsForDate]);
 
+  // Update home address based on selected slot data
+  useEffect(() => {
+    if (selectedSlotData) {
+      const slotHomeAddress = (selectedSlotData as any)?.homeAddress;
+      // If slot explicitly has null, clear the home address
+      if (slotHomeAddress === null) {
+        setHomeAddress('');
+      } else if (slotHomeAddress && typeof slotHomeAddress === 'string' && slotHomeAddress.trim()) {
+        // If slot has a valid home address value, use it
+        setHomeAddress(slotHomeAddress);
+      }
+    }
+  }, [selectedSlotData]);
+
   // Get available services from selected slot
   const availableServices = useMemo(() => {
     return selectedSlotData?.availableServiceCategories || [];
@@ -326,12 +338,22 @@ export default function BookingPage() {
   // Calculate total price
   const totalPrice = useMemo(() => {
     if (!selectedSlotData) return 0;
-    let price = selectedSlotData.basePrice || 0;
+
+    // If service is selected and has location-specific pricing, use that
+    if (selectedServiceData && locationType) {
+      const servicePricing = (selectedServiceData as any).pricing;
+      if (servicePricing?.[locationType]?.price) {
+        return Number(servicePricing[locationType].price) ?? 0;
+      }
+    }
+
+    // Fallback to base price with additional fees
+    let price = selectedSlotData.basePrice ?? 0;
     if (selectedSlotData.location?.additionalFee && locationType === LocationType.CLINIC) {
       price += selectedSlotData.location.additionalFee;
     }
     return price;
-  }, [selectedSlotData, locationType]);
+  }, [selectedSlotData, selectedServiceData, locationType]);
 
   // Booking confirmation
   const proceedWithBooking = () => {
@@ -935,42 +957,122 @@ export default function BookingPage() {
                               className="space-y-3"
                             >
                               {availableLocationTypes.includes(LocationType.HOME) && (
-                                <div className="flex items-start gap-3 p-4 border rounded-lg">
+                                <div
+                                  className={cn(
+                                    'flex items-start gap-3 p-4 border rounded-lg transition-all cursor-pointer',
+                                    locationType === LocationType.HOME
+                                      ? 'border-primary bg-primary/5'
+                                      : 'border-gray-200 dark:border-gray-700 hover:border-primary/50',
+                                  )}
+                                  onClick={() => setLocationType(LocationType.HOME)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      setLocationType(LocationType.HOME);
+                                    }
+                                  }}
+                                  role="button"
+                                  tabIndex={0}
+                                >
                                   <RadioGroupItem
                                     value={LocationType.HOME}
                                     id="home"
                                     className="mt-1"
                                   />
-                                  <div className="flex-1">
-                                    <Label
-                                      htmlFor="home"
-                                      className="font-medium cursor-pointer flex items-center gap-2"
-                                    >
-                                      <Home className="w-5 h-5" />
-                                      At Home
-                                    </Label>
+                                  <div className="flex-1 flex items-center justify-between">
+                                    <div>
+                                      <Label
+                                        htmlFor="home"
+                                        className="font-medium cursor-pointer flex items-center gap-2"
+                                      >
+                                        <Home className="w-5 h-5" />
+                                        At Home
+                                      </Label>
+                                    </div>
+                                    {selectedServiceData &&
+                                      (selectedServiceData as any).pricing?.HOME && (
+                                        <div className="text-right">
+                                          <p className="font-semibold text-primary">
+                                            €
+                                            {Number(
+                                              (selectedServiceData as any).pricing.HOME.price ?? 0,
+                                            ).toFixed(2)}
+                                          </p>
+                                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {(selectedServiceData as any).pricing.HOME.currency ??
+                                              'EUR'}
+                                          </p>
+                                        </div>
+                                      )}
                                   </div>
                                 </div>
                               )}
                               {availableLocationTypes.includes(LocationType.CLINIC) && (
-                                <div className="flex items-start gap-3 p-4 border rounded-lg">
+                                <div
+                                  className={cn(
+                                    'flex items-start gap-3 p-4 border rounded-lg transition-all cursor-pointer',
+                                    locationType === LocationType.CLINIC
+                                      ? 'border-primary bg-primary/5'
+                                      : 'border-gray-200 dark:border-gray-700 hover:border-primary/50',
+                                  )}
+                                  onClick={() => setLocationType(LocationType.CLINIC)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      setLocationType(LocationType.CLINIC);
+                                    }
+                                  }}
+                                  role="button"
+                                  tabIndex={0}
+                                >
                                   <RadioGroupItem
                                     value={LocationType.CLINIC}
                                     id="clinic"
                                     className="mt-1"
                                   />
                                   <div className="flex-1">
-                                    <Label
-                                      htmlFor="clinic"
-                                      className="font-medium cursor-pointer flex items-center gap-2"
-                                    >
-                                      <Building2 className="w-5 h-5" />
-                                      At Clinic
-                                    </Label>
-                                    {selectedSlotData?.location?.address && (
-                                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                        {selectedSlotData.location.address}
-                                      </p>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <Label
+                                        htmlFor="clinic"
+                                        className="font-medium cursor-pointer flex items-center gap-2"
+                                      >
+                                        <Building2 className="w-5 h-5" />
+                                        At Clinic
+                                      </Label>
+                                      {selectedServiceData &&
+                                        (selectedServiceData as any).pricing?.CLINIC && (
+                                          <div className="text-right">
+                                            <p className="font-semibold text-primary">
+                                              €
+                                              {Number(
+                                                (selectedServiceData as any).pricing.CLINIC.price ??
+                                                  0,
+                                              ).toFixed(2)}
+                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                              {(selectedServiceData as any).pricing.CLINIC
+                                                .currency ?? 'EUR'}
+                                            </p>
+                                          </div>
+                                        )}
+                                    </div>
+                                    {locationType === LocationType.CLINIC && (
+                                      <div className="mt-2">
+                                        <Label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+                                          Clinic Address
+                                        </Label>
+                                        <Input
+                                          value={
+                                            (selectedSlotData as any)?.clinicAddress ||
+                                            selectedSlotData?.location?.address ||
+                                            (selectedFreelancerData as any)?.clinicAddress ||
+                                            'Clinic address not available'
+                                          }
+                                          disabled
+                                          className="bg-gray-50 dark:bg-gray-800 cursor-not-allowed"
+                                          readOnly
+                                        />
+                                      </div>
                                     )}
                                   </div>
                                 </div>
@@ -991,14 +1093,35 @@ export default function BookingPage() {
                                 </Label>
                                 <Input
                                   id="home-address"
-                                  placeholder="Enter your full address"
+                                  placeholder={
+                                    locationType === LocationType.HOME
+                                      ? 'Enter your full address (street, city, postal code)'
+                                      : 'Select "At Home" to enter your address'
+                                  }
                                   value={homeAddress}
                                   onChange={(e) => setHomeAddress(e.target.value)}
-                                  className="mt-1"
+                                  disabled={locationType !== LocationType.HOME}
+                                  className={cn(
+                                    'mt-1',
+                                    locationType !== LocationType.HOME &&
+                                      'bg-gray-100 dark:bg-gray-900 cursor-not-allowed',
+                                  )}
                                 />
                                 {locationType === LocationType.HOME && (
+                                  <div className="mt-2 space-y-1">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                      Required for home visit bookings
+                                    </p>
+                                    {!homeAddress.trim() && (
+                                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                                        Please enter your address to continue with the booking
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+                                {locationType !== LocationType.HOME && (
                                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                    Required for home visit bookings
+                                    Select "At Home" to enter your address
                                   </p>
                                 )}
                               </div>
@@ -1173,6 +1296,7 @@ export default function BookingPage() {
                 name: profileFreelancer.name,
                 jobTitle: profileFreelancer.jobTitle,
                 rating: profileFreelancer.rating,
+                description: profileFreelancer.description,
                 services: profileFreelancer.services,
                 sessionTypes: profileFreelancer.sessionTypes,
                 pricing: profileFreelancer.pricing,
@@ -1188,6 +1312,8 @@ export default function BookingPage() {
                 },
                 hasAvailableSlots: true,
                 stampInfo: profileFreelancer.stampInfo || undefined,
+                durationPricing: (profileFreelancer as any)?.durationPricing,
+                serviceCategoryPricing: (profileFreelancer as any)?.serviceCategoryPricing,
               }}
             />
           )}
