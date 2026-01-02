@@ -7,7 +7,7 @@ import ResetPasswordForm from '@/components/core/authentication/ResetPasswordFor
 
 function ResetPasswordContent() {
   const handleBackToSignIn = () => {
-    window.location.href = '/authentication/signin';
+    window.location.href = '/authentication/sign-in';
   };
 
   return (
