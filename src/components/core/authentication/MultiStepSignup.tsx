@@ -111,7 +111,12 @@ export type SignupFormData = z.infer<typeof signupSchema>;
 
 interface MultiStepSignupProps {
   onBack: () => void;
-  onSubmit: (data: Omit<SignupFormData, 'dob' | 'confirmPassword'> & { dob?: string }) => void;
+  onSubmit: (
+    data: Omit<SignupFormData, 'dob' | 'confirmPassword'> & {
+      dob?: string;
+      profilePicture?: string;
+    },
+  ) => void;
   isLoading?: boolean;
 }
 

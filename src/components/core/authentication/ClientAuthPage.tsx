@@ -154,9 +154,9 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
             const signupData: SignUpDto = {
               name: data.name,
               email: data.email,
-              password: data.password || undefined, // Only include if provided
-              oauthSignupToken: oauthSignupToken || undefined, // Include if OAuth signup - REQUIRED when password is empty
-              role: data.role as any,
+              password: data.password ?? undefined, // Only include if provided
+              oauthSignupToken: oauthSignupToken ?? undefined, // Include if OAuth signup - REQUIRED when password is empty
+              role: data.role as 'PATIENT' | 'FREELANCER',
               dob: data.dob,
               gender: data.gender,
               city: data.city,
