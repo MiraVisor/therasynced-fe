@@ -76,7 +76,15 @@ const convertBookingToSlot = (booking: Booking): Slot => {
     profilePicture: slotData.freelancer.profilePicture,
     averageRating: slotData.freelancer.averageRating,
     locationType: slotData.locationType as LocationType,
-    location: slotData.location,
+    location: slotData.location
+      ? {
+          id: slotData.location.id,
+          name: slotData.location.name,
+          address: slotData.location.address,
+          type: slotData.location.type as 'OFFICE' | 'CLINIC',
+          additionalFee: 0, // Default to 0 if not provided in booking data
+        }
+      : null,
     startTime: slotData.startTime,
     endTime: slotData.endTime,
     duration: slotData.duration,

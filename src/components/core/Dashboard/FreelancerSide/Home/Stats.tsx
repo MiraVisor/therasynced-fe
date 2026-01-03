@@ -9,7 +9,6 @@ interface StatsProps {
 }
 
 const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
-  const router = useRouter();
   const { data: profileData } = useProfile();
   const freelancerId = profileData?.id;
   const { data: ratingsData } = useFreelancerRatings(freelancerId ?? null, {
@@ -19,40 +18,8 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
   const totalRatings = ratingsData?.pagination?.total ?? 0;
 
   // Navigation handlers
-  const handleCardClick = (title: string) => {
-    switch (title) {
-      case 'Total Appointments':
-        router.push('/dashboard/appointments');
-        break;
-      case 'Client Rating':
-        router.push('/dashboard/account?tab=ratings');
-        break;
-      case 'New Clients':
-        router.push('/dashboard/analytics');
-        break;
-      case 'Weekly Revenue':
-        router.push('/dashboard/analytics');
-        break;
-      default:
-        break;
-    }
-  };
 
   // Tooltip descriptions
-  const getTooltipText = (title: string): string => {
-    switch (title) {
-      case 'Total Appointments':
-        return 'Total number of appointments you have completed. Click to view all appointments.';
-      case 'Client Rating':
-        return 'Average rating from your users. Click to view detailed ratings.';
-      case 'New Clients':
-        return 'Number of new users who booked with you this month. Click to view analytics.';
-      case 'Weekly Revenue':
-        return 'Total revenue earned this week. Click to view detailed analytics.';
-      default:
-        return '';
-    }
-  };
 
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
