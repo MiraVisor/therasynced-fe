@@ -713,6 +713,7 @@ export interface Rating {
   freelancerId: string;
   patientId: string;
   rating: number; // 1-5 stars
+  isVisible: boolean; // Whether rating is visible to public
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }

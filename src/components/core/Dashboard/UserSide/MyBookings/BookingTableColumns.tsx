@@ -31,7 +31,7 @@ export const createBookingColumns = ({
   onCancel,
   onRate,
   cancellingBookingId,
-}: BookingTableColumnsProps): ColumnDef<Booking>[] => {
+}: BookingTableColumnsProps): ColumnDef<Booking, unknown>[] => {
   return [
     {
       accessorKey: 'slot.startTime',

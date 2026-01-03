@@ -121,10 +121,10 @@ const Pricing = () => {
           >
             <div className="flex flex-col gap-2 sm:gap-3">
               <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary dark:text-primary/90">
-                {pricingPlans[0].title}
+                {pricingPlans[0]?.title}
               </h3>
               <p className="text-sm sm:text-base lg:text-lg text-gray-700 dark:text-neutral-300">
-                {pricingPlans[0].description}
+                {pricingPlans[0]?.description}
               </p>
             </div>
 
@@ -133,7 +133,7 @@ const Pricing = () => {
                 What&apos;s included?
               </h4>
               <ul className="flex flex-col gap-2">
-                {pricingPlans[0].features.map((feature, index) => (
+                {pricingPlans[0]?.features.map((feature, index) => (
                   <li
                     key={index}
                     className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-neutral-300"
@@ -154,7 +154,7 @@ const Pricing = () => {
                 hover:shadow-lg hover:shadow-neutral-900/80 dark:hover:shadow-white/20
                 hover:scale-[1.02]`}
             >
-              <Link href={pricingPlans[0].button.href}>{pricingPlans[0].button.text}</Link>
+              <Link href={pricingPlans[0]?.button.href ?? ''}>{pricingPlans[0]?.button.text}</Link>
             </Button>
           </div>
 
@@ -171,10 +171,10 @@ const Pricing = () => {
           >
             <div className="flex flex-col gap-2 sm:gap-3">
               <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary dark:text-primary/90">
-                {pricingPlans[2].title}
+                {pricingPlans[2]?.title}
               </h3>
               <p className="text-sm sm:text-base lg:text-lg text-gray-700 dark:text-neutral-300">
-                {pricingPlans[2].description}
+                {pricingPlans[2]?.description}
               </p>
             </div>
 
@@ -183,7 +183,7 @@ const Pricing = () => {
                 What&apos;s included?
               </h4>
               <ul className="flex flex-col gap-2">
-                {pricingPlans[2].features.map((feature, index) => (
+                {pricingPlans[2]?.features.map((feature, index) => (
                   <li
                     key={index}
                     className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-neutral-300"
@@ -204,7 +204,7 @@ const Pricing = () => {
                 hover:shadow-lg hover:shadow-neutral-900/80 dark:hover:shadow-white/20
                 hover:scale-[1.02]`}
             >
-              <Link href={pricingPlans[2].button.href}>{pricingPlans[2].button.text}</Link>
+              <Link href={pricingPlans[2]?.button.href ?? ''}>{pricingPlans[2]?.button.text}</Link>
             </Button>
           </div>
         </div>

@@ -299,10 +299,6 @@ export function FeatureComparison({
               {/* Backend-provided features */}
               {features.length > 0 ? (
                 features.map((feature, idx) => {
-                  const bronzePlan = plans.find((p) => p.name === 'BRONZE');
-                  const silverPlan = plans.find((p) => p.name === 'SILVER');
-                  const goldPlan = plans.find((p) => p.name === 'GOLD');
-
                   return (
                     <TableRow key={idx} className="border-b border-gray-100 dark:border-gray-800">
                       <TableCell className="font-medium py-4">

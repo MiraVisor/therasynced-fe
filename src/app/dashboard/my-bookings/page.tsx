@@ -1,6 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -300,7 +301,7 @@ export default function MyBookingsPage() {
         onCancel: handleCancel,
         onRate: handleReview,
         cancellingBookingId,
-      }),
+      }) as ColumnDef<Booking, unknown>[],
     [cancellingBookingId],
   );
 
