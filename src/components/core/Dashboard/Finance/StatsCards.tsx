@@ -32,7 +32,7 @@ export function StatsCards({ revenueData, isLoading }: StatsCardsProps) {
           },
         },
         {
-          title: 'Active Therapists',
+          title: 'Active Freelancers',
           value: formatNumber(revenueData.activeTherapists.value),
           trend: {
             value: Math.abs(revenueData.activeTherapists.percentageChange),
@@ -66,7 +66,7 @@ export function StatsCards({ revenueData, isLoading }: StatsCardsProps) {
           trend: undefined,
         },
         {
-          title: 'Active Therapists',
+          title: 'Active Freelancers',
           value: '0',
           trend: undefined,
         },

@@ -1,13 +1,21 @@
 'use client';
 
-import { Home } from 'lucide-react';
+import { Home, MapPin } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useBookingStore } from '@/stores/bookingStore';
 import type { ServiceCategory } from '@/types/common';
+import type { LocationType } from '@/types/pricing';
 import type { Slot } from '@/types/types';
 
 interface ServiceFormData {
@@ -24,6 +32,9 @@ interface DetailsStepProps {
   slotsByDate: Record<string, Slot[]>;
   serviceForm: UseFormReturn<ServiceFormData>;
   detailsForm: UseFormReturn<DetailsFormData>;
+  availableLocationTypes?: LocationType[];
+  selectedLocationType?: LocationType | null;
+  onLocationTypeChange?: (locationType: LocationType) => void;
 }
 
 export const DetailsStep: React.FC<DetailsStepProps> = ({
@@ -31,8 +42,15 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
   slotsByDate,
   serviceForm,
   detailsForm,
+  availableLocationTypes = [],
+  selectedLocationType,
+  onLocationTypeChange,
 }) => {
   const { selectedDate, selectedTime, availableServices } = useBookingStore();
+  const selectedCategoryIds = serviceForm.watch('serviceCategoryIds') || [];
+
+  // Show location selector if categories are selected and multiple options available
+  const showLocationSelector = selectedCategoryIds.length > 0 && availableLocationTypes.length > 1;
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -101,10 +119,65 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
             <Label className="text-lg font-poppins font-semibold text-charcoal">Services</Label>
             <div className="text-sm text-gray-600 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               No specific services are configured for this time slot. You can discuss your needs
-              directly with the therapist during your session.
+              directly with the freelancer during your session.
             </div>
           </div>
         ) : null}
+
+        {/* Location Selection */}
+        {showLocationSelector && (
+          <div className="space-y-4">
+            <Label className="text-lg font-poppins font-semibold text-charcoal">
+              Location Type
+            </Label>
+            <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
+              Select where you'd like to have your session
+            </p>
+            <Select
+              value={selectedLocationType || ''}
+              onValueChange={(value) => onLocationTypeChange?.(value as LocationType)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select location type" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableLocationTypes.map((locationType) => (
+                  <SelectItem key={locationType} value={locationType}>
+                    <div className="flex items-center gap-2">
+                      {locationType === 'HOME' ? (
+                        <Home className="w-4 h-4" />
+                      ) : (
+                        <MapPin className="w-4 h-4" />
+                      )}
+                      <span>{locationType === 'HOME' ? 'Home Visit' : 'Clinic'}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Show selected location if auto-selected (single option) */}
+        {selectedCategoryIds.length > 0 &&
+          availableLocationTypes.length === 1 &&
+          selectedLocationType && (
+            <div className="space-y-2">
+              <Label className="text-lg font-poppins font-semibold text-charcoal">
+                Location Type
+              </Label>
+              <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                {selectedLocationType === 'HOME' ? (
+                  <Home className="w-5 h-5 text-blue-600" />
+                ) : (
+                  <MapPin className="w-5 h-5 text-blue-600" />
+                )}
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {selectedLocationType === 'HOME' ? 'Home Visit' : 'Clinic'}
+                </span>
+              </div>
+            </div>
+          )}
 
         {/* Additional Notes */}
         <div className="space-y-4">
@@ -124,8 +197,9 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
 
         {/* Address for Home Sessions */}
         {selectedTime &&
-          slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)?.locationType ===
-            'HOME' && (
+          (selectedLocationType === 'HOME' ||
+            slotsByDate[selectedDate]?.find((s) => s.id === selectedTime)?.locationType ===
+              'HOME') && (
             <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="flex items-center gap-2">
                 <Home className="w-5 h-5 text-blue-600" />

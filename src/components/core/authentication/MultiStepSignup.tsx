@@ -39,6 +39,7 @@ const signupSchema = z
     gender: z.string().optional(),
     genderOther: z.string().optional(), // Free text for "Other" gender
     city: z.string().optional(),
+    homeAddress: z.string().optional(), // Home address for bookings
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
     mainJobTitleId: z.string().optional(),
@@ -136,6 +137,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       gender: '',
       genderOther: '',
       city: '',
+      homeAddress: '',
       role: '',
       clinicAddress: '',
       mainJobTitleId: '',

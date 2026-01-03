@@ -1,6 +1,6 @@
 'use client';
 
-import { format, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 
 import { Calendar } from '@/components/ui/calendar';
@@ -35,9 +35,7 @@ export const BookingPagePreview = () => {
   });
 
   // Get blocked dates set
-  const blockedDatesSet = new Set(
-    blockedDates.map((bd) => format(new Date(bd.date), 'yyyy-MM-dd')),
-  );
+  const blockedDatesSet = new Set(blockedDates.map((bd) => formatDateForAPI(new Date(bd.date))));
 
   // Filter slots as clients would see them
   const filteredSlots = useMemo(() => {
@@ -140,12 +138,6 @@ export const BookingPagePreview = () => {
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              disabled={(date) => {
-                const today = startOfDay(new Date());
-                const dateToCheck = startOfDay(date);
-                const dateString = formatDateForAPI(dateToCheck);
-                return dateToCheck < today || !datesWithSlots.has(dateString);
-              }}
               modifiers={{
                 hasSlots: Array.from(datesWithSlots).map((d) => {
                   const [yearStr, monthStr, dayStr] = d.split('-');
@@ -159,6 +151,7 @@ export const BookingPagePreview = () => {
               modifiersClassNames={{
                 hasSlots: 'bg-primary/10 text-primary font-semibold',
               }}
+              captionLayout="dropdown"
               className="rounded-lg"
             />
           </div>

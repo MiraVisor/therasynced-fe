@@ -68,22 +68,28 @@ export function PaymentConsent({
         </AlertDescription>
       </Alert>
 
-      <div className="flex items-start space-x-3 rounded-lg border p-4">
+      <div
+        className={`flex items-start space-x-3 rounded-lg border p-4 transition-all duration-200 ${
+          required && !paymentConsentGranted
+            ? 'border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10'
+            : 'border-gray-200 dark:border-gray-700'
+        }`}
+      >
         <Checkbox
           id="payment-consent"
           checked={paymentConsentGranted}
           onCheckedChange={(checked) => handleConsentChange(checked === true)}
-          className="mt-1"
+          className="mt-1 transition-all duration-200"
           required={required}
         />
         <div className="flex-1 space-y-1">
           <Label
             htmlFor="payment-consent"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             I consent to the processing of my payment data by Stripe for subscription payment
             processing
-            {required && <span className="text-red-500">*</span>}
+            {required && <span className="text-red-500 ml-1">*</span>}
           </Label>
           <p className="text-xs text-muted-foreground">
             By checking this box, you acknowledge that your payment data will be processed by Stripe
@@ -94,7 +100,7 @@ export function PaymentConsent({
       </div>
 
       {required && !paymentConsentGranted && (
-        <p className="text-xs text-red-600 dark:text-red-400">
+        <p className="text-xs text-red-600 dark:text-red-400 animate-in slide-in-from-top duration-200">
           Payment consent is required to proceed with checkout.
         </p>
       )}

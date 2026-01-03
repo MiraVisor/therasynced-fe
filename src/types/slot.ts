@@ -37,6 +37,7 @@ export interface Slot {
       id: string;
       name: string;
     };
+    locationTypes: ('HOME' | 'CLINIC')[]; // REQUIRED: Location types this service supports (always present in slot responses)
   }>; // Service categories available for this slot (matches API response structure)
   booking?: {
     id: string;
@@ -83,7 +84,7 @@ export interface CreateSlotDto {
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
@@ -100,7 +101,7 @@ export interface CreateSlotsDto {
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
@@ -158,4 +159,41 @@ export interface WeeklyAvailabilityTemplate {
   slotDuration: number; // minutes
   breakDuration: number; // minutes
   blockedPeriods: BlockedPeriod[];
+}
+
+/**
+ * Slot pattern recognition types
+ */
+export interface DaySlotPattern {
+  enabled: boolean;
+  slots: Array<{
+    startTime: string; // Format: "HH:mm"
+    endTime: string; // Format: "HH:mm"
+    slotDuration: number; // minutes
+    breakDuration: number; // minutes
+    locationType: LocationType;
+  }>;
+}
+
+export interface SlotPatternResponse {
+  success: boolean;
+  data: {
+    hasPattern: boolean;
+    weekStart: string; // ISO date string
+    weekEnd: string; // ISO date string
+    pattern: {
+      monday: DaySlotPattern;
+      tuesday: DaySlotPattern;
+      wednesday: DaySlotPattern;
+      thursday: DaySlotPattern;
+      friday: DaySlotPattern;
+      saturday: DaySlotPattern;
+      sunday: DaySlotPattern;
+    };
+    mostCommonDuration: number; // minutes
+    mostCommonStartTime: string; // Format: "HH:mm"
+    mostCommonEndTime: string; // Format: "HH:mm"
+    mostCommonLocationType: LocationType;
+    confidence: number; // 0-1, indicates how consistent the pattern is
+  };
 }

@@ -62,6 +62,13 @@ export interface Booking {
     name: string;
     email: string;
     profilePicture?: string;
+    // Client history fields (enhanced booking responses)
+    previousBookingsWithFreelancer?: number; // Count of bookings before this one
+    totalBookingsWithFreelancer?: number; // Total bookings with this freelancer
+    lastVisitDate?: string | null; // ISO date of last completed visit
+    firstBookingDate?: string | null; // ISO date of first booking
+    preferredServices?: string[]; // Top 3 most booked service categories
+    averageRating?: number | null; // Client's average rating for this freelancer
   };
   createdAt: string;
   updatedAt: string;
@@ -77,6 +84,7 @@ export interface BookingStats {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
   clientAddress?: string;
   notes?: string;
 }
@@ -84,7 +92,11 @@ export interface CreateBookingDto {
 export interface RescheduleBookingDto {
   bookingId: string;
   newSlotId: string;
-  reason?: string;
+  serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
+  clientAddress?: string;
+  notes?: string;
+  cancellationReason?: string;
 }
 
 export interface CancelBookingDto {

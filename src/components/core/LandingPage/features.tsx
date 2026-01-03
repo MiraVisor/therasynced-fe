@@ -21,24 +21,24 @@ import { Badge } from '@/components/ui/badge';
 const userTypeFeatures = {
   client: {
     title: 'For Clients',
-    description: 'Everything you need to find and book with licensed therapists',
+    description: 'Everything you need to find and book with licensed freelancers',
     features: [
       {
         id: 1,
         title: 'Book Unlimited Sessions',
-        description: 'Schedule appointments with certified therapists anytime, anywhere.',
+        description: 'Schedule appointments with certified freelancers anytime, anywhere.',
         icon: Calendar,
       },
       {
         id: 2,
         title: 'View Profiles & Ratings',
-        description: 'Browse detailed therapist profiles with authentic reviews and ratings.',
+        description: 'Browse detailed freelancer profiles with authentic reviews and ratings.',
         icon: Star,
       },
       {
         id: 3,
         title: 'Secure In-App Messaging',
-        description: 'Communicate directly with your therapist before and after sessions.',
+        description: 'Communicate directly with your freelancer before and after sessions.',
         icon: MessageCircle,
       },
       {
@@ -56,7 +56,7 @@ const userTypeFeatures = {
       {
         id: 6,
         title: 'Favorites System',
-        description: 'Save your preferred therapists for quick and easy booking.',
+        description: 'Save your preferred freelancers for quick and easy booking.',
         icon: Heart,
       },
     ],

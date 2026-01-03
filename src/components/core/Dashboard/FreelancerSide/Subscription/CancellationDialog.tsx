@@ -32,6 +32,8 @@ interface CancellationDialogProps {
   currentPlan?: SubscriptionPlan;
   onDowngrade?: () => void;
   isLoading?: boolean;
+  isTrialing?: boolean;
+  trialEndDate?: string | null;
 }
 
 const cancellationReasons = [
@@ -59,6 +61,8 @@ export function CancellationDialog({
   currentPlan,
   onDowngrade,
   isLoading = false,
+  isTrialing = false,
+  trialEndDate,
 }: CancellationDialogProps) {
   const [reason, setReason] = useState<string>('');
   const [customReason, setCustomReason] = useState<string>('');
@@ -78,6 +82,7 @@ export function CancellationDialog({
   };
 
   const endDate = subscriptionEndDate ? new Date(subscriptionEndDate) : null;
+  const trialEnd = trialEndDate ? new Date(trialEndDate) : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -93,7 +98,21 @@ export function CancellationDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {endDate && (
+          {isTrialing && trialEnd ? (
+            <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-900/20">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800 dark:text-orange-200">
+                Your subscription has been canceled. You'll continue with trial access until{' '}
+                {trialEnd.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+                . No payment will be required, and you can continue using the platform during this
+                time.
+              </AlertDescription>
+            </Alert>
+          ) : endDate ? (
             <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-900/20">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800 dark:text-orange-200">
@@ -106,7 +125,7 @@ export function CancellationDialog({
                 . You can resume anytime before then.
               </AlertDescription>
             </Alert>
-          )}
+          ) : null}
 
           <div className="space-y-2">
             <Label htmlFor="reason">Reason for cancellation (optional)</Label>
@@ -137,19 +156,38 @@ export function CancellationDialog({
             </div>
           )}
 
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800">
-            <p className="mb-2 text-sm font-semibold text-red-800 dark:text-red-200">
-              What you'll lose:
-            </p>
-            <ul className="space-y-1 text-sm text-red-700 dark:text-red-300">
-              {featuresLost.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-2">
-                  <X className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {!isTrialing && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800">
+              <p className="mb-2 text-sm font-semibold text-red-800 dark:text-red-200">
+                What you'll lose:
+              </p>
+              <ul className="space-y-1 text-sm text-red-700 dark:text-red-300">
+                {featuresLost.map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <X className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {isTrialing && (
+            <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-900/20">
+              <AlertDescription className="text-blue-800 dark:text-blue-200">
+                <p className="font-medium mb-1">Good news!</p>
+                <p className="text-sm">
+                  Since you're canceling during your trial period, you'll keep your trial access
+                  until{' '}
+                  {trialEnd?.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                  . You won't lose any features during this time, and no payment will be required.
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
 
           {onDowngrade && currentPlan && currentPlan.name !== 'BRONZE' && (
             <Alert>

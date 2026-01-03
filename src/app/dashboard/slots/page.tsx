@@ -115,7 +115,7 @@ const SlotsPage = () => {
           />
           <EnhancedStatCard
             title="Revenue"
-            value={`€${displayStats.revenue.toFixed(2)}`}
+            value={`EUR ${displayStats.revenue.toFixed(2)}`}
             loading={isLoadingStats && !slotStats}
             simple
           />

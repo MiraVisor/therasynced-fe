@@ -80,7 +80,7 @@ const getFieldName = (endpoint: string): string => {
   }
 };
 
-// Upload file to Cloudinary via backend
+// Upload file to Supabase Storage via backend
 export const uploadToCloudinary = async (
   file: File,
   endpoint: string,
@@ -104,7 +104,7 @@ export const uploadToCloudinary = async (
     const fieldName = getFieldName(endpoint);
     formData.append(fieldName, file);
 
-    // Upload to Cloudinary via backend
+    // Upload to Supabase Storage via backend
     const response = await uploadApi.post(endpoint, formData, {
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
@@ -127,7 +127,7 @@ export const uploadToCloudinary = async (
       success: true,
     };
   } catch (error: unknown) {
-    console.error('Cloudinary upload error:', error);
+    console.error('File upload error:', error);
     const errorMessage =
       error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
@@ -142,7 +142,7 @@ export const uploadToCloudinary = async (
   }
 };
 
-// Delete file from Cloudinary via backend
+// Delete file from Supabase Storage via backend
 export const deleteFromCloudinary = async (
   publicId: string,
 ): Promise<{ success: boolean; error?: string }> => {
@@ -150,7 +150,7 @@ export const deleteFromCloudinary = async (
     await uploadApi.delete(ENDPOINTS.image.deleteSingle(publicId));
     return { success: true };
   } catch (error: unknown) {
-    console.error('Cloudinary delete error:', error);
+    console.error('File delete error:', error);
     const errorMessage =
       error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { data?: { message?: string } }; message?: string }).response?.data

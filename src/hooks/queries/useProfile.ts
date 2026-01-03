@@ -8,9 +8,29 @@ import {
   BackendProfileResponse,
   ChangeEmailDto,
   ChangePasswordDto,
+  FreelancerData,
   JobTitle,
   UpdateProfileDto,
 } from '@/types/types';
+
+/**
+ * Hook to upload profile picture
+ */
+export const useUploadProfilePicture = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => profileApi.uploadProfilePicture(file),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success('Profile picture uploaded successfully!');
+      return data;
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to upload profile picture');
+    },
+  });
+};
 
 // Type for the user profile data
 export interface UserProfileData {
@@ -30,6 +50,7 @@ export interface UserProfileData {
   mainJobTitle?: JobTitle;
   mainJobTitleId?: string;
   clinicAddress?: string;
+  homeAddress?: string; // NEW: Home address for bookings
   verificationDocuments?: string[];
   verificationRequestedAt?: Date | null;
   verificationApprovedAt?: Date | null;
@@ -53,6 +74,19 @@ export const useProfile = () => {
     select: (data: BackendProfileResponse): UserProfileData | undefined => {
       // BackendProfileResponse has structure: { data: { user: {...} } }
       return data.data?.user as UserProfileData | undefined;
+    },
+  });
+};
+
+/**
+ * Hook to fetch freelancer data from profile
+ */
+export const useFreelancerData = () => {
+  return useQuery({
+    queryKey: ['profile'],
+    queryFn: () => profileApi.getProfile(),
+    select: (data: BackendProfileResponse): FreelancerData | undefined => {
+      return data.data?.freelancerData;
     },
   });
 };

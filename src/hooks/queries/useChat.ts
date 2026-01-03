@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 import chatService, { ChatMessage } from '@/services/chatService';
 import { ChatContactState, useChatStore } from '@/stores/chatStore';
+import { getApiErrorMessage } from '@/types/common';
 
 /**
  * Hook to fetch chat contacts
@@ -115,6 +117,26 @@ export const useSendMessage = () => {
       // The WebSocket event will handle real-time updates
       // Only invalidate contacts to refresh the last message
       queryClient.invalidateQueries({ queryKey: ['chat', 'contacts'] });
+    },
+    onError: (error: unknown) => {
+      // Handle messaging limit errors
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as {
+          response?: { status?: number; data?: { message?: string } };
+        };
+        if (apiError.response?.status === 403) {
+          const errorMessage = apiError.response?.data?.message || 'Messaging limit reached';
+          if (errorMessage.includes('Messaging limit reached')) {
+            toast.error(
+              `${errorMessage}. Please upgrade your subscription or wait for your billing cycle to reset.`,
+            );
+            return;
+          }
+        }
+      }
+      // Generic error handling
+      const errorMessage = getApiErrorMessage(error) || 'Failed to send message';
+      toast.error(errorMessage);
     },
   });
 };

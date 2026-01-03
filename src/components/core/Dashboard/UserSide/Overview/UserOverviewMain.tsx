@@ -259,10 +259,10 @@ const UserOverview = () => {
 
         {/* Results Header */}
         <div>
-          <h2 className="text-2xl font-poppins font-bold text-charcoal">Available Therapists</h2>
+          <h2 className="text-2xl font-poppins font-bold text-charcoal">Available Freelancers</h2>
           {pagination && (
             <p className="text-sm font-inter text-muted-foreground mt-1">
-              Showing {freelancers.length} of {pagination.total} therapists
+              Showing {freelancers.length} of {pagination.total} freelancers
             </p>
           )}
         </div>
@@ -303,10 +303,10 @@ const UserOverview = () => {
               <Search className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
-              No therapists found
+              No freelancers found
             </h3>
             <p className="font-inter text-muted-foreground mb-4">
-              No therapists match your current filters
+              No freelancers match your current filters
             </p>
             <Button
               onClick={handleClearAllFilters}

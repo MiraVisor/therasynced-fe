@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -239,6 +240,27 @@ export function PersonalDetailsStep() {
             <p className="text-red-500 text-xs font-inter mt-0.5">{errors.city.message}</p>
           )}
         </div>
+
+        {/* Home Address Field - Only for patients */}
+        {watch('role') === 'patient' && (
+          <div className="space-y-1">
+            <label htmlFor="homeAddress" className="text-xs font-inter font-medium text-gray-700">
+              Home Address (Optional)
+            </label>
+            <Input
+              id="homeAddress"
+              type="text"
+              placeholder="Enter your home address for bookings"
+              value={watch('homeAddress') || ''}
+              onChange={(e) => setValue('homeAddress', e.target.value)}
+              className="h-10 text-sm font-inter"
+            />
+            <p className="text-xs text-gray-500">
+              This address will be used for home visit bookings. You can update it later in your
+              profile.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

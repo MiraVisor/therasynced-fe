@@ -276,17 +276,17 @@ export function RevenueCharts({ revenueData, subscriptionData, isLoading }: Reve
                     ? [
                         {
                           name: 'Bronze',
-                          value: subscriptionData.subscriptionsByPlan.BRONZE,
+                          value: subscriptionData.subscriptionsByPlan?.BRONZE ?? 0,
                           color: '#5E54F3',
                         },
                         {
                           name: 'Silver',
-                          value: subscriptionData.subscriptionsByPlan.SILVER,
+                          value: subscriptionData.subscriptionsByPlan?.SILVER ?? 0,
                           color: '#06B6D4',
                         },
                         {
                           name: 'Gold',
-                          value: subscriptionData.subscriptionsByPlan.GOLD,
+                          value: subscriptionData.subscriptionsByPlan?.GOLD ?? 0,
                           color: '#10B981',
                         },
                       ]
@@ -319,17 +319,17 @@ export function RevenueCharts({ revenueData, subscriptionData, isLoading }: Reve
                     ? [
                         {
                           name: 'Bronze',
-                          value: subscriptionData.subscriptionsByPlan.BRONZE,
+                          value: subscriptionData.subscriptionsByPlan?.BRONZE ?? 0,
                           color: '#5E54F3',
                         },
                         {
                           name: 'Silver',
-                          value: subscriptionData.subscriptionsByPlan.SILVER,
+                          value: subscriptionData.subscriptionsByPlan?.SILVER ?? 0,
                           color: '#06B6D4',
                         },
                         {
                           name: 'Gold',
-                          value: subscriptionData.subscriptionsByPlan.GOLD,
+                          value: subscriptionData.subscriptionsByPlan?.GOLD ?? 0,
                           color: '#10B981',
                         },
                       ]
