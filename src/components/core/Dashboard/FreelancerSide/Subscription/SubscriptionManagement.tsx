@@ -261,7 +261,7 @@ export default function SubscriptionManagement() {
   // Plans Tab Content
   const plansContent = (
     <div className="space-y-8">
-      {/* Plans Grid - Mobile Horizontal Scroll */}
+      {/* Plans Grid - Responsive Layout */}
       <div>
         <div className="mb-6">
           <h3 className="text-2xl font-poppins font-bold text-charcoal mb-2">Choose Your Plan</h3>
@@ -269,21 +269,18 @@ export default function SubscriptionManagement() {
             Select the plan that best fits your needs
           </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-3 overflow-x-auto pb-4 md:pb-0 md:overflow-x-visible">
-          <div className="flex md:contents gap-6 min-w-full md:min-w-0">
-            {plans.map((plan) => (
-              <div key={plan.id} className="flex-shrink-0 w-full md:w-auto md:flex-1">
-                <PlanCard
-                  plan={plan}
-                  currentPlanName={currentSubscription?.plan?.name}
-                  isRecommended={plan.name === 'SILVER'}
-                  onSelectPlan={handleSelectPlan}
-                  isLoading={isSubscribing || isUpdating}
-                  hasActiveSubscription={userHasActiveSubscription}
-                />
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {plans.map((plan) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              currentPlanName={currentSubscription?.plan?.name}
+              isRecommended={plan.name === 'SILVER'}
+              onSelectPlan={handleSelectPlan}
+              isLoading={isSubscribing || isUpdating}
+              hasActiveSubscription={userHasActiveSubscription}
+            />
+          ))}
         </div>
       </div>
 
@@ -303,7 +300,7 @@ export default function SubscriptionManagement() {
   );
 
   return (
-    <div className="space-y-8">
+    <div>
       {/* Header - Simplified */}
       <div>
         <h1 className="text-3xl font-poppins font-bold text-charcoal mb-2">
@@ -363,59 +360,61 @@ export default function SubscriptionManagement() {
 
       {/* Pre-Checkout Summary Dialog */}
       {showPreCheckoutSummary && selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-lg">
-            <CardHeader>
-              <CardTitle className="text-xl font-poppins font-bold">
-                Review Your Selection
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg border p-4">
-                <h3 className="font-poppins font-semibold text-lg">{selectedPlan.displayName}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {selectedPlan.description}
-                </p>
-                <p className="mt-2 text-2xl font-poppins font-bold text-primary">
-                  EUR {selectedPlan.price}/month
-                </p>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
+          <div className="my-auto w-full max-w-lg">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-poppins font-bold">
+                  Review Your Selection
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border p-4">
+                  <h3 className="font-poppins font-semibold text-lg">{selectedPlan.displayName}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {selectedPlan.description}
+                  </p>
+                  <p className="mt-2 text-2xl font-poppins font-bold text-primary">
+                    EUR {selectedPlan.price}/month
+                  </p>
+                </div>
 
-              <div>
-                <h4 className="mb-2 font-poppins font-semibold">Features included:</h4>
-                <ul className="space-y-1 text-sm">
-                  {selectedPlan.features.slice(0, 5).map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <span className="text-primary">✓</span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <div>
+                  <h4 className="mb-2 font-poppins font-semibold">Features included:</h4>
+                  <ul className="space-y-1 text-sm">
+                    {selectedPlan.features.slice(0, 5).map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <span className="text-primary">✓</span>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-              <PaymentConsent onConsentChange={setHasPaymentConsent} required={true} />
+                <PaymentConsent onConsentChange={setHasPaymentConsent} required={true} />
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowPreCheckoutSummary(false);
-                    setSelectedPlanForCheckout(null);
-                    setHasPaymentConsent(false);
-                  }}
-                  className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleProceedToCheckout}
-                  disabled={!hasPaymentConsent || isSubscribing}
-                  className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
-                >
-                  {isSubscribing ? 'Processing...' : 'Proceed to Checkout'}
-                </button>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowPreCheckoutSummary(false);
+                      setSelectedPlanForCheckout(null);
+                      setHasPaymentConsent(false);
+                    }}
+                    className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleProceedToCheckout}
+                    disabled={!hasPaymentConsent || isSubscribing}
+                    className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {isSubscribing ? 'Processing...' : 'Proceed to Checkout'}
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
 

@@ -208,7 +208,7 @@ function AccountPageContent() {
       }
     >
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-1 bg-gray-100 p-1 rounded-xl mb-8 overflow-x-auto">
+      <div className="flex flex-wrap gap-1 bg-gray-100 p-1 rounded-xl mb-8 overflow-x-auto ">
         {navigationTabs.map((tab) => {
           const Icon = tab.icon;
           return (
