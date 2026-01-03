@@ -326,25 +326,29 @@ export function DataRightsSection() {
           <DialogHeader>
             <DialogTitle>Delete Your Account</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete your account? This action cannot be undone.
+              Deleting your account will withdraw your agreement to the Terms of Service, Privacy
+              Policy, and data processing. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Alert className="border-red-200 dark:border-red-900">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertTitle className="text-red-600 dark:text-red-400">Permanent Deletion</AlertTitle>
-              <AlertDescription>
-                All your data will be permanently deleted, including:
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  <li>Your profile and account information</li>
-                  <li>All bookings and appointments</li>
-                  <li>Messages and communications</li>
-                  <li>Payment history</li>
+          <div className="py-4 space-y-3">
+            <Alert className="border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-blue-800 dark:text-blue-200">
+                What happens when you delete your account:
+              </AlertTitle>
+              <AlertDescription className="text-blue-700 dark:text-blue-300">
+                <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+                  <li>Your account will be immediately logged out</li>
+                  <li>We will stop processing your data except where legally required</li>
+                  <li>
+                    Healthcare records (completed bookings) retained for 7 years as required by law
+                  </li>
+                  <li>
+                    Financial records (subscriptions, payments) retained for 7 years as required by
+                    law
+                  </li>
+                  <li>Messages older than 2 years may be deleted immediately</li>
                 </ul>
-                <p className="mt-2">
-                  Note: We may retain certain data for legal compliance (e.g., healthcare records
-                  for 7 years as required by Irish law).
-                </p>
               </AlertDescription>
             </Alert>
             <div className="mt-4 space-y-2">

@@ -108,6 +108,17 @@ export default function TrialBanner() {
                   })}
                   . No payment will be required.
                 </p>
+              ) : subscription?.status === 'TRIALING' && subscription?.plan ? (
+                <p>
+                  You&apos;re currently in your trial period. Your{' '}
+                  <strong>{subscription.plan.displayName}</strong> subscription will begin on{' '}
+                  {trialEndDate?.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                  , and you&apos;ll be charged starting then.
+                </p>
               ) : subscription?.status === 'TRIALING' ? (
                 <p>
                   You&apos;re currently in your trial period. Your subscription will start after the

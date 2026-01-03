@@ -105,7 +105,7 @@ export function ProfileSection() {
         id: profileData.id,
         name: profileData.name || '',
         email: profileData.email || '',
-        profilePicture: profileData.profilePicture,
+        profilePicture: profileData.profilePicture || undefined, // Ensure it's undefined if empty, not empty string
         gender: profileData.gender || '',
         dob: normalizedDob,
         city: profileData.city || '',
@@ -118,6 +118,15 @@ export function ProfileSection() {
         clinicAddress: profileData.clinicAddress || '',
         homeAddress: profileData.homeAddress || '',
       });
+
+      // Debug: Log profile picture URL
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ProfileSection] Profile picture URL:', profileData.profilePicture);
+        console.log('[ProfileSection] Profile data:', {
+          hasProfilePicture: !!profileData.profilePicture,
+          profilePictureLength: profileData.profilePicture?.length || 0,
+        });
+      }
 
       // Reset preview when profile data changes
       setPreviewUrl(null);
@@ -209,9 +218,8 @@ export function ProfileSection() {
       if (formData.description?.trim()) {
         updateData.description = formData.description.trim();
       }
-      if (formData.homeAddress?.trim()) {
-        updateData.homeAddress = formData.homeAddress.trim();
-      }
+      // Always include homeAddress (even if empty) so backend can clear it if needed
+      updateData.homeAddress = formData.homeAddress?.trim() || '';
 
       updateProfile(updateData, {
         onSuccess: () => {
@@ -240,9 +248,8 @@ export function ProfileSection() {
       updateData.mainJobTitleId = null;
     }
 
-    if (formData.clinicAddress?.trim()) {
-      updateData.clinicAddress = formData.clinicAddress.trim();
-    }
+    // Always include clinicAddress (even if empty) so backend can clear it if needed
+    updateData.clinicAddress = formData.clinicAddress?.trim() || '';
 
     updateProfile(updateData, {
       onSuccess: () => {
@@ -285,7 +292,14 @@ export function ProfileSection() {
     }
 
     uploadProfilePicture(file, {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        // Immediately update the profile picture URL from the response
+        if (response?.data?.profilePicture) {
+          setFormData((prev) => ({
+            ...prev,
+            profilePicture: response.data.profilePicture,
+          }));
+        }
         setPreviewUrl(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -320,7 +334,10 @@ export function ProfileSection() {
             <div className="relative">
               <Avatar className="h-24 w-24 border-2 border-gray-300">
                 <ProfileAvatarImage
-                  src={previewUrl || formData.profilePicture || undefined}
+                  src={
+                    previewUrl ||
+                    (formData.profilePicture?.trim() ? formData.profilePicture : undefined)
+                  }
                   alt={formData.name || 'Profile'}
                   isCurrentUser={true}
                 />

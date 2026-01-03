@@ -21,8 +21,10 @@ export const useUploadProfilePicture = () => {
 
   return useMutation({
     mutationFn: (file: File) => profileApi.uploadProfilePicture(file),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    onSuccess: async (data) => {
+      // Invalidate and refetch profile query to ensure data is up to date
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
+      await queryClient.refetchQueries({ queryKey: ['profile'] });
       toast.success('Profile picture uploaded successfully!');
       return data;
     },
@@ -75,6 +77,8 @@ export const useProfile = () => {
       // BackendProfileResponse has structure: { data: { user: {...} } }
       return data.data?.user as UserProfileData | undefined;
     },
+    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes (shorter than default)
+    refetchOnMount: 'always', // Always refetch when component mounts to ensure fresh data
   });
 };
 

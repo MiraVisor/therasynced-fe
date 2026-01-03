@@ -326,7 +326,9 @@ export function OverviewTab({
                   </div>
                   <div>
                     <CardTitle className="text-3xl font-poppins font-bold text-charcoal mb-1">
-                      {plan.displayName} Plan
+                      {isTrial
+                        ? `${plan.displayName} Plan (starts after trial)`
+                        : `${plan.displayName} Plan`}
                     </CardTitle>
                     <StatusBadge
                       status={subscription?.status || 'INACTIVE'}
@@ -374,17 +376,19 @@ export function OverviewTab({
                   </Alert>
                 )}
 
-                {/* Pricing - Very Prominent */}
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-poppins font-bold text-charcoal">
-                      EUR {plan.price.toFixed(2)}
-                    </span>
-                    <span className="text-lg font-inter text-gray-600 dark:text-gray-400">
-                      /month
-                    </span>
+                {/* Pricing - Very Prominent (only show if not in trial) */}
+                {!isTrial && (
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-poppins font-bold text-charcoal">
+                        EUR {plan.price.toFixed(2)}
+                      </span>
+                      <span className="text-lg font-inter text-gray-600 dark:text-gray-400">
+                        /month
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -487,8 +491,68 @@ export function OverviewTab({
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6">
+            {/* Slots Limit */}
+            {isTrial ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base font-poppins font-semibold text-charcoal">
+                    Active Slots
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    Number of active slots you can create
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Slots used</span>
+                      <span className="text-sm font-semibold text-primary">
+                        {subscription.slotsUsed ?? 0} / Unlimited
+                      </span>
+                    </div>
+                    <div className="mt-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                      <p className="text-xs text-primary font-medium">
+                        During trial: Unlimited slots
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              subscription.slotsLimit !== null && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base font-poppins font-semibold text-charcoal">
+                      Active Slots
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Number of active slots you can create
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Slots used</span>
+                        <span className="text-sm font-semibold">
+                          {subscription.slotsUsed ?? 0}/{formatLimit(subscription.slotsLimit)}
+                        </span>
+                      </div>
+                      {isApproachingLimit(subscription.slotsUsed ?? 0, subscription.slotsLimit) && (
+                        <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
+                          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                          <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
+                            You're approaching your slot limit. Consider upgrading for more slots.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            )}
+
             {/* Days per Week Limit */}
-            {subscription.maxDaysPerWeek !== null && (
+            {isTrial ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base font-poppins font-semibold text-charcoal">
@@ -504,29 +568,59 @@ export function OverviewTab({
                       <span className="text-sm text-gray-600 dark:text-gray-400">
                         Days used this week
                       </span>
-                      <span className="text-sm font-semibold">
-                        {subscription.daysUsed ?? 0}/{formatLimit(subscription.maxDaysPerWeek)}
+                      <span className="text-sm font-semibold text-primary">
+                        {subscription.daysUsed ?? 0} / Unlimited
                       </span>
                     </div>
-                    {isApproachingLimit(
-                      subscription.daysUsed ?? 0,
-                      subscription.maxDaysPerWeek,
-                    ) && (
-                      <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
-                        <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                        <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
-                          You're approaching your weekly day limit. Consider upgrading for more
-                          flexibility.
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                    <div className="mt-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                      <p className="text-xs text-primary font-medium">
+                        During trial: Unlimited days per week
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
+            ) : (
+              subscription.maxDaysPerWeek !== null && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base font-poppins font-semibold text-charcoal">
+                      Days per Week
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Days you can create slots for each week
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Days used this week
+                        </span>
+                        <span className="text-sm font-semibold">
+                          {subscription.daysUsed ?? 0}/{formatLimit(subscription.maxDaysPerWeek)}
+                        </span>
+                      </div>
+                      {isApproachingLimit(
+                        subscription.daysUsed ?? 0,
+                        subscription.maxDaysPerWeek,
+                      ) && (
+                        <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
+                          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                          <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
+                            You're approaching your weekly day limit. Consider upgrading for more
+                            flexibility.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
             )}
 
             {/* Messages per Billing Cycle Limit */}
-            {subscription.maxMessagesPerBillingCycle !== null && (
+            {isTrial ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base font-poppins font-semibold text-charcoal">
@@ -542,48 +636,78 @@ export function OverviewTab({
                       <span className="text-sm text-gray-600 dark:text-gray-400">
                         Messages used
                       </span>
-                      <span className="text-sm font-semibold">
-                        {subscription.messagesUsed ?? 0}/
-                        {formatLimit(subscription.maxMessagesPerBillingCycle)}
+                      <span className="text-sm font-semibold text-primary">
+                        {subscription.messagesUsed ?? 0} / Unlimited
                       </span>
                     </div>
-                    {(() => {
-                      const billingCycleEnd = getBillingCycleEndDate(subscription);
-                      const daysUntilReset = getDaysUntilBillingCycleReset(subscription);
-                      return (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {billingCycleEnd && daysUntilReset !== null ? (
-                            <span>
-                              Billing cycle resets in {daysUntilReset}{' '}
-                              {daysUntilReset === 1 ? 'day' : 'days'} (
-                              {billingCycleEnd.toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                              )
-                            </span>
-                          ) : (
-                            <span>Billing cycle information unavailable</span>
-                          )}
-                        </div>
-                      );
-                    })()}
-                    {isApproachingLimit(
-                      subscription.messagesUsed ?? 0,
-                      subscription.maxMessagesPerBillingCycle,
-                    ) && (
-                      <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
-                        <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                        <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
-                          You're approaching your messaging limit. Consider upgrading for unlimited
-                          messages.
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                    <div className="mt-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                      <p className="text-xs text-primary font-medium">
+                        During trial: Unlimited messages
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
+            ) : (
+              subscription.maxMessagesPerBillingCycle !== null && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base font-poppins font-semibold text-charcoal">
+                      Messages per Billing Cycle
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Messages you can send each billing cycle
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Messages used
+                        </span>
+                        <span className="text-sm font-semibold">
+                          {subscription.messagesUsed ?? 0}/
+                          {formatLimit(subscription.maxMessagesPerBillingCycle)}
+                        </span>
+                      </div>
+                      {(() => {
+                        const billingCycleEnd = getBillingCycleEndDate(subscription);
+                        const daysUntilReset = getDaysUntilBillingCycleReset(subscription);
+                        return (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {billingCycleEnd && daysUntilReset !== null ? (
+                              <span>
+                                Billing cycle resets in {daysUntilReset}{' '}
+                                {daysUntilReset === 1 ? 'day' : 'days'} (
+                                {billingCycleEnd.toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
+                                )
+                              </span>
+                            ) : (
+                              <span>Billing cycle information unavailable</span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                      {isApproachingLimit(
+                        subscription.messagesUsed ?? 0,
+                        subscription.maxMessagesPerBillingCycle,
+                      ) && (
+                        <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
+                          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                          <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
+                            You're approaching your messaging limit. Consider upgrading for
+                            unlimited messages.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
             )}
           </div>
         </div>

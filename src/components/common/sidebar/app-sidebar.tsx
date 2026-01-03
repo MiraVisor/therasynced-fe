@@ -89,6 +89,11 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: MessageSquare,
     },
     {
+      name: 'Loyalty',
+      url: '/dashboard/loyalty',
+      icon: Award,
+    },
+    {
       name: 'Account',
       url: '/dashboard/account',
       icon: Settings,

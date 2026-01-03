@@ -311,7 +311,16 @@ export default function BookingPage() {
       setBookingStep('service');
     } else if (bookingStep === 'service' && selectedService) {
       setBookingStep('location');
-    } else if (bookingStep === 'location' && locationType) {
+    } else if (bookingStep === 'location') {
+      // Validate location selection and address if HOME is selected
+      if (!locationType) {
+        toast.error('Please select a location');
+        return;
+      }
+      if (locationType === LocationType.HOME && !homeAddress.trim()) {
+        toast.error('Please enter your address for home visit appointments');
+        return;
+      }
       setBookingStep('confirm');
     }
   };
@@ -329,7 +338,10 @@ export default function BookingPage() {
   const canGoNext = () => {
     if (bookingStep === 'time') return !!selectedSlot;
     if (bookingStep === 'service') return !!selectedService;
-    if (bookingStep === 'location') return !!locationType;
+    if (bookingStep === 'location') {
+      // Must have location selected, and if HOME, must have address
+      return !!locationType && (locationType !== LocationType.HOME || !!homeAddress.trim());
+    }
     return false;
   };
 
@@ -1247,20 +1259,29 @@ export default function BookingPage() {
 
                                   {/* Address input for home visits */}
                                   {locationType === LocationType.HOME && (
-                                    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+                                    <div className="mt-3 animate-in slide-in-from-top-2 duration-200 space-y-2">
                                       <Input
                                         placeholder="Enter your address"
                                         value={homeAddress}
                                         onChange={(e) => setHomeAddress(e.target.value)}
-                                        className="bg-white dark:bg-gray-800"
+                                        className={cn(
+                                          'bg-white dark:bg-gray-800',
+                                          !homeAddress.trim() &&
+                                            'border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500/20',
+                                        )}
                                       />
+                                      {!homeAddress.trim() && (
+                                        <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                                          Please enter your address to continue
+                                        </p>
+                                      )}
                                     </div>
                                   )}
                                 </div>
                               )}
 
                             {/* Confirm Step */}
-                            {bookingStep === 'confirm' && canConfirmBooking && (
+                            {bookingStep === 'confirm' && (
                               <div className="animate-in slide-in-from-right-2 duration-300">
                                 <div className="flex items-center gap-2 mb-4">
                                   <CheckCircle className="w-5 h-5 text-primary" />
@@ -1268,79 +1289,111 @@ export default function BookingPage() {
                                     Review & Confirm
                                   </h3>
                                 </div>
-                                <div className="space-y-3 mb-4">
-                                  {selectedFreelancerData && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                                      <span className="text-gray-600 dark:text-gray-400">
-                                        Freelancer:
-                                      </span>
-                                      <span className="font-medium text-charcoal dark:text-white">
-                                        {selectedFreelancerData.name}
-                                      </span>
+                                {canConfirmBooking ? (
+                                  <>
+                                    <div className="space-y-3 mb-4">
+                                      {selectedFreelancerData && (
+                                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                                          <span className="text-gray-600 dark:text-gray-400">
+                                            Freelancer:
+                                          </span>
+                                          <span className="font-medium text-charcoal dark:text-white">
+                                            {selectedFreelancerData.name}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {selectedDate && selectedSlotData && (
+                                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                                          <span className="text-gray-600 dark:text-gray-400">
+                                            Date & Time:
+                                          </span>
+                                          <span className="font-medium text-charcoal dark:text-white">
+                                            {format(
+                                              parseISO(selectedSlotData.startTime),
+                                              'MMM d, h:mm a',
+                                            )}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {selectedServiceData && (
+                                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                                          <span className="text-gray-600 dark:text-gray-400">
+                                            Service:
+                                          </span>
+                                          <span className="font-medium text-charcoal dark:text-white">
+                                            {selectedServiceData.name}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {locationType && (
+                                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                                          <span className="text-gray-600 dark:text-gray-400">
+                                            Location:
+                                          </span>
+                                          <span className="font-medium text-charcoal dark:text-white">
+                                            {locationType === LocationType.HOME
+                                              ? 'At Home'
+                                              : 'At Clinic'}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {locationType === LocationType.HOME && homeAddress && (
+                                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                                          <span className="text-gray-600 dark:text-gray-400">
+                                            Address:
+                                          </span>
+                                          <span className="font-medium text-charcoal dark:text-white text-right max-w-[60%]">
+                                            {homeAddress}
+                                          </span>
+                                        </div>
+                                      )}
+                                      <div className="flex justify-between pt-4">
+                                        <span className="text-lg font-semibold text-charcoal dark:text-white">
+                                          Total:
+                                        </span>
+                                        <span className="text-2xl font-bold text-primary">
+                                          €{totalPrice.toFixed(2)}
+                                        </span>
+                                      </div>
                                     </div>
-                                  )}
-                                  {selectedDate && selectedSlotData && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                                      <span className="text-gray-600 dark:text-gray-400">
-                                        Date & Time:
-                                      </span>
-                                      <span className="font-medium text-charcoal dark:text-white">
-                                        {format(
-                                          parseISO(selectedSlotData.startTime),
-                                          'MMM d, h:mm a',
-                                        )}
-                                      </span>
+                                    <div className="flex flex-col gap-3">
+                                      <Button
+                                        variant="outline"
+                                        onClick={handlePreviousStep}
+                                        className="flex items-center justify-center gap-2"
+                                      >
+                                        <ChevronLeft className="w-4 h-4" />
+                                        Previous
+                                      </Button>
+                                      <Button
+                                        onClick={handleConfirm}
+                                        disabled={isCreating}
+                                        className="w-full bg-primary hover:bg-primary/90 text-white py-3 text-base font-semibold"
+                                        size="lg"
+                                      >
+                                        {isCreating ? 'Confirming...' : 'Confirm Booking'}
+                                      </Button>
                                     </div>
-                                  )}
-                                  {selectedServiceData && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                                      <span className="text-gray-600 dark:text-gray-400">
-                                        Service:
-                                      </span>
-                                      <span className="font-medium text-charcoal dark:text-white">
-                                        {selectedServiceData.name}
-                                      </span>
+                                  </>
+                                ) : (
+                                  <div className="space-y-4">
+                                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                        {locationType === LocationType.HOME && !homeAddress.trim()
+                                          ? 'Please go back and enter your address for home visit appointments.'
+                                          : 'Please complete all required fields to confirm your booking.'}
+                                      </p>
                                     </div>
-                                  )}
-                                  {locationType && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                                      <span className="text-gray-600 dark:text-gray-400">
-                                        Location:
-                                      </span>
-                                      <span className="font-medium text-charcoal dark:text-white">
-                                        {locationType === LocationType.HOME
-                                          ? 'At Home'
-                                          : 'At Clinic'}
-                                      </span>
-                                    </div>
-                                  )}
-                                  <div className="flex justify-between pt-4">
-                                    <span className="text-lg font-semibold text-charcoal dark:text-white">
-                                      Total:
-                                    </span>
-                                    <span className="text-2xl font-bold text-primary">
-                                      €{totalPrice.toFixed(2)}
-                                    </span>
+                                    <Button
+                                      variant="outline"
+                                      onClick={handlePreviousStep}
+                                      className="w-full flex items-center justify-center gap-2"
+                                    >
+                                      <ChevronLeft className="w-4 h-4" />
+                                      Go Back
+                                    </Button>
                                   </div>
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                  <Button
-                                    variant="outline"
-                                    onClick={handlePreviousStep}
-                                    className="flex items-center justify-center gap-2"
-                                  >
-                                    <ChevronLeft className="w-4 h-4" />
-                                    Previous
-                                  </Button>
-                                  <Button
-                                    onClick={handleConfirm}
-                                    disabled={isCreating}
-                                    className="w-full bg-primary hover:bg-primary/90 text-white py-3 text-base font-semibold"
-                                    size="lg"
-                                  >
-                                    {isCreating ? 'Confirming...' : 'Confirm Booking'}
-                                  </Button>
-                                </div>
+                                )}
                               </div>
                             )}
                           </div>

@@ -41,7 +41,21 @@ function AccountPageContent() {
   const hasShownSubscriptionToast = useRef(false);
 
   // Use React Query hooks
-  const { data: profileData, isLoading: loading, isFetching: initialLoading } = useProfile();
+  const {
+    data: profileData,
+    isLoading: loading,
+    isFetching: initialLoading,
+    refetch: refetchProfile,
+  } = useProfile();
+
+  // Refetch profile when navigating to account page (especially after booking)
+  // This ensures fresh data when user navigates from booking flow
+  useEffect(() => {
+    // Only refetch if we don't have data or if data might be stale
+    if (!profileData || activeSection === 'profile') {
+      void refetchProfile();
+    }
+  }, [refetchProfile, profileData, activeSection]);
 
   // Determine active section from query params
   useEffect(() => {

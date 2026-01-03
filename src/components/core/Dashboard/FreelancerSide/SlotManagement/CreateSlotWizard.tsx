@@ -317,6 +317,8 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
             selectedDays={selectedDays}
             onDaysChange={handleDaysChange}
             tier={tier}
+            isInTrial={currentSubscription?.isInTrial ?? false}
+            maxDaysPerWeek={currentSubscription?.maxDaysPerWeek ?? null}
           />
         )}
 

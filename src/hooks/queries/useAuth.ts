@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import * as authApi from '@/services/authService';
 import { updateMultipleConsents } from '@/services/consentService';
 import { useAuthStore } from '@/stores/authStore';
-import { getErrorMessage } from '@/types/common';
+import { getApiErrorMessage, getErrorMessage } from '@/types/common';
 import type { ConsentUpdateRequest } from '@/types/consent';
 import { registerUserTypes, RoleType } from '@/types/types';
 
@@ -79,7 +79,47 @@ export const useSignUp = () => {
       }
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error) || 'Signup failed. Please try again.');
+      const errorMessage = getApiErrorMessage(error) || 'Signup failed. Please try again.';
+
+      // Handle specific error cases for OAuth signup
+      if (typeof errorMessage === 'string') {
+        if (
+          errorMessage.includes('already exists') ||
+          errorMessage.includes('already have an account')
+        ) {
+          // Only show custom message, don't show the generic error message
+          toast.error('An account with this email already exists. Please login instead.');
+          // Redirect to login page
+          setTimeout(() => {
+            router.push('/authentication/sign-in');
+          }, 2000);
+          return; // Early return prevents duplicate error message
+        }
+        if (
+          errorMessage.includes('expired') ||
+          errorMessage.includes('Invalid or expired OAuth signup token')
+        ) {
+          // Only show custom message, don't show the generic error message
+          toast.error('Your signup session has expired. Please start over.');
+          // Clear OAuth signup data and redirect to signup
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('oauth_signup_token');
+            sessionStorage.removeItem('oauth_signup_in_progress');
+          }
+          setTimeout(() => {
+            router.push('/authentication/sign-up');
+          }, 2000);
+          return; // Early return prevents duplicate error message
+        }
+        if (errorMessage.includes('Email does not match')) {
+          // Only show custom message, don't show the generic error message
+          toast.error('Email does not match the Google account. Please use the same email.');
+          return; // Early return prevents duplicate error message
+        }
+      }
+
+      // Only show generic error if no specific handler matched
+      toast.error(errorMessage);
     },
   });
 };

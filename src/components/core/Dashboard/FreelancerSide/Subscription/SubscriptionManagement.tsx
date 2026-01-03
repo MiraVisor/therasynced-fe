@@ -30,7 +30,6 @@ import {
 import { BillingTab } from './BillingTab';
 import { CancellationDialog } from './CancellationDialog';
 import { EmbeddedCheckout } from './EmbeddedCheckout';
-import { FeatureComparison } from './FeatureComparison';
 import { OverviewTab } from './OverviewTab';
 import { PaymentConsent } from './PaymentConsent';
 import { PlanCard } from './PlanCard';
@@ -43,7 +42,6 @@ export default function SubscriptionManagement() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isCancellationDialogOpen, setIsCancellationDialogOpen] = useState(false);
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanType | null>(null);
-  const [hasPaymentConsent, setHasPaymentConsent] = useState(false);
   const [showPreCheckoutSummary, setShowPreCheckoutSummary] = useState(false);
 
   // Get default tab from URL query param
@@ -154,13 +152,10 @@ export default function SubscriptionManagement() {
   };
 
   const handleProceedToCheckout = () => {
-    if (!hasPaymentConsent) {
-      toast.error('Please provide consent for payment data processing');
-      return;
-    }
-
     if (!selectedPlanForCheckout) return;
 
+    // Clickwrap: Button click = acceptance of billing agreement
+    // Backend should record billingAgreementAcceptedAt when checkout session is created
     setShowPreCheckoutSummary(false);
     handleCheckout(selectedPlanForCheckout);
   };
@@ -397,26 +392,13 @@ export default function SubscriptionManagement() {
           ))}
         </div>
       </div>
-
-      {/* Feature Comparison */}
-      {plans.length > 0 && (
-        <div>
-          <div className="mb-6">
-            <h3 className="text-2xl font-poppins font-bold text-charcoal mb-2">Plan Comparison</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Compare features across all plans
-            </p>
-          </div>
-          <FeatureComparison plans={plans} currentPlanName={currentSubscription?.plan?.name} />
-        </div>
-      )}
     </div>
   );
 
   return (
     <div>
       {/* Header - Simplified */}
-      <div>
+      <div className="mb-6">
         <h1 className="text-3xl font-poppins font-bold text-charcoal mb-2">
           Subscription Management
         </h1>
@@ -432,7 +414,7 @@ export default function SubscriptionManagement() {
         trialHasExpired &&
         !(status === 'INACTIVE' && currentSubscription?.plan) &&
         (status === 'TRIAL_EXPIRED' || status === 'INACTIVE' || !currentSubscription?.plan) && (
-          <Alert className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 shadow-sm">
+          <Alert className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 shadow-sm mb-4">
             <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             <AlertTitle className="text-base font-poppins font-semibold text-orange-900 dark:text-orange-100">
               Trial Expired
@@ -455,7 +437,7 @@ export default function SubscriptionManagement() {
 
       {/* Grace Period / PAST_DUE Warning Banner */}
       {(isPastDue || inGracePeriod) && (
-        <Alert className="border-red-400 dark:border-red-700 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 shadow-sm animate-in slide-in-from-top duration-300">
+        <Alert className="border-red-400 dark:border-red-700 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 shadow-sm animate-in slide-in-from-top duration-300 mb-4">
           <div className="flex items-start gap-3">
             <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0">
               <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
@@ -513,7 +495,7 @@ export default function SubscriptionManagement() {
       )}
 
       {currentSubscription && isTrial && (
-        <Alert className="border-primary/30 dark:border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-sm">
+        <Alert className="border-primary/30 dark:border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-sm mb-6">
           <Info className="h-5 w-5 text-primary" />
           <AlertTitle className="text-base font-poppins font-semibold text-charcoal">
             Trial Period Active
@@ -535,12 +517,14 @@ export default function SubscriptionManagement() {
       )}
 
       {/* Tabbed Interface */}
-      <SubscriptionTabs
-        overviewContent={overviewContent}
-        billingContent={billingContent}
-        plansContent={plansContent}
-        defaultTab={defaultTab}
-      />
+      <div className="mt-6">
+        <SubscriptionTabs
+          overviewContent={overviewContent}
+          billingContent={billingContent}
+          plansContent={plansContent}
+          defaultTab={defaultTab}
+        />
+      </div>
 
       {/* Pre-Checkout Summary Dialog */}
       {showPreCheckoutSummary && selectedPlan && (
@@ -575,14 +559,13 @@ export default function SubscriptionManagement() {
                   </ul>
                 </div>
 
-                <PaymentConsent onConsentChange={setHasPaymentConsent} required={true} />
+                <PaymentConsent monthlyPrice={selectedPlan.price} currency="EUR" />
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
                       setShowPreCheckoutSummary(false);
                       setSelectedPlanForCheckout(null);
-                      setHasPaymentConsent(false);
                     }}
                     className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
@@ -590,10 +573,12 @@ export default function SubscriptionManagement() {
                   </button>
                   <button
                     onClick={handleProceedToCheckout}
-                    disabled={!hasPaymentConsent || isSubscribing}
+                    disabled={isSubscribing}
                     className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                   >
-                    {isSubscribing ? 'Processing...' : 'Proceed to Checkout'}
+                    {isSubscribing
+                      ? 'Processing...'
+                      : `Subscribe & Pay EUR ${selectedPlan.price.toFixed(2)}/month`}
                   </button>
                 </div>
               </CardContent>
@@ -622,12 +607,10 @@ export default function SubscriptionManagement() {
           onClose={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            setHasPaymentConsent(false);
           }}
           onSuccess={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            setHasPaymentConsent(false);
             toast.success('Payment successful! Your subscription is now active.');
             setTimeout(() => {
               window.location.reload();

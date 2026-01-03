@@ -53,6 +53,25 @@ export const ProfileAvatarImage = React.forwardRef<
         return;
       }
 
+      // Check if this is an external URL (Google OAuth, etc.) - don't try to refresh these
+      const currentSrc = imageSrc || src;
+      const isExternalUrl =
+        currentSrc &&
+        (currentSrc.startsWith('http://') || currentSrc.startsWith('https://')) &&
+        !currentSrc.includes('/api/v1/') &&
+        !currentSrc.includes('s3') &&
+        !currentSrc.includes('amazonaws.com');
+
+      // For external URLs (like Google OAuth), don't try to refresh - just show fallback
+      if (isExternalUrl) {
+        console.warn(
+          '[ProfileAvatarImage] External URL failed to load, showing fallback:',
+          currentSrc,
+        );
+        onError?.(e);
+        return;
+      }
+
       try {
         setIsRefreshing(true);
         // URL expired, get a new signed URL for current user
@@ -71,12 +90,20 @@ export const ProfileAvatarImage = React.forwardRef<
         setIsRefreshing(false);
       }
     },
-    [isCurrentUser, isRefreshing, onError, onRefreshError],
+    [isCurrentUser, isRefreshing, onError, onRefreshError, imageSrc, src],
   );
 
   // Update imageSrc when src prop changes
   useEffect(() => {
     setImageSrc(src);
+    // Debug: Log when src changes
+    if (process.env.NODE_ENV === 'development' && src) {
+      console.log('[ProfileAvatarImage] Image source updated:', {
+        src,
+        isExternal: src.startsWith('http://') || src.startsWith('https://'),
+        isGoogle: src.includes('googleusercontent.com'),
+      });
+    }
   }, [src]);
 
   return <AvatarImage ref={ref} src={imageSrc} onError={handleError} {...props} />;

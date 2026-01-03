@@ -245,7 +245,8 @@ export function PersonalDetailsStep() {
         {watch('role') === 'patient' && (
           <div className="space-y-1">
             <label htmlFor="homeAddress" className="text-xs font-inter font-medium text-gray-700">
-              Home Address (Optional)
+              Home Address
+              <span className="text-gray-500 ml-1">(Required for bookings)</span>
             </label>
             <Input
               id="homeAddress"

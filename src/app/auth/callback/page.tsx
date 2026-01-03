@@ -23,6 +23,17 @@ function AuthCallbackContent() {
         const isSignup = searchParams.get('signup') === 'true';
         const userData = searchParams.get('userData'); // OAuth user data if available
 
+        // Debug: Log callback parameters to verify signup flow
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Auth Callback] Parameters:', {
+            token: token ? 'present' : 'missing',
+            success,
+            isSignup,
+            hasUserData: !!userData,
+            returnUrl,
+          });
+        }
+
         if (error) {
           toast.error(decodeURIComponent(error));
           router.push(isSignup ? '/authentication/sign-up' : '/authentication/sign-in');
@@ -30,10 +41,27 @@ function AuthCallbackContent() {
         }
 
         if (success === 'true' && token) {
-          // For signup flow, check if role selection is needed
+          // For signup flow, NEVER store token in cookies or login
+          // Only store temporary token in sessionStorage for signup completion
           if (isSignup) {
-            // Check if user needs to complete signup (role selection, etc.)
-            // If userData exists, we can prefill the signup form
+            // Store temporary token in sessionStorage (NOT cookies)
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('oauth_signup_token', token);
+              // Set a flag to indicate OAuth signup is in progress
+              sessionStorage.setItem('oauth_signup_in_progress', 'true');
+
+              // Debug: Verify token is stored
+              if (process.env.NODE_ENV === 'development') {
+                const storedToken = sessionStorage.getItem('oauth_signup_token');
+                console.log(
+                  '[Auth Callback] OAuth signup token stored:',
+                  storedToken ? 'present' : 'missing',
+                );
+                console.log('[Auth Callback] Token length:', storedToken?.length || 0);
+              }
+            }
+
+            // Redirect to sign-up form with OAuth data
             const signupUrl = new URL('/authentication/sign-up', window.location.origin);
             if (userData) {
               try {
@@ -46,7 +74,7 @@ function AuthCallbackContent() {
                 console.error('Failed to parse userData:', e);
               }
             }
-            signupUrl.searchParams.set('token', token);
+            // Don't include token in URL - it's already in sessionStorage
             router.push(signupUrl.toString());
             return;
           }
