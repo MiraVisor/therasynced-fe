@@ -21,8 +21,10 @@ export const useUploadProfilePicture = () => {
 
   return useMutation({
     mutationFn: (file: File) => profileApi.uploadProfilePicture(file),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    onSuccess: async (data) => {
+      // Invalidate and refetch profile query to ensure data is up to date
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
+      await queryClient.refetchQueries({ queryKey: ['profile'] });
       toast.success('Profile picture uploaded successfully!');
       return data;
     },

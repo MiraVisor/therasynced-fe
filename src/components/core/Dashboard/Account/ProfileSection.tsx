@@ -285,7 +285,14 @@ export function ProfileSection() {
     }
 
     uploadProfilePicture(file, {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        // Immediately update the profile picture URL from the response
+        if (response?.data?.profilePicture) {
+          setFormData((prev) => ({
+            ...prev,
+            profilePicture: response.data.profilePicture,
+          }));
+        }
         setPreviewUrl(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
