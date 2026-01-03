@@ -6,6 +6,7 @@ import { ArrowUpDown, Edit, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LocationType, Slot } from '@/types/types';
 
 // Status configuration using Slot status type
@@ -26,7 +27,31 @@ const getLocationTypeConfig = (locationType: LocationType) => {
 export const createSlotsColumns = (
   onDeleteSlot?: (slot: Slot) => void,
   onViewSlot?: (slot: Slot) => void,
+  enableSelection = false,
 ): ColumnDef<Slot>[] => [
+  ...(enableSelection
+    ? [
+        {
+          id: 'select',
+          header: ({ table }) => (
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected()}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+            />
+          ),
+          cell: ({ row }) => (
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          ),
+          enableSorting: false,
+          enableHiding: false,
+        },
+      ]
+    : []),
   {
     accessorKey: 'startTime',
     header: ({ column }) => {

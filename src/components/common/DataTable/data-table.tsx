@@ -13,7 +13,7 @@ import {
   VisibilityState,
 } from '@tanstack/react-table';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,6 +71,9 @@ interface DataTableProps<TData, TValue> {
   filterOptions?: FilterOption[];
   selectedFilter?: string;
   onFilterChange?: (value: string) => void;
+  // Row selection
+  enableRowSelection?: boolean;
+  onRowSelectionChange?: (selectedRows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -99,6 +102,8 @@ export function DataTable<TData, TValue>({
   filterOptions,
   selectedFilter,
   onFilterChange,
+  enableRowSelection = false,
+  onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -161,7 +166,17 @@ export function DataTable<TData, TValue>({
     },
     pageCount: totalPages,
     manualPagination: !!onExternalPageChange,
+    enableRowSelection: enableRowSelection,
   });
+
+  // Notify parent of row selection changes
+  useEffect(() => {
+    if (enableRowSelection && onRowSelectionChange) {
+      const selectedRows = table.getSelectedRowModel().rows.map((row) => row.original);
+      onRowSelectionChange(selectedRows);
+    }
+  }, [rowSelection, enableRowSelection, onRowSelectionChange, table]);
+
   return (
     <div className="border rounded-lg">
       {/* Header Section */}

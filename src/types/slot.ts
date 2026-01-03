@@ -160,3 +160,40 @@ export interface WeeklyAvailabilityTemplate {
   breakDuration: number; // minutes
   blockedPeriods: BlockedPeriod[];
 }
+
+/**
+ * Slot pattern recognition types
+ */
+export interface DaySlotPattern {
+  enabled: boolean;
+  slots: Array<{
+    startTime: string; // Format: "HH:mm"
+    endTime: string; // Format: "HH:mm"
+    slotDuration: number; // minutes
+    breakDuration: number; // minutes
+    locationType: LocationType;
+  }>;
+}
+
+export interface SlotPatternResponse {
+  success: boolean;
+  data: {
+    hasPattern: boolean;
+    weekStart: string; // ISO date string
+    weekEnd: string; // ISO date string
+    pattern: {
+      monday: DaySlotPattern;
+      tuesday: DaySlotPattern;
+      wednesday: DaySlotPattern;
+      thursday: DaySlotPattern;
+      friday: DaySlotPattern;
+      saturday: DaySlotPattern;
+      sunday: DaySlotPattern;
+    };
+    mostCommonDuration: number; // minutes
+    mostCommonStartTime: string; // Format: "HH:mm"
+    mostCommonEndTime: string; // Format: "HH:mm"
+    mostCommonLocationType: LocationType;
+    confidence: number; // 0-1, indicates how consistent the pattern is
+  };
+}

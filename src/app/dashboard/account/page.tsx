@@ -205,14 +205,16 @@ function AccountPageContent() {
     <DashboardPageWrapper
       userRole={role}
       header={
-        <div className="space-y-1">
-          <h1 className="text-3xl font-poppins font-bold text-gray-900">Account Settings</h1>
-          <p className="text-gray-600 text-lg">Manage your account settings and preferences</p>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-poppins font-bold text-charcoal">Account Settings</h1>
+          <p className="font-inter text-muted-foreground text-base">
+            Manage your account settings and preferences
+          </p>
         </div>
       }
     >
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-1 bg-gray-100 p-1 rounded-xl mb-8 overflow-x-auto">
+      <div className="flex flex-wrap gap-1 bg-gray-100 p-1 rounded-xl mb-6 overflow-x-auto">
         {navigationTabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -221,8 +223,8 @@ function AccountPageContent() {
               onClick={() => handleTabClick(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                 activeSection === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                  ? 'bg-white text-charcoal shadow-sm border border-gray-200 font-semibold'
+                  : 'text-muted-foreground hover:text-charcoal hover:bg-white/50'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -233,7 +235,7 @@ function AccountPageContent() {
       </div>
 
       {/* Content Section */}
-      <div className="bg-gray-50 rounded-xl p-6">
+      <div className="bg-white border border-gray-200/80 rounded-xl p-6 shadow-soft">
         {showLoyaltyLink && activeSection === 'profile' && (
           <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-center justify-between">

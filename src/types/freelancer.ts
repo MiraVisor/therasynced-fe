@@ -164,6 +164,47 @@ export type FreelancerStatCardType = {
 };
 
 /**
+ * Profile completion types
+ */
+export type ProfileCompletionItemKey =
+  | 'basicInfo'
+  | 'profilePhoto'
+  | 'mainJobTitle'
+  | 'firstAidCertificate'
+  | 'servicePricing'
+  | 'availabilitySlots'
+  | 'verificationDocuments'
+  | 'locationInfo';
+
+export type ProfileCompletionItemStatus = 'pending' | 'in_progress' | 'completed';
+
+export interface ProfileCompletionItem {
+  key: ProfileCompletionItemKey;
+  label: string;
+  completed?: boolean;
+  completedAt?: string; // ISO date string
+  status?: ProfileCompletionItemStatus;
+  priority?: 'low' | 'medium' | 'high';
+  description?: string;
+  actionUrl?: string;
+}
+
+export interface ProfileCompletionResponse {
+  success: boolean;
+  data: {
+    completionPercentage: number;
+    isComplete: boolean;
+    completedItems: ProfileCompletionItem[];
+    incompleteItems: ProfileCompletionItem[];
+    nextAction: {
+      key: ProfileCompletionItemKey;
+      label: string;
+      url: string;
+    } | null;
+  };
+}
+
+/**
  * Expert interface (used for freelancer display in user-facing components)
  */
 export interface Expert {

@@ -1,5 +1,6 @@
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
+import type { ProfileCompletionResponse } from '@/types/freelancer';
 import { ApiResponse, Expert } from '@/types/types';
 
 export const getAllFreelancers = async (params?: {
@@ -186,6 +187,14 @@ export const getFreelancerById = async (
   return response.data;
 };
 
+/**
+ * Get profile completion status for the current freelancer
+ */
+export const getProfileCompletion = async (): Promise<ProfileCompletionResponse> => {
+  const response = await api.get(ENDPOINTS.freelancer.profileCompletion);
+  return response.data;
+};
+
 const freelancerService = {
   getAllFreelancers,
   favoriteFreelancer,
@@ -195,6 +204,7 @@ const freelancerService = {
   searchFreelancers,
   searchFreelancersAutocomplete,
   getFreelancerById,
+  getProfileCompletion,
 };
 
 export { freelancerService };

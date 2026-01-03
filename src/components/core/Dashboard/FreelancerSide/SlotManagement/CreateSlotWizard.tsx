@@ -191,10 +191,15 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
           // Show info if slots were updated
           toast.info(message ?? 'Slots processed successfully');
         } else {
-          // Show success for normal creation
-          toast.success(
-            message ?? `Successfully created ${slots.length} slot${slots.length !== 1 ? 's' : ''}!`,
-          );
+          // Show success for normal creation with celebratory message
+          const slotCount = slots.length;
+          const successMessage =
+            slotCount === 1
+              ? "Slot created successfully! You're open for business! 🎉"
+              : `Successfully created ${slotCount} slots! You're ready to accept bookings! 🎉`;
+          toast.success(message ?? successMessage, {
+            autoClose: 4000,
+          });
         }
 
         onSuccess?.();
@@ -325,13 +330,13 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-4 border-t">
+      <div className="flex items-center justify-between pt-4 border-t gap-4">
         <Button
           type="button"
           variant="outline"
           onClick={handleBack}
           disabled={currentStep === 1 || isCreating}
-          className="h-10 px-6"
+          className="h-11 min-h-[44px] px-6 flex-1 sm:flex-initial"
         >
           <ChevronLeft className="h-4 w-4 mr-2" />
           Back
@@ -342,13 +347,18 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
             type="button"
             onClick={handleNext}
             disabled={selectedDays.length === 0 || isCreating}
-            className="h-10 px-6"
+            className="h-11 min-h-[44px] px-6 flex-1 sm:flex-initial"
           >
             Next
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
-          <Button type="button" onClick={handleSubmit} disabled={isCreating} className="h-10 px-6">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isCreating}
+            className="h-11 min-h-[44px] px-6 flex-1 sm:flex-initial"
+          >
             {isCreating ? (
               <>
                 <LoadingSpinner size="sm" className="mr-2" />

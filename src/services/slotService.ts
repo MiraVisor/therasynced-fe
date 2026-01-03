@@ -1,4 +1,6 @@
 import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
+import type { SlotPatternResponse } from '@/types/slot';
 import {
   ApiResponse,
   CreateSlotsDto,
@@ -90,5 +92,15 @@ export const getAvailableSlotsByDate = async (params: {
   limit?: number;
 }): Promise<ApiResponse<Slot[]>> => {
   const response = await api.get('/slot/available-by-date', { params });
+  return response.data;
+};
+
+/**
+ * Get slot pattern from last week for pattern recognition
+ */
+export const getLastWeekPattern = async (params?: {
+  weekStart?: string; // ISO date string, defaults to last week
+}): Promise<SlotPatternResponse> => {
+  const response = await api.get(ENDPOINTS.slots.lastWeekPattern, { params });
   return response.data;
 };

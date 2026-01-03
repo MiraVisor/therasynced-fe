@@ -1,11 +1,14 @@
 'use client';
 
-import { ExternalLink, FileText } from 'lucide-react';
+import { ExternalLink, FileText, Search } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { GuidedEmptyState } from '@/components/core/Dashboard/FreelancerSide/GuidedEmptyState';
 import { Button } from '@/components/ui/button';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { Input } from '@/components/ui/input';
 import {
   useGetFreelancerFormTemplateSignedUrl,
   useVisibleFormTemplates,
@@ -14,7 +17,7 @@ import { formatFileSize } from '@/services/formTemplateService';
 import type { FormTemplate } from '@/types/formTemplate';
 
 const FreelancerFormsPage = () => {
-  const [searchQuery, _setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { data: templates, isLoading } = useVisibleFormTemplates();
@@ -64,9 +67,40 @@ const FreelancerFormsPage = () => {
 
   return (
     <DashboardPageWrapper
-      header={<h1 className="font-poppins font-bold text-2xl text-charcoal">Form Templates</h1>}
+      header={
+        <div className="space-y-2">
+          <h1 className="font-poppins font-bold text-2xl text-charcoal">Form Templates</h1>
+          <p className="font-inter text-muted-foreground">
+            Access and download form templates for your practice
+          </p>
+        </div>
+      }
     >
       <div className="space-y-6 lg:space-y-8">
+        {/* Search Bar */}
+        {templates && templates.length > 0 && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search forms by name or filename..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-full max-w-md"
+            />
+          </div>
+        )}
+
+        {/* Stats */}
+        {!isLoading && templates && templates.length > 0 && (
+          <div className="flex items-center gap-4 text-sm font-inter text-muted-foreground">
+            <span>
+              {filteredTemplates.length} {filteredTemplates.length === 1 ? 'form' : 'forms'}
+              {searchQuery && ` found`}
+            </span>
+          </div>
+        )}
+
         {/* Templates List */}
         {isLoading && !templates ? (
           <div className="space-y-4">
@@ -78,62 +112,77 @@ const FreelancerFormsPage = () => {
             ))}
           </div>
         ) : filteredTemplates.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              {searchQuery
-                ? 'No templates found matching your search.'
-                : 'No form templates available.'}
-            </p>
-          </div>
+          <GuidedEmptyState
+            icon={FileText}
+            title={searchQuery ? 'No templates found' : 'No form templates available'}
+            description={
+              searchQuery
+                ? "Try adjusting your search terms to find what you're looking for."
+                : "Forms help you collect information before sessions. Templates will appear here once they're available."
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTemplates.map((template) => (
-              <div
+              <EnhancedCard
                 key={template.id}
-                className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white"
+                variant="default"
+                interactive
+                className="group border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-md transition-all"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <FileText className="h-5 w-5 text-blue-600" />
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-poppins font-semibold text-lg text-charcoal truncate">
+                          {template.title}
+                        </h3>
+                        <p className="text-sm font-inter text-muted-foreground truncate">
+                          {template.fileName}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{template.title}</h3>
-                      <p className="text-sm text-muted-foreground">{template.fileName}</p>
+                  </div>
+                  <div className="space-y-2 pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground font-inter">File Size:</span>
+                      <span className="font-medium font-inter text-charcoal">
+                        {formatFileSize(template.fileSize)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground font-inter">Created:</span>
+                      <span className="font-medium font-inter text-charcoal">
+                        {new Date(template.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
                     </div>
                   </div>
+                  <Button
+                    className="w-full mt-4"
+                    onClick={() => handleOpenForm(template)}
+                    disabled={downloadingId === template.id}
+                  >
+                    {downloadingId === template.id ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Opening...
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Open Form
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">File Size:</span>
-                    <span className="font-medium">{formatFileSize(template.fileSize)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Created:</span>
-                    <span className="font-medium">
-                      {new Date(template.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  className="w-full"
-                  onClick={() => handleOpenForm(template)}
-                  disabled={downloadingId === template.id}
-                >
-                  {downloadingId === template.id ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                      Opening...
-                    </>
-                  ) : (
-                    <>
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open Form
-                    </>
-                  )}
-                </Button>
-              </div>
+              </EnhancedCard>
             ))}
           </div>
         )}

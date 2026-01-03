@@ -38,6 +38,8 @@ export const ENDPOINTS = {
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
     reserve: (slotId: string) => `/slots/${slotId}/reserve`,
     release: (slotId: string) => `/slots/${slotId}/release`,
+    stats: '/slot/stats/my-slots',
+    lastWeekPattern: '/slot/last-week-pattern',
   },
   // Service management
   services: {
@@ -99,6 +101,7 @@ export const ENDPOINTS = {
     tierSilver: '/freelancer/tier/silver',
     tierGold: '/freelancer/tier/gold',
     search: '/freelancer/search',
+    profileCompletion: '/freelancer/profile-completion',
   },
   // Dashboard endpoints
   dashboard: {
