@@ -4,9 +4,13 @@
  * This file defines all consent types used across the application.
  * Most data processing is covered by general GDPR consent.
  * Only special category data (health data) requires explicit separate consent.
+ *
+ * NOTE: PAYMENT_DATA has been removed - billing authorization is now handled
+ * separately by the backend and is not part of the consent management system.
  */
 
 // All consent types in the system
+// NOTE: PAYMENT_DATA has been removed from the API - billing authorization is handled separately
 export type ConsentType =
   // Required for all users
   | 'TERMS_OF_SERVICE'
@@ -14,7 +18,6 @@ export type ConsentType =
   | 'GDPR_DATA_PROCESSING'
   // Freelancer-specific
   | 'FIRST_AID_CERTIFICATE'
-  | 'PAYMENT_DATA'
   | 'VERIFICATION_DOCUMENTS';
 
 // Consent status for a single consent type
@@ -23,6 +26,8 @@ export interface ConsentStatus {
   granted: boolean;
   grantedAt: string | null;
   withdrawnAt: string | null;
+  isRequired?: boolean; // Indicates if consent is required (from API)
+  isReadOnly?: boolean; // Indicates if consent can be modified (from API)
 }
 
 // Request to update a consent
@@ -108,19 +113,10 @@ export const CONSENT_INFO: Record<ConsentType, ConsentInfo> = {
     type: 'FIRST_AID_CERTIFICATE',
     title: 'First Aid Certificate Data Consent',
     description:
-      'I consent to the storage and processing of my first aid certificate for professional verification purposes. This is special category health data under GDPR Article 9.',
+      'I consent to the storage and processing of my first aid certificate for professional verification purposes. May include health-related information; processed only for professional verification. Processed as special category data under GDPR Article 9 where applicable.',
     required: false,
     roles: ['FREELANCER'],
     category: 'health',
-  },
-  PAYMENT_DATA: {
-    type: 'PAYMENT_DATA',
-    title: 'Payment Data Processing',
-    description:
-      'I consent to the processing of my payment data by Stripe for subscription payment processing. Your payment information is securely processed by Stripe, a PCI DSS Level 1 certified payment processor.',
-    required: false,
-    roles: ['FREELANCER'],
-    category: 'financial',
   },
   VERIFICATION_DOCUMENTS: {
     type: 'VERIFICATION_DOCUMENTS',
@@ -133,7 +129,7 @@ export const CONSENT_INFO: Record<ConsentType, ConsentInfo> = {
   },
 };
 
-// Helper to get consents required for a role
+// Helper to get consents required for a role (GDPR consents only)
 export function getRequiredConsentsForRole(role: 'PATIENT' | 'FREELANCER'): ConsentType[] {
   return Object.values(CONSENT_INFO)
     .filter((info) => info.roles.includes(role) && info.required)
@@ -145,4 +141,22 @@ export function getAllConsentsForRole(role: 'PATIENT' | 'FREELANCER'): ConsentTy
   return Object.values(CONSENT_INFO)
     .filter((info) => info.roles.includes(role))
     .map((info) => info.type);
+}
+
+// Helper to get only GDPR consents
+export function getGDPRConsentsForRole(role: 'PATIENT' | 'FREELANCER'): ConsentType[] {
+  return Object.values(CONSENT_INFO)
+    .filter((info) => info.roles.includes(role))
+    .map((info) => info.type);
+}
+
+// Helper to check if a consent type is a required, non-withdrawable consent
+// These are contractual agreements that cannot be withdrawn without account deletion
+export function isNonWithdrawableRequiredConsent(type: ConsentType): boolean {
+  const requiredNonWithdrawable: ConsentType[] = [
+    'TERMS_OF_SERVICE',
+    'PRIVACY_POLICY',
+    'GDPR_DATA_PROCESSING',
+  ];
+  return requiredNonWithdrawable.includes(type);
 }

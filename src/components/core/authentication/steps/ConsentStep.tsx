@@ -22,7 +22,6 @@ export function ConsentStep() {
     PRIVACY_POLICY: false,
     GDPR_DATA_PROCESSING: false,
     FIRST_AID_CERTIFICATE: false,
-    PAYMENT_DATA: false,
     VERIFICATION_DOCUMENTS: false,
   });
 

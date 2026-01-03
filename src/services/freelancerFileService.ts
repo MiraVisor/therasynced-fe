@@ -18,7 +18,9 @@ export interface FileMetadata {
 export interface UploadFilesRequest {
   files: File[];
   titles: string[];
-  category: FileCategory;
+  // Category can be a single value (applied to all files) or an array (one per file)
+  // If not provided, files are uploaded without category (backward compatible)
+  category?: FileCategory | FileCategory[];
 }
 
 export interface UploadFilesResponse {
@@ -47,6 +49,20 @@ const freelancerFileService = {
     data.titles.forEach((title) => {
       formData.append('titles[]', title);
     });
+
+    // Append category if provided
+    // Backend accepts: single value (applied to all) or array (one per file)
+    if (data.category) {
+      if (Array.isArray(data.category)) {
+        // Array: one category per file
+        data.category.forEach((category) => {
+          formData.append('categories[]', category);
+        });
+      } else {
+        // Single value: applied to all files
+        formData.append('categories', data.category);
+      }
+    }
 
     const response = await api.post(ENDPOINTS.freelancer.filesUpload, formData, {
       headers: {
@@ -142,7 +158,8 @@ const freelancerFileService = {
       fileName: file.fileName || file.originalName || 'unknown',
       fileSize: file.fileSize || 0,
       fileType: file.fileType || file.format || 'unknown',
-      category: 'VERIFICATION', // All files are now VERIFICATION category
+      // Use category from API response, fallback to VERIFICATION for legacy data
+      category: file.category || 'VERIFICATION',
       createdAt: file.createdAt
         ? new Date(file.createdAt).toISOString()
         : file.uploadedAt

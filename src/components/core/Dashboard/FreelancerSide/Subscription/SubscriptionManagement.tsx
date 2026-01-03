@@ -42,7 +42,6 @@ export default function SubscriptionManagement() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isCancellationDialogOpen, setIsCancellationDialogOpen] = useState(false);
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanType | null>(null);
-  const [hasPaymentConsent, setHasPaymentConsent] = useState(false);
   const [showPreCheckoutSummary, setShowPreCheckoutSummary] = useState(false);
 
   // Get default tab from URL query param
@@ -153,13 +152,10 @@ export default function SubscriptionManagement() {
   };
 
   const handleProceedToCheckout = () => {
-    if (!hasPaymentConsent) {
-      toast.error('Please provide consent for payment data processing');
-      return;
-    }
-
     if (!selectedPlanForCheckout) return;
 
+    // Clickwrap: Button click = acceptance of billing agreement
+    // Backend should record billingAgreementAcceptedAt when checkout session is created
     setShowPreCheckoutSummary(false);
     handleCheckout(selectedPlanForCheckout);
   };
@@ -563,14 +559,13 @@ export default function SubscriptionManagement() {
                   </ul>
                 </div>
 
-                <PaymentConsent onConsentChange={setHasPaymentConsent} required={true} />
+                <PaymentConsent monthlyPrice={selectedPlan.price} currency="EUR" />
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
                       setShowPreCheckoutSummary(false);
                       setSelectedPlanForCheckout(null);
-                      setHasPaymentConsent(false);
                     }}
                     className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
@@ -578,10 +573,12 @@ export default function SubscriptionManagement() {
                   </button>
                   <button
                     onClick={handleProceedToCheckout}
-                    disabled={!hasPaymentConsent || isSubscribing}
+                    disabled={isSubscribing}
                     className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                   >
-                    {isSubscribing ? 'Processing...' : 'Proceed to Checkout'}
+                    {isSubscribing
+                      ? 'Processing...'
+                      : `Subscribe & Pay EUR ${selectedPlan.price.toFixed(2)}/month`}
                   </button>
                 </div>
               </CardContent>
@@ -610,12 +607,10 @@ export default function SubscriptionManagement() {
           onClose={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            setHasPaymentConsent(false);
           }}
           onSuccess={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            setHasPaymentConsent(false);
             toast.success('Payment successful! Your subscription is now active.');
             setTimeout(() => {
               window.location.reload();

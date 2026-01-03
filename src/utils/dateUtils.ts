@@ -18,3 +18,22 @@ export function getDayNameFromDate(date: Date): string {
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   return dayNames[date.getDay()] ?? 'Invalid day';
 }
+
+/**
+ * Format date for display (e.g., "12 Jan 2025")
+ */
+export function formatDate(date: Date, format: 'short' | 'long' = 'short'): string {
+  if (format === 'short') {
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } else {
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+}

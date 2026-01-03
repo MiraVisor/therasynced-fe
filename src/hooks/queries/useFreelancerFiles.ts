@@ -41,6 +41,32 @@ export const useUploadFiles = () => {
         }
       }
 
+      // Validate category array length matches files if array is provided
+      if (data.category && Array.isArray(data.category)) {
+        if (data.category.length !== data.files.length) {
+          throw new Error(
+            'Number of categories must match number of files when using array format',
+          );
+        }
+        // Validate each category is a valid enum value
+        const validCategories: FileCategory[] = ['VERIFICATION', 'FIRST_AID_CERTIFICATE'];
+        for (const category of data.category) {
+          if (!validCategories.includes(category)) {
+            throw new Error(
+              `Invalid category: ${category}. Must be VERIFICATION or FIRST_AID_CERTIFICATE`,
+            );
+          }
+        }
+      } else if (data.category && !Array.isArray(data.category)) {
+        // Validate single category is a valid enum value
+        const validCategories: FileCategory[] = ['VERIFICATION', 'FIRST_AID_CERTIFICATE'];
+        if (!validCategories.includes(data.category)) {
+          throw new Error(
+            `Invalid category: ${data.category}. Must be VERIFICATION or FIRST_AID_CERTIFICATE`,
+          );
+        }
+      }
+
       return freelancerFileService.uploadFiles(data);
     },
     onSuccess: (data) => {
