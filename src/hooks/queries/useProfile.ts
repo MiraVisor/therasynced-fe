@@ -77,6 +77,8 @@ export const useProfile = () => {
       // BackendProfileResponse has structure: { data: { user: {...} } }
       return data.data?.user as UserProfileData | undefined;
     },
+    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes (shorter than default)
+    refetchOnMount: 'always', // Always refetch when component mounts to ensure fresh data
   });
 };
 

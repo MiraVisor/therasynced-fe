@@ -6,16 +6,22 @@ export interface SignUpDto {
   name: string;
   email: string;
   role: string;
-  password: string;
+  password?: string; // Optional for OAuth signups
+  oauthSignupToken?: string; // Required when password is empty (OAuth signup)
   profilePicture?: string;
   gender?: string;
   dob?: string;
   city?: string;
+  homeAddress?: string; // Home address for bookings (patients)
   // New optional fields for freelancers
   mainJobTitleId?: string;
   clinicAddress?: string;
   firstAidCertificateUrl?: string;
   verificationDocuments?: string[];
+  // Consent fields
+  termsConsent?: boolean;
+  privacyConsent?: boolean;
+  gdprConsent?: boolean;
 }
 
 export interface LoginDto {

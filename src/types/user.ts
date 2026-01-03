@@ -12,4 +12,5 @@ export interface UpdateProfileDto {
   // Updated to match backend DTO
   mainJobTitleId?: string | null; // Allow null to clear selection
   clinicAddress?: string;
+  homeAddress?: string; // Home address for bookings (patients)
 }

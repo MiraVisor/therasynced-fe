@@ -3,8 +3,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -66,13 +68,6 @@ const signupSchema = z
       path: ['mainJobTitleId'],
     },
   )
-  .refine((data) => {
-    // Password only required if not OAuth
-    if (!data.password && !data.email?.includes('@oauth')) {
-      return false;
-    }
-    return true;
-  }, 'Password is required')
   .refine(
     (data) => {
       // Password must be at least 8 characters (consistent with login)
@@ -122,9 +117,11 @@ interface MultiStepSignupProps {
 
 export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiStepSignupProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [oauthProfilePicture, setOauthProfilePicture] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   // Use signup UI store for UI state
-  const { authMethod, setAuthMethod: _setAuthMethod } = useSignupUIStore();
+  const { authMethod, setAuthMethod, resetSignupUI } = useSignupUIStore();
 
   const formMethods = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -152,29 +149,134 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     getValues,
     trigger,
     watch,
+    setValue,
+    reset: resetForm,
     formState: { errors },
   } = formMethods;
+
+  // Reset state when component mounts if no OAuth data (user came back to signup fresh)
+  useEffect(() => {
+    const oauthDataParam = searchParams.get('oauthData');
+    const oauthInProgress =
+      typeof window !== 'undefined' ? sessionStorage.getItem('oauth_signup_in_progress') : null;
+
+    // If no OAuth data and no OAuth in progress, reset to initial state
+    if (!oauthDataParam && !oauthInProgress) {
+      resetSignupUI();
+      setCurrentStep(1);
+      // Reset form to default values
+      resetForm();
+      setOauthProfilePicture(null);
+    }
+  }, [resetSignupUI, resetForm]); // Only run on mount
+
+  // Read OAuth data from URL params and pre-fill form
+  useEffect(() => {
+    const oauthDataParam = searchParams.get('oauthData');
+    // Token should already be in sessionStorage from callback, but check URL as fallback
+    const tokenParam =
+      searchParams.get('token') ||
+      (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_signup_token') : null);
+
+    if (oauthDataParam) {
+      try {
+        const oauthData = JSON.parse(decodeURIComponent(oauthDataParam));
+
+        // Set auth method to OAuth
+        setAuthMethod('oauth');
+
+        // Pre-fill account details (Step 1) - Google provides name, email, profilePicture
+        if (oauthData.name) {
+          setValue('name', oauthData.name, { shouldValidate: false });
+        }
+        if (oauthData.email) {
+          setValue('email', oauthData.email, { shouldValidate: false });
+        }
+        // Store profilePicture for submission
+        if (oauthData.profilePicture) {
+          setOauthProfilePicture(oauthData.profilePicture);
+        }
+
+        // Pre-fill personal details (Step 3) - if available from Google
+        if (oauthData.gender) {
+          setValue('gender', oauthData.gender, { shouldValidate: false });
+        }
+        if (oauthData.dob) {
+          // Convert dob string to Date if needed
+          const dobDate =
+            typeof oauthData.dob === 'string' ? new Date(oauthData.dob) : oauthData.dob;
+          if (!isNaN(dobDate.getTime())) {
+            setValue('dob', dobDate, { shouldValidate: false });
+          }
+        }
+        if (oauthData.city) {
+          setValue('city', oauthData.city, { shouldValidate: false });
+        }
+        if (oauthData.homeAddress) {
+          setValue('homeAddress', oauthData.homeAddress, { shouldValidate: false });
+        }
+        if (oauthData.clinicAddress) {
+          setValue('clinicAddress', oauthData.clinicAddress, { shouldValidate: false });
+        }
+        if (oauthData.role) {
+          setValue('role', oauthData.role.toLowerCase(), { shouldValidate: false });
+        }
+
+        // Ensure token is stored in sessionStorage (from callback or URL)
+        if (tokenParam && typeof window !== 'undefined') {
+          sessionStorage.setItem('oauth_signup_token', tokenParam);
+          // Debug: Verify token is stored
+          if (process.env.NODE_ENV === 'development') {
+            console.log(
+              '[MultiStepSignup] OAuth token stored in sessionStorage:',
+              tokenParam ? 'present' : 'missing',
+            );
+          }
+        } else if (typeof window !== 'undefined') {
+          // Debug: Check if token already exists in sessionStorage
+          const existingToken = sessionStorage.getItem('oauth_signup_token');
+          if (process.env.NODE_ENV === 'development') {
+            console.log(
+              '[MultiStepSignup] OAuth token from sessionStorage:',
+              existingToken ? 'present' : 'missing',
+            );
+          }
+        }
+
+        // Always start at step 1 (Account & Details) for OAuth flow
+        // User should review their account information first, then select role
+        setCurrentStep(1);
+      } catch (error) {
+        console.error('Failed to parse OAuth data:', error);
+        toast.error('Failed to load Google account information');
+      }
+    }
+  }, [searchParams, setAuthMethod, setValue]);
 
   const selectedRole = watch('role');
 
   // Simplified steps - combined for minimal flow
+  // Step order: 1. Account & Details (email/Google), 2. Role, 3. Personal/Professional, 4. Consent
   const getSteps = () => {
     if (selectedRole === 'patient') {
       return [
-        { id: 1, title: 'Role' },
-        { id: 2, title: 'Account & Details' },
+        { id: 1, title: 'Account & Details' },
+        { id: 2, title: 'Role' },
         { id: 3, title: 'Personal Details' },
         { id: 4, title: 'Consent & Agreements' },
       ];
     } else if (selectedRole === 'freelancer') {
       return [
-        { id: 1, title: 'Role' },
-        { id: 2, title: 'Account & Details' },
+        { id: 1, title: 'Account & Details' },
+        { id: 2, title: 'Role' },
         { id: 3, title: 'Professional Info' },
         { id: 4, title: 'Consent & Agreements' },
       ];
     }
-    return [{ id: 1, title: 'Role' }];
+    return [
+      { id: 1, title: 'Account & Details' },
+      { id: 2, title: 'Role' },
+    ];
   };
 
   const steps = getSteps();
@@ -183,14 +285,19 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const validateCurrentStep = async (): Promise<boolean> => {
     switch (currentStep) {
       case 1:
-        return await trigger('role');
-      case 2:
         // Account setup step - only validate account fields
         if (authMethod === 'email') {
           return await trigger(['name', 'email', 'password', 'confirmPassword']);
         }
         // For OAuth, only validate name and email (password not required)
-        return await trigger(['name', 'email']);
+        // If no authMethod selected yet, don't validate (user needs to choose)
+        if (authMethod === 'oauth') {
+          return await trigger(['name', 'email']);
+        }
+        // If authMethod is null, user hasn't selected email or Google yet
+        return false;
+      case 2:
+        return await trigger('role');
       case 3:
         // Professional info for freelancer, or personal details for patient
         if (selectedRole === 'freelancer') {
@@ -210,9 +317,10 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     const isValid = await validateCurrentStep();
     if (!isValid) return;
 
-    // When moving from step 1 to step 2, reset authMethod
+    // When moving from step 1 (Account) to step 2 (Role), ensure authMethod is set
     if (currentStep === 1) {
-      _setAuthMethod(null);
+      // Auth method should already be set (email or oauth)
+      // If not set, validation should have prevented this
     }
 
     // Handle completion - both patient and freelancer complete at step 4 (consent)
@@ -228,11 +336,7 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
   const prevStep = () => {
     if (currentStep > 1) {
-      // If on step 2 and authMethod is set, reset authMethod
-      if (currentStep === 2 && authMethod !== null) {
-        _setAuthMethod(null);
-        return;
-      }
+      // When going back, don't reset authMethod - user should keep their email/Google selection
       setCurrentStep(currentStep - 1);
     }
   };
@@ -254,10 +358,12 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       dob: formValues.dob ? format(formValues.dob, 'yyyy-MM-dd') : undefined,
       gender: finalGender,
       city: formValues.city || undefined,
+      homeAddress: selectedRole === 'patient' ? formValues.homeAddress || undefined : undefined,
       clinicAddress:
         selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,
       mainJobTitleId:
         selectedRole === 'freelancer' ? formValues.mainJobTitleId || undefined : undefined,
+      profilePicture: oauthProfilePicture || undefined, // Include profilePicture from OAuth
       termsConsent: formValues.termsConsent,
       privacyConsent: formValues.privacyConsent,
       gdprConsent: formValues.gdprConsent,
@@ -273,14 +379,18 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       }
     });
 
+    // Clean up OAuth signup flags before submitting
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('oauth_signup_in_progress');
+    }
+
     onSubmit(transformedData);
   };
 
   const isStepValid = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!getValues('role') && !errors.role;
-      case 2:
+        // Account setup step - validate based on authMethod
         const name = getValues('name');
         const email = getValues('email');
         const password = getValues('password');
@@ -288,6 +398,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
 
         const hasValidName = !!name && name.length >= 2 && !errors.name;
         const hasValidEmail = !!email && email.includes('@') && !errors.email;
+
+        // User must select an auth method first
+        if (!authMethod) {
+          return false;
+        }
 
         // For email auth, password and confirmPassword are required
         // For OAuth, password is not required
@@ -301,7 +416,10 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
           !!confirmPassword && password === confirmPassword && !errors.confirmPassword;
 
         return hasValidName && hasValidEmail && hasValidPassword && hasValidConfirmPassword;
+      case 2:
+        return !!getValues('role') && !errors.role;
       case 3:
+        // Professional info for freelancer, or personal details for patient
         if (selectedRole === 'freelancer') {
           return !!getValues('mainJobTitleId') && !errors.mainJobTitleId;
         } else if (selectedRole === 'patient') {
@@ -336,10 +454,10 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <RoleSelectionStep />;
+        return <AccountSetupStep />;
 
       case 2:
-        return <AccountSetupStep />;
+        return <RoleSelectionStep />;
 
       case 3:
         // Personal details for patient OR Professional info for freelancer
@@ -358,11 +476,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
     }
   };
 
-  // Only show step indicator after role selection (step 1)
+  // Show step indicator after account setup (step 1)
   const showStepIndicator = currentStep > 1;
-  const displayStep = currentStep - 1; // Step number to display (starts from 1 after role selection)
-  const stepsToShow = steps.filter((step) => step.id > 1); // Steps to show in progress bar (exclude role selection)
-  const totalSteps = stepsToShow.length; // Total steps after role selection (should be 3 for both patient and freelancer)
+  const displayStep = currentStep; // Step number to display (starts from 1 with Account)
+  const stepsToShow = steps; // Show all steps in progress bar
+  const totalSteps = steps.length; // Total steps (should be 4 for both patient and freelancer)
 
   return (
     <FormProvider {...formMethods}>
@@ -420,7 +538,20 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
         <div className="flex-shrink-0 flex justify-between gap-3 pt-4 border-t border-gray-200">
           <Button
             variant="outline"
-            onClick={currentStep === 1 ? onBack : prevStep}
+            onClick={() => {
+              if (currentStep === 1) {
+                // Clear signup state when going back to login
+                resetSignupUI();
+                if (typeof window !== 'undefined') {
+                  // Clear OAuth tokens and flags
+                  sessionStorage.removeItem('oauth_signup_token');
+                  sessionStorage.removeItem('oauth_signup_in_progress');
+                }
+                onBack();
+              } else {
+                prevStep();
+              }
+            }}
             className="h-10 px-4 rounded-lg transition-all duration-200 font-inter font-medium text-sm border-gray-300 hover:bg-gray-50"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
