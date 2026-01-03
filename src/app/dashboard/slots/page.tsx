@@ -99,21 +99,25 @@ const SlotsPage = () => {
             title="Total Slots"
             value={displayStats.total.toString()}
             loading={isLoadingStats && !slotStats}
+            simple
           />
           <EnhancedStatCard
             title="Booked"
             value={displayStats.booked.toString()}
             loading={isLoadingStats && !slotStats}
+            simple
           />
           <EnhancedStatCard
             title="Available"
             value={displayStats.available.toString()}
             loading={isLoadingStats && !slotStats}
+            simple
           />
           <EnhancedStatCard
             title="Revenue"
             value={`EUR ${displayStats.revenue.toFixed(2)}`}
             loading={isLoadingStats && !slotStats}
+            simple
           />
         </div>
 

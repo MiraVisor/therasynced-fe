@@ -49,9 +49,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="bg-gradient-to-br from-mint/50 to-white rounded-xl p-4 border border-sage/30 overflow-hidden relative"
             >
               <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              <div className="h-3 bg-gray-200 dark:bg-gray-700/20 rounded w-16 mb-2" />
-              <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mb-2" />
-              <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-3 bg-gray-200 dark:bg-gray-700/20 rounded w-16 mb-3" />
+              <div className="h-5 bg-gray-200 dark:bg-gray-700/30 rounded w-12 mb-2" />
             </div>
           ))}
         </div>
