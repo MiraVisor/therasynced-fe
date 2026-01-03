@@ -65,7 +65,7 @@ export const ExpertCardContent = memo(
     planFeatures,
     stampInfo,
     onViewProfile,
-    showBookNow = true,
+    showBookNow = false,
   }: ExpertCardContentProps) => {
     const router = useRouter();
     const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
