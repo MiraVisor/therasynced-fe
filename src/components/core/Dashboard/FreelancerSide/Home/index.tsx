@@ -3,9 +3,10 @@
 import { format } from 'date-fns';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,7 @@ import { useFreelancerDashboard } from '@/hooks/queries/useFreelancers';
 import { useAuth } from '@/hooks/useAuthZustand';
 import { cn } from '@/lib/utils';
 import { LocationType } from '@/types/enums';
-import { Booking } from '@/types/types';
+import { Booking, Slot } from '@/types/types';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import TrialBanner from '../Subscription/TrialBanner';
@@ -61,12 +62,53 @@ const formatTime = (dateString: string) => {
 };
 
 // ============================================================================
-// Today's Appointments Component
+// Today's Bookings Component
 // ============================================================================
+
+// Convert Booking to Slot format for SlotDetailsDialog
+const convertBookingToSlot = (booking: Booking): Slot => {
+  const slotData = booking.slot;
+
+  return {
+    id: slotData.id,
+    freelancerId: slotData.freelancer.id,
+    freelancerName: slotData.freelancer.name,
+    profilePicture: slotData.freelancer.profilePicture,
+    averageRating: slotData.freelancer.averageRating,
+    locationType: slotData.locationType as LocationType,
+    location: slotData.location,
+    startTime: slotData.startTime,
+    endTime: slotData.endTime,
+    duration: slotData.duration,
+    basePrice: slotData.basePrice,
+    status: booking.status === 'CANCELLED' ? 'CANCELLED' : 'BOOKED',
+    notes: '',
+    booking: {
+      id: booking.id,
+      status: booking.status,
+      totalAmount: booking.totalAmount,
+      clientAddress:
+        slotData.locationType === LocationType.HOME ? slotData.location?.address : null,
+      notes: booking.formData?.['notes'] as string | null | undefined,
+      client: {
+        id: booking.client.id,
+        name: booking.client.name,
+        email: booking.client.email,
+        profilePicture: undefined,
+      },
+      serviceCategories: booking.serviceCategories || [],
+      createdAt: '',
+      updatedAt: '',
+    },
+    createdAt: '',
+    updatedAt: '',
+  };
+};
 
 const TodayAppointments = () => {
   const router = useRouter();
   const { data: bookings = [], isLoading } = useTodayBookingsFreelancer();
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   const todayAppointments = useMemo(() => {
     return bookings
@@ -90,7 +132,7 @@ const TodayAppointments = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
-            Today&apos;s Appointments
+            Today&apos;s Bookings
           </CardTitle>
           <CardDescription className="font-inter">
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
@@ -121,7 +163,7 @@ const TodayAppointments = () => {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
-              Today&apos;s Appointments
+              Today&apos;s Bookings
             </CardTitle>
             <CardDescription className="font-inter">
               {format(new Date(), 'EEEE, MMMM d, yyyy')}
@@ -149,7 +191,7 @@ const TodayAppointments = () => {
                 <div
                   key={booking.id}
                   className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
-                  onClick={() => router.push('/dashboard/appointments')}
+                  onClick={() => setSelectedBooking(booking)}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
@@ -206,6 +248,15 @@ const TodayAppointments = () => {
           </div>
         )}
       </CardContent>
+
+      {/* Slot Details Dialog */}
+      {selectedBooking && (
+        <SlotDetailsDialog
+          slot={convertBookingToSlot(selectedBooking)}
+          isOpen={!!selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+        />
+      )}
     </Card>
   );
 };
@@ -343,7 +394,7 @@ const FreelancerHome = () => {
         {/* Quick Stats */}
         <QuickStats dashboardData={dashboardData} isLoading={isLoading} />
 
-        {/* Today's Appointments - Prominent at top */}
+        {/* Today's Bookings - Prominent at top */}
         <TodayAppointments />
 
         {/* Profile Completion Widget - Only shows if incomplete */}

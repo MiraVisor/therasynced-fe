@@ -27,6 +27,7 @@ export function NotificationPopover({
   unreadCount,
   isLoading,
   onLoadNotifications,
+  onMarkAsRead,
   onMarkAllAsRead,
   className,
 }: NotificationPopoverProps) {
@@ -51,9 +52,13 @@ export function NotificationPopover({
   const unreadNotifications = notifications.filter((n) => !n.isRead);
   const readNotifications = notifications.filter((n) => n.isRead);
 
-  const handleMarkAllAsRead = async () => {
+  // Use actual unread count from notifications array as fallback
+  const actualUnreadCount = unreadNotifications.length;
+  const effectiveUnreadCount = unreadCount > 0 ? unreadCount : actualUnreadCount;
+
+  const handleMarkAllAsRead = () => {
     try {
-      await onMarkAllAsRead();
+      onMarkAllAsRead();
     } catch (error) {
       console.error('Failed to mark all as read:', error);
     }
@@ -67,12 +72,12 @@ export function NotificationPopover({
           size="icon"
           className={cn(
             'relative h-10 w-10 hover:bg-gray-50',
-            unreadCount > 0 && 'ring-2 ring-blue-500 ring-opacity-50',
+            effectiveUnreadCount > 0 && 'ring-2 ring-blue-500 ring-opacity-50',
             className,
           )}
         >
           <Bell className="h-5 w-5" />
-          <NotificationBadge count={unreadCount} />
+          <NotificationBadge count={effectiveUnreadCount} />
         </Button>
       </PopoverTrigger>
 
@@ -90,9 +95,9 @@ export function NotificationPopover({
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-gray-700" />
               <h3 className="font-poppins font-semibold text-lg text-gray-900">Notifications</h3>
-              {unreadCount > 0 && (
+              {effectiveUnreadCount > 0 && (
                 <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                  {unreadCount}
+                  {effectiveUnreadCount}
                 </span>
               )}
             </div>
@@ -100,7 +105,7 @@ export function NotificationPopover({
               variant="ghost"
               size="sm"
               onClick={handleMarkAllAsRead}
-              disabled={unreadCount === 0 || isLoading}
+              disabled={effectiveUnreadCount === 0 || isLoading}
               className="text-xs h-7 px-2.5 hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="h-3.5 w-3.5 mr-1.5" />
@@ -137,7 +142,11 @@ export function NotificationPopover({
                       </p>
                     </div>
                     {unreadNotifications.map((notification) => (
-                      <NotificationItem key={notification.id} notification={notification} />
+                      <NotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        onMarkAsRead={onMarkAsRead}
+                      />
                     ))}
                   </div>
                 )}
@@ -153,7 +162,11 @@ export function NotificationPopover({
                       </div>
                     )}
                     {readNotifications.map((notification) => (
-                      <NotificationItem key={notification.id} notification={notification} />
+                      <NotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        onMarkAsRead={onMarkAsRead}
+                      />
                     ))}
                   </div>
                 )}
