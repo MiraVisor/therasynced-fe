@@ -1,9 +1,10 @@
 'use client';
 
-import { AlertCircle, Calendar } from 'lucide-react';
+import { AlertCircle, Calendar, X } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -167,22 +168,50 @@ export const DayConfigurationStep = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-charcoal">Start Time</Label>
-                    <Input
-                      type="time"
-                      value={config.startTime}
-                      onChange={(e) => onConfigurationChange(day, { startTime: e.target.value })}
-                      className={cn('h-10', error && 'border-error')}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="time"
+                        value={config.startTime}
+                        onChange={(e) => onConfigurationChange(day, { startTime: e.target.value })}
+                        className={cn('h-10 pr-10', error && 'border-error')}
+                      />
+                      {config.startTime && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-gray-100"
+                          onClick={() => onConfigurationChange(day, { startTime: '' })}
+                          title="Clear start time"
+                        >
+                          <X className="h-4 w-4 text-gray-500" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-charcoal">End Time</Label>
-                    <Input
-                      type="time"
-                      value={config.endTime}
-                      onChange={(e) => onConfigurationChange(day, { endTime: e.target.value })}
-                      className={cn('h-10', error && 'border-error')}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="time"
+                        value={config.endTime}
+                        onChange={(e) => onConfigurationChange(day, { endTime: e.target.value })}
+                        className={cn('h-10 pr-10', error && 'border-error')}
+                      />
+                      {config.endTime && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-gray-100"
+                          onClick={() => onConfigurationChange(day, { endTime: '' })}
+                          title="Clear end time"
+                        >
+                          <X className="h-4 w-4 text-gray-500" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -215,24 +244,52 @@ export const DayConfigurationStep = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-charcoal">Break From</Label>
-                    <Input
-                      type="time"
-                      value={config.breakFrom || ''}
-                      onChange={(e) => onConfigurationChange(day, { breakFrom: e.target.value })}
-                      placeholder="Optional"
-                      className={cn('h-10', error && 'border-error')}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="time"
+                        value={config.breakFrom || ''}
+                        onChange={(e) => onConfigurationChange(day, { breakFrom: e.target.value })}
+                        placeholder="Optional"
+                        className={cn('h-10 pr-10', error && 'border-error')}
+                      />
+                      {config.breakFrom && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-gray-100"
+                          onClick={() => onConfigurationChange(day, { breakFrom: '' })}
+                          title="Clear break start time"
+                        >
+                          <X className="h-4 w-4 text-gray-500" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-charcoal">Break Till</Label>
-                    <Input
-                      type="time"
-                      value={config.breakTill || ''}
-                      onChange={(e) => onConfigurationChange(day, { breakTill: e.target.value })}
-                      placeholder="Optional"
-                      className={cn('h-10', error && 'border-error')}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="time"
+                        value={config.breakTill || ''}
+                        onChange={(e) => onConfigurationChange(day, { breakTill: e.target.value })}
+                        placeholder="Optional"
+                        className={cn('h-10 pr-10', error && 'border-error')}
+                      />
+                      {config.breakTill && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-gray-100"
+                          onClick={() => onConfigurationChange(day, { breakTill: '' })}
+                          title="Clear break end time"
+                        >
+                          <X className="h-4 w-4 text-gray-500" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -55,7 +55,7 @@ const StatCard = ({
 };
 
 export const AvailabilityPageContent = () => {
-  const [activeTab, setActiveTab] = useState<'pricing' | 'slots'>('pricing');
+  const [activeTab, setActiveTab] = useState<'pricing' | 'slots'>('slots');
   const { data: slotStats, isLoading: isLoadingStats } = useSlotStats();
 
   const handleSlotCreateSuccess = () => {
@@ -121,8 +121,8 @@ export const AvailabilityPageContent = () => {
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'pricing' | 'slots')}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="pricing">Pricing</TabsTrigger>
           <TabsTrigger value="slots">Slots Management</TabsTrigger>
+          <TabsTrigger value="pricing">Pricing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pricing" className="space-y-6 mt-6">
