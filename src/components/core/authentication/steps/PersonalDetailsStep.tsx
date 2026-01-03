@@ -99,6 +99,7 @@ export function PersonalDetailsStep() {
         <div className="space-y-1">
           <label htmlFor="dob" className="text-xs font-inter font-medium text-gray-700">
             Date of Birth
+            <span className="text-gray-500 ml-1">(Must be 18+)</span>
           </label>
           <Popover>
             <PopoverTrigger asChild>
@@ -115,7 +116,7 @@ export function PersonalDetailsStep() {
                 aria-invalid={!!errors.dob}
                 aria-describedby={errors.dob ? 'dob-error' : undefined}
               >
-                {selectedDob ? format(selectedDob, 'PPP') : <span>DD/MM/YYYY</span>}
+                {selectedDob ? format(selectedDob, 'PPP') : <span>Select your date of birth</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -151,7 +152,14 @@ export function PersonalDetailsStep() {
                 }}
                 captionLayout="dropdown"
                 fromYear={1900}
-                toYear={new Date().getFullYear()}
+                toYear={new Date().getFullYear() - 18}
+                defaultMonth={
+                  new Date(
+                    new Date().getFullYear() - 18,
+                    new Date().getMonth(),
+                    new Date().getDate(),
+                  )
+                }
                 initialFocus
               />
             </PopoverContent>
@@ -161,6 +169,7 @@ export function PersonalDetailsStep() {
               {errors.dob.message}
             </p>
           )}
+          <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old to sign up</p>
         </div>
 
         {/* Gender Field */}

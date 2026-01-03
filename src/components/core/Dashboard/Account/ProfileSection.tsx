@@ -339,6 +339,7 @@ export function ProfileSection() {
           <div className="space-y-2">
             <Label htmlFor="dob" className="text-sm font-medium text-gray-700">
               Date of Birth
+              <span className="text-xs font-normal text-gray-500 ml-1">(Must be 18+)</span>
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -351,7 +352,11 @@ export function ProfileSection() {
                     formData.dob && 'text-charcoal',
                   )}
                 >
-                  {formData.dob ? format(new Date(formData.dob), 'PPP') : <span>Pick a date</span>}
+                  {formData.dob ? (
+                    format(new Date(formData.dob), 'PPP')
+                  ) : (
+                    <span>Select your date of birth</span>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -389,11 +394,21 @@ export function ProfileSection() {
                   }}
                   captionLayout="dropdown"
                   fromYear={1900}
-                  toYear={new Date().getFullYear()}
+                  toYear={new Date().getFullYear() - 18}
+                  defaultMonth={
+                    new Date(
+                      new Date().getFullYear() - 18,
+                      new Date().getMonth(),
+                      new Date().getDate(),
+                    )
+                  }
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
+            <p className="text-xs text-gray-500">
+              You must be at least 18 years old to use this service
+            </p>
           </div>
         </div>
 
