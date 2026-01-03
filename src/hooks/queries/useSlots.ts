@@ -203,3 +203,15 @@ export const useReserveSlot = () => {
     },
   });
 };
+
+/**
+ * Hook to fetch last week's slot pattern for pattern recognition
+ */
+export const useLastWeekPattern = (params?: { weekStart?: string }) => {
+  return useQuery({
+    queryKey: ['slots', 'last-week-pattern', params],
+    queryFn: () => slotApi.getLastWeekPattern(params),
+    select: (data) => data.data,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+  });
+};

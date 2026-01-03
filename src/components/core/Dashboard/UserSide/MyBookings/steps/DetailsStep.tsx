@@ -119,7 +119,7 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
             <Label className="text-lg font-poppins font-semibold text-charcoal">Services</Label>
             <div className="text-sm text-gray-600 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               No specific services are configured for this time slot. You can discuss your needs
-              directly with the therapist during your session.
+              directly with the freelancer during your session.
             </div>
           </div>
         ) : null}

@@ -10,7 +10,7 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = 'Search for Therapists',
+  placeholder = 'Search for Freelancers',
   location = 'Dublin, Ireland',
   onSearch,
   isLocationEnabled = false,

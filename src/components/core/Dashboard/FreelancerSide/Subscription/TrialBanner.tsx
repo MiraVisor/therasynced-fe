@@ -49,7 +49,8 @@ export default function TrialBanner() {
   }
 
   const slotsUsed = subscription?.slotsUsed ?? 0;
-  const slotsLimit = subscription?.slotsLimit ?? 5;
+  const slotsLimit = subscription?.slotsLimit ?? null; // null = unlimited for trials
+  const isUnlimited = slotsLimit === null;
   const isCanceledDuringTrial =
     subscription?.status === 'TRIALING' && subscription?.cancelAtPeriodEnd === true;
   const trialEndDate = getTrialEndDate(subscription ?? null);
@@ -119,19 +120,26 @@ export default function TrialBanner() {
                   . You won&apos;t be charged until then.
                 </p>
               ) : (
-                <p>
-                  Your free trial is active. Explore all features and subscribe when you&apos;re
-                  ready!
-                </p>
+                <p>Your 14-day free trial is active. Full platform access, no restrictions!</p>
               )}
               {subscription && (
                 <div className="text-sm">
                   <p>
-                    <strong>Slots:</strong> {slotsUsed}/{slotsLimit} active slots
-                    {slotsUsed >= slotsLimit && (
-                      <span className="ml-2 text-orange-600 dark:text-orange-400 font-medium">
-                        (Limit reached)
+                    <strong>Slots:</strong>{' '}
+                    {isUnlimited ? (
+                      <span>
+                        {slotsUsed} active slots{' '}
+                        <span className="text-primary font-medium">(Unlimited)</span>
                       </span>
+                    ) : (
+                      <>
+                        {slotsUsed}/{slotsLimit} active slots
+                        {slotsUsed >= slotsLimit && (
+                          <span className="ml-2 text-orange-600 dark:text-orange-400 font-medium">
+                            (Limit reached)
+                          </span>
+                        )}
+                      </>
                     )}
                   </p>
                 </div>

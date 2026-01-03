@@ -1,5 +1,6 @@
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
+import type { ProfileCompletionResponse } from '@/types/freelancer';
 import { ApiResponse, Expert } from '@/types/types';
 
 export const getAllFreelancers = async (params?: {
@@ -124,6 +125,76 @@ export const searchFreelancersAutocomplete = async (
   };
 };
 
+export interface FreelancerDetailResponse {
+  profile: {
+    id: string;
+    name: string;
+    email: string;
+    profilePicture: string | null;
+    city: string | null;
+    description: string | null;
+    gender: string;
+    dob: string | null; // ISO date string
+    homeAddress: string | null;
+    clinicAddress: string | null;
+    verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+    isActive: boolean;
+    createdAt: string; // ISO date string
+    updatedAt: string; // ISO date string
+  };
+  jobTitle: {
+    id: string;
+    name: string;
+    description: string | null;
+  } | null;
+  serviceCategories: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    jobTitleId: string;
+  }>;
+  slotDurations: Array<{
+    duration: number;
+    price: number;
+    currency: string;
+  }>;
+  serviceLocationPricing: Array<{
+    serviceCategory: {
+      id: string;
+      name: string;
+      description: string | null;
+    };
+    locationType: 'HOME' | 'CLINIC';
+    price: number;
+    currency: string;
+  }>;
+  stampInfo: {
+    currentStampCount: number;
+    stampTarget: number;
+    stampsRemaining: number;
+    rewardReady: boolean;
+    rewardReserved: boolean;
+    rewardReadySince: string | null; // ISO date string
+    discountPercentage: number;
+    customConfigApplied: boolean;
+  } | null;
+}
+
+export const getFreelancerById = async (
+  freelancerId: string,
+): Promise<{ success: boolean; data: FreelancerDetailResponse }> => {
+  const response = await api.get(`/freelancer/details/${freelancerId}`);
+  return response.data;
+};
+
+/**
+ * Get profile completion status for the current freelancer
+ */
+export const getProfileCompletion = async (): Promise<ProfileCompletionResponse> => {
+  const response = await api.get(ENDPOINTS.freelancer.profileCompletion);
+  return response.data;
+};
+
 const freelancerService = {
   getAllFreelancers,
   favoriteFreelancer,
@@ -132,6 +203,8 @@ const freelancerService = {
   getStats,
   searchFreelancers,
   searchFreelancersAutocomplete,
+  getFreelancerById,
+  getProfileCompletion,
 };
 
 export { freelancerService };

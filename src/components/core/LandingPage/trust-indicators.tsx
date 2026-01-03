@@ -6,13 +6,13 @@ const trustData = [
   {
     id: 1,
     title: 'Verified Professionals',
-    description: 'All therapists are licensed and verified.',
+    description: 'All freelancers are licensed and verified.',
     icon: Shield,
   },
   {
     id: 2,
     title: 'Real-Time Messaging',
-    description: 'Communicate directly with your therapist through secure messaging.',
+    description: 'Communicate directly with your freelancer through secure messaging.',
     icon: MessageCircle,
   },
   {

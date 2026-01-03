@@ -3,10 +3,9 @@
 import { useAuth } from '@/hooks/useAuthZustand';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
-import BookingHistoryChart from './BookingHistoryChart';
 import FavoriteFreelancersCarousel from './FavoriteFreelancersCarousel';
 import NextAppointmentHero from './NextAppointmentHero';
-import RecentBookingActivity from './RecentBookingActivity';
+import YourSessions from './YourSessions';
 
 const UserHome = () => {
   const { role } = useAuth();
@@ -26,17 +25,11 @@ const UserHome = () => {
         {/* Next Appointment Hero */}
         <NextAppointmentHero booking={null} loading={false} />
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* Booking History Chart */}
-          <BookingHistoryChart />
+        {/* Favorite Freelancers - Simplified */}
+        <FavoriteFreelancersCarousel />
 
-          {/* Favorite Freelancers Carousel */}
-          <FavoriteFreelancersCarousel />
-        </div>
-
-        {/* Recent Booking Activity */}
-        <RecentBookingActivity />
+        {/* Your Sessions - Combined upcoming and past */}
+        <YourSessions />
       </div>
     </DashboardPageWrapper>
   );

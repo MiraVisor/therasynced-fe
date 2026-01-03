@@ -15,16 +15,23 @@ import {
   ChatContactsSkeleton,
   ChatMessagesSkeleton,
 } from '@/components/ui/skeletons/ChatSkeletons';
+import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useAuth } from '@/hooks/useAuthZustand';
 import useChat from '@/hooks/useChat';
-import { getDecodedToken } from '@/lib/utils';
+import { cn, getDecodedToken } from '@/lib/utils';
+import {
+  formatLimit,
+  getBillingCycleEndDate,
+  getDaysUntilBillingCycleReset,
+} from '@/utils/subscriptionHelpers';
 
 // Types
 interface Contact {
   id: string;
   name: string;
   avatar: string;
+  profilePicture?: string;
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
@@ -60,11 +67,18 @@ const MessagesPageContent = () => {
     getContactByConversationId,
     markConversationAsRead,
   } = useChat(currentUserId);
+  const { data: subscription } = useMySubscription();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showChat, setShowChat] = useState(false);
+
+  const messagesUsed = subscription?.messagesUsed ?? 0;
+  const messagesLimit = subscription?.maxMessagesPerBillingCycle ?? null;
+  const isAtLimit = messagesLimit !== null && messagesUsed >= messagesLimit;
+  const billingCycleEnd = getBillingCycleEndDate(subscription ?? null);
+  const daysUntilReset = getDaysUntilBillingCycleReset(subscription ?? null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasHandledUserIdRef = useRef(false);
   const previousTargetUserIdRef = useRef<string | null>(null);
@@ -193,6 +207,7 @@ const MessagesPageContent = () => {
     id: contact.id,
     name: contact.name,
     avatar: contact.profilePicture || '',
+    profilePicture: contact.profilePicture || undefined,
     lastMessage: contact.lastMessage?.content || 'No messages yet',
     lastMessageTime: contact.lastMessage?.createdAt || new Date().toISOString(),
     unreadCount: contact.unreadCount,
@@ -332,7 +347,29 @@ const MessagesPageContent = () => {
   return (
     <DashboardPageWrapper
       userRole={role}
-      header={<h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>}
+      header={
+        <div className="flex items-center justify-between w-full">
+          <h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>
+          {messagesLimit !== null && role === 'FREELANCER' && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600 dark:text-gray-400">Messages:</span>
+              <span
+                className={cn(
+                  'font-semibold',
+                  isAtLimit ? 'text-red-600' : 'text-gray-900 dark:text-white',
+                )}
+              >
+                {messagesUsed}/{formatLimit(messagesLimit)}
+              </span>
+              {billingCycleEnd && daysUntilReset !== null && (
+                <span className="text-xs text-gray-500">
+                  (Resets in {daysUntilReset} {daysUntilReset === 1 ? 'day' : 'days'})
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      }
     >
       <div className="h-[calc(100vh-200px)] flex flex-col">
         <div className="flex flex-1 min-h-0">
@@ -377,7 +414,10 @@ const MessagesPageContent = () => {
                     <div className="flex items-center space-x-3">
                       <div className="relative">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={contact.avatar} alt={contact.name} />
+                          <AvatarImage
+                            src={contact.profilePicture || contact.avatar}
+                            alt={contact.name}
+                          />
                           <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                       </div>

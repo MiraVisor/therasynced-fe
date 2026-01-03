@@ -1,7 +1,10 @@
+import { useRouter } from 'next/navigation';
+
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
 import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { Sparkline } from '@/components/ui/sparkline';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useProfile } from '@/hooks/queries/useProfile';
 import { useFreelancerRatings } from '@/hooks/queries/useRatings';
 import { cn } from '@/lib/utils';
@@ -13,6 +16,7 @@ interface StatsProps {
 }
 
 const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
+  const router = useRouter();
   const { data: profileData } = useProfile();
   const freelancerId = profileData?.id;
   const { data: ratingsData } = useFreelancerRatings(freelancerId ?? null, {
@@ -20,6 +24,42 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
     limit: 1, // We only need the pagination total
   });
   const totalRatings = ratingsData?.pagination?.total ?? 0;
+
+  // Navigation handlers
+  const handleCardClick = (title: string) => {
+    switch (title) {
+      case 'Total Appointments':
+        router.push('/dashboard/appointments');
+        break;
+      case 'Client Rating':
+        router.push('/dashboard/account?tab=ratings');
+        break;
+      case 'New Clients':
+        router.push('/dashboard/analytics');
+        break;
+      case 'Weekly Revenue':
+        router.push('/dashboard/analytics');
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Tooltip descriptions
+  const getTooltipText = (title: string): string => {
+    switch (title) {
+      case 'Total Appointments':
+        return 'Total number of appointments you have completed. Click to view all appointments.';
+      case 'Client Rating':
+        return 'Average rating from your users. Click to view detailed ratings.';
+      case 'New Clients':
+        return 'Number of new users who booked with you this month. Click to view analytics.';
+      case 'Weekly Revenue':
+        return 'Total revenue earned this week. Click to view detailed analytics.';
+      default:
+        return '';
+    }
+  };
 
   // Format revenue (assuming backend returns in cents, divide by 100)
   const formatRevenue = (revenueInCents: number): string => {
@@ -143,110 +183,127 @@ const Stats = ({ dashboardData, isLoading = false }: StatsProps) => {
   const ratingTrend = dashboardData ? dashboardData.clientRating : defaultData.clientRating;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-      {cardsData.map((data, index) => {
-        // Render custom rating card for Client Rating
-        if (data.title === 'Client Rating') {
-          return (
-            <EnhancedCard
-              key={index}
-              variant="default"
-              interactive
-              onClick={() => {
-                // Navigate to details or show modal
-              }}
-              className="group"
-            >
-              <div className="p-6 space-y-4">
-                {/* Header with title */}
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <p className="text-sm font-inter font-medium text-muted-foreground">
-                      {data.title}
-                    </p>
-                    <div className="flex items-baseline gap-2">
-                      <div className="flex items-center gap-2">
-                        <RatingDisplay
-                          rating={Number(ratingValue)}
-                          reviewCount={totalRatings}
-                          size="md"
-                          showCount={true}
-                        />
+    <TooltipProvider>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+        {cardsData.map((data, index) => {
+          // Render custom rating card for Client Rating
+          if (data.title === 'Client Rating') {
+            return (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <div>
+                    <EnhancedCard
+                      variant="default"
+                      interactive
+                      onClick={() => handleCardClick(data.title)}
+                      className="group cursor-pointer"
+                    >
+                      <div className="p-6 space-y-4">
+                        {/* Header with title */}
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1 flex-1">
+                            <p className="text-sm font-inter font-medium text-muted-foreground">
+                              {data.title}
+                            </p>
+                            <div className="flex items-baseline gap-2">
+                              <div className="flex items-center gap-2">
+                                <RatingDisplay
+                                  rating={Number(ratingValue)}
+                                  reviewCount={totalRatings}
+                                  size="md"
+                                  showCount={true}
+                                />
+                              </div>
+                              {('trend' in ratingTrend ? ratingTrend.trend : null) && (
+                                <div
+                                  className={cn(
+                                    'text-xs font-medium',
+                                    'trend' in ratingTrend && ratingTrend.trend.isUp
+                                      ? 'text-success'
+                                      : 'text-error',
+                                  )}
+                                >
+                                  {'trend' in ratingTrend && ratingTrend.trend.isUp ? '+' : ''}
+                                  {Math.abs(
+                                    'trend' in ratingTrend
+                                      ? ratingTrend.trend.value
+                                      : ratingTrend.trendPercentage,
+                                  ).toFixed(1)}
+                                  %
+                                </div>
+                              )}
+                              {!('trend' in ratingTrend) && (
+                                <div
+                                  className={cn(
+                                    'text-xs font-medium',
+                                    ratingTrend.trendDirection === 'up'
+                                      ? 'text-success'
+                                      : 'text-error',
+                                  )}
+                                >
+                                  {ratingTrend.trendDirection === 'up' ? '+' : ''}
+                                  {Math.abs(ratingTrend.trendPercentage).toFixed(1)}%
+                                </div>
+                              )}
+                            </div>
+                            {'trend' in ratingTrend && ratingTrend.trend?.label && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {ratingTrend.trend.label}
+                              </p>
+                            )}
+                            {!('trend' in ratingTrend) && (
+                              <p className="text-xs text-muted-foreground mt-1">from last month</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Sparkline chart */}
+                        {ratingTrend.sparklineData && ratingTrend.sparklineData.length > 0 && (
+                          <div className="pt-2">
+                            <Sparkline
+                              data={ratingTrend.sparklineData}
+                              color="#007745"
+                              width={100}
+                              height={30}
+                            />
+                          </div>
+                        )}
                       </div>
-                      {('trend' in ratingTrend ? ratingTrend.trend : null) && (
-                        <div
-                          className={cn(
-                            'text-xs font-medium',
-                            'trend' in ratingTrend && ratingTrend.trend.isUp
-                              ? 'text-success'
-                              : 'text-error',
-                          )}
-                        >
-                          {'trend' in ratingTrend && ratingTrend.trend.isUp ? '+' : ''}
-                          {Math.abs(
-                            'trend' in ratingTrend
-                              ? ratingTrend.trend.value
-                              : ratingTrend.trendPercentage,
-                          ).toFixed(1)}
-                          %
-                        </div>
-                      )}
-                      {!('trend' in ratingTrend) && (
-                        <div
-                          className={cn(
-                            'text-xs font-medium',
-                            ratingTrend.trendDirection === 'up' ? 'text-success' : 'text-error',
-                          )}
-                        >
-                          {ratingTrend.trendDirection === 'up' ? '+' : ''}
-                          {Math.abs(ratingTrend.trendPercentage).toFixed(1)}%
-                        </div>
-                      )}
-                    </div>
-                    {'trend' in ratingTrend && ratingTrend.trend?.label && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {ratingTrend.trend.label}
-                      </p>
-                    )}
-                    {!('trend' in ratingTrend) && (
-                      <p className="text-xs text-muted-foreground mt-1">from last month</p>
-                    )}
+                    </EnhancedCard>
                   </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{getTooltipText(data.title)}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          }
+
+          // Render regular stat cards for others
+          return (
+            <Tooltip key={index}>
+              <TooltipTrigger asChild>
+                <div>
+                  <EnhancedStatCard
+                    title={data.title}
+                    value={data.value}
+                    trend={data.trend}
+                    sparklineData={data.sparklineData}
+                    loading={isLoadingData}
+                    interactive
+                    onClick={() => handleCardClick(data.title)}
+                    className="cursor-pointer"
+                  />
                 </div>
-
-                {/* Sparkline chart */}
-                {ratingTrend.sparklineData && ratingTrend.sparklineData.length > 0 && (
-                  <div className="pt-2">
-                    <Sparkline
-                      data={ratingTrend.sparklineData}
-                      color="#007745"
-                      width={100}
-                      height={30}
-                    />
-                  </div>
-                )}
-              </div>
-            </EnhancedCard>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{getTooltipText(data.title)}</p>
+              </TooltipContent>
+            </Tooltip>
           );
-        }
-
-        // Render regular stat cards for others
-        return (
-          <EnhancedStatCard
-            key={index}
-            title={data.title}
-            value={data.value}
-            trend={data.trend}
-            sparklineData={data.sparklineData}
-            loading={isLoadingData}
-            interactive
-            onClick={() => {
-              // Navigate to details or show modal
-            }}
-          />
-        );
-      })}
-    </div>
+        })}
+      </div>
+    </TooltipProvider>
   );
 };
 

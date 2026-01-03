@@ -28,40 +28,52 @@ const AnalyticsPage = () => {
   const { role } = useAuthStore();
   const { data: subscription, isLoading: isLoadingSubscription } = useMySubscription();
 
-  // Check if user has GOLD tier subscription
-  const isGoldTier = subscription?.plan?.name === 'GOLD';
+  // Check if user has GOLD tier subscription (only GOLD has access)
+  const planName = subscription?.plan?.name;
+  const hasAccess = planName === 'GOLD';
   const isCheckingTier = isLoadingSubscription;
 
-  // Fetch all analytics data using separate endpoints
+  // Fetch all analytics data using separate endpoints - only if user has Silver/Gold tier
   const {
     data: overviewData,
     isLoading: isLoadingOverview,
     error: overviewError,
-  } = useFreelancerAnalyticsOverview();
+  } = useFreelancerAnalyticsOverview(undefined, { enabled: hasAccess && !isLoadingSubscription });
 
   const {
     data: revenueData,
     isLoading: isLoadingRevenue,
     error: revenueError,
-  } = useFreelancerRevenueAnalytics({ timeframe: 'monthly' });
+  } = useFreelancerRevenueAnalytics(
+    { timeframe: 'monthly' },
+    { enabled: hasAccess && !isLoadingSubscription },
+  );
 
   const {
     data: clientData,
     isLoading: isLoadingClients,
     error: clientError,
-  } = useFreelancerClientAnalytics();
+  } = useFreelancerClientAnalytics(undefined, { enabled: hasAccess && !isLoadingSubscription });
 
   const {
     data: bookingData,
     isLoading: isLoadingBookings,
     error: bookingError,
-  } = useFreelancerBookingAnalytics();
+  } = useFreelancerBookingAnalytics(undefined, { enabled: hasAccess && !isLoadingSubscription });
 
-  const { data: serviceData, isLoading: isLoadingServices } = useFreelancerServiceAnalytics();
+  const { data: serviceData, isLoading: isLoadingServices } = useFreelancerServiceAnalytics(
+    undefined,
+    { enabled: hasAccess && !isLoadingSubscription },
+  );
 
-  const { data: ratingData, isLoading: isLoadingRatings } = useFreelancerRatingAnalytics();
-  // Show error toasts
+  const { data: ratingData, isLoading: isLoadingRatings } = useFreelancerRatingAnalytics({
+    enabled: hasAccess && !isLoadingSubscription,
+  });
+
+  // Show error toasts - only if user has access (to avoid showing errors for tier restrictions)
   useEffect(() => {
+    if (!hasAccess) return; // Don't show errors if user doesn't have access
+
     if (overviewError && !overviewData) {
       toast.error('Failed to load analytics overview');
     }
@@ -75,6 +87,7 @@ const AnalyticsPage = () => {
       toast.error('Failed to load booking analytics');
     }
   }, [
+    hasAccess,
     overviewError,
     revenueError,
     clientError,
@@ -153,14 +166,14 @@ const AnalyticsPage = () => {
       }
     >
       <div className="space-y-8 relative">
-        {/* Upgrade Overlay for non-GOLD users */}
-        {!isCheckingTier && !isGoldTier && (
+        {/* Upgrade Overlay for non-Gold users */}
+        {!isCheckingTier && !hasAccess && (
           <UpgradeOverlay isBlocked={true} requiredTier="GOLD" featureName="Analytics & Insights" />
         )}
 
-        {/* Blur effect for non-GOLD users - content is blurred and non-interactive */}
+        {/* Blur effect for non-Gold users - content is blurred and non-interactive */}
         <div
-          className={!isCheckingTier && !isGoldTier ? 'pointer-events-none opacity-50 blur-sm' : ''}
+          className={!isCheckingTier && !hasAccess ? 'pointer-events-none opacity-50 blur-sm' : ''}
         >
           {/* Stats Cards - Top Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

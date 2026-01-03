@@ -36,11 +36,11 @@ const Hero = () => {
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
               <span className="text-gray-900 dark:text-white">Find Your</span>
               <br />
-              <span className="text-primary">Perfect Therapist</span>
+              <span className="text-primary">Perfect Freelancer</span>
             </h1>
 
             <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
-              Book appointments with licensed therapists. Get personalized care when you need it.
+              Book appointments with licensed freelancers. Get personalized care when you need it.
             </p>
           </div>
 

@@ -1,3 +1,6 @@
+// Import pricing types for use in Expert interface
+import type { DurationPricing, ServicePricing } from './pricing';
+
 // Re-export data rights types
 export * from './dataRights';
 
@@ -242,6 +245,14 @@ export interface BackendResponse<T> {
   };
 }
 
+export interface FreelancerData {
+  services?: unknown[];
+  locations?: unknown[];
+  serviceCount?: number;
+  locationCount?: number;
+  canToggleRatingVisibility?: boolean;
+}
+
 export interface BackendProfileResponse {
   success: boolean;
   message: string;
@@ -274,7 +285,7 @@ export interface BackendProfileResponse {
       firstAidCertificateRejectedAt?: Date | null;
       firstAidCertificateRejectionReason?: string | null;
     };
-    freelancerData?: Record<string, unknown>;
+    freelancerData?: FreelancerData;
   };
   meta: {
     timestamp: string;
@@ -393,6 +404,9 @@ export interface Expert {
     discountPercentage: number;
     customConfigApplied: boolean;
   } | null;
+  // Pricing information
+  durationPricing?: DurationPricing[];
+  serviceCategoryPricing?: ServicePricing[];
 }
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 
@@ -705,6 +719,7 @@ export interface Rating {
   freelancerId: string;
   patientId: string;
   rating: number; // 1-5 stars
+  isVisible: boolean; // Whether rating is visible to public
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }
@@ -980,6 +995,13 @@ export interface Booking {
     name: string;
     email: string;
     profilePicture?: string;
+    // Client history fields (enhanced booking responses)
+    previousBookingsWithFreelancer?: number; // Count of bookings before this one
+    totalBookingsWithFreelancer?: number; // Total bookings with this freelancer
+    lastVisitDate?: string | null; // ISO date of last completed visit
+    firstBookingDate?: string | null; // ISO date of first booking
+    preferredServices?: string[]; // Top 3 most booked service categories
+    averageRating?: number | null; // Client's average rating for this freelancer
   };
   createdAt: string;
   updatedAt: string;
@@ -1381,6 +1403,11 @@ export interface Subscription {
   canAcceptBookings: boolean; // Required field from API
   slotsUsed: number; // Required field from API - Current active slots count
   slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
+  maxDaysPerWeek: number | null; // Days per week limit (null = unlimited)
+  maxMessagesPerBillingCycle: number | null; // Messages per billing cycle limit (null = unlimited)
+  canToggleRatingVisibility: boolean; // Whether user can toggle rating visibility
+  messagesUsed?: number; // Optional - Messages used in current billing cycle
+  daysUsed?: number; // Optional - Days used in current week
   message: string; // Required field from API - Status message
 }
 

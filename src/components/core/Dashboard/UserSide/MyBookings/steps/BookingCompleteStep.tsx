@@ -56,7 +56,7 @@ export const BookingCompleteStep: React.FC<BookingCompleteStepProps> = ({ bookin
 
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Therapist</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Freelancer</p>
                 <p className="font-medium text-charcoal dark:text-white">
                   {booking.slot.freelancer.name}
                 </p>

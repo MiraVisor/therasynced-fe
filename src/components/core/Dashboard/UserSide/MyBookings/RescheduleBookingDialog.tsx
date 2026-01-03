@@ -460,7 +460,7 @@ export function RescheduleBookingDialog({
                     className="w-full"
                   />
                   <p className="text-xs text-gray-500">
-                    Required for home visit bookings. We'll use this address for the therapist to
+                    Required for home visit bookings. We'll use this address for the freelancer to
                     visit you.
                   </p>
                 </div>

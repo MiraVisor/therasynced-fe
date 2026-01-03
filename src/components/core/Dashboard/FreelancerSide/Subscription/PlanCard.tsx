@@ -25,7 +25,6 @@ export const PlanCard = ({
   hasActiveSubscription = false,
 }: PlanCardProps) => {
   const isCurrentPlan = currentPlanName === plan.name;
-  const displaySlots = plan.maxSlots === null ? 'Unlimited slots' : `Up to ${plan.maxSlots} slots`;
 
   // Get plan color scheme
   const getPlanColors = () => {
@@ -151,22 +150,6 @@ export const PlanCard = ({
             <span className="text-lg font-inter text-gray-600 dark:text-gray-400">/month</span>
           </div>
         </div>
-
-        {/* Plan Details */}
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <CheckCircle2
-              className={`h-4 w-4 flex-shrink-0 ${isCurrentPlan ? planColors.text : 'text-primary'}`}
-            />
-            <span className="font-medium">{displaySlots}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <CheckCircle2
-              className={`h-4 w-4 flex-shrink-0 ${isCurrentPlan ? planColors.text : 'text-primary'}`}
-            />
-            <span>{plan.commissionRate}% commission rate</span>
-          </div>
-        </div>
       </CardHeader>
 
       <CardContent className="flex-grow space-y-4 pb-6">
@@ -175,6 +158,62 @@ export const PlanCard = ({
             Features Included
           </h4>
           <ul className="space-y-3">
+            {/* Tier Limits - Always shown */}
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? '3 slots per week'
+                  : plan.name === 'SILVER'
+                    ? '5 slots per week'
+                    : 'Unlimited slots'}
+              </span>
+            </li>
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? '3 days per week'
+                  : plan.name === 'SILVER'
+                    ? '5 days per week'
+                    : 'Unlimited days'}
+              </span>
+            </li>
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? '50 messages per billing cycle'
+                  : plan.name === 'SILVER'
+                    ? '100 messages per billing cycle'
+                    : 'Unlimited messages'}
+              </span>
+            </li>
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? 'Rating visibility: Always visible'
+                  : 'Rating visibility: Can toggle on/off'}
+              </span>
+            </li>
+            {/* Backend-provided features */}
             {plan.features.map((feature, index) => (
               <li
                 key={index}

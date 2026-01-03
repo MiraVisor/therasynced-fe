@@ -27,7 +27,7 @@ const feedbackData = [
     id: 2,
     title: 'Truly Exceptional and Life Changing',
     description:
-      'I had persistent back pain for years. After trying this service, I finally feel like myself again. The therapist was knowledgeable, empathetic, and explained everything thoroughly.',
+      'I had persistent back pain for years. After trying this service, I finally feel like myself again. The freelancer was knowledgeable, empathetic, and explained everything thoroughly.',
     image: '/svgs/client.svg',
     rating: 5,
     author: 'Michael Green',

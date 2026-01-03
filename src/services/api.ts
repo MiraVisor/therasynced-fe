@@ -19,7 +19,8 @@ api.interceptors.request.use(
     const isPublicEndpoint =
       config.headers?.['X-Skip-Auth'] === 'true' ||
       config.url?.startsWith('/service/job-titles') ||
-      config.url?.startsWith('/service/categories');
+      config.url?.startsWith('/service/categories') ||
+      config.url?.startsWith('/subscription/plans');
 
     if (!isAuthEndpoint && !isPublicEndpoint) {
       const token = getCookie('token');

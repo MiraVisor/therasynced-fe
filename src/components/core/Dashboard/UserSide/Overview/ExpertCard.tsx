@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import type { DurationPricing, ServicePricing } from '@/types/pricing';
 import { Expert, SubscriptionPlanType } from '@/types/types';
 
 import { ExpertCardContent } from './ExpertCardContent';
@@ -19,11 +20,14 @@ interface ExpertCardProps extends Expert {
     | 'UNVERIFIED';
   firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   tier?: SubscriptionPlanType | null;
+  durationPricing?: DurationPricing[];
+  serviceCategoryPricing?: ServicePricing[];
 }
 
 const ExpertCard: React.FC<ExpertCardProps> = ({
   id,
   name,
+  profilePicture,
   specialty,
   jobTitle,
   rating,
@@ -42,6 +46,8 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   tier,
   planFeatures,
   stampInfo,
+  durationPricing = [],
+  serviceCategoryPricing = [],
 }) => {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
 
@@ -56,6 +62,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       <ExpertCardContent
         id={id}
         name={name}
+        profilePicture={profilePicture}
         rating={rating}
         isFavorite={isFavorite}
         showFavoriteText={showFavoriteText}
@@ -75,6 +82,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         expert={{
           id,
           name,
+          profilePicture,
           specialty,
           jobTitle,
           rating,
@@ -91,6 +99,8 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           onBookNow: handleBookNow,
           hasAvailableSlots,
           stampInfo: stampInfo || undefined,
+          durationPricing,
+          serviceCategoryPricing,
         }}
       />
     </>

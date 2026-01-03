@@ -63,7 +63,7 @@ const Services = () => {
             </h1>
             <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto lg:mx-0 leading-relaxed">
               Connect with licensed professionals across multiple specialties. From injury
-              rehabilitation to performance enhancement, find the right therapist for your unique
+              rehabilitation to performance enhancement, find the right freelancer for your unique
               needs.
             </p>
           </div>

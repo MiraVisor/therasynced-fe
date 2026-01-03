@@ -48,7 +48,7 @@ export const FreelancerResultsStep: React.FC<FreelancerResultsStepProps> = ({
           <Search className="w-8 h-8 text-red-500" />
         </div>
         <h3 className="text-lg font-poppins font-semibold text-charcoal dark:text-white mb-2">
-          Error loading therapists
+          Error loading freelancers
         </h3>
         <p className="font-inter text-muted-foreground mb-4">
           Something went wrong. Please try again.
@@ -67,7 +67,7 @@ export const FreelancerResultsStep: React.FC<FreelancerResultsStepProps> = ({
           <Search className="w-8 h-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-poppins font-semibold text-charcoal dark:text-white mb-2">
-          No therapists found
+          No freelancers found
         </h3>
         <p className="font-inter text-muted-foreground mb-4">
           Try adjusting your search criteria or preferences
@@ -84,10 +84,10 @@ export const FreelancerResultsStep: React.FC<FreelancerResultsStepProps> = ({
       {/* Header */}
       <div className="space-y-2">
         <h2 className="text-3xl font-poppins font-bold text-charcoal dark:text-white">
-          Available Therapists
+          Available Freelancers
         </h2>
         <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
-          {freelancers.length} {freelancers.length === 1 ? 'therapist' : 'therapists'} found
+          {freelancers.length} {freelancers.length === 1 ? 'freelancer' : 'freelancers'} found
           {freelancerSearchQuery && ` matching "${freelancerSearchQuery}"`}
         </p>
       </div>

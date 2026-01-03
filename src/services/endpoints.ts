@@ -13,6 +13,8 @@ export const ENDPOINTS = {
   profile: {
     get: '/profile',
     update: '/profile',
+    uploadPicture: '/profile/picture',
+    getPictureSignedUrl: '/profile/picture/signed-url',
     changePassword: '/profile/change-password',
     changeEmail: '/profile/change-email',
     delete: '/profile',
@@ -36,6 +38,8 @@ export const ENDPOINTS = {
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
     reserve: (slotId: string) => `/slots/${slotId}/reserve`,
     release: (slotId: string) => `/slots/${slotId}/release`,
+    stats: '/slot/stats/my-slots',
+    lastWeekPattern: '/slot/last-week-pattern',
   },
   // Service management
   services: {
@@ -97,6 +101,7 @@ export const ENDPOINTS = {
     tierSilver: '/freelancer/tier/silver',
     tierGold: '/freelancer/tier/gold',
     search: '/freelancer/search',
+    profileCompletion: '/freelancer/profile-completion',
   },
   // Dashboard endpoints
   dashboard: {
@@ -206,6 +211,7 @@ export const ENDPOINTS = {
     getFreelancerRatings: (freelancerId: string) => `/ratings/freelancer/${freelancerId}`,
     checkBookingEligibility: (bookingId: string) => `/ratings/booking/${bookingId}`,
     getMyRatings: '/ratings/my-ratings',
+    toggleVisibility: '/ratings/toggle-visibility',
   },
   // Admin endpoints
   admin: {

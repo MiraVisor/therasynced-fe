@@ -7,6 +7,8 @@ import {
   favoriteFreelancer,
   getAllFavoriteFreelancers,
   getAllFreelancers,
+  getFreelancerById,
+  getProfileCompletion,
   getStats,
   searchFreelancers,
   SearchFreelancersParams,
@@ -113,91 +115,112 @@ export const useFreelancerAnalytics = () => {
 /**
  * Hook to fetch analytics overview
  */
-export const useFreelancerAnalyticsOverview = (params?: {
-  startDate?: string;
-  endDate?: string;
-}) => {
+export const useFreelancerAnalyticsOverview = (
+  params?: {
+    startDate?: string;
+    endDate?: string;
+  },
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ['freelancerAnalytics', 'overview', params],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.freelancer.analyticsOverview, { params });
       return response.data.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 
 /**
  * Hook to fetch revenue analytics
  */
-export const useFreelancerRevenueAnalytics = (params?: {
-  timeframe?: 'daily' | 'weekly' | 'monthly';
-  startDate?: string;
-  endDate?: string;
-}) => {
+export const useFreelancerRevenueAnalytics = (
+  params?: {
+    timeframe?: 'daily' | 'weekly' | 'monthly';
+    startDate?: string;
+    endDate?: string;
+  },
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ['freelancerAnalytics', 'revenue', params],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.freelancer.analyticsRevenue, { params });
       return response.data.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 
 /**
  * Hook to fetch client analytics
  */
-export const useFreelancerClientAnalytics = (params?: { startDate?: string; endDate?: string }) => {
+export const useFreelancerClientAnalytics = (
+  params?: { startDate?: string; endDate?: string },
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ['freelancerAnalytics', 'clients', params],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.freelancer.analyticsClients, { params });
       return response.data.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 
 /**
  * Hook to fetch booking performance analytics
  */
-export const useFreelancerBookingAnalytics = (params?: {
-  startDate?: string;
-  endDate?: string;
-}) => {
+export const useFreelancerBookingAnalytics = (
+  params?: {
+    startDate?: string;
+    endDate?: string;
+  },
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ['freelancerAnalytics', 'bookings', params],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.freelancer.analyticsBookings, { params });
       return response.data.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 
 /**
  * Hook to fetch service analytics
  */
-export const useFreelancerServiceAnalytics = (params?: {
-  startDate?: string;
-  endDate?: string;
-}) => {
+export const useFreelancerServiceAnalytics = (
+  params?: {
+    startDate?: string;
+    endDate?: string;
+  },
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ['freelancerAnalytics', 'services', params],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.freelancer.analyticsServices, { params });
       return response.data.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 
 /**
  * Hook to fetch rating analytics
  */
-export const useFreelancerRatingAnalytics = () => {
+export const useFreelancerRatingAnalytics = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['freelancerAnalytics', 'ratings'],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.freelancer.analyticsRatings);
       return response.data.data;
     },
+    enabled: options?.enabled !== false,
   });
 };
 
@@ -258,5 +281,29 @@ export const useInfiniteSearchFreelancers = (baseParams: Omit<SearchFreelancersP
       })),
       pageParams: data.pageParams,
     }),
+  });
+};
+
+/**
+ * Hook to fetch freelancer details by ID
+ */
+export const useFreelancerById = (freelancerId: string | null) => {
+  return useQuery({
+    queryKey: ['freelancer', freelancerId],
+    queryFn: () => getFreelancerById(freelancerId!),
+    enabled: !!freelancerId,
+    select: (data) => data.data,
+  });
+};
+
+/**
+ * Hook to fetch profile completion status for the current freelancer
+ */
+export const useProfileCompletion = () => {
+  return useQuery({
+    queryKey: ['freelancer', 'profile-completion'],
+    queryFn: () => getProfileCompletion(),
+    select: (data) => data.data,
+    staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
   });
 };

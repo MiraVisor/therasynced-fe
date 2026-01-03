@@ -53,7 +53,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
       const freelancerData = {
         id: booking.slot.freelancer.id,
         name: booking.slot.freelancer.name || 'Unknown',
-        specialty: 'Therapist',
+        specialty: 'Freelancer',
         rating: 0,
         reviews: 0,
         yearsOfExperience: '0+ years',
@@ -97,7 +97,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
           <div className="flex-1 space-y-2">
             <div>
               <h4 className="font-poppins font-bold text-lg text-charcoal">
-                {expert.name || 'Unknown Expert'}
+                {expert.name || 'Unknown Freelancer'}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 {expert.cardInfo?.mainService || 'N/A'}

@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateSlot } from '@/hooks/queries/useSlots';
+import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { cn } from '@/lib/utils';
 import type { BlockedPeriod, WeeklyAvailabilityTemplate } from '@/types/slot';
 import { CreateSlotsDto, LocationType } from '@/types/types';
@@ -41,6 +42,7 @@ const DAY_NAMES = [
 
 export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProps) => {
   const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
+  const { data: subscription } = useMySubscription();
 
   const [template, setTemplate] = useState<WeeklyAvailabilityTemplate>({
     days: {
@@ -255,8 +257,22 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
           errorMessage = error.message;
         } else if (error && typeof error === 'object') {
           if ('response' in error) {
-            const apiError = error as { response?: { data?: { message?: string } } };
+            const apiError = error as {
+              response?: {
+                data?: { message?: string; error?: { code?: string } };
+              };
+            };
             errorMessage = apiError.response?.data?.message || errorMessage;
+            // Handle specific error codes
+            const errorCode = apiError.response?.data?.error?.code;
+            if (errorCode === 'TIER_DAY_LIMIT_EXCEEDED') {
+              const tierName = subscription?.plan?.displayName || 'your current';
+              const dayLimit = subscription?.maxDaysPerWeek ?? null;
+              const dayLimitText = dayLimit === null ? 'unlimited' : dayLimit.toString();
+              errorMessage =
+                apiError.response?.data?.message ||
+                `Your ${tierName} tier allows a maximum of ${dayLimitText} days per week. You've already created slots for ${dayLimitText} days. Please upgrade your subscription or reduce the number of days.`;
+            }
           } else if ('message' in error) {
             errorMessage = (error as { message: string }).message;
           }

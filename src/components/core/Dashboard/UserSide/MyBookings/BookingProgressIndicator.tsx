@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { useBookingStore } from '@/stores/bookingStore';
 
 const steps = [
-  { id: 1, title: 'Search', icon: Search, description: 'Find therapist' },
+  { id: 1, title: 'Search', icon: Search, description: 'Find freelancer' },
   { id: 2, title: 'Select', icon: Calendar, description: 'Choose date' },
   { id: 3, title: 'Time', icon: Clock, description: 'Pick time slot' },
   { id: 4, title: 'Services', icon: CheckSquare, description: 'Select services' },

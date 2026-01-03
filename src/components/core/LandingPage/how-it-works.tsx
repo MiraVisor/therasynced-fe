@@ -11,7 +11,7 @@ const stepsData = [
   {
     id: 1,
     title: 'Browse & Search',
-    description: 'Find licensed therapists by specialty, location, or availability.',
+    description: 'Find licensed freelancers by specialty, location, or availability.',
     icon: Search,
   },
   {
@@ -23,7 +23,7 @@ const stepsData = [
   {
     id: 3,
     title: 'Connect & Communicate',
-    description: 'Message your therapist before and after sessions.',
+    description: 'Message your freelancer before and after sessions.',
     icon: MessageCircle,
   },
   {
@@ -63,7 +63,7 @@ const HowItWorks = () => {
           </h2>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto">
             Getting started is simple. Follow these four easy steps to connect with licensed
-            therapists and begin your wellness journey.
+            freelancers and begin your wellness journey.
           </p>
         </div>
 
@@ -98,7 +98,7 @@ const HowItWorks = () => {
         {/* CTA Section */}
         <div className="text-center">
           <SlideArrowButton
-            text={hasValidToken ? 'Explore Therapists' : 'Get Started Free'}
+            text={hasValidToken ? 'Explore Freelancers' : 'Get Started Free'}
             className="w-full sm:w-auto min-w-[240px] h-14 text-lg font-medium"
             onClick={handleCTAClick}
           />

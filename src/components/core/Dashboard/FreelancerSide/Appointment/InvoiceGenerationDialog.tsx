@@ -131,8 +131,8 @@ export const InvoiceGenerationDialog = ({
         freelancerEmail: profile?.email || '',
         freelancerAddress:
           appointment.freelancer?.clinicAddress || profile?.clinicAddress || undefined,
-        patientName: appointment.clientName,
-        patientEmail: '', // Not available in appointment data
+        userName: appointment.clientName,
+        userEmail: '', // Not available in appointment data
         appointmentDate: appointment.start,
         appointmentTime: `${format(new Date(appointment.start), 'h:mm a')} - ${format(new Date(appointment.end), 'h:mm a')}`,
         duration: Math.round(
@@ -195,7 +195,7 @@ export const InvoiceGenerationDialog = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Patient Name</p>
+                <p className="text-xs text-muted-foreground mb-1">User Name</p>
                 <p className="font-medium">{appointment.clientName}</p>
               </div>
               <div>
