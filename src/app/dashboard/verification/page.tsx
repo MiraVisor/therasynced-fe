@@ -103,7 +103,6 @@ export default function VerificationPage() {
 
   // Filter files by category
   const verificationFiles = files.filter((f) => f.category === 'VERIFICATION');
-  const certificateFiles = files.filter((f) => f.category === 'FIRST_AID_CERTIFICATE');
 
   // Handle verification documents upload
   const handleVerificationUpload = () => {
