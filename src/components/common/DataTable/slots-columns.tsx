@@ -1,6 +1,6 @@
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row, Table } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { ArrowUpDown, Edit, Trash2 } from 'lucide-react';
 
@@ -33,14 +33,14 @@ export const createSlotsColumns = (
     ? [
         {
           id: 'select',
-          header: ({ table }) => (
+          header: ({ table }: { table: Table<Slot> }) => (
             <Checkbox
               checked={table.getIsAllPageRowsSelected()}
               onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
               aria-label="Select all"
             />
           ),
-          cell: ({ row }) => (
+          cell: ({ row }: { row: Row<Slot> }) => (
             <Checkbox
               checked={row.getIsSelected()}
               onCheckedChange={(value) => row.toggleSelected(!!value)}

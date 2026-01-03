@@ -55,7 +55,6 @@ export const NextAppointmentCard = () => {
 
   // Filter to get the next appointment (excluding today's bookings and only confirmed/upcoming)
   const nextBooking: Booking | undefined = useMemo(() => {
-    const now = new Date();
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
 
@@ -67,7 +66,7 @@ export const NextAppointmentCard = () => {
         // 1. After today (not today, since those are shown in TodayAppointments)
         // 2. Confirmed or pending status
         const isAfterToday = startTime > today;
-        const isValidStatus = booking.status === 'CONFIRMED' || booking.status === 'PENDING';
+        const isValidStatus = booking.status === 'CONFIRMED';
 
         return isAfterToday && isValidStatus;
       })
