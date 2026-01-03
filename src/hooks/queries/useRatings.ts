@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 import * as ratingApi from '@/services/ratingService';
 import { getApiErrorMessage } from '@/types/common';
+import { ToggleRatingVisibilityRequest } from '@/types/rating';
 import { CreateRatingDto } from '@/types/types';
 
 /**
@@ -65,6 +66,41 @@ export const useCreateRating = () => {
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to submit rating');
+    },
+  });
+};
+
+/**
+ * Hook to toggle rating visibility
+ */
+export const useToggleRatingVisibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ToggleRatingVisibilityRequest) => ratingApi.toggleRatingVisibility(data),
+    onSuccess: (response) => {
+      void queryClient.invalidateQueries({ queryKey: ['ratings'] });
+      toast.success(response.message || 'Rating visibility updated successfully');
+    },
+    onError: (error: unknown) => {
+      // Handle specific error cases
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as {
+          response?: { status?: number; data?: { message?: string } };
+        };
+        if (apiError.response?.status === 403) {
+          const errorMessage =
+            apiError.response?.data?.message ||
+            'Bronze tier cannot toggle rating visibility. Please upgrade to Silver or Gold.';
+          toast.error(errorMessage);
+          return;
+        }
+        if (apiError.response?.status === 404) {
+          toast.error('Rating not found');
+          return;
+        }
+      }
+      toast.error(getApiErrorMessage(error) || 'Failed to toggle rating visibility');
     },
   });
 };

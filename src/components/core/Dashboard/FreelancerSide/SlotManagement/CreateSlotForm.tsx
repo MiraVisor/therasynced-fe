@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateSlot } from '@/hooks/queries/useSlots';
+import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
 import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
@@ -118,6 +119,7 @@ const ServiceCategorySelector = ({
 
 export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
   const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
+  const { data: subscription } = useMySubscription();
 
   const [formData, setFormData] = useState<CreateSlotDto>({
     locationType: undefined, // Optional - defaults to CLINIC if not provided
@@ -406,9 +408,12 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
             // Handle specific error codes
             const errorCode = apiError.response?.data?.error?.code;
             if (errorCode === 'TIER_DAY_LIMIT_EXCEEDED') {
+              const tierName = subscription?.plan?.displayName || 'your current';
+              const dayLimit = subscription?.maxDaysPerWeek ?? null;
+              const dayLimitText = dayLimit === null ? 'unlimited' : dayLimit.toString();
               errorMessage =
                 apiError.response?.data?.message ||
-                "You have exceeded your tier's day limit. Please upgrade your subscription or reduce the number of days.";
+                `Your ${tierName} tier allows a maximum of ${dayLimitText} days per week. You've already created slots for ${dayLimitText} days. Please upgrade your subscription or reduce the number of days.`;
             } else if (errorCode === 'PRICING_NOT_CONFIGURED') {
               errorMessage =
                 apiError.response?.data?.message ||

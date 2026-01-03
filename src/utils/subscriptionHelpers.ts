@@ -122,3 +122,77 @@ export function getSubscriptionState(subscription: Subscription | null): Subscri
     gracePeriodEndDate: getGracePeriodEndDate(subscription),
   };
 }
+
+/**
+ * Format limit display - returns "Unlimited" or the number
+ */
+export function formatLimit(limit: number | null | undefined): string {
+  if (limit === null || limit === undefined) {
+    return 'Unlimited';
+  }
+  return limit.toString();
+}
+
+/**
+ * Get billing cycle end date from subscription
+ */
+export function getBillingCycleEndDate(subscription: Subscription | null): Date | null {
+  if (!subscription?.currentPeriodEnd) {
+    return null;
+  }
+  return new Date(subscription.currentPeriodEnd);
+}
+
+/**
+ * Get days until billing cycle reset
+ */
+export function getDaysUntilBillingCycleReset(subscription: Subscription | null): number | null {
+  const endDate = getBillingCycleEndDate(subscription);
+  if (!endDate) {
+    return null;
+  }
+  const now = new Date();
+  const diff = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return diff > 0 ? diff : 0;
+}
+
+/**
+ * Check if usage is approaching limit (default threshold: 80%)
+ */
+export function isApproachingLimit(
+  used: number,
+  limit: number | null | undefined,
+  threshold: number = 80,
+): boolean {
+  if (limit === null || limit === undefined || limit === 0) {
+    return false; // Unlimited or invalid limit
+  }
+  const percentage = (used / limit) * 100;
+  return percentage >= threshold;
+}
+
+/**
+ * Check if trial has expired
+ */
+export function isTrialExpired(subscription: Subscription | null): boolean {
+  if (!subscription) return false;
+
+  // Check if status is explicitly TRIAL_EXPIRED
+  if (subscription.status === 'TRIAL_EXPIRED' || subscription.trialExpired === true) {
+    return true;
+  }
+
+  // Check if trial end date has passed
+  const trialEndDate = getTrialEndDate(subscription);
+  if (trialEndDate) {
+    return trialEndDate <= new Date();
+  }
+
+  // Check if status is INACTIVE and user had a trial (no active subscription)
+  if (subscription.status === 'INACTIVE' && !subscription.plan) {
+    // If there was a trial end date, consider it expired
+    return !!trialEndDate;
+  }
+
+  return false;
+}

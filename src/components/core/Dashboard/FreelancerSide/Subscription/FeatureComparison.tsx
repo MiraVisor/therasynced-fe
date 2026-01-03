@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, ChevronDown, ChevronUp, HelpCircle, X } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { PlanType, SubscriptionPlan } from '@/types/subscription';
 
@@ -38,63 +37,25 @@ export function FeatureComparison({
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [expandedPlan, setExpandedPlan] = useState<PlanType | null>(null);
 
-  // Get plan details
-  const bronzePlan = plans.find((p) => p.name === 'BRONZE');
-  const silverPlan = plans.find((p) => p.name === 'SILVER');
-  const goldPlan = plans.find((p) => p.name === 'GOLD');
+  // Get all unique features from all plans
+  const allFeatures = new Set<string>();
+  plans.forEach((plan) => {
+    plan.features?.forEach((feature) => allFeatures.add(feature));
+  });
 
-  // Define features based on plan details
-  const features: Feature[] = [
-    {
-      name: 'Maximum Slots',
-      description: 'Number of active slots you can create',
-      bronze: bronzePlan?.maxSlots?.toString() || '5',
-      silver: silverPlan?.maxSlots?.toString() || '15',
-      gold: 'Unlimited',
-    },
-    {
-      name: 'Commission Rate',
-      description: 'Percentage charged per booking',
-      bronze: bronzePlan ? `${bronzePlan.commissionRate}%` : '10%',
-      silver: silverPlan ? `${silverPlan.commissionRate}%` : '7%',
-      gold: goldPlan ? `${goldPlan.commissionRate}%` : '5%',
-    },
-    {
-      name: 'Search Priority',
-      description: 'Your placement in search results',
-      bronze: 'Priority 1 (Lowest)',
-      silver: 'Priority 2 (Medium)',
-      gold: 'Priority 3 (Highest)',
-    },
-    {
-      name: 'Toggle Reviews',
-      description: 'Ability to show/hide reviews',
-      bronze: false,
-      silver: true,
-      gold: true,
-    },
-    {
-      name: 'Analytics Access',
-      description: 'View detailed analytics and insights',
-      bronze: false,
-      silver: false,
-      gold: true,
-    },
-    {
-      name: 'Monthly Reports',
-      description: 'Receive monthly performance reports',
-      bronze: false,
-      silver: false,
-      gold: true,
-    },
-    {
-      name: 'All Notifications',
-      description: 'Access to all notification features',
-      bronze: false,
-      silver: false,
-      gold: true,
-    },
-  ];
+  // Create features array from backend data
+  const features: Feature[] = Array.from(allFeatures).map((featureName) => {
+    const bronzePlan = plans.find((p) => p.name === 'BRONZE');
+    const silverPlan = plans.find((p) => p.name === 'SILVER');
+    const goldPlan = plans.find((p) => p.name === 'GOLD');
+
+    return {
+      name: featureName,
+      bronze: bronzePlan?.features?.includes(featureName) || false,
+      silver: silverPlan?.features?.includes(featureName) || false,
+      gold: goldPlan?.features?.includes(featureName) || false,
+    };
+  });
 
   const renderFeatureValue = (value: boolean | string) => {
     if (typeof value === 'boolean') {
@@ -163,42 +124,27 @@ export function FeatureComparison({
               </CardHeader>
               {isExpanded && (
                 <CardContent className="space-y-3 pt-0">
-                  {features.map((feature, idx) => {
-                    const planValue =
-                      plan.name === 'BRONZE'
-                        ? feature.bronze
-                        : plan.name === 'SILVER'
-                          ? feature.silver
-                          : feature.gold;
-
-                    return (
+                  {plan.features && plan.features.length > 0 ? (
+                    plan.features.map((feature, idx) => (
                       <div
                         key={idx}
                         className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
                       >
                         <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {feature.name}
-                            </span>
-                            {feature.description && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <HelpCircle className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="text-xs max-w-xs">{feature.description}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {feature}
+                          </span>
                         </div>
-                        <div className="ml-4">{renderFeatureValue(planValue)}</div>
+                        <div className="ml-4">
+                          <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
                       </div>
-                    );
-                  })}
+                    ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic py-2">
+                      No features listed
+                    </div>
+                  )}
                 </CardContent>
               )}
             </Card>
@@ -245,50 +191,156 @@ export function FeatureComparison({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {features.map((feature, idx) => (
-                <TableRow key={idx} className="border-b border-gray-100 dark:border-gray-800">
-                  <TableCell className="font-medium py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-900 dark:text-gray-100">
-                        {feature.name}
-                      </span>
-                      {feature.description && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <HelpCircle className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="text-xs max-w-xs">{feature.description}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell
-                    className={`text-center py-4 ${
-                      currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                    }`}
-                  >
-                    {renderFeatureValue(feature.bronze)}
-                  </TableCell>
-                  <TableCell
-                    className={`text-center py-4 ${
-                      currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                    }`}
-                  >
-                    {renderFeatureValue(feature.silver)}
-                  </TableCell>
-                  <TableCell
-                    className={`text-center py-4 ${
-                      currentPlanName === 'GOLD' ? 'bg-primary/5' : ''
-                    }`}
-                  >
-                    {renderFeatureValue(feature.gold)}
+              {/* Tier Limits - Always shown first */}
+              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <TableCell className="font-medium py-4">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Slots per week
+                  </span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <span className="text-sm font-medium">3</span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <span className="text-sm font-medium">5</span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
+                >
+                  <span className="text-sm font-medium">Unlimited</span>
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <TableCell className="font-medium py-4">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Days per week
+                  </span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <span className="text-sm font-medium">3</span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <span className="text-sm font-medium">5</span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
+                >
+                  <span className="text-sm font-medium">Unlimited</span>
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <TableCell className="font-medium py-4">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Messages per billing cycle
+                  </span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <span className="text-sm font-medium">50</span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <span className="text-sm font-medium">100</span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
+                >
+                  <span className="text-sm font-medium">Unlimited</span>
+                </TableCell>
+              </TableRow>
+              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <TableCell className="font-medium py-4">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Rating visibility toggle
+                  </span>
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <X className="h-5 w-5 text-gray-400 mx-auto" />
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${
+                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />
+                </TableCell>
+                <TableCell
+                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
+                >
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />
+                </TableCell>
+              </TableRow>
+              {/* Backend-provided features */}
+              {features.length > 0 ? (
+                features.map((feature, idx) => {
+                  const bronzePlan = plans.find((p) => p.name === 'BRONZE');
+                  const silverPlan = plans.find((p) => p.name === 'SILVER');
+                  const goldPlan = plans.find((p) => p.name === 'GOLD');
+
+                  return (
+                    <TableRow key={idx} className="border-b border-gray-100 dark:border-gray-800">
+                      <TableCell className="font-medium py-4">
+                        <span className="text-sm text-gray-900 dark:text-gray-100">
+                          {feature.name}
+                        </span>
+                      </TableCell>
+                      <TableCell
+                        className={`text-center py-4 ${
+                          currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        {renderFeatureValue(feature.bronze)}
+                      </TableCell>
+                      <TableCell
+                        className={`text-center py-4 ${
+                          currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        {renderFeatureValue(feature.silver)}
+                      </TableCell>
+                      <TableCell
+                        className={`text-center py-4 ${
+                          currentPlanName === 'GOLD' ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        {renderFeatureValue(feature.gold)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
+                    No additional features available
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>

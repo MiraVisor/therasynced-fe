@@ -568,7 +568,7 @@ export default function SubscriptionManagement() {
               <div>
                 <h4 className="mb-2 font-poppins font-semibold">Features included:</h4>
                 <ul className="space-y-1 text-sm">
-                  {selectedPlan.features.slice(0, 5).map((feature) => (
+                  {selectedPlan.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-2">
                       <span className="text-primary">✓</span>
                       <span>{feature}</span>

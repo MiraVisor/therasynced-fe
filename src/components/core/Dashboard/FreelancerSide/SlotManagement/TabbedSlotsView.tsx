@@ -4,11 +4,14 @@ import { useMemo, useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { createSlotsColumns } from '@/components/common/DataTable/slots-columns';
+import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
 import { useDeleteSlot, useMySlots } from '@/hooks/queries/useSlots';
 import { type Slot } from '@/types/types';
 
 export const TabbedSlotsView = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { mutate: deleteSlot } = useDeleteSlot();
 
   // Fetch all slots
@@ -35,8 +38,24 @@ export const TabbedSlotsView = () => {
     [deleteSlot],
   );
 
-  // Create columns with delete handler
-  const columns = useMemo(() => createSlotsColumns(handleDeleteSlot), [handleDeleteSlot]);
+  const handleViewSlot = useMemo(
+    () => (slot: Slot) => {
+      setSelectedSlot(slot);
+      setIsDialogOpen(true);
+    },
+    [],
+  );
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedSlot(null);
+  };
+
+  // Create columns with delete and view handlers
+  const columns = useMemo(
+    () => createSlotsColumns(handleDeleteSlot, handleViewSlot),
+    [handleDeleteSlot, handleViewSlot],
+  );
 
   // Status filter options
   const statusFilterOptions = [
@@ -64,6 +83,17 @@ export const TabbedSlotsView = () => {
         selectedFilter={statusFilter}
         onFilterChange={setStatusFilter}
       />
+      {selectedSlot && (
+        <SlotDetailsDialog
+          slot={selectedSlot}
+          isOpen={isDialogOpen}
+          onClose={handleCloseDialog}
+          onDelete={(slotId) => {
+            deleteSlot(slotId);
+            handleCloseDialog();
+          }}
+        />
+      )}
     </div>
   );
 };

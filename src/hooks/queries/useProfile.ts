@@ -8,6 +8,7 @@ import {
   BackendProfileResponse,
   ChangeEmailDto,
   ChangePasswordDto,
+  FreelancerData,
   JobTitle,
   UpdateProfileDto,
 } from '@/types/types';
@@ -54,6 +55,19 @@ export const useProfile = () => {
     select: (data: BackendProfileResponse): UserProfileData | undefined => {
       // BackendProfileResponse has structure: { data: { user: {...} } }
       return data.data?.user as UserProfileData | undefined;
+    },
+  });
+};
+
+/**
+ * Hook to fetch freelancer data from profile
+ */
+export const useFreelancerData = () => {
+  return useQuery({
+    queryKey: ['profile'],
+    queryFn: () => profileApi.getProfile(),
+    select: (data: BackendProfileResponse): FreelancerData | undefined => {
+      return data.data?.freelancerData;
     },
   });
 };

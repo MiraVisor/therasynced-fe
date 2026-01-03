@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
 import { SidebarSkeleton } from '@/components/common/sidebar/SidebarSkeleton';
+import { TrialExpiredModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/TrialExpiredModal';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuthZustand';
 
@@ -68,6 +69,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           {showSkeleton ? <AdminPageSkeleton /> : children}
         </main>
       </div>
+      {/* Trial Expired Modal - Shows on all pages for freelancers with expired trials */}
+      <TrialExpiredModal />
     </SidebarProvider>
   );
 }

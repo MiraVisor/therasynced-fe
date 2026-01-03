@@ -206,6 +206,7 @@ export const ENDPOINTS = {
     getFreelancerRatings: (freelancerId: string) => `/ratings/freelancer/${freelancerId}`,
     checkBookingEligibility: (bookingId: string) => `/ratings/booking/${bookingId}`,
     getMyRatings: '/ratings/my-ratings',
+    toggleVisibility: '/ratings/toggle-visibility',
   },
   // Admin endpoints
   admin: {

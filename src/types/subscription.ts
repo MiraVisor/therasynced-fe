@@ -75,6 +75,11 @@ export interface Subscription {
   canAcceptBookings: boolean; // Required field from API
   slotsUsed: number; // Required field from API - Current active slots count
   slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
+  maxDaysPerWeek: number | null; // Days per week limit (null = unlimited)
+  maxMessagesPerBillingCycle: number | null; // Messages per billing cycle limit (null = unlimited)
+  canToggleRatingVisibility: boolean; // Whether user can toggle rating visibility
+  messagesUsed?: number; // Optional - Messages used in current billing cycle
+  daysUsed?: number; // Optional - Days used in current week
   message: string; // Required field from API - Status message
 }
 

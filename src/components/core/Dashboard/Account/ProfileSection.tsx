@@ -27,6 +27,8 @@ import { useAuth } from '@/hooks/useAuthZustand';
 import { cn } from '@/lib/utils';
 import { JobTitle, ROLES } from '@/types/types';
 
+import { RatingVisibilityToggle } from './RatingVisibilityToggle';
+
 interface UserProfile {
   id?: string;
   name: string;
@@ -553,6 +555,10 @@ export function ProfileSection() {
                   )}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <RatingVisibilityToggle />
             </div>
 
             <div className="space-y-2">

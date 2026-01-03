@@ -8,6 +8,7 @@ import Footer from './footer';
 import Hero from './hero';
 import HowItWorks from './how-it-works';
 import Navbar from './navbar';
+import Pricing from './pricing';
 import Services from './services';
 
 const LandingPage = () => {
@@ -46,6 +47,7 @@ const LandingPage = () => {
           <Services />
           <Features />
           <HowItWorks />
+          <Pricing />
           <Footer />
         </div>
 
