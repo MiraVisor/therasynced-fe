@@ -15,7 +15,6 @@ import {
   Database,
   FileDown,
   FileText,
-  Heart,
   Home,
   LogOut,
   Map,
@@ -75,17 +74,12 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: Home,
     },
     {
-      name: 'Book Now',
+      name: 'Book',
       url: '/dashboard/book',
       icon: Map,
     },
     {
-      name: 'Favorites',
-      url: '/dashboard/favorites',
-      icon: Heart,
-    },
-    {
-      name: 'My Bookings',
+      name: 'Sessions',
       url: '/dashboard/my-bookings',
       icon: Calendar,
     },

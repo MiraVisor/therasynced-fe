@@ -111,8 +111,11 @@ export default function LoyaltyPage() {
     );
   }
 
+  const pointsToNextTier = profile.pointsToNextTier ?? 0;
+  const availablePoints = profile.availablePoints ?? 0;
   const progressPercentage =
-    profile.pointsToNextTier > 0 ? (profile.availablePoints / profile.pointsToNextTier) * 100 : 100;
+    pointsToNextTier > 0 ? Math.min((availablePoints / pointsToNextTier) * 100, 100) : 100;
+  const pointsRemaining = Math.max(0, pointsToNextTier - availablePoints);
 
   const handleViewStampDetail = (_therapistId: string) => {
     setViewingStampDetail(true);
@@ -130,7 +133,9 @@ export default function LoyaltyPage() {
         header={
           <div>
             <h1 className="text-3xl font-poppins font-bold text-gray-900">Stamp Details</h1>
-            <p className="text-gray-600 font-inter">View your stamp progress with this therapist</p>
+            <p className="text-gray-600 font-inter">
+              View your stamp progress with this freelancer
+            </p>
           </div>
         }
       >
@@ -155,43 +160,42 @@ export default function LoyaltyPage() {
       >
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="points">Points & Rewards</TabsTrigger>
-          <TabsTrigger value="stamps">Therapist Stamps</TabsTrigger>
+          <TabsTrigger value="stamps">Freelancer Stamps</TabsTrigger>
         </TabsList>
 
         <TabsContent value="points" className="space-y-8 mt-6">
           <div className="space-y-8">
-            {/* Hero Section - Points and Tier */}
+            {/* Hero Section - Simplified Focus on Progress */}
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <CardContent className="p-8">
-                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                  <div className="flex-1 text-center md:text-left">
-                    <h2 className="text-4xl font-poppins font-bold text-gray-900 mb-2">
-                      {profile.availablePoints ? profile.availablePoints.toLocaleString() : 0}
-                    </h2>
-                    <p className="text-lg font-inter text-gray-600 mb-6">Available Points</p>
-
-                    {/* Progress Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>Progress to {profile.nextTier}</span>
-                        <span>
-                          {profile.pointsToNextTier - profile.availablePoints} points remaining
-                        </span>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  {/* Points and Tier Row */}
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-inter text-gray-600 mb-1">Available Points</p>
+                      <h2 className="text-4xl font-poppins font-bold text-gray-900">
+                        {profile.availablePoints ? profile.availablePoints.toLocaleString() : 0}
+                      </h2>
+                    </div>
+                    <div className={`px-4 py-2 rounded-lg border-2 ${getTierColor(profile.tier)}`}>
+                      <div className="flex items-center gap-2">
+                        {getTierIcon(profile.tier)}
+                        <span className="text-base font-poppins font-bold">{profile.tier}</span>
                       </div>
-                      <Progress value={progressPercentage} className="h-3" />
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center gap-4">
-                    <div className={`px-6 py-4 rounded-lg border-2 ${getTierColor(profile.tier)}`}>
-                      <div className="flex items-center gap-2">
-                        {getTierIcon(profile.tier)}
-                        <span className="text-lg font-poppins font-bold">{profile.tier}</span>
-                      </div>
+                  {/* Progress Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-inter text-gray-700">
+                        Progress to {profile.nextTier}
+                      </span>
+                      <span className="font-poppins font-semibold text-primary">
+                        {pointsRemaining} points to go
+                      </span>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      Current Tier
-                    </Badge>
+                    <Progress value={progressPercentage} className="h-2.5" />
                   </div>
                 </div>
               </CardContent>
@@ -272,7 +276,7 @@ export default function LoyaltyPage() {
               </CardContent>
             </Card>
 
-            {/* Points History */}
+            {/* Points History - Collapsible */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -282,40 +286,50 @@ export default function LoyaltyPage() {
               </CardHeader>
               <CardContent>
                 {profile.pointTransactions && profile.pointTransactions.length > 0 ? (
-                  <div className="space-y-3">
-                    {profile.pointTransactions.map((transaction) => (
-                      <div
-                        key={transaction.id}
-                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          {transaction.type === 'EARNED' ? (
-                            <div className="p-2 rounded-full bg-green-100">
-                              <TrendingUp className="h-4 w-4 text-green-600" />
+                  <details className="group">
+                    <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 mb-4">
+                      View History ({profile.pointTransactions.length} transactions)
+                    </summary>
+                    <div className="space-y-3 mt-4">
+                      {profile.pointTransactions.slice(0, 10).map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            {transaction.type === 'EARNED' ? (
+                              <div className="p-2 rounded-full bg-green-100">
+                                <TrendingUp className="h-4 w-4 text-green-600" />
+                              </div>
+                            ) : (
+                              <div className="p-2 rounded-full bg-red-100">
+                                <XCircle className="h-4 w-4 text-red-600" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-sm font-inter font-medium text-gray-900">
+                                {transaction.description}
+                              </p>
+                              <p className="text-xs font-inter text-gray-500">
+                                {new Date(transaction.createdAt).toLocaleDateString()}
+                              </p>
                             </div>
-                          ) : (
-                            <div className="p-2 rounded-full bg-red-100">
-                              <XCircle className="h-4 w-4 text-red-600" />
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-sm font-inter font-medium text-gray-900">
-                              {transaction.description}
-                            </p>
-                            <p className="text-xs font-inter text-gray-500">
-                              {new Date(transaction.createdAt).toLocaleDateString()}
-                            </p>
+                          </div>
+                          <div
+                            className={`text-sm font-poppins font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}
+                          >
+                            {transaction.type === 'EARNED' ? '+' : '-'}
+                            {transaction.points}
                           </div>
                         </div>
-                        <div
-                          className={`text-sm font-poppins font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}
-                        >
-                          {transaction.type === 'EARNED' ? '+' : '-'}
-                          {transaction.points}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                      {profile.pointTransactions.length > 10 && (
+                        <p className="text-xs text-center text-gray-500 pt-2">
+                          Showing 10 of {profile.pointTransactions.length} transactions
+                        </p>
+                      )}
+                    </div>
+                  </details>
                 ) : (
                   <div className="text-center py-8 text-gray-500">No transaction history</div>
                 )}

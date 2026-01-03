@@ -12,7 +12,6 @@ import { PrivacyConsentSection } from '@/components/core/Dashboard/Account/Priva
 import { ProfileSection } from '@/components/core/Dashboard/Account/ProfileSection';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import SubscriptionManagement from '@/components/core/Dashboard/FreelancerSide/Subscription/SubscriptionManagement';
-import StampsManagement from '@/components/core/Dashboard/UserSide/Loyalty/StampsManagement';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +45,13 @@ function AccountPageContent() {
 
   // Determine active section from query params
   useEffect(() => {
+    // Redirect stamps tab to loyalty page
+    const stampsParam = searchParams.get('tab') === 'stamps' || searchParams.get('stamps');
+    if (stampsParam) {
+      router.replace('/dashboard/loyalty?tab=stamps');
+      return;
+    }
+
     // Check for tab or section query param, or direct param like ?profile
     const tabParam = searchParams.get('tab') || searchParams.get('section');
     const directParam = searchParams.get('profile')
@@ -54,11 +60,9 @@ function AccountPageContent() {
         ? 'account'
         : searchParams.get('subscription')
           ? 'subscription'
-          : searchParams.get('stamps')
-            ? 'stamps'
-            : searchParams.get('help')
-              ? 'help'
-              : null;
+          : searchParams.get('help')
+            ? 'help'
+            : null;
 
     const section = tabParam || directParam || 'profile';
 
@@ -123,15 +127,13 @@ function AccountPageContent() {
 
   // Show billing only for freelancers and admins
   const showBilling = role === ROLES.FREELANCER;
-  // Show stamps only for patients (users)
-  const showStamps = role === 'PATIENT';
+  const showLoyaltyLink = role === 'PATIENT';
 
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Shield },
     // { id: 'notifications', label: 'Notifications', icon: Bell },
     ...(showBilling ? [{ id: 'subscription', label: 'Subscription', icon: CreditCard }] : []),
-    ...(showStamps ? [{ id: 'stamps', label: 'Stamps', icon: Award }] : []),
     ...(role !== ROLES.ADMIN ? [{ id: 'help', label: 'Help & Support', icon: HelpCircle }] : []),
   ];
 
@@ -232,13 +234,30 @@ function AccountPageContent() {
 
       {/* Content Section */}
       <div className="bg-gray-50 rounded-xl p-6">
+        {showLoyaltyLink && activeSection === 'profile' && (
+          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Loyalty & Rewards</h3>
+                <p className="text-sm text-gray-600">View your stamps and points, redeem rewards</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => router.push('/dashboard/loyalty')}
+                className="flex items-center gap-2"
+              >
+                <Award className="h-4 w-4" />
+                View Rewards
+              </Button>
+            </div>
+          </div>
+        )}
         {activeSection === 'profile' && renderProfileSection()}
         {activeSection === 'account' && renderAccountSection()}
         {activeSection === 'notifications' && renderNotificationsSection()}
         {activeSection === 'subscription' &&
           showBilling &&
           (isSubscriptionLoading ? <SubscriptionSectionSkeleton /> : <SubscriptionManagement />)}
-        {activeSection === 'stamps' && showStamps && <StampsManagement />}
         {activeSection === 'help' && role !== ROLES.ADMIN && renderHelpSection()}
       </div>
 

@@ -68,7 +68,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
                 At Home
               </Label>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                The therapist will come to your location
+                The freelancer will come to your location
               </p>
               {selectedLocationType === LocationType.HOME && (
                 <div className="mt-4">
@@ -105,7 +105,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
                 At Clinic
               </Label>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Visit the therapist's clinic location
+                Visit the freelancer's clinic location
               </p>
               {slot.location && (
                 <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">

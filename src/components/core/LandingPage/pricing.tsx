@@ -14,7 +14,7 @@ const pricingPlans = [
     id: 1,
     title: 'For Customers',
     description:
-      'Book sessions with certified physiotherapists, massage professionals, and wellness experts—anytime, anywhere.',
+      'Book sessions with certified physiotherapists, massage professionals, and wellness freelancers—anytime, anywhere.',
     button: {
       text: 'Join Free - No Card Needed',
       variant: 'light-green',
@@ -51,7 +51,7 @@ const pricingPlans = [
     id: 3,
     title: 'For Teams',
     description:
-      'Manage your clinic or group practice with tools for team scheduling, therapist performance, and client bookings.',
+      'Manage your clinic or group practice with tools for team scheduling, freelancer performance, and client bookings.',
     button: {
       text: 'Try Teams for Free',
       variant: 'light-green',
@@ -102,7 +102,7 @@ const Pricing = () => {
           </h2>
           <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 dark:text-neutral-400 leading-relaxed">
             Select the perfect plan that aligns with your needs and goals. All plans include
-            personalized support and expert guidance.
+            personalized support and professional guidance.
           </p>
         </div>
 

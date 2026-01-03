@@ -2,7 +2,9 @@ import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { memo, useCallback } from 'react';
 
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { TierBadge } from '@/components/ui/tier-badge';
@@ -18,6 +20,7 @@ import { Expert, SubscriptionPlanType } from '@/types/types';
 interface ExpertCardContentProps extends Partial<Expert> {
   id: string;
   name?: string;
+  profilePicture?: string;
   rating?: number;
   isFavorite?: boolean;
   showFavoriteText?: boolean;
@@ -53,6 +56,7 @@ export const ExpertCardContent = memo(
   ({
     id,
     name,
+    profilePicture,
     rating,
     isFavorite = false,
     showFavoriteText = false,
@@ -71,7 +75,7 @@ export const ExpertCardContent = memo(
     const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
 
     const handleBookNow = useCallback(() => {
-      // Pass freelancer data through route state to avoid loading issues
+      // Navigate to the new booking page with freelancer pre-selected
       const freelancerData = {
         id,
         name,
@@ -83,7 +87,7 @@ export const ExpertCardContent = memo(
       };
 
       router.push(
-        `/dashboard/freelancer/${id}?data=${encodeURIComponent(JSON.stringify(freelancerData))}`,
+        `/dashboard/book?freelancer=${encodeURIComponent(JSON.stringify(freelancerData))}`,
       );
     }, [id, name, rating, isFavorite, services, availableSlots, cardInfo, router]);
 
@@ -133,9 +137,15 @@ export const ExpertCardContent = memo(
 
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1 min-w-0">
-                <div className="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-base flex-shrink-0 border-2 border-primary/20">
-                  {freelancerName?.charAt(0).toUpperCase()}
-                </div>
+                <Avatar className="w-12 h-12 flex-shrink-0 border-2 border-primary/20">
+                  <ProfileAvatarImage
+                    src={profilePicture || undefined}
+                    alt={freelancerName || 'Freelancer'}
+                  />
+                  <AvatarFallback className="bg-primary/15 text-primary font-bold text-base">
+                    {freelancerName?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0 space-y-1.5">
                   {/* Row 1: Name and Verification Badge */}
                   <div className="flex items-center gap-2 flex-wrap">

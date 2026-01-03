@@ -5,23 +5,29 @@ import {
   Building2,
   Calendar,
   CheckCircle,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
+  Heart,
   Home,
   MapPin,
   Search,
   Sparkles,
+  Stamp,
   Star,
   User,
   X,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { ExpertProfileDialog } from '@/components/core/Dashboard/UserSide/Overview/ExpertProfileDialog';
+import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -41,6 +47,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TierBadge } from '@/components/ui/tier-badge';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
+import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/useProfile';
 import { useAvailableSlots, useAvailableSlotsByDate } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
@@ -55,6 +62,7 @@ type BookingStep = 'time' | 'service' | 'location' | 'confirm';
 
 export default function BookingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Core state
   const [flow, setFlow] = useState<BookingFlow>('initial');
@@ -64,6 +72,7 @@ export default function BookingPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   // Selection state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -89,6 +98,8 @@ export default function BookingPage() {
   const { mutate: createBooking, isPending: isCreating } = useCreateBooking();
   const { data: userProfile } = useProfile();
   const { mutate: updateProfile } = useUpdateProfile();
+  const { data: favoriteFreelancers = [], isLoading: isLoadingFavorites } =
+    useFavoriteFreelancers();
 
   const today = startOfToday();
 
@@ -112,6 +123,25 @@ export default function BookingPage() {
       setHomeAddress(userProfile.homeAddress);
     }
   }, [userProfile, selectedSlot, homeAddress]);
+
+  // Handle freelancer pre-selection from query params
+  useEffect(() => {
+    const freelancerParam = searchParams.get('freelancer');
+    if (freelancerParam && !selectedFreelancer) {
+      try {
+        const freelancerData = JSON.parse(decodeURIComponent(freelancerParam)) as Expert;
+        if (freelancerData.id) {
+          setSelectedFreelancer(freelancerData.id);
+          setSelectedFreelancerData(freelancerData);
+          setFlow('therapist-selected');
+          // Clear the query param to avoid re-triggering
+          router.replace('/dashboard/book', { scroll: false });
+        }
+      } catch {
+        // Invalid JSON, ignore
+      }
+    }
+  }, [searchParams, selectedFreelancer, router]);
 
   // Debounced search
   const handleSearchInput = useCallback(async (value: string) => {
@@ -210,6 +240,13 @@ export default function BookingPage() {
     setSelectedSlot(null);
     setSelectedService('');
     setLocationType(null);
+    // Scroll to selected freelancer banner after a short delay
+    setTimeout(() => {
+      const banner = document.getElementById('selected-freelancer-banner');
+      if (banner) {
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   // Handle date selection
@@ -501,7 +538,7 @@ export default function BookingPage() {
         <div className="relative overflow-hidden bg-gradient-to-br from-mint/5 via-white to-primary/5 dark:from-mint/10 dark:via-gray-900 dark:to-primary/10 py-12 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-poppins font-bold text-charcoal dark:text-white mb-4">
-              Find Your Therapist
+              Find Your Freelancer
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 font-inter max-w-2xl mx-auto">
               Search by name or browse available dates to find the perfect match for your wellness
@@ -513,123 +550,291 @@ export default function BookingPage() {
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Main Search Section */}
           <div className="space-y-8">
-            {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
-                <Input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search therapists by name..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => {
-                    if (searchSuggestions.length > 0) {
-                      setShowSuggestions(true);
-                    }
+            {/* Search/Favorites Toggle */}
+            <div className="max-w-2xl mx-auto mb-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={!showFavorites ? 'default' : 'outline'}
+                  onClick={() => {
+                    setShowFavorites(false);
+                    setShowSuggestions(false);
                   }}
-                  className="pl-12 pr-4 py-4 text-lg border-gray-200 dark:border-gray-700 rounded-xl shadow-sm focus:border-primary focus:ring-primary transition-all duration-200"
-                />
-                {isSearching && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  className="flex-1"
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Search
+                </Button>
+                <Button
+                  variant={showFavorites ? 'default' : 'outline'}
+                  onClick={() => {
+                    setShowFavorites(true);
+                    setShowSuggestions(false);
+                    setSearchQuery('');
+                  }}
+                  className="flex-1"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Favorites ({favoriteFreelancers.length})
+                </Button>
+              </div>
+            </div>
+
+            {/* Search Bar or Favorites List */}
+            {!showFavorites ? (
+              <div className="relative max-w-2xl mx-auto mb-8">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
+                  <Input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search freelancers by name..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => {
+                      if (searchSuggestions.length > 0) {
+                        setShowSuggestions(true);
+                      }
+                    }}
+                    className="pl-12 pr-4 py-4 text-lg border-gray-200 dark:border-gray-700 rounded-xl shadow-sm focus:border-primary focus:ring-primary transition-all duration-200"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Search Dropdown */}
+                {showSuggestions && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-[400px] overflow-y-auto animate-in slide-in-from-top-2 duration-200"
+                  >
+                    {isSearching ? (
+                      <div className="p-4 space-y-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center gap-3">
+                            <Skeleton className="w-12 h-12 rounded-full" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-4 w-3/4" />
+                              <Skeleton className="h-3 w-1/2" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : searchSuggestions.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                          <Search className="w-6 h-6 text-gray-400" />
+                        </div>
+                        <p className="text-gray-500 dark:text-gray-400 font-medium">
+                          No freelancers found
+                        </p>
+                        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                          Try a different search term
+                        </p>
+                      </div>
+                    ) : (
+                      <ul className="py-2" role="listbox">
+                        {searchSuggestions.map((freelancer, index) => (
+                          <li
+                            key={freelancer.id}
+                            role="option"
+                            aria-selected={selectedIndex === index}
+                            className={cn(
+                              'px-4 py-3 cursor-pointer transition-all duration-150',
+                              selectedIndex === index
+                                ? 'bg-primary/10 dark:bg-primary/20'
+                                : 'hover:bg-gray-50 dark:hover:bg-gray-700/50',
+                            )}
+                            onClick={() => handleSelectFreelancer(freelancer)}
+                            onMouseEnter={() => setSelectedIndex(index)}
+                          >
+                            <div className="flex items-center gap-3">
+                              {/* Avatar */}
+                              <Avatar className="w-12 h-12 flex-shrink-0 border-2 border-primary/20">
+                                <ProfileAvatarImage
+                                  src={freelancer.profilePicture || undefined}
+                                  alt={freelancer.name || 'Freelancer'}
+                                />
+                                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-mint/20 text-primary font-semibold text-base">
+                                  {freelancer.name?.charAt(0).toUpperCase() || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+
+                              {/* Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <span className="font-semibold text-gray-900 dark:text-white">
+                                    {freelancer.name}
+                                  </span>
+                                  <VerificationBadge
+                                    status={freelancer.verificationStatus || 'unverified'}
+                                    size="sm"
+                                  />
+                                  {freelancer.tier && (
+                                    <TierBadge tier={freelancer.tier} size="sm" showIcon={true} />
+                                  )}
+                                </div>
+                                {freelancer.specialty && (
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                                    {freelancer.specialty}
+                                  </p>
+                                )}
+                                {freelancer.rating !== undefined && freelancer.rating > 0 && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                      {freelancer.rating.toFixed(1)}
+                                      {freelancer.reviews > 0 && ` (${freelancer.reviews})`}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Arrow */}
+                              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
               </div>
-
-              {/* Search Dropdown */}
-              {showSuggestions && (
-                <div
-                  ref={dropdownRef}
-                  className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-[400px] overflow-y-auto animate-in slide-in-from-top-2 duration-200"
-                >
-                  {isSearching ? (
-                    <div className="p-4 space-y-3">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center gap-3">
-                          <Skeleton className="w-12 h-12 rounded-full" />
-                          <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-3 w-1/2" />
-                          </div>
-                        </div>
+            ) : (
+              <div className="max-w-2xl mx-auto mb-8">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white dark:bg-gray-800">
+                  {isLoadingFavorites ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-20 w-full" />
                       ))}
                     </div>
-                  ) : searchSuggestions.length === 0 ? (
-                    <div className="p-8 text-center">
-                      <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <Search className="w-6 h-6 text-gray-400" />
-                      </div>
-                      <p className="text-gray-500 dark:text-gray-400 font-medium">
-                        No therapists found
+                  ) : favoriteFreelancers.length === 0 ? (
+                    <div className="flex flex-col items-center py-8">
+                      <Heart className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        No favorite freelancers yet
                       </p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                        Try a different search term
-                      </p>
+                      <Button variant="outline" onClick={() => setShowFavorites(false)}>
+                        Search Freelancers
+                      </Button>
                     </div>
                   ) : (
-                    <ul className="py-2" role="listbox">
-                      {searchSuggestions.map((freelancer, index) => (
-                        <li
-                          key={freelancer.id}
-                          role="option"
-                          aria-selected={selectedIndex === index}
-                          className={cn(
-                            'px-4 py-3 cursor-pointer transition-all duration-150',
-                            selectedIndex === index
-                              ? 'bg-primary/10 dark:bg-primary/20'
-                              : 'hover:bg-gray-50 dark:hover:bg-gray-700/50',
-                          )}
-                          onClick={() => handleSelectFreelancer(freelancer)}
-                          onMouseEnter={() => setSelectedIndex(index)}
-                        >
-                          <div className="flex items-center gap-3">
-                            {/* Avatar */}
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-mint/20 text-primary flex items-center justify-center font-semibold text-base flex-shrink-0 border-2 border-primary/20">
-                              {freelancer.name?.charAt(0).toUpperCase() || '?'}
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="font-semibold text-gray-900 dark:text-white">
-                                  {freelancer.name}
-                                </span>
-                                <VerificationBadge
-                                  status={freelancer.verificationStatus || 'unverified'}
-                                  size="sm"
-                                />
-                                {freelancer.tier && (
-                                  <TierBadge tier={freelancer.tier} size="sm" showIcon={true} />
-                                )}
-                              </div>
-                              {freelancer.specialty && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                  {freelancer.specialty}
-                                </p>
-                              )}
-                              {freelancer.rating !== undefined && freelancer.rating > 0 && (
-                                <div className="flex items-center gap-1 mt-1">
-                                  <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    {freelancer.rating.toFixed(1)}
-                                    {freelancer.reviews > 0 && ` (${freelancer.reviews})`}
-                                  </span>
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
+                        Select a favorite freelancer to book with
+                      </p>
+                      {favoriteFreelancers.map((freelancer) => {
+                        const expert = mapOneFreelancerToExpert(freelancer);
+                        const isSelected = selectedFreelancer === expert.id;
+                        const { stampInfo } = expert;
+                        return (
+                          <div
+                            key={expert.id}
+                            onClick={() => handleSelectFreelancer(expert)}
+                            className={cn(
+                              'p-4 border rounded-lg cursor-pointer transition-all duration-200',
+                              isSelected
+                                ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
+                                : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800',
+                            )}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <Avatar className="w-12 h-12 flex-shrink-0">
+                                  <ProfileAvatarImage
+                                    src={expert.profilePicture || undefined}
+                                    alt={expert.name || 'Freelancer'}
+                                  />
+                                  <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                    {expert.name?.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                      {expert.name}
+                                    </p>
+                                    <VerificationBadge
+                                      status={expert.verificationStatus || 'unverified'}
+                                      size="sm"
+                                    />
+                                  </div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    {expert.jobTitle?.name || 'Freelancer'}
+                                  </p>
+                                  <div className="flex items-center gap-3 flex-wrap">
+                                    <RatingDisplay
+                                      rating={expert.rating ?? expert.cardInfo?.averageRating}
+                                      reviewCount={
+                                        expert.cardInfo?.totalRatings ?? expert.reviews ?? 0
+                                      }
+                                      size="sm"
+                                      showCount={true}
+                                    />
+                                    {stampInfo && (
+                                      <div className="flex items-center gap-1.5">
+                                        {(() => {
+                                          const target = stampInfo.stampTarget ?? 5;
+                                          const currentCount = Number(
+                                            stampInfo.currentStampCount ?? 0,
+                                          );
+                                          const maxCount = Math.min(currentCount, target);
+                                          return Array.from(
+                                            { length: Math.min(target, 5) },
+                                            (_, index) => {
+                                              const isFilled = index < maxCount;
+                                              return (
+                                                <div
+                                                  key={index}
+                                                  className={cn(
+                                                    'flex items-center justify-center w-4 h-4 rounded-full border',
+                                                    isFilled
+                                                      ? 'bg-primary border-primary text-white'
+                                                      : 'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700 dark:border-gray-600',
+                                                  )}
+                                                >
+                                                  {isFilled ? (
+                                                    <CheckCircle2 className="h-2.5 w-2.5" />
+                                                  ) : (
+                                                    <Stamp className="h-2.5 w-2.5" />
+                                                  )}
+                                                </div>
+                                              );
+                                            },
+                                          );
+                                        })()}
+                                        {stampInfo.currentStampCount > 0 && (
+                                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                                            {stampInfo.currentStampCount}/{stampInfo.stampTarget}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              )}
+                              </div>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                {isSelected && <CheckCircle className="w-5 h-5 text-primary" />}
+                                <ChevronRight
+                                  className={cn(
+                                    'w-5 h-5 transition-colors',
+                                    isSelected ? 'text-primary' : 'text-gray-400',
+                                  )}
+                                />
+                              </div>
                             </div>
-
-                            {/* Arrow */}
-                            <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
                           </div>
-                        </li>
-                      ))}
-                    </ul>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Divider */}
             <div className="flex items-center gap-4 max-w-2xl mx-auto">
@@ -640,15 +845,21 @@ export default function BookingPage() {
               <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
             </div>
 
-            {/* Selected Therapist Banner (if in therapist-first flow) */}
+            {/* Selected Freelancer Banner (if in freelancer-first flow) */}
             {selectedFreelancerData && flow !== 'initial' && (
-              <div className="max-w-2xl mx-auto">
-                <div className="p-4 bg-gradient-to-r from-primary/5 to-mint/5 dark:from-primary/10 dark:to-mint/10 border border-primary/20 rounded-xl animate-in slide-in-from-top-2 duration-300">
+              <div id="selected-freelancer-banner" className="max-w-2xl mx-auto">
+                <div className="p-4 bg-gradient-to-r from-primary/5 to-mint/5 dark:from-primary/10 dark:to-mint/10 border border-primary/20 rounded-xl animate-in slide-in-from-top-2 duration-300 shadow-md">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-mint/20 text-primary flex items-center justify-center font-bold border-2 border-primary/30">
-                        {selectedFreelancerData.name?.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar className="w-12 h-12 border-2 border-primary/30">
+                        <ProfileAvatarImage
+                          src={selectedFreelancerData.profilePicture || undefined}
+                          alt={selectedFreelancerData.name || 'Freelancer'}
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-mint/20 text-primary font-bold">
+                          {selectedFreelancerData.name?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-charcoal dark:text-white">
@@ -660,7 +871,7 @@ export default function BookingPage() {
                           />
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {selectedFreelancerData.jobTitle?.name || 'Therapist'}
+                          {selectedFreelancerData.jobTitle?.name || 'Freelancer'}
                         </p>
                       </div>
                     </div>
@@ -721,7 +932,7 @@ export default function BookingPage() {
                               <User className="w-8 h-8 text-gray-400" />
                             </div>
                             <p className="text-gray-600 dark:text-gray-400 font-medium">
-                              Search for a therapist or select a date
+                              Search for a freelancer or select a date
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
                               to see available appointments
@@ -730,7 +941,7 @@ export default function BookingPage() {
                         </div>
                       )}
 
-                      {/* Therapist Selected - Show their calendar */}
+                      {/* Freelancer Selected - Show their calendar */}
                       {flow === 'therapist-selected' && !selectedDate && (
                         <div className="flex-1 flex items-center justify-center text-center">
                           <div>
@@ -747,7 +958,7 @@ export default function BookingPage() {
                         </div>
                       )}
 
-                      {/* Date Selected - Show therapists available */}
+                      {/* Date Selected - Show freelancers available */}
                       {flow === 'date-selected' && selectedDate && (
                         <div className="flex-1 overflow-y-auto">
                           <div className="flex items-center gap-2 mb-4">
@@ -766,7 +977,7 @@ export default function BookingPage() {
                           ) : freelancersWithSlots.length === 0 ? (
                             <div className="text-center py-8">
                               <p className="text-gray-500 dark:text-gray-400">
-                                No therapists available on this date
+                                No freelancers available on this date
                               </p>
                               <Button
                                 variant="link"
@@ -778,47 +989,100 @@ export default function BookingPage() {
                             </div>
                           ) : (
                             <div className="space-y-4 md:space-y-3">
-                              {freelancersWithSlots.map((freelancer) => (
-                                <button
-                                  key={freelancer.id}
-                                  onClick={() => handleTherapistSelect(freelancer)}
-                                  className="w-full p-5 md:p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:shadow-md transition-all duration-200 text-left group min-h-[80px] md:min-h-0"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-mint/20 text-primary flex items-center justify-center font-semibold border-2 border-primary/20">
-                                      {freelancer.name?.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-charcoal dark:text-white">
-                                          {freelancer.name}
-                                        </span>
-                                        <VerificationBadge
-                                          status={freelancer.verificationStatus || 'unverified'}
-                                          size="sm"
+                              {freelancersWithSlots.map((freelancer) => {
+                                const expert = mapOneFreelancerToExpert(freelancer);
+                                const { stampInfo } = expert;
+                                return (
+                                  <button
+                                    key={freelancer.id}
+                                    onClick={() => handleTherapistSelect(expert)}
+                                    className="w-full p-5 md:p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:shadow-md transition-all duration-200 text-left group min-h-[100px] md:min-h-[90px]"
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <Avatar className="w-12 h-12 flex-shrink-0 border-2 border-primary/20">
+                                        <ProfileAvatarImage
+                                          src={freelancer.profilePicture || undefined}
+                                          alt={freelancer.name || 'Freelancer'}
                                         />
+                                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-mint/20 text-primary font-semibold">
+                                          {freelancer.name?.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="font-semibold text-charcoal dark:text-white truncate">
+                                            {freelancer.name}
+                                          </span>
+                                          <VerificationBadge
+                                            status={freelancer.verificationStatus || 'unverified'}
+                                            size="sm"
+                                          />
+                                        </div>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                          {expert.jobTitle?.name || 'Freelancer'}
+                                        </p>
+                                        <div className="flex items-center gap-3 flex-wrap">
+                                          <RatingDisplay
+                                            rating={expert.rating ?? expert.cardInfo?.averageRating}
+                                            reviewCount={
+                                              expert.cardInfo?.totalRatings ?? expert.reviews ?? 0
+                                            }
+                                            size="sm"
+                                            showCount={true}
+                                          />
+                                          {stampInfo && (
+                                            <div className="flex items-center gap-1.5">
+                                              {(() => {
+                                                const target = stampInfo.stampTarget ?? 5;
+                                                const currentCount = Number(
+                                                  stampInfo.currentStampCount ?? 0,
+                                                );
+                                                const maxCount = Math.min(currentCount, target);
+                                                return Array.from(
+                                                  { length: Math.min(target, 5) },
+                                                  (_, index) => {
+                                                    const isFilled = index < maxCount;
+                                                    return (
+                                                      <div
+                                                        key={index}
+                                                        className={cn(
+                                                          'flex items-center justify-center w-4 h-4 rounded-full border',
+                                                          isFilled
+                                                            ? 'bg-primary border-primary text-white'
+                                                            : 'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700 dark:border-gray-600',
+                                                        )}
+                                                      >
+                                                        {isFilled ? (
+                                                          <CheckCircle2 className="h-2.5 w-2.5" />
+                                                        ) : (
+                                                          <Stamp className="h-2.5 w-2.5" />
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  },
+                                                );
+                                              })()}
+                                              {stampInfo.currentStampCount > 0 && (
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                  {stampInfo.currentStampCount}/
+                                                  {stampInfo.stampTarget}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
+                                          <Badge
+                                            variant="secondary"
+                                            className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                          >
+                                            {(freelancer as any).slotCount} slots
+                                          </Badge>
+                                        </div>
                                       </div>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        {(freelancer.rating ?? 0) > 0 && (
-                                          <div className="flex items-center gap-1">
-                                            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                                              {(freelancer.rating ?? 0).toFixed(1)}
-                                            </span>
-                                          </div>
-                                        )}
-                                        <Badge
-                                          variant="secondary"
-                                          className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                        >
-                                          {(freelancer as any).slotCount} slots
-                                        </Badge>
-                                      </div>
+                                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0 mt-1" />
                                     </div>
-                                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
-                                  </div>
-                                </button>
-                              ))}
+                                  </button>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -879,7 +1143,7 @@ export default function BookingPage() {
                             {bookingStep === 'service' &&
                               selectedSlot &&
                               availableServices.length > 0 && (
-                                <div className="h-full flex flex-col animate-in slide-in-from-right-2 duration-300">
+                                <div className="animate-in slide-in-from-right-2 duration-300">
                                   <div className="flex items-center gap-2 mb-4">
                                     <Sparkles className="w-5 h-5 text-primary" />
                                     <h3 className="font-semibold text-charcoal dark:text-white">
@@ -892,7 +1156,7 @@ export default function BookingPage() {
                                       setSelectedService(value);
                                       setLocationType(null);
                                     }}
-                                    className="space-y-2 flex-1"
+                                    className="space-y-2"
                                   >
                                     {availableServices.map((service) => (
                                       <div
@@ -927,7 +1191,7 @@ export default function BookingPage() {
                             {bookingStep === 'location' &&
                               selectedService &&
                               availableLocationTypes.length > 0 && (
-                                <div className="h-full flex flex-col animate-in slide-in-from-right-2 duration-300">
+                                <div className="animate-in slide-in-from-right-2 duration-300">
                                   <div className="flex items-center gap-2 mb-4">
                                     <MapPin className="w-5 h-5 text-primary" />
                                     <h3 className="font-semibold text-charcoal dark:text-white">
@@ -939,7 +1203,7 @@ export default function BookingPage() {
                                     onValueChange={(value) =>
                                       setLocationType(value as LocationType)
                                     }
-                                    className="space-y-2 flex-1"
+                                    className="space-y-2"
                                   >
                                     {availableLocationTypes.includes(LocationType.HOME) && (
                                       <div
@@ -997,18 +1261,18 @@ export default function BookingPage() {
 
                             {/* Confirm Step */}
                             {bookingStep === 'confirm' && canConfirmBooking && (
-                              <div className="h-full flex flex-col animate-in slide-in-from-right-2 duration-300">
+                              <div className="animate-in slide-in-from-right-2 duration-300">
                                 <div className="flex items-center gap-2 mb-4">
                                   <CheckCircle className="w-5 h-5 text-primary" />
                                   <h3 className="font-semibold text-charcoal dark:text-white">
                                     Review & Confirm
                                   </h3>
                                 </div>
-                                <div className="space-y-3 mb-4 flex-1">
+                                <div className="space-y-3 mb-4">
                                   {selectedFreelancerData && (
                                     <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                                       <span className="text-gray-600 dark:text-gray-400">
-                                        Therapist:
+                                        Freelancer:
                                       </span>
                                       <span className="font-medium text-charcoal dark:text-white">
                                         {selectedFreelancerData.name}
@@ -1059,14 +1323,24 @@ export default function BookingPage() {
                                     </span>
                                   </div>
                                 </div>
-                                <Button
-                                  onClick={handleConfirm}
-                                  disabled={isCreating}
-                                  className="w-full bg-primary hover:bg-primary/90 text-white py-3 text-base font-semibold"
-                                  size="lg"
-                                >
-                                  {isCreating ? 'Confirming...' : 'Confirm Booking'}
-                                </Button>
+                                <div className="flex flex-col gap-3">
+                                  <Button
+                                    variant="outline"
+                                    onClick={handlePreviousStep}
+                                    className="flex items-center justify-center gap-2"
+                                  >
+                                    <ChevronLeft className="w-4 h-4" />
+                                    Previous
+                                  </Button>
+                                  <Button
+                                    onClick={handleConfirm}
+                                    disabled={isCreating}
+                                    className="w-full bg-primary hover:bg-primary/90 text-white py-3 text-base font-semibold"
+                                    size="lg"
+                                  >
+                                    {isCreating ? 'Confirming...' : 'Confirm Booking'}
+                                  </Button>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -1157,6 +1431,7 @@ export default function BookingPage() {
             expert={{
               id: profileFreelancer.id,
               name: profileFreelancer.name,
+              profilePicture: profileFreelancer.profilePicture,
               jobTitle: profileFreelancer.jobTitle,
               rating: profileFreelancer.rating,
               description: profileFreelancer.description,
@@ -1173,8 +1448,8 @@ export default function BookingPage() {
               },
               hasAvailableSlots: true,
               stampInfo: profileFreelancer.stampInfo || undefined,
-              durationPricing: (profileFreelancer as any)?.durationPricing,
-              serviceCategoryPricing: (profileFreelancer as any)?.serviceCategoryPricing,
+              durationPricing: profileFreelancer.durationPricing,
+              serviceCategoryPricing: profileFreelancer.serviceCategoryPricing,
             }}
           />
         )}

@@ -73,7 +73,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
             {/* Therapist Info */}
             <div className="flex items-center gap-4 mb-6">
               <Avatar className="w-16 h-16 border-3 border-primary">
-                <AvatarImage src={therapist?.avatar || undefined} />
+                <AvatarImage src={therapist?.profilePicture || therapist?.avatar || undefined} />
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
                   {therapist?.name?.charAt(0) || 'T'}
                 </div>

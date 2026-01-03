@@ -111,7 +111,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         {/* Therapist Info */}
         <div className="flex items-center gap-4">
           <Avatar className="w-14 h-14 border-2 border-gray-200 flex-shrink-0">
-            <AvatarImage src={therapist?.avatar || undefined} />
+            <AvatarImage src={therapist?.profilePicture || therapist?.avatar || undefined} />
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
               {therapist?.name?.charAt(0) || 'T'}
             </div>

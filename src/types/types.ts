@@ -1,3 +1,6 @@
+// Import pricing types for use in Expert interface
+import type { DurationPricing, ServicePricing } from './pricing';
+
 // Re-export data rights types
 export * from './dataRights';
 
@@ -401,6 +404,9 @@ export interface Expert {
     discountPercentage: number;
     customConfigApplied: boolean;
   } | null;
+  // Pricing information
+  durationPricing?: DurationPricing[];
+  serviceCategoryPricing?: ServicePricing[];
 }
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 

@@ -133,6 +133,23 @@ export interface Freelancer {
     type: string;
   }>;
   planFeatures?: PlanFeatures | null;
+  // Pricing fields
+  durationPricing?: Array<{
+    duration: number;
+    price: number;
+    currency?: string;
+  }>;
+  serviceCategoryPricing?: Array<{
+    serviceId: string;
+    serviceName: string;
+    price: number;
+    currency?: string;
+    locations?: Array<{
+      locationType: 'HOME' | 'CLINIC';
+      price: number;
+      currency?: string;
+    }>;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

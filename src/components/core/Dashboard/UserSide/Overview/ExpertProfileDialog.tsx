@@ -1,8 +1,11 @@
-import { CheckCircle2, Clock, Gift, Heart, Stamp } from 'lucide-react';
+import { CheckCircle2, Clock, ExternalLink, Gift, Heart, Stamp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,6 +22,7 @@ interface ExpertProfileDialogProps {
   expert: Partial<Expert> & {
     id: string;
     name?: string;
+    profilePicture?: string;
     jobTitle?: { id: string; name: string; description?: string };
     rating?: number;
     services?: Array<{
@@ -69,6 +73,7 @@ interface ExpertProfileDialogProps {
 }
 
 export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDialogProps) {
+  const router = useRouter();
   const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
   const [showReportDialog, setShowReportDialog] = useState(false);
 
@@ -117,9 +122,15 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
               <DialogHeader className="pb-0">
                 <div className="flex items-start gap-4">
                   {/* Profile Avatar */}
-                  <div className="w-16 h-16 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-xl flex-shrink-0 border-2 border-primary/20">
-                    {freelancerName?.charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar className="w-16 h-16 flex-shrink-0 border-2 border-primary/20">
+                    <ProfileAvatarImage
+                      src={expert.profilePicture || undefined}
+                      alt={freelancerName || 'Freelancer'}
+                    />
+                    <AvatarFallback className="bg-primary/15 text-primary font-bold text-xl">
+                      {freelancerName?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
 
                   {/* Profile Info */}
                   <div className="flex-1 min-w-0">
@@ -426,6 +437,20 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
 
               {/* Action Buttons */}
               <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                {/* View Full Profile Button */}
+                <Button
+                  variant="outline"
+                  className="w-full h-10 text-sm border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 flex items-center justify-center gap-2"
+                  onClick={() => {
+                    onClose();
+                    router.push(`/dashboard/freelancer-profile/${expert.id}`);
+                  }}
+                  tabIndex={2}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View Full Profile
+                </Button>
+
                 {/* Primary Action */}
                 {hasAvailableSlots ? (
                   <Button

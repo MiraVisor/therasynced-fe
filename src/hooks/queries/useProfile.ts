@@ -13,6 +13,25 @@ import {
   UpdateProfileDto,
 } from '@/types/types';
 
+/**
+ * Hook to upload profile picture
+ */
+export const useUploadProfilePicture = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => profileApi.uploadProfilePicture(file),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success('Profile picture uploaded successfully!');
+      return data;
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error) || 'Failed to upload profile picture');
+    },
+  });
+};
+
 // Type for the user profile data
 export interface UserProfileData {
   id: string;

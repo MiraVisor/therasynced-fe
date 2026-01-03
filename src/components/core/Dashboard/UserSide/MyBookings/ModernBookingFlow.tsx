@@ -323,7 +323,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
       return {
         id: freelancerData.id,
         name: freelancerData.name,
-        specialty: freelancerData.specialty ?? 'Therapist',
+        specialty: freelancerData.specialty ?? 'Freelancer',
         rating: freelancerData.rating ?? 0,
         reviews: freelancerData.reviews ?? 0,
         avatar: freelancerData.profilePicture ?? undefined,
@@ -346,8 +346,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
 
     return {
       id: firstSlot.freelancerId,
-      name: firstSlot.freelancerName ?? 'Therapist',
-      specialty: 'Therapist', // Fallback
+      name: firstSlot.freelancerName ?? 'Freelancer',
+      specialty: 'Freelancer', // Fallback
       rating: firstSlot.averageRating ?? 0,
       reviews: firstSlot.numberOfRatings ?? 0,
       avatar: firstSlot.profilePicture,

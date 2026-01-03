@@ -191,7 +191,7 @@ export const createBookingColumns = ({
                 <>
                   <DropdownMenuItem onClick={() => onMessage(booking)}>
                     <MessageSquare className="mr-2 h-4 w-4" />
-                    Message Therapist
+                    Message Freelancer
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onReschedule(booking)}>
                     <Calendar className="mr-2 h-4 w-4" />

@@ -3,9 +3,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { Calendar as CalendarIcon, ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DataTable, FilterOption } from '@/components/common/DataTable/data-table';
@@ -14,6 +14,7 @@ import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBook
 import { createBookingColumns } from '@/components/core/Dashboard/UserSide/MyBookings/BookingTableColumns';
 import { RescheduleBookingDialog } from '@/components/core/Dashboard/UserSide/MyBookings/RescheduleBookingDialog';
 import { RatingModal } from '@/components/core/Dashboard/UserSide/Ratings/RatingModal';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -101,11 +102,15 @@ const BookingStatsComponent = ({
 
 export default function MyBookingsPage() {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const searchParams = useSearchParams();
+  const bookingIdFromUrl = searchParams.get('bookingId');
+
+  const [statusFilter, setStatusFilter] = useState<string>('upcoming'); // Default to upcoming
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [serviceCategoryFilter, setServiceCategoryFilter] = useState<string>('all');
   const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -218,8 +223,42 @@ export default function MyBookingsPage() {
     return Array.from(categories.entries()).map(([id, name]) => ({ id, name }));
   }, [bookings]);
 
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (statusFilter !== 'upcoming') count++; // Upcoming is default
+    if (dateRangeFilter !== 'all') count++;
+    if (selectedDate) count++;
+    if (serviceCategoryFilter !== 'all') count++;
+    if (locationFilter !== 'all') count++;
+    return count;
+  }, [statusFilter, dateRangeFilter, selectedDate, serviceCategoryFilter, locationFilter]);
+
+  // Auto-open details modal if bookingId is in URL
+  useEffect(() => {
+    if (bookingIdFromUrl && bookings.length > 0) {
+      const booking = bookings.find((b: Booking) => b.id === bookingIdFromUrl);
+      if (booking) {
+        setSelectedBooking(booking);
+        setShowDetailsModal(true);
+        // Clear the URL parameter after opening the modal
+        const newSearchParams = new URLSearchParams(searchParams.toString());
+        newSearchParams.delete('bookingId');
+        const newUrl = newSearchParams.toString()
+          ? `${window.location.pathname}?${newSearchParams.toString()}`
+          : window.location.pathname;
+        router.replace(newUrl);
+      }
+    }
+  }, [bookingIdFromUrl, bookings, router, searchParams]);
+
   // Filter bookings based on all filters
   const filteredBookings = useMemo(() => {
+    // If bookingId is in URL, filter to show only that booking
+    if (bookingIdFromUrl) {
+      return bookings.filter((booking: Booking) => booking.id === bookingIdFromUrl);
+    }
+
     return bookings.filter((booking: Booking) => {
       const bookingDate = new Date(booking.slot.startTime);
       const now = new Date();
@@ -289,6 +328,7 @@ export default function MyBookingsPage() {
     selectedDate,
     serviceCategoryFilter,
     locationFilter,
+    bookingIdFromUrl,
   ]);
 
   // Create table columns
@@ -366,121 +406,232 @@ export default function MyBookingsPage() {
           {/* Stats Section */}
           <BookingStatsComponent stats={bookingStats || null} isLoading={isLoadingStats} />
 
-          {/* Bookings Table with Filters Inside */}
+          {/* Quick Filter Chips */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button
+              variant={statusFilter === 'upcoming' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setStatusFilter('upcoming');
+                setDateRangeFilter('all');
+                setSelectedDate(undefined);
+              }}
+            >
+              Upcoming
+            </Button>
+            <Button
+              variant={dateRangeFilter === 'today' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setDateRangeFilter('today');
+                setStatusFilter('all');
+                setSelectedDate(undefined);
+              }}
+            >
+              Today
+            </Button>
+            <Button
+              variant={dateRangeFilter === 'thisWeek' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setDateRangeFilter('thisWeek');
+                setStatusFilter('all');
+                setSelectedDate(undefined);
+              }}
+            >
+              This Week
+            </Button>
+            <Button
+              variant={statusFilter === 'completed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setStatusFilter('completed');
+                setDateRangeFilter('all');
+                setSelectedDate(undefined);
+              }}
+            >
+              Completed
+            </Button>
+            {activeFilterCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setStatusFilter('upcoming');
+                  setDateRangeFilter('all');
+                  setSelectedDate(undefined);
+                  setServiceCategoryFilter('all');
+                  setLocationFilter('all');
+                }}
+                className="text-red-600 hover:text-red-700"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear All
+              </Button>
+            )}
+          </div>
+
+          {/* Bookings Table with Collapsible Filters */}
           <div className="border rounded-lg overflow-hidden">
-            {/* Table Header with Title */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-b bg-white">
+            {/* Table Header with Title and Filters Button */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-b bg-white gap-4">
               <h2 className="font-poppins text-[22px] font-bold tracking-tight text-charcoal">
                 My Bookings
               </h2>
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                Filters
+                {activeFilterCount > 0 && (
+                  <Badge variant="secondary" className="ml-1">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+                {showFilters ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
             </div>
 
-            {/* Filters Section Inside Table */}
-            <div className="px-4 py-4 border-b bg-gray-50">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                  {/* Status Filter */}
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[160px] h-9">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusFilterOptions.map((option) => (
-                        <SelectItem key={option.value} value={String(option.value)}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {/* Collapsible Filters Section */}
+            {showFilters && (
+              <div className="px-4 py-4 border-b bg-gray-50 animate-in slide-in-from-top duration-200">
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {/* Status Filter */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">Status</label>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-full h-9">
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusFilterOptions.map((option) => (
+                            <SelectItem key={option.value} value={String(option.value)}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Date Range Filter */}
-                  <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
-                    <SelectTrigger className="w-full sm:w-[160px] h-9">
-                      <SelectValue placeholder="Filter by date range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {dateRangeFilterOptions.map((option) => (
-                        <SelectItem key={option.value} value={String(option.value)}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {/* Date Range Filter */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Date Range
+                      </label>
+                      <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
+                        <SelectTrigger className="w-full h-9">
+                          <SelectValue placeholder="Filter by date range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {dateRangeFilterOptions.map((option) => (
+                            <SelectItem key={option.value} value={String(option.value)}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Specific Date Filter */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          'w-full sm:w-[160px] h-9 justify-start text-left font-normal',
-                          !selectedDate && 'text-muted-foreground',
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, 'MMM d, yyyy') : 'Select date'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => {
-                          setSelectedDate(date);
-                          if (date) {
-                            setDateRangeFilter('all'); // Reset date range when specific date is selected
-                          }
-                        }}
-                        initialFocus
-                      />
-                      {selectedDate && (
-                        <div className="p-3 border-t">
+                    {/* Specific Date Filter */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Specific Date
+                      </label>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full"
-                            onClick={() => {
-                              setSelectedDate(undefined);
-                            }}
+                            variant="outline"
+                            className={cn(
+                              'w-full h-9 justify-start text-left font-normal',
+                              !selectedDate && 'text-muted-foreground',
+                            )}
                           >
-                            Clear Date
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {selectedDate ? format(selectedDate, 'MMM d, yyyy') : 'Select date'}
                           </Button>
-                        </div>
-                      )}
-                    </PopoverContent>
-                  </Popover>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => {
+                              setSelectedDate(date);
+                              if (date) {
+                                setDateRangeFilter('all');
+                              }
+                            }}
+                            initialFocus
+                          />
+                          {selectedDate && (
+                            <div className="p-3 border-t">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full"
+                                onClick={() => {
+                                  setSelectedDate(undefined);
+                                }}
+                              >
+                                Clear Date
+                              </Button>
+                            </div>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    </div>
 
-                  {/* Service Category Filter */}
-                  <Select value={serviceCategoryFilter} onValueChange={setServiceCategoryFilter}>
-                    <SelectTrigger className="w-full sm:w-[160px] h-9">
-                      <SelectValue placeholder="Filter by service" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Services</SelectItem>
-                      {uniqueServiceCategories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {/* Service Category Filter */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Service
+                      </label>
+                      <Select
+                        value={serviceCategoryFilter}
+                        onValueChange={setServiceCategoryFilter}
+                      >
+                        <SelectTrigger className="w-full h-9">
+                          <SelectValue placeholder="Filter by service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Services</SelectItem>
+                          {uniqueServiceCategories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Location Filter */}
-                  <Select value={locationFilter} onValueChange={setLocationFilter}>
-                    <SelectTrigger className="w-full sm:w-[160px] h-9">
-                      <SelectValue placeholder="Filter by location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locationFilterOptions.map((option) => (
-                        <SelectItem key={option.value} value={String(option.value)}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {/* Location Filter */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Location
+                      </label>
+                      <Select value={locationFilter} onValueChange={setLocationFilter}>
+                        <SelectTrigger className="w-full h-9">
+                          <SelectValue placeholder="Filter by location" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {locationFilterOptions.map((option) => (
+                            <SelectItem key={option.value} value={String(option.value)}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Table Content - Use DataTable but without its border */}
             <div className="[&>div]:border-0 [&>div]:rounded-none">

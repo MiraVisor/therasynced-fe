@@ -13,6 +13,8 @@ export const ENDPOINTS = {
   profile: {
     get: '/profile',
     update: '/profile',
+    uploadPicture: '/profile/picture',
+    getPictureSignedUrl: '/profile/picture/signed-url',
     changePassword: '/profile/change-password',
     changeEmail: '/profile/change-email',
     delete: '/profile',

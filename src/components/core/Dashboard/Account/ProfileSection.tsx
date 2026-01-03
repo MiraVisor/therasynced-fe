@@ -1,11 +1,13 @@
 'use client';
 
 import { format } from 'date-fns';
-import { ArrowRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowRight, Camera, Loader2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,7 +24,7 @@ import {
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useJobTitles } from '@/hooks/queries/useJobTitles';
-import { useProfile, useUpdateProfile } from '@/hooks/queries/useProfile';
+import { useProfile, useUpdateProfile, useUploadProfilePicture } from '@/hooks/queries/useProfile';
 import { useAuth } from '@/hooks/useAuthZustand';
 import { cn } from '@/lib/utils';
 import { JobTitle, ROLES } from '@/types/types';
@@ -50,9 +52,12 @@ interface UserProfile {
 export function ProfileSection() {
   const { role } = useAuth();
   const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const { data: profileData, isLoading: loading, isFetching: initialLoading } = useProfile();
   const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+  const { mutate: uploadProfilePicture, isPending: isUploadingPicture } = useUploadProfilePicture();
   const { data: jobTitles = [], isLoading: isLoadingJobTitles } = useJobTitles();
 
   const [formData, setFormData] = useState<UserProfile>({
@@ -113,6 +118,9 @@ export function ProfileSection() {
         clinicAddress: profileData.clinicAddress || '',
         homeAddress: profileData.homeAddress || '',
       });
+
+      // Reset preview when profile data changes
+      setPreviewUrl(null);
     }
   }, [profileData]);
 
@@ -243,6 +251,56 @@ export function ProfileSection() {
     });
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload a JPEG, PNG, or WEBP image.');
+      return;
+    }
+
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 2MB.');
+      return;
+    }
+
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadPicture = () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      toast.error('Please select an image file.');
+      return;
+    }
+
+    uploadProfilePicture(file, {
+      onSuccess: () => {
+        setPreviewUrl(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      },
+    });
+  };
+
+  const handleRemovePreview = () => {
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   if ((initialLoading || loading) && !profileData) {
     return <ProfileSectionSkeleton showProfessionalSection={role === ROLES.FREELANCER} />;
   }
@@ -253,6 +311,79 @@ export function ProfileSection() {
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-poppins font-semibold text-gray-900">Personal Information</h3>
+        </div>
+
+        {/* Profile Picture Upload Section */}
+        <div className="mb-6 pb-6 border-b border-gray-200">
+          <Label className="text-sm font-medium text-gray-700 mb-3 block">Profile Picture</Label>
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <Avatar className="h-24 w-24 border-2 border-gray-300">
+                <ProfileAvatarImage
+                  src={previewUrl || formData.profilePicture || undefined}
+                  alt={formData.name || 'Profile'}
+                  isCurrentUser={true}
+                />
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-poppins font-bold">
+                  {formData.name?.charAt(0)?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              {isUploadingPicture && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                  <Loader2 className="h-6 w-6 animate-spin text-white" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={isUploadingPicture}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingPicture}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="h-4 w-4" />
+                  {previewUrl ? 'Change Picture' : 'Upload Picture'}
+                </Button>
+                {previewUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemovePreview}
+                    disabled={isUploadingPicture}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
+              {previewUrl && (
+                <Button
+                  type="button"
+                  onClick={handleUploadPicture}
+                  disabled={isUploadingPicture}
+                  className="bg-primary hover:bg-primary/90 text-white"
+                  isLoading={isUploadingPicture}
+                >
+                  {isUploadingPicture ? 'Uploading...' : 'Save Picture'}
+                </Button>
+              )}
+              <p className="text-xs text-gray-500">
+                Supported formats: JPEG, PNG, WEBP. Max size: 2MB
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

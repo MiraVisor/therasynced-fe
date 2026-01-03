@@ -7,6 +7,7 @@ import {
   favoriteFreelancer,
   getAllFavoriteFreelancers,
   getAllFreelancers,
+  getFreelancerById,
   getStats,
   searchFreelancers,
   SearchFreelancersParams,
@@ -258,5 +259,17 @@ export const useInfiniteSearchFreelancers = (baseParams: Omit<SearchFreelancersP
       })),
       pageParams: data.pageParams,
     }),
+  });
+};
+
+/**
+ * Hook to fetch freelancer details by ID
+ */
+export const useFreelancerById = (freelancerId: string | null) => {
+  return useQuery({
+    queryKey: ['freelancer', freelancerId],
+    queryFn: () => getFreelancerById(freelancerId!),
+    enabled: !!freelancerId,
+    select: (data) => data.data,
   });
 };

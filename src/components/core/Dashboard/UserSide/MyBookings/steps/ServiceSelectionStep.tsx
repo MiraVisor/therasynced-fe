@@ -36,7 +36,7 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({ slot
             No specific services required
           </h3>
           <p className="font-inter text-muted-foreground">
-            You can discuss your needs directly with the therapist during your session.
+            You can discuss your needs directly with the freelancer during your session.
           </p>
         </div>
       </div>

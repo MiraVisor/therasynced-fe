@@ -18,7 +18,7 @@ const Footer = () => {
               THERA<span className="text-primary dark:text-primary/90">SYNCED</span>
             </h2>
             <p className="text-base xs:text-lg text-gray-700 dark:text-neutral-300 max-w-md leading-relaxed">
-              Discover expert physiotherapists ready to help you relax, recover, and recharge.
+              Discover professional freelancers ready to help you relax, recover, and recharge.
             </p>
           </div>
 
@@ -106,7 +106,7 @@ const Footer = () => {
           <p className="text-sm text-gray-600 dark:text-neutral-400 text-center max-w-4xl mx-auto">
             <strong className="text-gray-900 dark:text-white">Platform Disclaimer:</strong>{' '}
             TheraSynced is a booking platform that connects clients with licensed healthcare
-            professionals and therapists. We do not provide medical advice, diagnosis, or treatment
+            professionals and freelancers. We do not provide medical advice, diagnosis, or treatment
             services. All healthcare services are provided by independent practitioners who are
             responsible for their own professional conduct and services.
           </p>

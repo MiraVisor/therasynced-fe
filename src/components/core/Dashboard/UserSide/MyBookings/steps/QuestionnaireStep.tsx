@@ -116,7 +116,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
           Tell us what you need
         </h2>
         <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
-          We'll help you find the perfect therapist
+          We'll help you find the perfect freelancer
         </p>
       </div>
 
@@ -244,14 +244,14 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
         {/* Freelancer Name Search */}
         <div className="space-y-3">
           <Label className="text-lg font-poppins font-semibold text-charcoal dark:text-white">
-            Search for a specific therapist (Optional)
+            Search for a specific freelancer (Optional)
           </Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
               ref={searchInputRef}
               type="text"
-              placeholder="Type therapist name..."
+              placeholder="Type freelancer name..."
               value={freelancerSearchQuery}
               onChange={(e) => handleSearchInputChange(e.target.value)}
               onFocus={() => {
@@ -305,7 +305,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
             className="w-full bg-primary hover:bg-primary/90 text-white py-6 text-lg font-semibold"
             size="lg"
           >
-            Search Therapists
+            Search Freelancers
           </Button>
           {!canProceed && (
             <p className="text-sm text-red-500 mt-2 text-center">

@@ -2,17 +2,11 @@
 
 import { Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
 import { Expert, Freelancer } from '@/types/types';
 import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
@@ -26,31 +20,6 @@ interface FavoriteFreelancersCarouselProps {
 const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselProps) => {
   const router = useRouter();
   const { data: favoriteFreelancers = [], isLoading, error } = useFavoriteFreelancers();
-  const handleBook = useCallback(
-    (freelancer: Expert) => {
-      // Pass freelancer data through route state to avoid loading issues
-      const freelancerData = {
-        id: freelancer.id,
-        name: freelancer.name,
-        specialty: freelancer.specialty,
-        rating: freelancer.rating,
-        reviews: freelancer.reviews,
-        description: freelancer.description,
-        isFavorite: freelancer.isFavorite,
-        services: freelancer.services,
-        location: freelancer.location,
-        sessionTypes: freelancer.sessionTypes,
-        pricing: freelancer.pricing,
-        availableSlots: freelancer.availableSlots,
-        cardInfo: freelancer.cardInfo,
-      };
-
-      router.push(
-        `/dashboard/freelancer/${freelancer.id}?data=${encodeURIComponent(JSON.stringify(freelancerData))}`,
-      );
-    },
-    [router],
-  );
 
   // Show toast error when error occurs
   useEffect(() => {
@@ -67,9 +36,7 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
             Favorite Freelancers
           </CardTitle>
-          <CardDescription className="font-inter">
-            Your saved therapists and experts
-          </CardDescription>
+          <CardDescription className="font-inter">Your saved freelancers</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 overflow-hidden">
@@ -106,9 +73,7 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
             Favorite Freelancers
           </CardTitle>
-          <CardDescription className="font-inter">
-            Your saved therapists and experts
-          </CardDescription>
+          <CardDescription className="font-inter">Your saved freelancers</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
@@ -123,45 +88,56 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
     );
   }
 
+  // Show only top 3 favorites
+  const topFavorites = favoriteFreelancers.slice(0, 3);
+
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
-          Favorite Freelancers
-        </CardTitle>
-        <CardDescription>Your saved therapists and experts</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
+              Favorite Freelancers
+            </CardTitle>
+            <CardDescription>Your saved freelancers</CardDescription>
+          </div>
+          {favoriteFreelancers.length > 3 && (
+            <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/favorites')}>
+              View All ({favoriteFreelancers.length})
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        <Carousel
-          opts={{
-            align: 'center',
-            loop: false,
-            startIndex: favoriteFreelancers.length > 2 ? 1 : 0,
-          }}
-          className="w-full min-w-0"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {favoriteFreelancers.map((freelancer: Freelancer | Expert) => {
+        {topFavorites.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {topFavorites.map((freelancer: Freelancer | Expert) => {
               // Use unified mapping function
               const expert = mapOneFreelancerToExpert(freelancer);
 
               return (
-                <CarouselItem
-                  key={expert.id}
-                  className="basis-4/5 md:basis-3/5 lg:basis-2/5 min-w-[330px] pl-2 md:pl-4"
-                >
-                  <div className="flex justify-center">
-                    <div className="w-full max-w-sm relative">
-                      <FavoriteFreelancerCard freelancer={expert} onBook={handleBook} />
-                    </div>
-                  </div>
-                </CarouselItem>
+                <div key={expert.id} className="w-full">
+                  <FavoriteFreelancerCard freelancer={expert} />
+                </div>
               );
             })}
-          </CarouselContent>
-          <CarouselPrevious className="-left-4 hidden md:flex opacity-70 z-20" />
-          <CarouselNext className="-right-4 hidden md:flex opacity-70 z-20" />
-        </Carousel>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-48 text-center">
+            <Heart className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">No favorite freelancers yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Add some favorites from the explore page to see them here
+            </p>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => router.push('/dashboard/explore')}
+            >
+              Explore Freelancers
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

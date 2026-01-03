@@ -31,6 +31,7 @@ interface Contact {
   id: string;
   name: string;
   avatar: string;
+  profilePicture?: string;
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
@@ -206,6 +207,7 @@ const MessagesPageContent = () => {
     id: contact.id,
     name: contact.name,
     avatar: contact.profilePicture || '',
+    profilePicture: contact.profilePicture || undefined,
     lastMessage: contact.lastMessage?.content || 'No messages yet',
     lastMessageTime: contact.lastMessage?.createdAt || new Date().toISOString(),
     unreadCount: contact.unreadCount,
@@ -412,7 +414,10 @@ const MessagesPageContent = () => {
                     <div className="flex items-center space-x-3">
                       <div className="relative">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={contact.avatar} alt={contact.name} />
+                          <AvatarImage
+                            src={contact.profilePicture || contact.avatar}
+                            alt={contact.name}
+                          />
                           <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                       </div>
