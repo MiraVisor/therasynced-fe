@@ -55,11 +55,9 @@ const statsConfig = [
 ];
 
 const VerificationsPage = () => {
-  // State for pagination and search
+  // State for pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | undefined>(
     undefined,
   );
@@ -76,20 +74,7 @@ const VerificationsPage = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      // Reset to page 1 when search changes
-      if (searchQuery !== debouncedSearch) {
-        setPage(1);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, debouncedSearch]);
-
-  // Fetch verifications with pagination, search, and status filter
+  // Fetch verifications with pagination and status filter
   const {
     data: verificationsData,
     isLoading,
@@ -99,7 +84,6 @@ const VerificationsPage = () => {
   } = useAdminVerifications({
     page,
     limit: pageSize,
-    name: debouncedSearch || undefined,
     status: statusFilter,
   });
 
@@ -549,12 +533,10 @@ const VerificationsPage = () => {
           enableFiltering={true}
           enableColumnVisibility={true}
           enablePagination={true}
-          showSearch={true}
+          showSearch={false}
           showSorting={false}
           initialLoading={isLoading && !verifications.length}
           loading={isFetching}
-          externalSearchValue={searchQuery}
-          onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}
           externalPageSize={pageSize}
           totalPages={pagination?.totalPages}

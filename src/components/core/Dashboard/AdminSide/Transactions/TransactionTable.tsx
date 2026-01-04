@@ -25,9 +25,6 @@ interface TransactionTableProps {
   page?: number;
   pageSize?: number;
   totalPages?: number;
-  searchValue?: string;
-  onSearchChange?: (value: string) => void;
-  searchPlaceholder?: string;
 }
 
 export function TransactionTable({
@@ -38,9 +35,6 @@ export function TransactionTable({
   page = 1,
   pageSize = 20,
   totalPages = 1,
-  searchValue,
-  onSearchChange,
-  searchPlaceholder = 'Search freelancer...',
 }: TransactionTableProps) {
   const [selectedTransaction, setSelectedTransaction] = useState<AdminTransaction | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -262,18 +256,14 @@ export function TransactionTable({
         columns={columns}
         data={transactions}
         title="All Transactions"
-        searchKey="freelancerName"
-        searchPlaceholder={searchPlaceholder}
         enableSorting={true}
         enableFiltering={true}
         enablePagination={true}
         pageSize={pageSize}
-        showSearch={true}
+        showSearch={false}
         showSorting={true}
         loading={isLoading}
         initialLoading={isLoading}
-        externalSearchValue={searchValue}
-        onExternalSearchChange={onSearchChange}
         externalPageIndex={page - 1}
         externalPageSize={pageSize}
         totalPages={totalPages}

@@ -22,7 +22,11 @@ export const useUnreadNotificationCount = () => {
     queryKey: ['notifications', 'unreadCount'],
     queryFn: () => notificationService.fetchUnreadCount(),
     select: (data) => data.count || 0,
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+    staleTime: 120000, // Consider data fresh for 2 minutes
+    refetchInterval: 180000, // Refetch every 3 minutes
+    refetchOnWindowFocus: true, // Only refetch when user returns to the tab
+    refetchOnMount: true, // Still refetch on mount for fresh data
+    refetchOnReconnect: true, // Refetch when connection is restored
   });
 };
 

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 
 import * as slotApi from '@/services/slotService';
+import { useProfile } from '@/hooks/queries/useProfile';
 import { getApiErrorMessage } from '@/types/common';
 import { CreateSlotsDto, PaginationDto, ReserveSlotDto, UpdateSlotDto } from '@/types/types';
 
@@ -61,6 +62,7 @@ export const useSlot = (id: string | null) => {
 
 /**
  * Hook to fetch available slots for a freelancer
+ * Automatically includes patientId for discount previews if user is authenticated as a patient
  */
 export const useAvailableSlots = (
   freelancerId: string | null,
@@ -70,11 +72,20 @@ export const useAvailableSlots = (
     limit?: number;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    includeDiscount?: boolean; // Optional: Set to false to skip discount calculation
   },
 ) => {
+  const { data: profile } = useProfile();
+  const isPatient = profile?.role === 'PATIENT';
+  const patientId = isPatient && params?.includeDiscount !== false ? profile?.id : undefined;
+
   return useQuery({
-    queryKey: ['slots', 'available', freelancerId, params],
-    queryFn: () => slotApi.getAvailableSlots(freelancerId!, params),
+    queryKey: ['slots', 'available', freelancerId, params, patientId],
+    queryFn: () =>
+      slotApi.getAvailableSlots(freelancerId!, {
+        ...params,
+        patientId,
+      }),
     enabled: !!freelancerId,
     select: (data) => data.data,
   });
@@ -98,16 +109,26 @@ export const useFreelancersByDate = (params: {
 
 /**
  * Hook to fetch available slots by date for a specific freelancer (now requires freelancerId)
+ * Automatically includes patientId for discount previews if user is authenticated as a patient
  */
 export const useAvailableSlotsByDate = (params: {
   date: string; // ISO date format YYYY-MM-DD (required)
   freelancerId: string; // Required: Filter by specific freelancer
   page?: number;
   limit?: number;
+  includeDiscount?: boolean; // Optional: Set to false to skip discount calculation
 }) => {
+  const { data: profile } = useProfile();
+  const isPatient = profile?.role === 'PATIENT';
+  const patientId = isPatient && params?.includeDiscount !== false ? profile?.id : undefined;
+
   return useQuery({
-    queryKey: ['slots', 'available-by-date', params],
-    queryFn: () => slotApi.getAvailableSlotsByDate(params),
+    queryKey: ['slots', 'available-by-date', params, patientId],
+    queryFn: () =>
+      slotApi.getAvailableSlotsByDate({
+        ...params,
+        patientId,
+      }),
     enabled: !!params.date && !!params.freelancerId,
     select: (data) => data.data,
   });

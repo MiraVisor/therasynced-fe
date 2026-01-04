@@ -61,6 +61,7 @@ export const ENDPOINTS = {
     reschedule: '/booking/reschedule',
     cancel: '/booking/cancel',
     complete: '/booking/complete',
+    completeBulk: '/booking/complete/bulk',
     updateNotes: (id: string) => `/booking/${id}/notes`,
     history: {
       admin: '/booking/history/admin',

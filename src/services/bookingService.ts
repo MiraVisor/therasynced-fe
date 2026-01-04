@@ -1,8 +1,10 @@
 import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
 import {
   ApiResponse,
   BookingStats,
   CancelBookingDto,
+  CompleteBookingBulkDto,
   CompleteBookingDto,
   CreateBookingDto,
   RescheduleBookingDto,
@@ -46,6 +48,11 @@ export const cancelBooking = async (data: CancelBookingDto) => {
 
 export const completeBooking = async (data: CompleteBookingDto) => {
   const response = await api.patch('/booking/complete', data);
+  return response.data;
+};
+
+export const completeBookingBulk = async (data: CompleteBookingBulkDto) => {
+  const response = await api.patch(ENDPOINTS.bookings.completeBulk, data);
   return response.data;
 };
 

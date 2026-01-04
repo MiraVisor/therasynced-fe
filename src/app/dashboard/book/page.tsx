@@ -405,22 +405,90 @@ export default function BookingPage() {
     }
   }, [availableLocationTypes, locationType]);
 
-  // Calculate total price
-  const totalPrice = useMemo(() => {
-    if (!selectedSlotData) return 0;
+  // Calculate price with discounts
+  const priceCalculation = useMemo(() => {
+    if (!selectedSlotData) {
+      return {
+        basePrice: 0,
+        servicePrice: 0,
+        subtotal: 0,
+        discountPercentage: 0,
+        discountAmount: 0,
+        finalPrice: 0,
+        locationFee: 0,
+        totalPrice: 0,
+        hasDiscount: false,
+      };
+    }
 
+    const slotBasePrice = selectedSlotData.basePrice ?? 0;
+    let servicePrice = 0;
+    let hasServicePricing = false;
+
+    // Check if service has valid pricing
     if (selectedServiceData && locationType) {
       const servicePricing = (selectedServiceData as any).pricing;
-      if (servicePricing?.[locationType]?.price) {
-        return Number(servicePricing[locationType].price) ?? 0;
+      const locationPricing = servicePricing?.[locationType];
+
+      if (
+        locationPricing &&
+        locationPricing.price !== null &&
+        locationPricing.price !== undefined
+      ) {
+        servicePrice = Number(locationPricing.price) ?? 0;
+        hasServicePricing = true;
       }
     }
 
-    let price = selectedSlotData.basePrice ?? 0;
-    if (selectedSlotData.location?.additionalFee && locationType === LocationType.CLINIC) {
-      price += selectedSlotData.location.additionalFee;
+    // Calculate subtotal (basePrice + service price)
+    const subtotal = slotBasePrice + servicePrice;
+
+    // Determine which discount to use
+    let discountPercentage = 0;
+    let discountAmount = 0;
+    let finalPrice = subtotal;
+    let hasDiscount = false;
+
+    // If service has pricing and discount, use service category discount
+    if (hasServicePricing && selectedServiceData && locationType) {
+      const servicePricing = (selectedServiceData as any).pricing;
+      const locationPricing = servicePricing?.[locationType];
+      const serviceDiscount = locationPricing?.discount;
+
+      if (serviceDiscount?.applicable) {
+        hasDiscount = true;
+        discountPercentage = serviceDiscount.discountPercentage;
+        discountAmount = serviceDiscount.discountAmount;
+        finalPrice = serviceDiscount.finalAmount;
+      }
     }
-    return price;
+    // If no service pricing or service has null pricing, use slot discount
+    else if (selectedSlotData.discount?.applicable && !hasServicePricing) {
+      hasDiscount = true;
+      discountPercentage = selectedSlotData.discount.discountPercentage;
+      discountAmount = selectedSlotData.discount.discountAmount;
+      finalPrice = selectedSlotData.discount.finalAmount;
+    }
+
+    // Add location fee if applicable
+    const locationFee =
+      selectedSlotData.location?.additionalFee && locationType === LocationType.CLINIC
+        ? selectedSlotData.location.additionalFee
+        : 0;
+
+    const totalPrice = finalPrice + locationFee;
+
+    return {
+      basePrice: slotBasePrice,
+      servicePrice,
+      subtotal,
+      discountPercentage,
+      discountAmount,
+      finalPrice,
+      locationFee,
+      totalPrice,
+      hasDiscount,
+    };
   }, [selectedSlotData, selectedServiceData, locationType]);
 
   // Check if booking is complete
@@ -1381,13 +1449,77 @@ export default function BookingPage() {
                                           </span>
                                         </div>
                                       )}
-                                      <div className="flex justify-between pt-4">
-                                        <span className="text-lg font-semibold text-charcoal dark:text-white">
-                                          Total:
-                                        </span>
-                                        <span className="text-2xl font-bold text-primary">
-                                          €{totalPrice.toFixed(2)}
-                                        </span>
+
+                                      {/* Price Breakdown */}
+                                      <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                          <span className="text-gray-600 dark:text-gray-400">
+                                            Base Price:
+                                          </span>
+                                          <span className="font-medium">
+                                            €{priceCalculation.basePrice.toFixed(2)}
+                                          </span>
+                                        </div>
+                                        {priceCalculation.servicePrice > 0 && (
+                                          <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                              Service Price:
+                                            </span>
+                                            <span className="font-medium">
+                                              €{priceCalculation.servicePrice.toFixed(2)}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {priceCalculation.hasDiscount && (
+                                          <>
+                                            <div className="flex justify-between text-sm">
+                                              <span className="text-green-600 dark:text-green-400 font-medium">
+                                                Stamp Discount (
+                                                {priceCalculation.discountPercentage.toFixed(0)}%):
+                                              </span>
+                                              <span className="text-green-600 dark:text-green-400 font-medium">
+                                                -€{priceCalculation.discountAmount.toFixed(2)}
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                              <span className="text-gray-600 dark:text-gray-400">
+                                                Price After Discount:
+                                              </span>
+                                              <span className="font-medium">
+                                                €{priceCalculation.finalPrice.toFixed(2)}
+                                              </span>
+                                            </div>
+                                          </>
+                                        )}
+                                        {priceCalculation.locationFee > 0 && (
+                                          <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                              Location Fee:
+                                            </span>
+                                            <span className="font-medium">
+                                              €{priceCalculation.locationFee.toFixed(2)}
+                                            </span>
+                                          </div>
+                                        )}
+                                        <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+                                          <span className="text-lg font-semibold text-charcoal dark:text-white">
+                                            Total:
+                                          </span>
+                                          <div className="flex flex-col items-end">
+                                            <span className="text-2xl font-bold text-primary">
+                                              €{priceCalculation.totalPrice.toFixed(2)}
+                                            </span>
+                                            {priceCalculation.hasDiscount && (
+                                              <span className="text-xs font-inter text-gray-500 line-through">
+                                                €
+                                                {(
+                                                  priceCalculation.subtotal +
+                                                  priceCalculation.locationFee
+                                                ).toFixed(2)}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-3">

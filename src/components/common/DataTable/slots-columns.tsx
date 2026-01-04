@@ -2,7 +2,7 @@
 
 import { ColumnDef, Row, Table } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { ArrowUpDown, Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,18 +53,25 @@ export const createSlotsColumns = (
       ]
     : []),
   {
-    accessorKey: 'startTime',
-    header: ({ column }) => {
+    accessorKey: 'patient',
+    header: () => <div className="font-semibold text-sm text-charcoal text-left">Patient</div>,
+    cell: ({ row }) => {
+      const patient = row.original.booking?.client;
+      if (!patient) {
+        return <span className="text-gray-400 text-sm italic">Unassigned</span>;
+      }
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
-        >
-          Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2 text-sm">
+          <span>{patient.name}</span>
+        </div>
       );
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'startTime',
+    header: () => {
+      return <div className="font-semibold text-sm text-charcoal text-left">Date</div>;
     },
     cell: ({ row }) => {
       const date = new Date(row.getValue('startTime'));
@@ -75,6 +82,7 @@ export const createSlotsColumns = (
         </div>
       );
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'startTime',
@@ -110,27 +118,32 @@ export const createSlotsColumns = (
   },
   {
     accessorKey: 'basePrice',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="font-semibold text-sm text-charcoal text-left hover:bg-transparent p-0"
-        >
-          Price
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+    header: () => {
+      return <div className="font-semibold text-sm text-charcoal text-left">Price</div>;
     },
     cell: ({ row }) => {
-      const price = parseFloat(row.getValue('basePrice'));
+      const slot = row.original;
+      const basePrice = parseFloat(row.getValue('basePrice'));
 
+      // If there's a booking, show only the actual total amount paid (final price)
+      if (slot.booking) {
+        const { totalAmount } = slot.booking;
+
+        return (
+          <div className="font-medium text-gray-900 text-sm whitespace-nowrap text-left">
+            €{totalAmount.toFixed(2)}
+          </div>
+        );
+      }
+
+      // For available slots, show base price (final price)
       return (
         <div className="font-medium text-gray-900 text-sm whitespace-nowrap text-left">
-          €{price}
+          €{basePrice.toFixed(2)}
         </div>
       );
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'duration',
@@ -152,15 +165,25 @@ export const createSlotsColumns = (
       return <div className="font-semibold text-sm text-charcoal text-left">Status</div>;
     },
     cell: ({ row }) => {
-      const status = row.getValue('status');
+      const slot = row.original;
+      const slotStatus = row.getValue('status');
+
+      // If slot is BOOKED, check the booking status to show COMPLETED if applicable
+      let displayStatus = slotStatus;
+      if (slotStatus === 'BOOKED' && slot.booking) {
+        const bookingStatus = slot.booking.status;
+        if (bookingStatus === 'COMPLETED' || bookingStatus === 'completed') {
+          displayStatus = 'COMPLETED';
+        }
+      }
 
       let badgeProps = {
         variant: 'secondary' as 'default' | 'secondary',
         className: 'text-sm',
-        label: status,
+        label: displayStatus,
       };
 
-      switch (status) {
+      switch (displayStatus) {
         case 'AVAILABLE':
           badgeProps = {
             variant: 'default',
@@ -173,6 +196,13 @@ export const createSlotsColumns = (
             variant: 'secondary',
             className: 'bg-blue-100 text-blue-800 hover:bg-blue-100 text-sm',
             label: 'Booked',
+          };
+          break;
+        case 'COMPLETED':
+          badgeProps = {
+            variant: 'secondary',
+            className: 'bg-purple-100 text-purple-800 hover:bg-purple-100 text-sm',
+            label: 'Completed',
           };
           break;
         case 'RESERVED':
@@ -190,7 +220,7 @@ export const createSlotsColumns = (
           };
           break;
         default:
-          const statusStr = String(status || 'unknown');
+          const statusStr = String(displayStatus || 'unknown');
           badgeProps = {
             variant: 'secondary',
             className: 'bg-red-100 text-red-800 hover:bg-red-100 text-sm',
@@ -220,15 +250,22 @@ export const createSlotsColumns = (
 
       return (
         <div className="flex flex-wrap gap-1 text-sm text-left">
-          {serviceCategories.map((category, index) => (
-            <Badge
-              key={category.id || index}
-              variant="secondary"
-              className="bg-purple-100 text-purple-800 hover:bg-purple-100 text-xs"
-            >
-              {category.name}
-            </Badge>
-          ))}
+          {serviceCategories.map((category, index) => {
+            // Handle both old structure (without jobTitle) and new structure (with jobTitle)
+            const categoryName = category.name;
+            const jobTitle = (category as any).jobTitle?.name;
+
+            return (
+              <Badge
+                key={category.id || index}
+                variant="secondary"
+                className="bg-purple-100 text-purple-800 hover:bg-purple-100 text-xs"
+                title={jobTitle ? `${categoryName} (${jobTitle})` : categoryName}
+              >
+                {categoryName}
+              </Badge>
+            );
+          })}
         </div>
       );
     },

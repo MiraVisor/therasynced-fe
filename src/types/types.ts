@@ -520,12 +520,51 @@ export interface Slot {
   endTime: string;
   duration: number;
   basePrice: number;
+  discount?: {
+    applicable: boolean;
+    discountPercentage: number;
+    discountAmount: number;
+    finalAmount: number;
+  };
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
   action?: 'created' | 'updated'; // Optional: indicates if slot was created or updated
   availableServices?: Service[]; // Legacy: Services available for this slot
-  availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
+  availableServiceCategories?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    jobTitle: {
+      id: string;
+      name: string;
+    };
+    locationTypes: ('HOME' | 'CLINIC')[]; // REQUIRED: Location types this service supports
+    pricing?: {
+      HOME?: {
+        price: number;
+        currency: string;
+        discount?: {
+          applicable: boolean;
+          subtotal?: number; // basePrice + service price (total before discount)
+          discountPercentage: number;
+          discountAmount: number;
+          finalAmount: number; // Final price after discount
+        };
+      };
+      CLINIC?: {
+        price: number;
+        currency: string;
+        discount?: {
+          applicable: boolean;
+          subtotal?: number; // basePrice + service price (total before discount)
+          discountPercentage: number;
+          discountAmount: number;
+          finalAmount: number; // Final price after discount
+        };
+      };
+    };
+  }>; // Service categories available for this slot (includes pricing with discounts)
   booking?: {
     id: string;
     status: string;
@@ -541,6 +580,11 @@ export interface Slot {
     };
     discountAmount?: number;
     discountPercentage?: number;
+    breakdown?: {
+      basePrice: number;
+      servicePrice: number;
+      discountAmount: number;
+    };
     services?: Array<{
       id: string;
       name: string;
@@ -714,6 +758,10 @@ export interface CancelBookingDto {
 export interface CompleteBookingDto {
   bookingId: string;
   completionNotes?: string;
+}
+
+export interface CompleteBookingBulkDto {
+  bookingIds: string[];
 }
 
 // ============================================
@@ -1249,6 +1297,24 @@ export interface StampHistory {
   createdAt: string;
 }
 
+export interface TherapistStampConfigStatistics {
+  totalPatients: number;
+  totalRewardsRedeemed: number;
+  activeRewardsReady: number;
+  pendingRewards: number;
+  totalStampsIssued: number;
+  totalRewardCycles: number;
+  hasRedeemedRewards: boolean;
+  status:
+    | 'INACTIVE'
+    | 'ACTIVE_NO_PATIENTS'
+    | 'ACTIVE_WITH_PENDING_REWARDS'
+    | 'ACTIVE_WITH_REDEMPTIONS'
+    | 'ACTIVE_WITH_READY_REWARDS'
+    | 'ACTIVE_WITH_STAMPS'
+    | 'ACTIVE';
+}
+
 export interface TherapistStampConfig {
   therapistId: string;
   stampTarget: number | null;
@@ -1263,6 +1329,7 @@ export interface TherapistStampConfig {
     email: string;
     isActive: boolean;
   };
+  statistics?: TherapistStampConfigStatistics;
 }
 
 export interface CreateTherapistStampConfigDto {

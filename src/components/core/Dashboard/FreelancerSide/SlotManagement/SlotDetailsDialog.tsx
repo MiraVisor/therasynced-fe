@@ -1,10 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
-  Award,
   CheckCircle2,
   Edit2,
   FileText,
-  Gift,
   Mail,
   MessageSquare,
   Package,
@@ -48,6 +47,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   onComplete,
   onDelete,
 }) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(slot.notes || '');
@@ -132,6 +132,12 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         toast.success(
           'Appointment marked as completed! ✅ The client will receive a stamp for this booking.',
         );
+
+        // Invalidate queries to refresh stamps and favorites data
+        queryClient.invalidateQueries({ queryKey: ['bookings'] });
+        queryClient.invalidateQueries({ queryKey: ['slots'] });
+        queryClient.invalidateQueries({ queryKey: ['stamps'] });
+        queryClient.invalidateQueries({ queryKey: ['favorites'] });
 
         // Call callbacks safely - don't let errors in callbacks trigger error toast
         try {
@@ -318,26 +324,9 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
               </div>
               <div>
                 <Label className="font-inter text-xs text-muted-foreground mb-1">Price</Label>
-                {slot.booking?.discountAmount && slot.booking.discountAmount > 0 ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <p className="font-poppins text-xl font-bold text-green-600">
-                        EUR {slot.booking.totalAmount.toFixed(2)}
-                      </p>
-                      <span className="text-sm font-inter text-gray-500 line-through">
-                        EUR {slot.basePrice.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="text-sm text-green-600 font-medium">
-                      {slot.booking.discountPercentage}% stamp discount applied (-EUR{' '}
-                      {slot.booking.discountAmount.toFixed(2)})
-                    </div>
-                  </div>
-                ) : (
-                  <p className="font-poppins text-xl font-bold text-primary">
-                    EUR {slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
-                  </p>
-                )}
+                <p className="font-poppins text-xl font-bold text-primary">
+                  EUR {slot.booking?.totalAmount?.toFixed(2) || slot.basePrice.toFixed(2)}
+                </p>
               </div>
             </div>
           </div>
@@ -430,29 +419,75 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
             </div>
           )}
 
-          {/* Stamp Discount Information */}
-          {slot.booking?.discountAmount !== undefined && slot.booking.discountAmount > 0 && (
+          {/* Price Breakdown (if booking exists) */}
+          {slot.booking && (
             <div className="mt-6 pt-6 border-t">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-green-100 mt-0.5">
-                    <Gift className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Award className="h-4 w-4 text-green-600" />
-                      <Label className="font-inter text-sm font-semibold text-green-900">
-                        Stamp Reward Applied
-                      </Label>
+              <Label className="font-inter text-xs text-muted-foreground mb-2 block">
+                Price Breakdown
+              </Label>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                {slot.booking.breakdown ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="font-inter text-sm text-charcoal">Base Price:</span>
+                      <span className="font-poppins font-semibold text-charcoal">
+                        EUR {slot.booking.breakdown.basePrice.toFixed(2)}
+                      </span>
                     </div>
-                    <p className="font-inter text-sm text-green-800 mb-1">
-                      Client received a {slot.booking.discountPercentage}% discount for earning
-                      enough stamps
-                    </p>
-                    <p className="font-poppins text-lg font-bold text-green-900">
-                      Discount: -EUR {slot.booking.discountAmount.toFixed(2)}
-                    </p>
-                  </div>
+                    {slot.booking.breakdown.servicePrice > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="font-inter text-sm text-charcoal">Service Price:</span>
+                        <span className="font-poppins font-semibold text-charcoal">
+                          EUR {slot.booking.breakdown.servicePrice.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-300">
+                      <span className="font-inter text-sm text-charcoal">Subtotal:</span>
+                      <span className="font-poppins font-semibold text-charcoal">
+                        EUR{' '}
+                        {(
+                          slot.booking.subtotalAmount ??
+                          slot.booking.breakdown.basePrice + slot.booking.breakdown.servicePrice
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                    {slot.booking.breakdown.discountAmount > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="font-inter text-sm text-green-600">
+                          Discount ({slot.booking.discountPercentage}%):
+                        </span>
+                        <span className="font-poppins font-semibold text-green-600">
+                          -EUR {slot.booking.breakdown.discountAmount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="font-inter text-sm text-charcoal">Subtotal:</span>
+                      <span className="font-poppins font-semibold text-charcoal">
+                        EUR {(slot.booking.subtotalAmount ?? slot.basePrice).toFixed(2)}
+                      </span>
+                    </div>
+                    {slot.booking.discountAmount && slot.booking.discountAmount > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="font-inter text-sm text-green-600">
+                          Discount ({slot.booking.discountPercentage}%):
+                        </span>
+                        <span className="font-poppins font-semibold text-green-600">
+                          -EUR {slot.booking.discountAmount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className="flex justify-between items-center pt-2 border-t-2 border-gray-400">
+                  <span className="font-poppins font-bold text-charcoal">Total Amount:</span>
+                  <span className="font-poppins text-lg font-bold text-primary">
+                    EUR {slot.booking.totalAmount.toFixed(2)}
+                  </span>
                 </div>
               </div>
             </div>

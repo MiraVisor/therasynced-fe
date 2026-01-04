@@ -47,25 +47,12 @@ interface Complaint {
 
 const ComplaintsPage = () => {
   const router = useRouter();
-  // State for pagination and search
+  // State for pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ComplaintStatus | undefined>(undefined);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      if (searchQuery !== debouncedSearch) {
-        setPage(1);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, debouncedSearch]);
-
-  // Fetch complaints with pagination, search, and status filter
+  // Fetch complaints with pagination and status filter
   const {
     data: complaintsData,
     isLoading,
@@ -75,7 +62,6 @@ const ComplaintsPage = () => {
   } = useAdminComplaints({
     page,
     limit: pageSize,
-    name: debouncedSearch || undefined,
     status: statusFilter,
   });
 
@@ -283,12 +269,10 @@ const ComplaintsPage = () => {
           enableFiltering={true}
           enableColumnVisibility={true}
           enablePagination={true}
-          showSearch={true}
+          showSearch={false}
           showSorting={false}
           initialLoading={isLoading && !complaints.length}
           loading={isFetching}
-          externalSearchValue={searchQuery}
-          onExternalSearchChange={(value) => setSearchQuery(value)}
           externalPageIndex={page - 1}
           externalPageSize={pageSize}
           totalPages={pagination?.totalPages}
