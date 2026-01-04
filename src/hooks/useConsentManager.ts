@@ -84,7 +84,11 @@ export const useConsentManager = (): ConsentManager => {
       void queryClient.invalidateQueries({ queryKey: ['consents'] });
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error) || 'Failed to update consent');
+      // Don't show error here if it's a 403 - handleUpdateConsent will show a custom message
+      const apiError = error as { response?: { status?: number } };
+      if (apiError.response?.status !== 403) {
+        toast.error(getApiErrorMessage(error) || 'Failed to update consent');
+      }
     },
   });
 
@@ -115,17 +119,53 @@ export const useConsentManager = (): ConsentManager => {
   };
 
   const handleUpdateConsent = async (type: ConsentType, granted: boolean): Promise<void> => {
-    await updateConsentMutation.mutateAsync({ type, granted });
-    if (granted) {
-      toast.success('Consent granted successfully');
-    } else {
-      toast.info('Consent withdrawn');
+    try {
+      await updateConsentMutation.mutateAsync({ type, granted });
+      if (granted) {
+        toast.success('Consent granted successfully');
+      } else {
+        toast.info('Consent withdrawn');
+      }
+    } catch (error: unknown) {
+      // Handle 403 Forbidden for required consent withdrawal
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (apiError.response?.status === 403) {
+          const errorMessage =
+            apiError.response.data?.message ||
+            'Required agreements cannot be withdrawn without closing the account. If you wish to withdraw this agreement, you will need to delete your account.';
+          toast.error(errorMessage, {
+            autoClose: 6000,
+          });
+          return;
+        }
+      }
+      // Re-throw to let the mutation's onError handle it
+      throw error;
     }
   };
 
   const handleUpdateMultipleConsents = async (updates: ConsentUpdateRequest[]): Promise<void> => {
-    await updateMultipleConsentsMutation.mutateAsync(updates);
-    toast.success('Consents updated successfully');
+    try {
+      await updateMultipleConsentsMutation.mutateAsync(updates);
+      toast.success('Consents updated successfully');
+    } catch (error: unknown) {
+      // Handle 403 Forbidden for required consent withdrawal
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (apiError.response?.status === 403) {
+          const errorMessage =
+            apiError.response.data?.message ||
+            'Required agreements cannot be withdrawn without closing the account. If you wish to withdraw these agreements, you will need to delete your account.';
+          toast.error(errorMessage, {
+            autoClose: 6000,
+          });
+          return;
+        }
+      }
+      // Re-throw to let the mutation's onError handle it
+      throw error;
+    }
   };
 
   return {

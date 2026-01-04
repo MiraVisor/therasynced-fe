@@ -1,4 +1,6 @@
 import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
+import { ToggleRatingVisibilityRequest, ToggleRatingVisibilityResponse } from '@/types/rating';
 import {
   ApiResponse,
   CreateRatingDto,
@@ -38,5 +40,12 @@ export const getMyRatings = async (params?: {
   maxRating?: number;
 }): Promise<MyRatingsResponse> => {
   const response = await api.get('/ratings/my-ratings', { params });
+  return response.data;
+};
+
+export const toggleRatingVisibility = async (
+  data: ToggleRatingVisibilityRequest,
+): Promise<ToggleRatingVisibilityResponse> => {
+  const response = await api.post(ENDPOINTS.ratings.toggleVisibility, data);
   return response.data;
 };

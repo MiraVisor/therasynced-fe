@@ -62,11 +62,53 @@ export const useSlot = (id: string | null) => {
 /**
  * Hook to fetch available slots for a freelancer
  */
-export const useAvailableSlots = (freelancerId: string | null) => {
+export const useAvailableSlots = (
+  freelancerId: string | null,
+  params?: {
+    date?: string; // ISO date format YYYY-MM-DD
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  },
+) => {
   return useQuery({
-    queryKey: ['slots', 'available', freelancerId],
-    queryFn: () => slotApi.getAvailableSlots(freelancerId!),
+    queryKey: ['slots', 'available', freelancerId, params],
+    queryFn: () => slotApi.getAvailableSlots(freelancerId!, params),
     enabled: !!freelancerId,
+    select: (data) => data.data,
+  });
+};
+
+/**
+ * Hook to fetch freelancers who have available slots on a specific date
+ */
+export const useFreelancersByDate = (params: {
+  date: string; // ISO date format YYYY-MM-DD (required)
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: ['slots', 'freelancers-by-date', params],
+    queryFn: () => slotApi.getFreelancersByDate(params),
+    enabled: !!params.date,
+    select: (data) => data.data,
+  });
+};
+
+/**
+ * Hook to fetch available slots by date for a specific freelancer (now requires freelancerId)
+ */
+export const useAvailableSlotsByDate = (params: {
+  date: string; // ISO date format YYYY-MM-DD (required)
+  freelancerId: string; // Required: Filter by specific freelancer
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: ['slots', 'available-by-date', params],
+    queryFn: () => slotApi.getAvailableSlotsByDate(params),
+    enabled: !!params.date && !!params.freelancerId,
     select: (data) => data.data,
   });
 };
@@ -132,6 +174,36 @@ export const useDeleteSlot = () => {
 };
 
 /**
+ * Hook to delete all slots for a specific day
+ */
+export const useDeleteDaySlots = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ date, deleteByDayOfWeek }: { date: string; deleteByDayOfWeek?: boolean }) =>
+      slotApi.deleteDaySlots(date, deleteByDayOfWeek),
+    onSuccess: (data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
+      const deletedCount = data.data?.deletedCount ?? 0;
+      if (deletedCount > 0) {
+        if (variables.deleteByDayOfWeek) {
+          const dayName = new Date(variables.date).toLocaleDateString('en-US', { weekday: 'long' });
+          toast.success(`Successfully deleted ${deletedCount} slot(s) for all future ${dayName}s`);
+        } else {
+          toast.success(`Successfully deleted ${deletedCount} slot(s) for ${data.data?.date}`);
+        }
+      } else {
+        toast.info('No slots found for the specified criteria');
+      }
+    },
+    onError: (error: unknown) => {
+      const errorMessage = getApiErrorMessage(error);
+      toast.error(errorMessage || 'Failed to delete slots');
+    },
+  });
+};
+
+/**
  * Hook to reserve a slot
  */
 export const useReserveSlot = () => {
@@ -145,5 +217,17 @@ export const useReserveSlot = () => {
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to reserve slot');
     },
+  });
+};
+
+/**
+ * Hook to fetch last week's slot pattern for pattern recognition
+ */
+export const useLastWeekPattern = (params?: { weekStart?: string }) => {
+  return useQuery({
+    queryKey: ['slots', 'last-week-pattern', params],
+    queryFn: () => slotApi.getLastWeekPattern(params),
+    select: (data) => data.data,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   });
 };

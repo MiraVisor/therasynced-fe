@@ -51,9 +51,15 @@ const DataTable = dynamic(
 export default function VerificationPage() {
   const { role } = useAuth();
 
-  // State for file upload
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [fileTitles, setFileTitles] = useState<string[]>([]);
+  // State for verification documents upload
+  const [selectedVerificationFiles, setSelectedVerificationFiles] = useState<File[]>([]);
+  const [verificationFileTitles, setVerificationFileTitles] = useState<string[]>([]);
+
+  // State for first aid certificate upload
+  const [selectedCertificateFiles, setSelectedCertificateFiles] = useState<File[]>([]);
+  const [certificateFileTitles, setCertificateFileTitles] = useState<string[]>([]);
+
+  // Common state
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<FileMetadata | null>(null);
@@ -98,21 +104,21 @@ export default function VerificationPage() {
   // Filter files by category
   const verificationFiles = files.filter((f) => f.category === 'VERIFICATION');
 
-  // Handle upload
-  const handleUpload = () => {
-    if (selectedFiles.length === 0) {
+  // Handle verification documents upload
+  const handleVerificationUpload = () => {
+    if (selectedVerificationFiles.length === 0) {
       toast.error('Please select at least one file');
       return;
     }
 
-    if (selectedFiles.length !== fileTitles.length) {
+    if (selectedVerificationFiles.length !== verificationFileTitles.length) {
       toast.error('Please provide a title for each file');
       return;
     }
 
     // Validate all titles are filled
-    for (let i = 0; i < fileTitles.length; i++) {
-      if (!fileTitles[i]?.trim()) {
+    for (let i = 0; i < verificationFileTitles.length; i++) {
+      if (!verificationFileTitles[i]?.trim()) {
         toast.error(`Please provide a title for file ${i + 1}`);
         return;
       }
@@ -120,14 +126,49 @@ export default function VerificationPage() {
 
     uploadMutation.mutate(
       {
-        files: selectedFiles,
-        titles: fileTitles.map((t) => t.trim()),
+        files: selectedVerificationFiles,
+        titles: verificationFileTitles.map((t) => t.trim()),
         category: 'VERIFICATION',
       },
       {
         onSuccess: () => {
-          setSelectedFiles([]);
-          setFileTitles([]);
+          setSelectedVerificationFiles([]);
+          setVerificationFileTitles([]);
+        },
+      },
+    );
+  };
+
+  // Handle first aid certificate upload
+  const handleCertificateUpload = () => {
+    if (selectedCertificateFiles.length === 0) {
+      toast.error('Please select at least one file');
+      return;
+    }
+
+    if (selectedCertificateFiles.length !== certificateFileTitles.length) {
+      toast.error('Please provide a title for each file');
+      return;
+    }
+
+    // Validate all titles are filled
+    for (let i = 0; i < certificateFileTitles.length; i++) {
+      if (!certificateFileTitles[i]?.trim()) {
+        toast.error(`Please provide a title for file ${i + 1}`);
+        return;
+      }
+    }
+
+    uploadMutation.mutate(
+      {
+        files: selectedCertificateFiles,
+        titles: certificateFileTitles.map((t) => t.trim()),
+        category: 'FIRST_AID_CERTIFICATE',
+      },
+      {
+        onSuccess: () => {
+          setSelectedCertificateFiles([]);
+          setCertificateFileTitles([]);
         },
       },
     );
@@ -204,6 +245,25 @@ export default function VerificationPage() {
           <span className="font-medium">{row.original.title}</span>
         </div>
       ),
+    },
+    {
+      accessorKey: 'category',
+      header: 'Category',
+      cell: ({ row }) => {
+        const { category } = row.original;
+        return (
+          <Badge
+            variant="outline"
+            className={
+              category === 'FIRST_AID_CERTIFICATE'
+                ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300'
+                : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300'
+            }
+          >
+            {category === 'FIRST_AID_CERTIFICATE' ? 'First Aid Certificate' : 'Verification'}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: 'fileName',
@@ -353,20 +413,27 @@ export default function VerificationPage() {
           </Card>
         </div>
 
-        {/* File Upload Section */}
+        {/* Verification Documents Upload Section */}
         <Card>
           <CardHeader>
-            <CardTitle>Upload Files</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Upload Verification Documents
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Upload licenses, qualifications, certifications, and other professional verification
+              documents
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* File Upload Component */}
             <FileUpload
               maxFiles={5}
               maxSize={10 * 1024 * 1024} // 10MB
-              value={selectedFiles}
-              onValueChange={setSelectedFiles}
-              fileTitles={fileTitles}
-              onTitlesChange={setFileTitles}
+              value={selectedVerificationFiles}
+              onValueChange={setSelectedVerificationFiles}
+              fileTitles={verificationFileTitles}
+              onTitlesChange={setVerificationFileTitles}
               showTitles={true}
               accept=".jpg,.jpeg,.png,.pdf"
               disabled={uploadMutation.isPending}
@@ -374,16 +441,57 @@ export default function VerificationPage() {
 
             {/* Upload Button */}
             <Button
-              onClick={handleUpload}
+              onClick={handleVerificationUpload}
               disabled={
                 uploadMutation.isPending ||
-                selectedFiles.length === 0 ||
-                selectedFiles.length !== fileTitles.length ||
-                fileTitles.some((t) => !t?.trim())
+                selectedVerificationFiles.length === 0 ||
+                selectedVerificationFiles.length !== verificationFileTitles.length ||
+                verificationFileTitles.some((t) => !t?.trim())
               }
               className="w-full"
             >
-              {uploadMutation.isPending ? 'Uploading...' : 'Upload Files'}
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload Verification Documents'}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* First Aid Certificate Upload Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5" />
+              Upload First Aid Certificate
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Upload your first aid certificate for professional verification
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* File Upload Component */}
+            <FileUpload
+              maxFiles={1}
+              maxSize={10 * 1024 * 1024} // 10MB
+              value={selectedCertificateFiles}
+              onValueChange={setSelectedCertificateFiles}
+              fileTitles={certificateFileTitles}
+              onTitlesChange={setCertificateFileTitles}
+              showTitles={true}
+              accept=".jpg,.jpeg,.png,.pdf"
+              disabled={uploadMutation.isPending}
+            />
+
+            {/* Upload Button */}
+            <Button
+              onClick={handleCertificateUpload}
+              disabled={
+                uploadMutation.isPending ||
+                selectedCertificateFiles.length === 0 ||
+                selectedCertificateFiles.length !== certificateFileTitles.length ||
+                certificateFileTitles.some((t) => !t?.trim())
+              }
+              className="w-full"
+            >
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload First Aid Certificate'}
             </Button>
           </CardContent>
         </Card>

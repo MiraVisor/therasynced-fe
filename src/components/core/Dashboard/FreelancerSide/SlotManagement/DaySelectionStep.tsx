@@ -22,19 +22,40 @@ interface DaySelectionStepProps {
   selectedDays: string[];
   onDaysChange: (days: string[]) => void;
   tier: PlanType | null;
+  /**
+   * Whether user is in trial (unlimited access)
+   */
+  isInTrial?: boolean;
+  /**
+   * Max days per week from subscription (null = unlimited)
+   */
+  maxDaysPerWeek?: number | null;
 }
 
-export const DaySelectionStep = ({ selectedDays, onDaysChange, tier }: DaySelectionStepProps) => {
-  const maxDays = getMaxDaysForTier(tier);
-  const tierDisplayName = getTierDisplayName(tier);
+export const DaySelectionStep = ({
+  selectedDays,
+  onDaysChange,
+  tier,
+  isInTrial = false,
+  maxDaysPerWeek,
+}: DaySelectionStepProps) => {
+  // Trial users get unlimited days (7 days)
+  // Otherwise use maxDaysPerWeek from subscription, or fall back to tier-based limit
+  const maxDays =
+    isInTrial || maxDaysPerWeek === null
+      ? 7 // Unlimited for trials
+      : maxDaysPerWeek !== undefined
+        ? maxDaysPerWeek
+        : getMaxDaysForTier(tier);
+  const tierDisplayName = isInTrial ? 'Trial' : getTierDisplayName(tier);
 
   const toggleDay = (dayKey: string) => {
     if (selectedDays.includes(dayKey)) {
       // Allow deselection
       onDaysChange(selectedDays.filter((d) => d !== dayKey));
     } else {
-      // Check if at tier limit
-      if (selectedDays.length >= maxDays) {
+      // Check if at tier limit (but not for trials - they have unlimited)
+      if (!isInTrial && selectedDays.length >= maxDays) {
         toast.error(
           `You can only select up to ${maxDays} days with your ${tierDisplayName} plan. Please deselect a day first or upgrade to select more.`,
         );
@@ -45,7 +66,8 @@ export const DaySelectionStep = ({ selectedDays, onDaysChange, tier }: DaySelect
     }
   };
 
-  const isAtLimit = selectedDays.length >= maxDays;
+  // Trial users never hit a limit (maxDays = 7 for them)
+  const isAtLimit = !isInTrial && selectedDays.length >= maxDays;
 
   return (
     <div className="space-y-6">
@@ -62,11 +84,11 @@ export const DaySelectionStep = ({ selectedDays, onDaysChange, tier }: DaySelect
             </Badge>
           )}
         </div>
-        {isAtLimit && (
+        {isAtLimit && tier !== 'GOLD' && maxDays < 7 && (
           <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <p className="text-xs text-primary">
-              You've reached your {tierDisplayName} plan limit of {maxDays} days. Upgrade to select
-              more days.
+              You&apos;ve reached your {tierDisplayName} plan limit of {maxDays} days. Upgrade to
+              select more days.
             </p>
           </div>
         )}

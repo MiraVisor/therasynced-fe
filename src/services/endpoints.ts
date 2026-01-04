@@ -13,6 +13,8 @@ export const ENDPOINTS = {
   profile: {
     get: '/profile',
     update: '/profile',
+    uploadPicture: '/profile/picture',
+    getPictureSignedUrl: '/profile/picture/signed-url',
     changePassword: '/profile/change-password',
     changeEmail: '/profile/change-email',
     delete: '/profile',
@@ -29,11 +31,15 @@ export const ENDPOINTS = {
     mySlots: '/slot/my-slots', // For freelancer's own slots
     bookedSlots: '/slot/booked-slots',
     available: (freelancerId: string) => `/slot/available/${freelancerId}`,
+    availableByDate: '/slot/available-by-date', // NEW: Get slots by date
     update: (id: string) => `/slot/${id}`,
     delete: (id: string) => `/slot/${id}`,
+    deleteDay: (date: string) => `/slot/day/${date}`, // Delete all slots for a specific day
     freelancer: (id: string) => `/slot/freelancer/${id}/available`,
     reserve: (slotId: string) => `/slots/${slotId}/reserve`,
     release: (slotId: string) => `/slots/${slotId}/release`,
+    stats: '/slot/stats/my-slots',
+    lastWeekPattern: '/slot/last-week-pattern',
   },
   // Service management
   services: {
@@ -83,11 +89,19 @@ export const ENDPOINTS = {
     // Form templates
     formSignedUrl: (id: string) => `/freelancer/forms/${id}/signed-url`,
     stats: '/freelancer/admin/stats',
-    analytics: '/freelancer/analytics',
+    analytics: '/freelancer/analytics', // Legacy endpoint - kept for backward compatibility
+    analyticsOverview: '/freelancer/analytics/overview',
+    analyticsRevenue: '/freelancer/analytics/revenue',
+    analyticsClients: '/freelancer/analytics/clients',
+    analyticsBookings: '/freelancer/analytics/bookings',
+    analyticsServices: '/freelancer/analytics/services',
+    analyticsRatings: '/freelancer/analytics/ratings',
+    analyticsLocations: '/freelancer/analytics/locations',
     tierBronze: '/freelancer/tier/bronze',
     tierSilver: '/freelancer/tier/silver',
     tierGold: '/freelancer/tier/gold',
     search: '/freelancer/search',
+    profileCompletion: '/freelancer/profile-completion',
   },
   // Dashboard endpoints
   dashboard: {
@@ -107,6 +121,8 @@ export const ENDPOINTS = {
     getAll: '/service/categories/all', // Flat list (recommended for pricing setup)
     getGrouped: '/service/categories', // Grouped by job title
     getByJobTitle: (jobTitle: string) => `/service-categories/${jobTitle}`,
+    getCategoryByFreelancerId: (freelancerId: string) =>
+      `/service/categories/freelancer/${freelancerId}`, // Get categories by freelancer ID
   },
   // Job titles endpoints
   jobTitles: {
@@ -195,6 +211,7 @@ export const ENDPOINTS = {
     getFreelancerRatings: (freelancerId: string) => `/ratings/freelancer/${freelancerId}`,
     checkBookingEligibility: (bookingId: string) => `/ratings/booking/${bookingId}`,
     getMyRatings: '/ratings/my-ratings',
+    toggleVisibility: '/ratings/toggle-visibility',
   },
   // Admin endpoints
   admin: {
@@ -284,6 +301,7 @@ export const ENDPOINTS = {
     finance: {
       getRevenue: '/admin/finance/revenue',
       getSubscriptions: '/admin/finance/subscriptions',
+      getMetrics: '/subscription/metrics',
       getTransactions: '/admin/transactions',
       getTransactionDetails: (id: string) => `/admin/transactions/${id}`,
       getTransactionInvoice: (id: string) => `/admin/transactions/${id}/invoice`,

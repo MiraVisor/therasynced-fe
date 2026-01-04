@@ -316,3 +316,12 @@ html {
   background-color: #f5f5f5;
   border-radius: 8px;
 }
+
+/* Trial Expired Modal - Ensure high z-index for blocking overlay */
+[data-radix-dialog-overlay] {
+  z-index: 9998 !important;
+}
+
+[data-radix-dialog-content] {
+  z-index: 9999 !important;
+}

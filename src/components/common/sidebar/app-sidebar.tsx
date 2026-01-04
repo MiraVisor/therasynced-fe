@@ -15,7 +15,6 @@ import {
   Database,
   FileDown,
   FileText,
-  Heart,
   Home,
   LogOut,
   Map,
@@ -75,17 +74,12 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: Home,
     },
     {
-      name: 'Explore',
-      url: '/dashboard/explore',
+      name: 'Book',
+      url: '/dashboard/book',
       icon: Map,
     },
     {
-      name: 'Favorites',
-      url: '/dashboard/favorites',
-      icon: Heart,
-    },
-    {
-      name: 'My Bookings',
+      name: 'Sessions',
       url: '/dashboard/my-bookings',
       icon: Calendar,
     },
@@ -93,6 +87,11 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       name: 'Messages',
       url: '/dashboard/messages',
       icon: MessageSquare,
+    },
+    {
+      name: 'Loyalty',
+      url: '/dashboard/loyalty',
+      icon: Award,
     },
     {
       name: 'Account',
@@ -228,11 +227,6 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       name: 'Compliance',
       icon: Database,
       subItems: [
-        {
-          name: 'Audit & Compliance',
-          url: '/dashboard/admin/audit',
-          icon: Shield,
-        },
         {
           name: 'Health Data Logs',
           url: '/dashboard/admin/health-data-logs',

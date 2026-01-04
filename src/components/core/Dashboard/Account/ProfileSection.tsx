@@ -1,11 +1,13 @@
 'use client';
 
 import { format } from 'date-fns';
-import { ArrowRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowRight, Camera, Loader2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,10 +24,12 @@ import {
 import { ProfileSectionSkeleton } from '@/components/ui/skeletons/ProfileSectionSkeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useJobTitles } from '@/hooks/queries/useJobTitles';
-import { useProfile, useUpdateProfile } from '@/hooks/queries/useProfile';
+import { useProfile, useUpdateProfile, useUploadProfilePicture } from '@/hooks/queries/useProfile';
 import { useAuth } from '@/hooks/useAuthZustand';
 import { cn } from '@/lib/utils';
 import { JobTitle, ROLES } from '@/types/types';
+
+import { RatingVisibilityToggle } from './RatingVisibilityToggle';
 
 interface UserProfile {
   id?: string;
@@ -42,14 +46,18 @@ interface UserProfile {
   mainJobTitle?: JobTitle;
   mainJobTitleId?: string;
   clinicAddress?: string;
+  homeAddress?: string; // Home address for bookings
 }
 
 export function ProfileSection() {
   const { role } = useAuth();
   const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const { data: profileData, isLoading: loading, isFetching: initialLoading } = useProfile();
   const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+  const { mutate: uploadProfilePicture, isPending: isUploadingPicture } = useUploadProfilePicture();
   const { data: jobTitles = [], isLoading: isLoadingJobTitles } = useJobTitles();
 
   const [formData, setFormData] = useState<UserProfile>({
@@ -62,17 +70,44 @@ export function ProfileSection() {
     mainJobTitle: undefined,
     mainJobTitleId: undefined,
     clinicAddress: '',
+    homeAddress: '',
   });
 
   useEffect(() => {
     if (profileData) {
+      // Normalize date of birth to YYYY-MM-DD format
+      let normalizedDob = '';
+      if (profileData.dob) {
+        try {
+          const date = new Date(profileData.dob);
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            normalizedDob = `${year}-${month}-${day}`;
+          } else {
+            // If it's already in YYYY-MM-DD format, use it as is
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (dateRegex.test(profileData.dob)) {
+              normalizedDob = profileData.dob;
+            }
+          }
+        } catch (error) {
+          // If parsing fails, try to use the original value if it matches YYYY-MM-DD
+          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          if (dateRegex.test(profileData.dob)) {
+            normalizedDob = profileData.dob;
+          }
+        }
+      }
+
       setFormData({
         id: profileData.id,
         name: profileData.name || '',
         email: profileData.email || '',
-        profilePicture: profileData.profilePicture,
+        profilePicture: profileData.profilePicture || undefined, // Ensure it's undefined if empty, not empty string
         gender: profileData.gender || '',
-        dob: profileData.dob || '',
+        dob: normalizedDob,
         city: profileData.city || '',
         description: profileData.description || '',
         isEmailVerified: profileData.isEmailVerified,
@@ -81,7 +116,20 @@ export function ProfileSection() {
         mainJobTitleId: profileData.mainJobTitle?.id,
         mainJobTitle: profileData.mainJobTitle,
         clinicAddress: profileData.clinicAddress || '',
+        homeAddress: profileData.homeAddress || '',
       });
+
+      // Debug: Log profile picture URL
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ProfileSection] Profile picture URL:', profileData.profilePicture);
+        console.log('[ProfileSection] Profile data:', {
+          hasProfilePicture: !!profileData.profilePicture,
+          profilePictureLength: profileData.profilePicture?.length || 0,
+        });
+      }
+
+      // Reset preview when profile data changes
+      setPreviewUrl(null);
     }
   }, [profileData]);
 
@@ -153,6 +201,7 @@ export function ProfileSection() {
         gender?: string;
         dob?: string;
         description?: string;
+        homeAddress?: string;
       } = {
         name: formData.name.trim(),
       };
@@ -169,6 +218,8 @@ export function ProfileSection() {
       if (formData.description?.trim()) {
         updateData.description = formData.description.trim();
       }
+      // Always include homeAddress (even if empty) so backend can clear it if needed
+      updateData.homeAddress = formData.homeAddress?.trim() || '';
 
       updateProfile(updateData, {
         onSuccess: () => {
@@ -197,15 +248,71 @@ export function ProfileSection() {
       updateData.mainJobTitleId = null;
     }
 
-    if (formData.clinicAddress?.trim()) {
-      updateData.clinicAddress = formData.clinicAddress.trim();
-    }
+    // Always include clinicAddress (even if empty) so backend can clear it if needed
+    updateData.clinicAddress = formData.clinicAddress?.trim() || '';
 
     updateProfile(updateData, {
       onSuccess: () => {
         // Toast is already shown in the hook
       },
     });
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload a JPEG, PNG, or WEBP image.');
+      return;
+    }
+
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 2MB.');
+      return;
+    }
+
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadPicture = () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      toast.error('Please select an image file.');
+      return;
+    }
+
+    uploadProfilePicture(file, {
+      onSuccess: (response) => {
+        // Immediately update the profile picture URL from the response
+        if (response?.data?.profilePicture) {
+          setFormData((prev) => ({
+            ...prev,
+            profilePicture: response.data.profilePicture,
+          }));
+        }
+        setPreviewUrl(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      },
+    });
+  };
+
+  const handleRemovePreview = () => {
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   if ((initialLoading || loading) && !profileData) {
@@ -218,6 +325,82 @@ export function ProfileSection() {
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-poppins font-semibold text-gray-900">Personal Information</h3>
+        </div>
+
+        {/* Profile Picture Upload Section */}
+        <div className="mb-6 pb-6 border-b border-gray-200">
+          <Label className="text-sm font-medium text-gray-700 mb-3 block">Profile Picture</Label>
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <Avatar className="h-24 w-24 border-2 border-gray-300">
+                <ProfileAvatarImage
+                  src={
+                    previewUrl ||
+                    (formData.profilePicture?.trim() ? formData.profilePicture : undefined)
+                  }
+                  alt={formData.name || 'Profile'}
+                  isCurrentUser={true}
+                />
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-poppins font-bold">
+                  {formData.name?.charAt(0)?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              {isUploadingPicture && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                  <Loader2 className="h-6 w-6 animate-spin text-white" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={isUploadingPicture}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingPicture}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="h-4 w-4" />
+                  {previewUrl ? 'Change Picture' : 'Upload Picture'}
+                </Button>
+                {previewUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemovePreview}
+                    disabled={isUploadingPicture}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
+              {previewUrl && (
+                <Button
+                  type="button"
+                  onClick={handleUploadPicture}
+                  disabled={isUploadingPicture}
+                  className="bg-primary hover:bg-primary/90 text-white"
+                  isLoading={isUploadingPicture}
+                >
+                  {isUploadingPicture ? 'Uploading...' : 'Save Picture'}
+                </Button>
+              )}
+              <p className="text-xs text-gray-500">
+                Supported formats: JPEG, PNG, WEBP. Max size: 2MB
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -290,6 +473,27 @@ export function ProfileSection() {
             </div>
           </div>
 
+          {/* Home Address - Only for patients */}
+          {role === ROLES.PATIENT && (
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="homeAddress" className="text-sm font-medium text-gray-700">
+                Home Address
+              </Label>
+              <Input
+                id="homeAddress"
+                placeholder="Enter your home address for bookings"
+                value={formData.homeAddress || ''}
+                onChange={(e) => handleInputChange('homeAddress', e.target.value)}
+                className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+                disabled={((initialLoading || loading) && !profileData) || isPersonalInfoLoading}
+              />
+              <p className="text-xs text-gray-500">
+                This address will be used for home visit bookings. You can leave it empty and
+                provide it when booking.
+              </p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
               Gender
@@ -339,6 +543,7 @@ export function ProfileSection() {
           <div className="space-y-2">
             <Label htmlFor="dob" className="text-sm font-medium text-gray-700">
               Date of Birth
+              <span className="text-xs font-normal text-gray-500 ml-1">(Must be 18+)</span>
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -351,7 +556,11 @@ export function ProfileSection() {
                     formData.dob && 'text-charcoal',
                   )}
                 >
-                  {formData.dob ? format(new Date(formData.dob), 'PPP') : <span>Pick a date</span>}
+                  {formData.dob ? (
+                    format(new Date(formData.dob), 'PPP')
+                  ) : (
+                    <span>Select your date of birth</span>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -389,11 +598,21 @@ export function ProfileSection() {
                   }}
                   captionLayout="dropdown"
                   fromYear={1900}
-                  toYear={new Date().getFullYear()}
+                  toYear={new Date().getFullYear() - 18}
+                  defaultMonth={
+                    new Date(
+                      new Date().getFullYear() - 18,
+                      new Date().getMonth(),
+                      new Date().getDate(),
+                    )
+                  }
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
+            <p className="text-xs text-gray-500">
+              You must be at least 18 years old to use this service
+            </p>
           </div>
         </div>
 
@@ -499,6 +718,10 @@ export function ProfileSection() {
                   )}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <RatingVisibilityToggle />
             </div>
 
             <div className="space-y-2">

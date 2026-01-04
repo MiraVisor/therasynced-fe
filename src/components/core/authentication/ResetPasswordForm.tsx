@@ -55,10 +55,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onBackToSignIn })
     try {
       await resetPasswordApi(token, { newPassword });
       setSuccess(true);
-      // Navigate to sign-in with success parameter
+      // Navigate to sign-in with success parameter after showing success message
       setTimeout(() => {
         router.push('/authentication/sign-in?reset=success');
-      }, 1500);
+      }, 2000);
     } catch (err: unknown) {
       const apiError = err as { response?: { data?: { message?: string } } };
       setError(apiError?.response?.data?.message || 'Failed to reset password. Please try again.');

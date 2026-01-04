@@ -25,7 +25,6 @@ export const PlanCard = ({
   hasActiveSubscription = false,
 }: PlanCardProps) => {
   const isCurrentPlan = currentPlanName === plan.name;
-  const displaySlots = plan.maxSlots === null ? 'Unlimited slots' : `Up to ${plan.maxSlots} slots`;
 
   // Get plan color scheme
   const getPlanColors = () => {
@@ -89,7 +88,7 @@ export const PlanCard = ({
       className={`group relative flex h-full flex-col transition-all duration-300 ${
         isCurrentPlan
           ? `border-2 ${planColors.border} ${planColors.bg} shadow-md`
-          : 'border border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:shadow-lg'
+          : 'border border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02]'
       } ${isRecommended && !isCurrentPlan ? 'ring-2 ring-primary/30 ring-offset-2' : ''}`}
     >
       {isRecommended && !isCurrentPlan && (
@@ -142,29 +141,13 @@ export const PlanCard = ({
         <div className="mb-4">
           <div className="flex items-baseline gap-2">
             <span
-              className={`text-4xl font-poppins font-bold ${
+              className={`text-5xl font-poppins font-bold ${
                 isCurrentPlan ? planColors.text : 'text-charcoal'
               }`}
             >
-              EUR {plan.price}
+              EUR {plan.price.toFixed(2)}
             </span>
-            <span className="text-base font-inter text-gray-600 dark:text-gray-400">/month</span>
-          </div>
-        </div>
-
-        {/* Plan Details */}
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <CheckCircle2
-              className={`h-4 w-4 flex-shrink-0 ${isCurrentPlan ? planColors.text : 'text-primary'}`}
-            />
-            <span className="font-medium">{displaySlots}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <CheckCircle2
-              className={`h-4 w-4 flex-shrink-0 ${isCurrentPlan ? planColors.text : 'text-primary'}`}
-            />
-            <span>{plan.commissionRate}% commission rate</span>
+            <span className="text-lg font-inter text-gray-600 dark:text-gray-400">/month</span>
           </div>
         </div>
       </CardHeader>
@@ -175,6 +158,62 @@ export const PlanCard = ({
             Features Included
           </h4>
           <ul className="space-y-3">
+            {/* Tier Limits - Always shown */}
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? '3 slots per week'
+                  : plan.name === 'SILVER'
+                    ? '5 slots per week'
+                    : 'Unlimited slots'}
+              </span>
+            </li>
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? '3 days per week'
+                  : plan.name === 'SILVER'
+                    ? '5 days per week'
+                    : 'Unlimited days'}
+              </span>
+            </li>
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? '50 messages per billing cycle'
+                  : plan.name === 'SILVER'
+                    ? '100 messages per billing cycle'
+                    : 'Unlimited messages'}
+              </span>
+            </li>
+            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
+              <CheckCircle2
+                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
+                  isCurrentPlan ? planColors.text : 'text-primary'
+                }`}
+              />
+              <span className="leading-relaxed">
+                {plan.name === 'BRONZE'
+                  ? 'Rating visibility: Always visible'
+                  : 'Rating visibility: Can toggle on/off'}
+              </span>
+            </li>
+            {/* Backend-provided features */}
             {plan.features.map((feature, index) => (
               <li
                 key={index}
@@ -199,8 +238,8 @@ export const PlanCard = ({
             disabled={isCurrentPlan || isLoading}
             className={`w-full transition-all duration-200 font-medium ${
               isCurrentPlan
-                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                : 'bg-primary hover:bg-primary/90 hover:shadow-md active:scale-[0.98] text-white'
+                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60'
+                : 'bg-primary hover:bg-primary/90 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] text-white'
             }`}
             size="lg"
           >

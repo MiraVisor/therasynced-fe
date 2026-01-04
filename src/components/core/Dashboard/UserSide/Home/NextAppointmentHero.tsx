@@ -1,9 +1,9 @@
 'use client';
 
 import { Calendar, Clock, ExternalLink, MapPin, Video } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { BookingDetailsModal } from '@/components/core/Dashboard/UserSide/MyBookings/BookingDetailsModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,8 +16,8 @@ interface NextAppointmentHeroProps {
 }
 
 const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, loading = false }) => {
-  const router = useRouter();
   const [timeUntil, setTimeUntil] = useState<string>('');
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     if (!booking?.slot?.startTime) return;
@@ -76,7 +76,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
   }
 
   const getExpertName = (booking: Booking | null) => {
-    return booking?.slot?.freelancer?.name || 'Unknown Therapist';
+    return booking?.slot?.freelancer?.name || 'Unknown Freelancer';
   };
 
   const getBookingTime = (booking: Booking | null) => {
@@ -143,9 +143,9 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
 
       <CardContent className="p-6 relative z-10">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Left Section: Therapist Photo and Basic Info */}
+          {/* Left Section: Freelancer Photo and Basic Info */}
           <div className="flex items-start gap-4">
-            {/* Therapist Photo with improved styling */}
+            {/* Freelancer Photo with improved styling */}
             <div className="relative flex-shrink-0">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center font-semibold text-xl border-2 border-primary/20">
                 {freelancerName?.charAt(0).toUpperCase()}
@@ -255,7 +255,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
 
             <div className="flex flex-col gap-2 w-full md:w-auto">
               <Button
-                onClick={() => router.push('/dashboard/my-bookings')}
+                onClick={() => setShowDetailsModal(true)}
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-white px-6 py-2 text-base font-semibold w-full md:w-auto"
               >
@@ -279,6 +279,13 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
           </div>
         </div>
       </CardContent>
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        open={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+        booking={booking}
+      />
     </Card>
   );
 };

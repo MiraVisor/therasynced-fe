@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { LocationDropdown } from '@/components/common/input/LocationDropdown';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -99,6 +100,7 @@ export function PersonalDetailsStep() {
         <div className="space-y-1">
           <label htmlFor="dob" className="text-xs font-inter font-medium text-gray-700">
             Date of Birth
+            <span className="text-gray-500 ml-1">(Must be 18+)</span>
           </label>
           <Popover>
             <PopoverTrigger asChild>
@@ -115,7 +117,7 @@ export function PersonalDetailsStep() {
                 aria-invalid={!!errors.dob}
                 aria-describedby={errors.dob ? 'dob-error' : undefined}
               >
-                {selectedDob ? format(selectedDob, 'PPP') : <span>DD/MM/YYYY</span>}
+                {selectedDob ? format(selectedDob, 'PPP') : <span>Select your date of birth</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -151,7 +153,14 @@ export function PersonalDetailsStep() {
                 }}
                 captionLayout="dropdown"
                 fromYear={1900}
-                toYear={new Date().getFullYear()}
+                toYear={new Date().getFullYear() - 18}
+                defaultMonth={
+                  new Date(
+                    new Date().getFullYear() - 18,
+                    new Date().getMonth(),
+                    new Date().getDate(),
+                  )
+                }
                 initialFocus
               />
             </PopoverContent>
@@ -161,6 +170,7 @@ export function PersonalDetailsStep() {
               {errors.dob.message}
             </p>
           )}
+          <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old to sign up</p>
         </div>
 
         {/* Gender Field */}
@@ -230,6 +240,28 @@ export function PersonalDetailsStep() {
             <p className="text-red-500 text-xs font-inter mt-0.5">{errors.city.message}</p>
           )}
         </div>
+
+        {/* Home Address Field - Only for patients */}
+        {watch('role') === 'patient' && (
+          <div className="space-y-1">
+            <label htmlFor="homeAddress" className="text-xs font-inter font-medium text-gray-700">
+              Home Address
+              <span className="text-gray-500 ml-1">(Required for bookings)</span>
+            </label>
+            <Input
+              id="homeAddress"
+              type="text"
+              placeholder="Enter your home address for bookings"
+              value={watch('homeAddress') || ''}
+              onChange={(e) => setValue('homeAddress', e.target.value)}
+              className="h-10 text-sm font-inter"
+            />
+            <p className="text-xs text-gray-500">
+              This address will be used for home visit bookings. You can update it later in your
+              profile.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

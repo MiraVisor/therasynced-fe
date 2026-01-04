@@ -205,8 +205,8 @@ export interface InvoiceData {
   freelancerName: string;
   freelancerEmail: string;
   freelancerAddress?: string;
-  patientName: string;
-  patientEmail: string;
+  userName: string;
+  userEmail: string;
   appointmentDate: string;
   appointmentTime: string;
   duration: number;
@@ -275,10 +275,8 @@ export const InvoicePDF = ({ data }: { data: InvoiceData }) => {
           {/* To */}
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>Bill To</Text>
-            <Text style={[styles.infoText, { fontFamily: 'Helvetica-Bold' }]}>
-              {data.patientName}
-            </Text>
-            <Text style={styles.infoText}>{data.patientEmail}</Text>
+            <Text style={[styles.infoText, { fontFamily: 'Helvetica-Bold' }]}>{data.userName}</Text>
+            <Text style={styles.infoText}>{data.userEmail}</Text>
           </View>
         </View>
 

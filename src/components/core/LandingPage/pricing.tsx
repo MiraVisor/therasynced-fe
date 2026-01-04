@@ -1,17 +1,19 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { getPublicSubscriptionPlans } from '@/services/subscriptionService';
 
 const pricingPlans = [
   {
     id: 1,
     title: 'For Customers',
     description:
-      'Book sessions with certified physiotherapists, massage professionals, and wellness experts—anytime, anywhere.',
+      'Book sessions with certified physiotherapists, massage professionals, and wellness freelancers—anytime, anywhere.',
     button: {
       text: 'Join Free - No Card Needed',
       variant: 'light-green',
@@ -48,7 +50,7 @@ const pricingPlans = [
     id: 3,
     title: 'For Teams',
     description:
-      'Manage your clinic or group practice with tools for team scheduling, therapist performance, and client bookings.',
+      'Manage your clinic or group practice with tools for team scheduling, freelancer performance, and client bookings.',
     button: {
       text: 'Try Teams for Free',
       variant: 'light-green',
@@ -68,6 +70,16 @@ const pricingPlans = [
 const Pricing = () => {
   useTheme();
 
+  // Fetch subscription plans for freelancer section
+  const { data: subscriptionPlans = [] } = useQuery({
+    queryKey: ['public-subscription-plans'],
+    queryFn: getPublicSubscriptionPlans,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2, // Retry failed requests twice
+  });
+
+  // Sort plans: Gold, Silver, Bronze (as returned by backend)
+
   return (
     <section
       id="pricing"
@@ -81,7 +93,7 @@ const Pricing = () => {
           </h2>
           <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 dark:text-neutral-400 leading-relaxed">
             Select the perfect plan that aligns with your needs and goals. All plans include
-            personalized support and expert guidance.
+            personalized support and professional guidance.
           </p>
         </div>
 
@@ -116,18 +128,24 @@ const Pricing = () => {
               {/* Features */}
               <div className="flex flex-col gap-3 sm:gap-4 flex-grow">
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                  What&apos;s included?
+                  Features Included
                 </h4>
                 <ul className="flex flex-col gap-2">
-                  {plan.features.map((feature, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-neutral-300"
-                    >
-                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary dark:text-primary/90 flex-shrink-0" />
-                      {feature}
+                  {plan.features && plan.features.length > 0 ? (
+                    plan.features.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-neutral-300"
+                      >
+                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary dark:text-primary/90 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-gray-500 dark:text-neutral-400 italic">
+                      No features listed
                     </li>
-                  ))}
+                  )}
                 </ul>
               </div>
 

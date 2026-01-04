@@ -1,4 +1,6 @@
 import api from '@/services/api';
+import { ENDPOINTS } from '@/services/endpoints';
+import type { SlotPatternResponse } from '@/types/slot';
 import {
   ApiResponse,
   CreateSlotsDto,
@@ -26,6 +28,15 @@ export const updateSlot = async (data: UpdateSlotDto): Promise<ApiResponse<Slot>
 
 export const deleteSlot = async (id: string): Promise<ApiResponse<void>> => {
   const response = await api.post('/slot/delete', { id });
+  return response.data;
+};
+
+export const deleteDaySlots = async (
+  date: string,
+  deleteByDayOfWeek?: boolean,
+): Promise<ApiResponse<{ deletedCount: number; date: string }>> => {
+  const params = deleteByDayOfWeek ? { deleteByDayOfWeek: 'true' } : undefined;
+  const response = await api.delete(`/slot/day/${date}`, { params });
   return response.data;
 };
 
@@ -60,6 +71,7 @@ export const getMySlotsStats = async (): Promise<ApiResponse<SlotStats>> => {
 export const getAvailableSlots = async (
   freelancerId: string,
   params?: {
+    date?: string; // ISO date format YYYY-MM-DD
     page?: number;
     limit?: number;
     sortBy?: string;
@@ -67,5 +79,50 @@ export const getAvailableSlots = async (
   },
 ): Promise<ApiResponse<Slot[]>> => {
   const response = await api.get(`/slot/available/${freelancerId}`, { params });
+  return response.data;
+};
+
+/**
+ * Get freelancers who have available slots on a specific date
+ */
+export const getFreelancersByDate = async (params: {
+  date: string; // ISO date format YYYY-MM-DD (required)
+  page?: number;
+  limit?: number;
+}): Promise<
+  ApiResponse<
+    Array<{
+      id: string;
+      name: string;
+      profilePicture?: string;
+      rating?: number;
+      jobTitle?: string | { id: string; name: string };
+    }>
+  >
+> => {
+  const response = await api.get('/slot/freelancers-by-date', { params });
+  return response.data;
+};
+
+/**
+ * Get available slots by date for a specific freelancer (now requires freelancerId)
+ */
+export const getAvailableSlotsByDate = async (params: {
+  date: string; // ISO date format YYYY-MM-DD (required)
+  freelancerId: string; // Required: Filter by specific freelancer
+  page?: number;
+  limit?: number;
+}): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.get('/slot/available-by-date', { params });
+  return response.data;
+};
+
+/**
+ * Get slot pattern from last week for pattern recognition
+ */
+export const getLastWeekPattern = async (params?: {
+  weekStart?: string; // ISO date string, defaults to last week
+}): Promise<SlotPatternResponse> => {
+  const response = await api.get(ENDPOINTS.slots.lastWeekPattern, { params });
   return response.data;
 };

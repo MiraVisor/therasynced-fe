@@ -2,10 +2,12 @@
 
 import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
 import { Calendar, FileText, Star } from 'lucide-react';
+import { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import type { TherapistStampDetail } from '@/types/loyalty';
+import type { FreelancerPricing, LocationType } from '@/types/pricing';
 import type { Slot } from '@/types/types';
 
 interface ServiceFormData {
@@ -33,6 +35,8 @@ interface BookingSummarySidebarProps {
   stampDetail?: TherapistStampDetail | null;
   isCreatingBooking: boolean;
   onCompleteBooking: () => void;
+  pricing?: FreelancerPricing | null;
+  selectedLocationType?: LocationType | null;
 }
 
 export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
@@ -46,9 +50,53 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   stampDetail,
   isCreatingBooking,
   onCompleteBooking,
+  pricing,
+  selectedLocationType,
 }) => {
   const selectedSlot = slotsByDate[selectedDate]?.find((s) => s.id === selectedTime);
-  const basePrice = selectedSlot?.basePrice || 0;
+  const selectedCategoryIds = serviceForm.watch('serviceCategoryIds') || [];
+
+  // Calculate price based on location and service categories
+  const basePrice = useMemo(() => {
+    if (!selectedSlot) return 0;
+
+    // If no service categories selected, use slot's basePrice
+    if (selectedCategoryIds.length === 0) {
+      return selectedSlot.basePrice || 0;
+    }
+
+    // If location type not selected yet, use slot's basePrice as fallback
+    if (!selectedLocationType || !pricing?.servicePricing) {
+      return selectedSlot.basePrice || 0;
+    }
+
+    // Calculate total price from selected categories and location
+    let totalPrice = 0;
+    selectedCategoryIds.forEach((categoryId) => {
+      const servicePricing = pricing.servicePricing.find((sp) => sp.serviceId === categoryId);
+      if (!servicePricing) return;
+
+      // Use location-based pricing if available
+      if (servicePricing.locations && servicePricing.locations.length > 0) {
+        const locationPricing = servicePricing.locations.find(
+          (loc) => loc.locationType === selectedLocationType,
+        );
+        if (locationPricing) {
+          totalPrice += locationPricing.price;
+          return;
+        }
+      }
+
+      // Fallback to legacy price (assume CLINIC)
+      if (servicePricing.price > 0) {
+        totalPrice += servicePricing.price;
+      }
+    });
+
+    // If no category pricing found, fall back to slot's basePrice
+    return totalPrice > 0 ? totalPrice : selectedSlot.basePrice || 0;
+  }, [selectedSlot, selectedCategoryIds, selectedLocationType, pricing]);
+
   const hasDiscount =
     stampDetail?.rewardReady &&
     !stampDetail?.rewardReserved &&

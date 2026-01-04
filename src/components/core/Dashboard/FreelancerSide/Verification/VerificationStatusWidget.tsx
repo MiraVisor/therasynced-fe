@@ -79,7 +79,7 @@ export default function VerificationStatusWidget({ className }: VerificationStat
       return 'Upload your professional documents to complete the verification process.';
     }
 
-    return 'Upload your documents to get verified and build trust with patients.';
+    return 'Upload your documents to get verified and build trust with users.';
   };
 
   const getStatusColor = () => {

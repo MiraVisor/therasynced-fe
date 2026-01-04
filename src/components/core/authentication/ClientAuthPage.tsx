@@ -1,5 +1,6 @@
 'use client';
 
+import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ import EmailVerificationForm from '@/components/core/authentication/EmailVerific
 import ForgotPasswordForm from '@/components/core/authentication/ForgotPasswordForm';
 import SignInForm from '@/components/core/authentication/SignInForm';
 import { useResendVerificationEmail, useSignUp } from '@/hooks/queries/useAuth';
+import { useSignupUIStore } from '@/stores/signupUIStore';
 import type { SignUpDto } from '@/types';
 
 import MultiStepSignup from './MultiStepSignup';
@@ -56,14 +58,63 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
 
   const handleSignUpSubmit = (data: SignUpDto) => {
     setUserEmail(data.email);
+    const isOAuthSignup = !!data.oauthSignupToken;
+
+    // Debug: Verify oauthSignupToken is included
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        '[Signup Submit] Submitting with oauthSignupToken:',
+        isOAuthSignup ? 'present' : 'missing',
+      );
+      if (isOAuthSignup && !data.oauthSignupToken) {
+        console.error(
+          '[Signup Submit] ERROR: isOAuthSignup is true but oauthSignupToken is missing!',
+        );
+      }
+    }
+
     signup(data, {
       onSuccess: () => {
-        setCurrentView('email-verification');
+        // Clean up OAuth signup flags after successful submission
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('oauth_signup_in_progress');
+          sessionStorage.removeItem('oauth_signup_token'); // Remove token after successful signup
+        }
+
+        // For OAuth signup, user is auto-logged in and redirected to dashboard
+        // For email signup, show email verification page
+        if (!isOAuthSignup) {
+          setCurrentView('email-verification');
+        }
+        // OAuth signup redirects to dashboard automatically via useSignUp hook
+      },
+      onError: (error) => {
+        // Don't remove token on error - user might want to retry
+        console.error('[Signup Submit] Signup failed:', error);
       },
     });
   };
 
   const handleBackToSignInFromSignup = () => {
+    // Clear all signup state when going back to login
+    if (typeof window !== 'undefined') {
+      // Clear OAuth signup tokens and flags
+      sessionStorage.removeItem('oauth_signup_token');
+      sessionStorage.removeItem('oauth_signup_in_progress');
+
+      // Clear URL parameters (oauthData, token, etc.)
+      const url = new URL(window.location.href);
+      url.searchParams.delete('oauthData');
+      url.searchParams.delete('token');
+      url.searchParams.delete('signup');
+      window.history.replaceState({}, '', url.pathname);
+    }
+
+    // Reset signup UI store state
+    const { resetSignupUI } = useSignupUIStore.getState();
+    resetSignupUI();
+
+    // Navigate to sign-in
     setCurrentView('sign-in');
     window.history.pushState({}, '', '/authentication/sign-in');
   };
@@ -81,18 +132,60 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
       return (
         <MultiStepSignup
           onSubmit={(data) => {
+            // Get OAuth signup token from sessionStorage if available
+            const oauthSignupToken =
+              typeof window !== 'undefined' ? sessionStorage.getItem('oauth_signup_token') : null;
+
+            // Debug: Log token retrieval
+            if (process.env.NODE_ENV === 'development') {
+              console.log(
+                '[Signup Submit] OAuth token retrieved:',
+                oauthSignupToken ? 'present' : 'missing',
+              );
+              console.log('[Signup Submit] Form data:', {
+                name: data.name,
+                email: data.email,
+                role: data.role,
+                hasOAuthToken: !!oauthSignupToken,
+              });
+            }
+
             // Convert MultiStepSignup data format to SignUpDto
             const signupData: SignUpDto = {
               name: data.name,
               email: data.email,
-              password: data.password || '',
-              role: data.role as any,
+              password: data.password ?? undefined, // Only include if provided
+              oauthSignupToken: oauthSignupToken ?? undefined, // Include if OAuth signup - REQUIRED when password is empty
+              role: data.role as 'PATIENT' | 'FREELANCER',
               dob: data.dob,
               gender: data.gender,
               city: data.city,
+              homeAddress: data.homeAddress,
               clinicAddress: data.clinicAddress,
               mainJobTitleId: data.mainJobTitleId,
+              profilePicture: data.profilePicture, // Include profilePicture from OAuth
+              termsConsent: data.termsConsent,
+              privacyConsent: data.privacyConsent,
+              gdprConsent: data.gdprConsent,
             };
+
+            // Validate OAuth signup: if no password, must have oauthSignupToken
+            if (!data.password && !oauthSignupToken) {
+              toast.error('OAuth signup token is missing. Please try signing up again.');
+              console.error('[Signup Submit] Missing oauthSignupToken for OAuth signup');
+              return;
+            }
+
+            // Debug: Log final signup data (without token for security)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[Signup Submit] Final signup data:', {
+                ...signupData,
+                oauthSignupToken: oauthSignupToken ? 'present' : 'missing',
+              });
+            }
+
+            // Clean up sessionStorage after retrieving token (but only after successful submission)
+            // Don't remove it here - let the success handler remove it
             handleSignUpSubmit(signupData);
           }}
           onBack={handleBackToSignInFromSignup}
@@ -115,11 +208,27 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
     return null;
   };
 
+  const handleBackToLanding = () => {
+    router.push('/');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Full Page Content - Centered */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
         <div className="w-full max-w-lg">
+          {/* Back Button */}
+          <div className="flex justify-start mb-4">
+            <button
+              onClick={handleBackToLanding}
+              className="inline-flex items-center gap-2 text-sm font-inter text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              aria-label="Back to landing page"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+          </div>
+
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <Image

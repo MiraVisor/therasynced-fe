@@ -1,11 +1,12 @@
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row, Table } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { ArrowUpDown, Edit, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LocationType, Slot } from '@/types/types';
 
 // Status configuration using Slot status type
@@ -23,7 +24,34 @@ const getLocationTypeConfig = (locationType: LocationType) => {
   return configs[locationType];
 };
 
-export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnDef<Slot>[] => [
+export const createSlotsColumns = (
+  onDeleteSlot?: (slot: Slot) => void,
+  onViewSlot?: (slot: Slot) => void,
+  enableSelection = false,
+): ColumnDef<Slot>[] => [
+  ...(enableSelection
+    ? [
+        {
+          id: 'select',
+          header: ({ table }: { table: Table<Slot> }) => (
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected()}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+            />
+          ),
+          cell: ({ row }: { row: Row<Slot> }) => (
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          ),
+          enableSorting: false,
+          enableHiding: false,
+        },
+      ]
+    : []),
   {
     accessorKey: 'startTime',
     header: ({ column }) => {
@@ -178,21 +206,29 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
     },
   },
   {
-    accessorKey: 'notes',
+    accessorKey: 'serviceCategory',
     header: () => {
-      return <div className="font-semibold text-sm text-charcoal text-left">Notes</div>;
+      return <div className="font-semibold text-sm text-charcoal text-left">Service Category</div>;
     },
     cell: ({ row }) => {
-      const notes = row.getValue('notes');
+      const slot = row.original;
+      const serviceCategories = slot.booking?.serviceCategories || [];
 
-      const notesValue = notes;
-      if (!notesValue) {
+      if (slot.status !== 'BOOKED' || serviceCategories.length === 0) {
         return <span className="text-gray-400 text-sm text-left">-</span>;
       }
 
       return (
-        <div className="max-w-xs text-sm text-gray-600 leading-relaxed text-left">
-          {String(notesValue)}
+        <div className="flex flex-wrap gap-1 text-sm text-left">
+          {serviceCategories.map((category, index) => (
+            <Badge
+              key={category.id || index}
+              variant="secondary"
+              className="bg-purple-100 text-purple-800 hover:bg-purple-100 text-xs"
+            >
+              {category.name}
+            </Badge>
+          ))}
         </div>
       );
     },
@@ -205,25 +241,37 @@ export const createSlotsColumns = (onDeleteSlot?: (slot: Slot) => void): ColumnD
     cell: ({ row }) => {
       const slot = row.original;
       const isTemp = slot.id.startsWith('temp-');
+      const isBooked = slot.status === 'BOOKED';
+
+      if (isTemp) {
+        return <div className="text-xs text-gray-400">Creating...</div>;
+      }
 
       return (
         <div className="flex items-center gap-2 whitespace-nowrap text-left">
-          {slot.status === 'AVAILABLE' && !isTemp && (
-            <>
-              <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50"
-                onClick={() => onDeleteSlot?.(slot)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
+          {/* View/Edit button - available for all slots */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0"
+            onClick={() => onViewSlot?.(slot)}
+            title={isBooked ? 'View Details' : 'Edit Slot'}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+
+          {/* Delete button - only for available slots */}
+          {slot.status === 'AVAILABLE' && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+              onClick={() => onDeleteSlot?.(slot)}
+              title="Delete Slot"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           )}
-          {isTemp && <div className="text-xs text-gray-400">Creating...</div>}
         </div>
       );
     },

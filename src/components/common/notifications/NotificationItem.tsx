@@ -2,13 +2,16 @@
 
 import { formatDistanceToNow } from 'date-fns';
 import { Bell, Calendar, CheckCircle, CreditCard, MessageCircle, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Notification, NotificationType } from '@/types/types';
 
 interface NotificationItemProps {
   notification: Notification;
   className?: string;
+  onMarkAsRead?: (id: string) => void;
 }
 
 const getNotificationIcon = (type: NotificationType) => {
@@ -65,7 +68,8 @@ const getTypeColor = (type: NotificationType) => {
   }
 };
 
-export function NotificationItem({ notification, className }: NotificationItemProps) {
+export function NotificationItem({ notification, className, onMarkAsRead }: NotificationItemProps) {
+  const router = useRouter();
   const Icon = getNotificationIcon(notification.type);
 
   // Safely format the date, handling invalid dates
@@ -85,6 +89,18 @@ export function NotificationItem({ notification, className }: NotificationItemPr
   };
 
   const timeAgo = getTimeAgo();
+
+  const handleActionClick = () => {
+    if (notification.actionUrl) {
+      // Mark as read if not already read
+      if (!notification.isRead && onMarkAsRead) {
+        onMarkAsRead(notification.id);
+      }
+      router.push(notification.actionUrl);
+    }
+  };
+
+  const hasAction = !!notification.actionText && !!notification.actionUrl;
 
   return (
     <div
@@ -122,8 +138,18 @@ export function NotificationItem({ notification, className }: NotificationItemPr
         <p className="text-sm font-inter text-gray-600 mt-1.5 leading-relaxed">
           {notification.message}
         </p>
-        <div className="flex items-center gap-2 mt-2.5">
+        <div className="flex items-center justify-between gap-2 mt-2.5">
           <span className="text-xs font-inter text-gray-500">{timeAgo}</span>
+          {hasAction && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleActionClick}
+              className="text-xs h-7 px-3"
+            >
+              {notification.actionText}
+            </Button>
+          )}
         </div>
       </div>
     </div>

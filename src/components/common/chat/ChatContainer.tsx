@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import useChat from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showChat, setShowChat] = useState(false);
   const [_hasAutoSelected, _setHasAutoSelected] = useState(false);
+  const { data: subscription } = useMySubscription();
 
   const {
     contacts,
@@ -41,6 +43,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
     forceReconnect,
     dismissReconnectMessage,
   } = useChat(currentUserId);
+
+  const messagesUsed = subscription?.messagesUsed ?? 0;
+  const messagesLimit = subscription?.maxMessagesPerBillingCycle ?? null;
+  const isAtLimit = messagesLimit !== null && messagesUsed >= messagesLimit;
 
   const activeContact = activeConversationId
     ? getContactByConversationId(activeConversationId)
@@ -146,6 +152,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className, currentUserId 
               disabled={!isConnected}
               loading={loading.sending}
               placeholder={!isConnected ? 'Connecting...' : `Message ${activeContact.name}...`}
+              messagesUsed={messagesUsed}
+              messagesLimit={messagesLimit}
+              isAtLimit={isAtLimit}
             />
           </>
         ) : (

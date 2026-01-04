@@ -2,7 +2,9 @@ import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { memo, useCallback } from 'react';
 
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { TierBadge } from '@/components/ui/tier-badge';
@@ -18,6 +20,7 @@ import { Expert, SubscriptionPlanType } from '@/types/types';
 interface ExpertCardContentProps extends Partial<Expert> {
   id: string;
   name?: string;
+  profilePicture?: string;
   rating?: number;
   isFavorite?: boolean;
   showFavoriteText?: boolean;
@@ -46,12 +49,14 @@ interface ExpertCardContentProps extends Partial<Expert> {
     customConfigApplied: boolean;
   } | null;
   onViewProfile: () => void;
+  showBookNow?: boolean;
 }
 
 export const ExpertCardContent = memo(
   ({
     id,
     name,
+    profilePicture,
     rating,
     isFavorite = false,
     showFavoriteText = false,
@@ -64,12 +69,13 @@ export const ExpertCardContent = memo(
     planFeatures,
     stampInfo,
     onViewProfile,
+    showBookNow = false,
   }: ExpertCardContentProps) => {
     const router = useRouter();
     const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
 
     const handleBookNow = useCallback(() => {
-      // Pass freelancer data through route state to avoid loading issues
+      // Navigate to the new booking page with freelancer pre-selected
       const freelancerData = {
         id,
         name,
@@ -81,7 +87,7 @@ export const ExpertCardContent = memo(
       };
 
       router.push(
-        `/dashboard/freelancer/${id}?data=${encodeURIComponent(JSON.stringify(freelancerData))}`,
+        `/dashboard/book?freelancer=${encodeURIComponent(JSON.stringify(freelancerData))}`,
       );
     }, [id, name, rating, isFavorite, services, availableSlots, cardInfo, router]);
 
@@ -131,9 +137,15 @@ export const ExpertCardContent = memo(
 
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1 min-w-0">
-                <div className="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-base flex-shrink-0 border-2 border-primary/20">
-                  {freelancerName?.charAt(0).toUpperCase()}
-                </div>
+                <Avatar className="w-12 h-12 flex-shrink-0 border-2 border-primary/20">
+                  <ProfileAvatarImage
+                    src={profilePicture || undefined}
+                    alt={freelancerName || 'Freelancer'}
+                  />
+                  <AvatarFallback className="bg-primary/15 text-primary font-bold text-base">
+                    {freelancerName?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0 space-y-1.5">
                   {/* Row 1: Name and Verification Badge */}
                   <div className="flex items-center gap-2 flex-wrap">
@@ -233,39 +245,50 @@ export const ExpertCardContent = memo(
                 <Button
                   variant="outline"
                   className="flex-1 border-primary text-primary  h-9 text-sm"
-                  onClick={onViewProfile}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewProfile();
+                  }}
                 >
                   View Profile
                 </Button>
-                {hasAvailableSlots ? (
-                  <Button
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
-                    onClick={handleBookNow}
-                  >
-                    Book Now
-                  </Button>
-                ) : (
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="flex-1">
-                          <Button
-                            className="w-full !bg-primary/50 !text-white shadow-sm h-9 text-sm opacity-60 cursor-not-allowed hover:!bg-primary/50"
-                            disabled
-                            style={{ cursor: 'disabled' }}
-                          >
-                            Book Now
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
-                        <div className="flex items-center gap-2">
-                          <span className="text-orange-400">⚠️</span>
-                          <span>No slots available</span>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                {showBookNow && (
+                  <>
+                    {hasAvailableSlots ? (
+                      <Button
+                        className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-sm h-9 text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookNow();
+                        }}
+                      >
+                        Book Now
+                      </Button>
+                    ) : (
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="flex-1">
+                              <Button
+                                className="w-full !bg-primary/50 !text-white shadow-sm h-9 text-sm opacity-60 cursor-not-allowed hover:!bg-primary/50"
+                                disabled
+                                style={{ cursor: 'disabled' }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Book Now
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-gray-900 text-white text-sm px-3 py-2 rounded-md shadow-lg border border-gray-700">
+                            <div className="flex items-center gap-2">
+                              <span className="text-orange-400">⚠️</span>
+                              <span>No slots available</span>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </>
                 )}
               </div>
             </div>

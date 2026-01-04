@@ -13,10 +13,12 @@ import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
 import { useStampDetail } from '@/hooks/queries/useLoyalty';
+import { useFreelancerPricing } from '@/hooks/queries/usePricing';
 import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { useBookingStore } from '@/stores/bookingStore';
 import { getApiErrorMessage, type ServiceCategory } from '@/types/common';
+import type { LocationType } from '@/types/pricing';
 import type { Expert, Slot } from '@/types/types';
 
 import { BookingSummarySidebar } from './BookingSummarySidebar';
@@ -55,6 +57,14 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   const { mutate: createBooking, isPending: isCreatingBooking } = useCreateBooking();
   const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(null);
   const { data: stampDetail } = useStampDetail(selectedTherapistId);
+  // Note: useFreelancerPricing fetches pricing for logged-in freelancer
+  // In booking flow, we're booking with a different freelancer
+  // For now, pricing will be optional and we'll use slot's basePrice as fallback
+  // TODO: Add endpoint to fetch pricing for a specific freelancer if needed
+  const { data: pricing } = useFreelancerPricing();
+
+  // Location selection state
+  const [selectedLocationType, setSelectedLocationType] = useState<LocationType | null>(null);
 
   // Use WebSocket hook for real-time slot updates
   const { reserveSlot, releaseSlot, isSlotReserved } = useSocketSlots(freelancerId);
@@ -137,8 +147,94 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
       // Reset service selection when no slot is selected
       setAvailableServices([]);
       serviceForm.setValue('serviceCategoryIds', []);
+      setSelectedLocationType(null);
     }
   }, [selectedTime, fetchSlotDetails, serviceForm, setAvailableServices]);
+
+  // Calculate available location types based on selected service categories
+  const availableLocationTypes = useMemo(() => {
+    const selectedCategoryIds = serviceForm.watch('serviceCategoryIds') || [];
+    const selectedSlot = slots.find((s) => s.id === selectedTime);
+
+    if (selectedCategoryIds.length === 0) {
+      // No categories selected - use slot's locationType or default to CLINIC
+      if (selectedSlot?.locationType) {
+        return [selectedSlot.locationType as LocationType];
+      }
+      return ['CLINIC' as LocationType];
+    }
+
+    // If pricing is not available, use slot's locationType or default to CLINIC
+    if (!pricing?.servicePricing) {
+      if (selectedSlot?.locationType) {
+        return [selectedSlot.locationType as LocationType];
+      }
+      return ['CLINIC' as LocationType];
+    }
+
+    // Find common location types across all selected categories
+    const locationSets = selectedCategoryIds.map((categoryId) => {
+      const servicePricing = pricing.servicePricing.find((sp) => sp.serviceId === categoryId);
+      if (!servicePricing) return new Set<LocationType>();
+
+      // Use new location-based structure if available
+      if (servicePricing.locations && servicePricing.locations.length > 0) {
+        return new Set(servicePricing.locations.map((loc) => loc.locationType));
+      }
+
+      // Fallback: if legacy price exists, assume CLINIC is available
+      if (servicePricing.price > 0) {
+        return new Set<LocationType>(['CLINIC']);
+      }
+
+      return new Set<LocationType>();
+    });
+
+    // Find intersection of all location sets
+    if (locationSets.length === 0) {
+      // If no locations found, fall back to slot's locationType
+      if (selectedSlot?.locationType) {
+        return [selectedSlot.locationType as LocationType];
+      }
+      return ['CLINIC' as LocationType];
+    }
+
+    const commonLocations = locationSets.reduce((intersection, locationSet) => {
+      if (intersection.size === 0) return locationSet;
+      return new Set(Array.from(intersection).filter((loc) => locationSet.has(loc)));
+    });
+
+    const result = Array.from(commonLocations);
+    // If no common locations, fall back to slot's locationType or CLINIC
+    if (result.length === 0) {
+      if (selectedSlot?.locationType) {
+        return [selectedSlot.locationType as LocationType];
+      }
+      return ['CLINIC' as LocationType];
+    }
+
+    return result;
+  }, [serviceForm.watch('serviceCategoryIds'), pricing, selectedTime, slots]);
+
+  // Auto-select location when available options change
+  useEffect(() => {
+    if (availableLocationTypes.length === 0) {
+      setSelectedLocationType(null);
+      return;
+    }
+
+    if (availableLocationTypes.length === 1) {
+      // Auto-select single available location
+      setSelectedLocationType(availableLocationTypes[0] ?? null);
+    } else if (availableLocationTypes.length > 1) {
+      // Multiple options - default to CLINIC if available, otherwise first option
+      if (availableLocationTypes.includes('CLINIC')) {
+        setSelectedLocationType('CLINIC');
+      } else {
+        setSelectedLocationType(availableLocationTypes[0] ?? null);
+      }
+    }
+  }, [availableLocationTypes]);
 
   // Load more slots when needed - React Query handles pagination automatically
   const loadMoreSlots = async () => {
@@ -227,7 +323,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
       return {
         id: freelancerData.id,
         name: freelancerData.name,
-        specialty: freelancerData.specialty ?? 'Therapist',
+        specialty: freelancerData.specialty ?? 'Freelancer',
         rating: freelancerData.rating ?? 0,
         reviews: freelancerData.reviews ?? 0,
         avatar: freelancerData.profilePicture ?? undefined,
@@ -250,8 +346,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
 
     return {
       id: firstSlot.freelancerId,
-      name: firstSlot.freelancerName ?? 'Therapist',
-      specialty: 'Therapist', // Fallback
+      name: firstSlot.freelancerName ?? 'Freelancer',
+      specialty: 'Freelancer', // Fallback
       rating: firstSlot.averageRating ?? 0,
       reviews: firstSlot.numberOfRatings ?? 0,
       avatar: firstSlot.profilePicture,
@@ -361,9 +457,24 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     const serviceData = serviceForm.getValues();
     const detailsData = detailsForm.getValues();
 
+    // Validate location selection
+    const selectedCategoryIds = serviceData.serviceCategoryIds ?? [];
+    if (selectedCategoryIds.length > 0 && availableLocationTypes.length === 0) {
+      toast.error(
+        'Selected service categories have no common location type. Please select different categories.',
+      );
+      return;
+    }
+
+    if (selectedCategoryIds.length > 0 && !selectedLocationType) {
+      toast.error('Please select a location type');
+      return;
+    }
+
     const bookingData = {
       slotId: selectedTime,
-      serviceCategoryIds: serviceData.serviceCategoryIds ?? [],
+      serviceCategoryIds: selectedCategoryIds,
+      locationType: selectedLocationType || undefined,
       notes: detailsData.notes ?? '',
       clientAddress: detailsData.clientAddress ?? '',
     };
@@ -428,6 +539,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
             slotsByDate={slotsByDate}
             serviceForm={serviceForm}
             detailsForm={detailsForm}
+            availableLocationTypes={availableLocationTypes}
+            selectedLocationType={selectedLocationType}
+            onLocationTypeChange={setSelectedLocationType}
           />
         );
 
@@ -551,6 +665,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
               stampDetail={stampDetail}
               isCreatingBooking={isCreatingBooking}
               onCompleteBooking={handleCompleteBooking}
+              pricing={pricing}
+              selectedLocationType={selectedLocationType}
             />
           </div>
         </div>

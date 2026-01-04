@@ -1,3 +1,6 @@
+// Import pricing types for use in Expert interface
+import type { DurationPricing, ServicePricing } from './pricing';
+
 // Re-export data rights types
 export * from './dataRights';
 
@@ -6,6 +9,7 @@ export * from './analytics';
 export * from './api';
 export * from './appointment';
 export * from './auth';
+export * from './availability';
 export * from './booking';
 export * from './chat';
 export * from './common';
@@ -18,7 +22,6 @@ export * from './loyalty';
 export * from './notification';
 export * from './pricing';
 export * from './rating';
-export * from './availability';
 export * from './service';
 export * from './slot';
 export * from './subscription';
@@ -109,6 +112,20 @@ export interface ServiceCategory {
     id: string;
     name: string;
   };
+  locationTypes?: ('HOME' | 'CLINIC')[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
+}
+
+/**
+ * Category type as returned by the API.
+ */
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  jobTitle: {
+    id: string;
+    name: string;
+  };
 }
 
 /**
@@ -140,11 +157,13 @@ export interface registerUserTypes {
   name: string;
   email: string;
   role: string;
-  password: string;
+  password?: string; // Optional for OAuth signups
+  oauthSignupToken?: string; // Required when password is empty (OAuth signup)
   profilePicture?: string;
   gender?: string;
   dob?: string;
   city?: string;
+  homeAddress?: string; // NEW: Home address for bookings
   // New optional fields for freelancers
   mainJobTitleId?: string;
   clinicAddress?: string;
@@ -161,16 +180,22 @@ export interface SignUpDto {
   name: string;
   email: string;
   role: string;
-  password: string;
+  password?: string; // Optional for OAuth signups
+  oauthSignupToken?: string; // Required when password is empty (OAuth signup)
   profilePicture?: string;
   gender?: string;
   dob?: string;
   city?: string;
+  homeAddress?: string; // NEW: Home address for bookings
   // New optional fields for freelancers
   mainJobTitleId?: string;
   clinicAddress?: string;
   firstAidCertificateUrl?: string;
   verificationDocuments?: string[];
+  // Consent fields
+  termsConsent?: boolean;
+  privacyConsent?: boolean;
+  gdprConsent?: boolean;
 }
 
 export interface LoginDto {
@@ -212,6 +237,7 @@ export interface UpdateProfileDto {
   // New fields for freelancers
   mainJobTitleId?: string | null; // Allow null to clear selection
   clinicAddress?: string;
+  homeAddress?: string; // NEW: Home address for bookings
 }
 
 // Backend response types
@@ -223,6 +249,14 @@ export interface BackendResponse<T> {
     timestamp: string;
     path: string;
   };
+}
+
+export interface FreelancerData {
+  services?: unknown[];
+  locations?: unknown[];
+  serviceCount?: number;
+  locationCount?: number;
+  canToggleRatingVisibility?: boolean;
 }
 
 export interface BackendProfileResponse {
@@ -245,6 +279,7 @@ export interface BackendProfileResponse {
       // New fields for enhanced user profile
       mainJobTitle?: JobTitle;
       clinicAddress?: string;
+      homeAddress?: string; // NEW: Home address for bookings
       verificationDocuments?: string[];
       verificationRequestedAt?: Date | null;
       verificationApprovedAt?: Date | null;
@@ -256,7 +291,7 @@ export interface BackendProfileResponse {
       firstAidCertificateRejectedAt?: Date | null;
       firstAidCertificateRejectionReason?: string | null;
     };
-    freelancerData?: Record<string, unknown>;
+    freelancerData?: FreelancerData;
   };
   meta: {
     timestamp: string;
@@ -375,6 +410,9 @@ export interface Expert {
     discountPercentage: number;
     customConfigApplied: boolean;
   } | null;
+  // Pricing information
+  durationPricing?: DurationPricing[];
+  serviceCategoryPricing?: ServicePricing[];
 }
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 
@@ -485,6 +523,7 @@ export interface Slot {
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
+  action?: 'created' | 'updated'; // Optional: indicates if slot was created or updated
   availableServices?: Service[]; // Legacy: Services available for this slot
   availableServiceCategories?: ServiceCategory[]; // Service categories available for this slot
   booking?: {
@@ -548,7 +587,7 @@ export interface CreateSlotDto {
   slots: Array<{
     startTime: string;
     endTime: string;
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
@@ -567,6 +606,7 @@ export interface CreateServiceDto {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
   clientAddress?: string;
   notes?: string;
 }
@@ -577,12 +617,16 @@ export interface CreateSlotsDto {
   locationId?: string; // Added to support location selection
   basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
+  breakFrom?: string; // Optional: ISO 8601 datetime string for break start time
+  breakTill?: string; // Optional: ISO 8601 datetime string for break end time
   slots: Array<{
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType: LocationType; // Required - must be HOME or CLINIC
+    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
+    breakFrom?: string; // Optional: ISO 8601 datetime string for per-slot break start time
+    breakTill?: string; // Optional: ISO 8601 datetime string for per-slot break end time
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
@@ -647,6 +691,7 @@ export interface BackendApiResponse<T = unknown> {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
   clientAddress?: string;
   notes?: string;
 }
@@ -654,7 +699,11 @@ export interface CreateBookingDto {
 export interface RescheduleBookingDto {
   bookingId: string;
   newSlotId: string;
-  reason?: string;
+  serviceCategoryIds?: string[];
+  locationType?: 'HOME' | 'CLINIC';
+  clientAddress?: string;
+  notes?: string;
+  cancellationReason?: string;
 }
 
 export interface CancelBookingDto {
@@ -680,6 +729,7 @@ export interface Rating {
   freelancerId: string;
   patientId: string;
   rating: number; // 1-5 stars
+  isVisible: boolean; // Whether rating is visible to public
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }
@@ -955,6 +1005,13 @@ export interface Booking {
     name: string;
     email: string;
     profilePicture?: string;
+    // Client history fields (enhanced booking responses)
+    previousBookingsWithFreelancer?: number; // Count of bookings before this one
+    totalBookingsWithFreelancer?: number; // Total bookings with this freelancer
+    lastVisitDate?: string | null; // ISO date of last completed visit
+    firstBookingDate?: string | null; // ISO date of first booking
+    preferredServices?: string[]; // Top 3 most booked service categories
+    averageRating?: number | null; // Client's average rating for this freelancer
   };
   createdAt: string;
   updatedAt: string;
@@ -1356,6 +1413,11 @@ export interface Subscription {
   canAcceptBookings: boolean; // Required field from API
   slotsUsed: number; // Required field from API - Current active slots count
   slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
+  maxDaysPerWeek: number | null; // Days per week limit (null = unlimited)
+  maxMessagesPerBillingCycle: number | null; // Messages per billing cycle limit (null = unlimited)
+  canToggleRatingVisibility: boolean; // Whether user can toggle rating visibility
+  messagesUsed?: number; // Optional - Messages used in current billing cycle
+  daysUsed?: number; // Optional - Days used in current week
   message: string; // Required field from API - Status message
 }
 

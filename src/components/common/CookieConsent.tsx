@@ -37,6 +37,46 @@ export default function CookieConsent() {
 
   const storeCookieConsentMutation = useStoreCookieConsent();
 
+  // Apply cookie preferences to actual cookie usage (must be defined before useEffect)
+  const applyCookiePreferences = (prefs: CookiePreferences) => {
+    // Essential cookies are always enabled (handled by existing code)
+    // Analytics cookies
+    if (!prefs.analytics) {
+      // Disable analytics tracking
+      // This would typically disable Google Analytics, etc.
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        // Disable Google Analytics
+        (window as any).gtag('consent', 'update', {
+          analytics_storage: 'denied',
+        });
+      }
+    } else {
+      // Enable analytics tracking
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('consent', 'update', {
+          analytics_storage: 'granted',
+        });
+      }
+    }
+
+    // Marketing cookies
+    if (!prefs.marketing) {
+      // Disable marketing tracking
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('consent', 'update', {
+          ad_storage: 'denied',
+        });
+      }
+    } else {
+      // Enable marketing tracking
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('consent', 'update', {
+          ad_storage: 'granted',
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     // Check if user has already given consent
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
@@ -48,6 +88,8 @@ export default function CookieConsent() {
       try {
         const parsed = JSON.parse(savedPreferences);
         setPreferences(parsed);
+        // Apply saved preferences immediately to ensure analytics/marketing scripts respect consent
+        applyCookiePreferences(parsed);
       } catch (e) {
         // Invalid preferences, show banner again
         setShowBanner(true);
@@ -107,45 +149,6 @@ export default function CookieConsent() {
 
     // Dispatch custom event for other components to listen
     window.dispatchEvent(new CustomEvent('cookie-consent-updated', { detail: prefs }));
-  };
-
-  const applyCookiePreferences = (prefs: CookiePreferences) => {
-    // Essential cookies are always enabled (handled by existing code)
-    // Analytics cookies
-    if (!prefs.analytics) {
-      // Disable analytics tracking
-      // This would typically disable Google Analytics, etc.
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        // Disable Google Analytics
-        (window as any).gtag('consent', 'update', {
-          analytics_storage: 'denied',
-        });
-      }
-    } else {
-      // Enable analytics tracking
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('consent', 'update', {
-          analytics_storage: 'granted',
-        });
-      }
-    }
-
-    // Marketing cookies
-    if (!prefs.marketing) {
-      // Disable marketing tracking
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('consent', 'update', {
-          ad_storage: 'denied',
-        });
-      }
-    } else {
-      // Enable marketing tracking
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('consent', 'update', {
-          ad_storage: 'granted',
-        });
-      }
-    }
   };
 
   const handlePreferenceChange = (category: CookieCategory, value: boolean) => {

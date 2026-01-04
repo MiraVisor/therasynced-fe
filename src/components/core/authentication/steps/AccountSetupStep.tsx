@@ -37,8 +37,23 @@ export function AccountSetupStep() {
   const handleGoogleSignUp = async () => {
     try {
       setIsGoogleLoading(true);
-      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-      const googleAuthUrl = `${BACKEND_URL || 'http://localhost:4000'}/auth/google?returnUrl=${encodeURIComponent(currentUrl)}&signup=true`;
+      // Use callback URL to ensure proper flow handling
+      const callbackUrl =
+        typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : '';
+
+      // Ensure BACKEND_URL doesn't have trailing slash and construct URL properly
+      const backendUrl = (BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
+
+      // Construct Google OAuth URL with signup=true parameter
+      // IMPORTANT: signup=true must be included for signup flow
+      const googleAuthUrl = `${backendUrl}/auth/google?returnUrl=${encodeURIComponent(callbackUrl)}&signup=true`;
+
+      // Debug: Log the URL to verify signup parameter is included
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Google Signup] Redirecting to:', googleAuthUrl);
+        console.log('[Google Signup] signup parameter:', googleAuthUrl.includes('signup=true'));
+      }
+
       window.location.href = googleAuthUrl;
     } catch (error) {
       setIsGoogleLoading(false);
@@ -51,12 +66,18 @@ export function AccountSetupStep() {
       {/* Header */}
       <div className="text-center space-y-1 mb-4">
         <h3 className="text-xl font-poppins font-bold text-charcoal">
-          {authMethod === 'email' ? 'Create Your Account' : 'Choose Signup Method'}
+          {authMethod === 'email'
+            ? 'Create Your Account'
+            : authMethod === 'oauth'
+              ? 'Account Details'
+              : 'Choose Signup Method'}
         </h3>
         <p className="text-xs font-inter text-gray-600">
           {authMethod === 'email'
             ? 'Enter your name, email, and create a password'
-            : 'Continue with Google or use email'}
+            : authMethod === 'oauth'
+              ? 'Review your account information from Google'
+              : 'Continue with Google or use email'}
         </p>
       </div>
 
@@ -229,14 +250,53 @@ export function AccountSetupStep() {
       )}
 
       {/* OAuth Pre-filled Info */}
-      {authMethod === 'oauth' && watch('name') && (
-        <div className="space-y-2 p-3 border border-gray-200 rounded-lg bg-gray-50">
-          <p className="text-xs font-inter text-gray-600">
-            We&apos;ll use the following information from your Google account:
-          </p>
-          <div className="space-y-1">
-            <p className="text-sm font-inter font-medium text-charcoal">Name: {watch('name')}</p>
-            <p className="text-sm font-inter font-medium text-charcoal">Email: {watch('email')}</p>
+      {authMethod === 'oauth' && (
+        <div className="space-y-2">
+          <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 mb-4">
+            <p className="text-xs font-inter text-gray-600">
+              We&apos;ve pre-filled your information from Google. Please review and continue.
+            </p>
+            <div className="space-y-1 mt-2">
+              {watch('name') && (
+                <p className="text-sm font-inter font-medium text-charcoal">
+                  Name: {watch('name')}
+                </p>
+              )}
+              {watch('email') && (
+                <p className="text-sm font-inter font-medium text-charcoal">
+                  Email: {watch('email')}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* OAuth Read-only Display */}
+          <div className="space-y-2">
+            {/* Name Field - Read-only display */}
+            <div className="space-y-1">
+              <label htmlFor="name" className="text-xs font-inter font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={watch('name') || ''}
+                readOnly
+                className="w-full h-10 px-3 border rounded-lg bg-gray-50 text-sm font-inter text-gray-600 cursor-not-allowed border-gray-300"
+              />
+            </div>
+
+            {/* Email Field - Read-only display */}
+            <div className="space-y-1">
+              <label htmlFor="email" className="text-xs font-inter font-medium text-gray-700">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={watch('email') || ''}
+                readOnly
+                className="w-full h-10 px-3 border rounded-lg bg-gray-50 text-sm font-inter text-gray-600 cursor-not-allowed border-gray-300"
+              />
+            </div>
           </div>
         </div>
       )}

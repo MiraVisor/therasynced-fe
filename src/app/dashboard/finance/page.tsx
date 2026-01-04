@@ -1,16 +1,22 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { DateRangeFilter } from '@/components/core/Dashboard/Finance/DateRangeFilter';
 import { PlansOverview } from '@/components/core/Dashboard/Finance/PlansOverview';
 import { RevenueMetrics } from '@/components/core/Dashboard/Finance/RevenueMetrics';
 import { StatsCards } from '@/components/core/Dashboard/Finance/StatsCards';
 import { SubscriptionAnalytics } from '@/components/core/Dashboard/Finance/SubscriptionAnalytics';
+import { SubscriptionMetricsComponent } from '@/components/core/Dashboard/Finance/SubscriptionMetrics';
 import { ChartsSkeleton } from '@/components/ui/skeletons/ChartsSkeleton';
-import { useAdminRevenue, useAdminSubscriptions } from '@/hooks/queries/useAdmin';
+import {
+  useAdminRevenue,
+  useAdminSubscriptions,
+  useSubscriptionMetrics,
+} from '@/hooks/queries/useAdmin';
 
 // Dynamically import heavy chart component
 const RevenueCharts = dynamic(
@@ -25,6 +31,9 @@ const RevenueCharts = dynamic(
 );
 
 export default function FinancePage() {
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
   const {
     data: revenueData,
     isLoading: isLoadingRevenue,
@@ -37,22 +46,35 @@ export default function FinancePage() {
     isFetching: isFetchingSubscriptions,
     error: subscriptionsError,
   } = useAdminSubscriptions();
+  const {
+    data: metricsData,
+    isLoading: isLoadingMetrics,
+    isFetching: isFetchingMetrics,
+    error: metricsError,
+  } = useSubscriptionMetrics(startDate, endDate);
 
-  const isLoading = isLoadingRevenue || isLoadingSubscriptions;
-  const isFetching = isFetchingRevenue || isFetchingSubscriptions;
-  const initialLoading = isLoading && !revenueData && !subscriptionData;
+  const isLoading = isLoadingRevenue || isLoadingSubscriptions || isLoadingMetrics;
+  const isFetching = isFetchingRevenue || isFetchingSubscriptions || isFetchingMetrics;
+  const initialLoading = isLoading && !revenueData && !subscriptionData && !metricsData;
 
   useEffect(() => {
-    if (revenueError || subscriptionsError) {
+    if (revenueError || subscriptionsError || metricsError) {
       const errorMessage =
         revenueError instanceof Error
           ? revenueError.message
           : subscriptionsError instanceof Error
             ? subscriptionsError.message
-            : 'Failed to load finance data';
+            : metricsError instanceof Error
+              ? metricsError.message
+              : 'Failed to load finance data';
       toast.error(errorMessage);
     }
-  }, [revenueError, subscriptionsError]);
+  }, [revenueError, subscriptionsError, metricsError]);
+
+  const handleDateRangeChange = (newStartDate: Date | undefined, newEndDate: Date | undefined) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+  };
 
   return (
     <DashboardPageWrapper
@@ -84,6 +106,19 @@ export default function FinancePage() {
 
         {/* Plans Overview */}
         <PlansOverview subscriptionData={subscriptionData || null} isLoading={isFetching} />
+
+        {/* Subscription Metrics Section with Date Range Filter */}
+        <div className="space-y-4">
+          <DateRangeFilter
+            onDateRangeChange={handleDateRangeChange}
+            startDate={startDate}
+            endDate={endDate}
+          />
+          <SubscriptionMetricsComponent
+            metricsData={metricsData || null}
+            isLoading={isFetchingMetrics}
+          />
+        </div>
 
         {/* Charts Section */}
         <RevenueCharts

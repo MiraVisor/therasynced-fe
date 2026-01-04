@@ -180,7 +180,7 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-poppins font-semibold text-gray-900 dark:text-white truncate">
-                      {booking.slot.freelancer?.name || 'Unknown Therapist'}
+                      {booking.slot.freelancer?.name || 'Unknown Freelancer'}
                     </h3>
                     <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                   </div>

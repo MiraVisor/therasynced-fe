@@ -56,7 +56,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
           setFreelancer({
             id: firstSlot?.freelancerId || '',
             name: firstSlot?.freelancerName || 'Unknown',
-            specialty: 'Therapist',
+            specialty: 'Freelancer',
             rating: firstSlot?.averageRating || 0,
             reviews: firstSlot?.numberOfRatings || 0,
             yearsOfExperience: '0+ years',

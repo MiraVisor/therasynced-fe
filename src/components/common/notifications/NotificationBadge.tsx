@@ -19,7 +19,7 @@ export function NotificationBadge({ count, className, maxCount = 99 }: Notificat
         'absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full',
         'bg-red-500 text-white text-xs font-semibold',
         'flex items-center justify-center',
-        'animate-pulse transition-all duration-300',
+        'transition-all duration-300',
         'hover:scale-110 hover:bg-red-600',
         className,
       )}

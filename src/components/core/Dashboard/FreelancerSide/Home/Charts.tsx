@@ -15,6 +15,7 @@ interface ChartTooltipProps {
   payload?: Array<{
     value: number;
     name: string;
+    dataKey: string;
   }>;
   label?: string;
 }
@@ -22,15 +23,25 @@ interface ChartTooltipProps {
 const ChartTooltipContent = ({ active, payload, label }: ChartTooltipProps) => {
   if (active && payload?.length) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-100">
-        <p className="text-sm font-medium text-charcoal mb-1">{label}</p>
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <p className="text-sm font-poppins font-semibold text-gray-900 dark:text-white mb-2">
+          {label}
+        </p>
         <div className="space-y-1">
-          <p className="text-sm text-teal">
-            Current Week: <span className="font-medium">{payload[0]?.value ?? 0}</span>
-          </p>
-          <p className="text-sm text-primary">
-            Last Week: <span className="font-medium">{payload[1]?.value ?? 0}</span>
-          </p>
+          {payload.map((entry) => (
+            <div key={entry.dataKey} className="flex items-center gap-2 text-sm font-inter">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{
+                  backgroundColor: entry.dataKey === 'current' ? '#007745' : '#e5e7eb',
+                }}
+              />
+              <span className="text-gray-600 dark:text-gray-400">
+                {entry.dataKey === 'current' ? 'This Week' : 'Last Week'}:
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">{entry.value}</span>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -39,25 +50,22 @@ const ChartTooltipContent = ({ active, payload, label }: ChartTooltipProps) => {
 };
 
 const Charts = ({ dashboardData, isLoading = false }: ChartsProps) => {
-  // Loading skeleton
   if (isLoading) {
     return (
-      <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
-        <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
+      <Card>
+        <CardHeader>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2 animate-pulse" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2 animate-pulse" />
         </CardHeader>
-        <CardContent className="flex items-center justify-center w-full h-[300px] lg:h-[400px] p-6">
-          <div className="w-full h-full bg-gray-100 dark:bg-gray-800/20 rounded animate-pulse" />
+        <CardContent>
+          <div className="h-[300px] bg-gray-100 dark:bg-gray-800/50 rounded-lg animate-pulse" />
         </CardContent>
       </Card>
     );
   }
 
-  // Transform API data to chart format
   const getChartData = () => {
     if (!dashboardData?.weeklyAppointments) {
-      // Return empty data if not loaded
       return [
         { day: 'Mon', current: 0, last: 0 },
         { day: 'Tue', current: 0, last: 0 },
@@ -83,65 +91,83 @@ const Charts = ({ dashboardData, isLoading = false }: ChartsProps) => {
   };
 
   const chartData = getChartData();
+  const totalCurrent = chartData.reduce((sum, d) => sum + d.current, 0);
+  const totalLast = chartData.reduce((sum, d) => sum + d.last, 0);
 
   return (
-    <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
-      <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-        <CardTitle className="text-lg font-poppins font-semibold text-charcoal">
-          Weekly Appointments
-        </CardTitle>
-        <CardDescription className="text-sm font-inter text-muted-foreground mt-1">
-          Current vs Last Week
-        </CardDescription>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl font-poppins font-bold text-charcoal">
+              Weekly Appointments
+            </CardTitle>
+            <CardDescription className="font-inter">
+              Comparing this week to last week
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-6 text-sm font-inter">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-primary" />
+              <span className="text-gray-600 dark:text-gray-400">This Week</span>
+              <span className="font-poppins font-semibold text-gray-900 dark:text-white">
+                {totalCurrent}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-gray-200" />
+              <span className="text-gray-600 dark:text-gray-400">Last Week</span>
+              <span className="font-poppins font-semibold text-gray-900 dark:text-white">
+                {totalLast}
+              </span>
+            </div>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="flex items-center justify-center w-full h-[300px] lg:h-[400px] p-6">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{
-              left: 0,
-              right: 0,
-              top: 20,
-              bottom: 0,
-            }}
-          >
-            <CartesianGrid vertical={false} stroke="#e5e7eb" strokeDasharray="3 3" />
-            <XAxis
-              dataKey="day"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={6}
-              tick={{ fill: '#2C3E50', fontSize: 12 }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickMargin={6}
-              tick={{ fill: '#2C3E50', fontSize: 12 }}
-            />
-            <Tooltip
-              content={<ChartTooltipContent />}
-              cursor={{ fill: 'rgba(38, 166, 154, 0.1)' }}
-            />
-
-            <Bar
-              dataKey="current"
-              name="Current Week"
-              fill="#26A69A"
-              radius={[6, 6, 0, 0]}
-              maxBarSize={50}
-              className="hover:fill-teal transition-all duration-200"
-            />
-            <Bar
-              dataKey="last"
-              name="Last Week"
-              fill="#007745"
-              radius={[6, 6, 0, 0]}
-              maxBarSize={50}
-              className="hover:fill-primary transition-all duration-200"
-            />
-          </BarChart>
-        </ResponsiveContainer>
+      <CardContent>
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ left: -10, right: 0, top: 10, bottom: 0 }}
+              barGap={4}
+            >
+              <CartesianGrid vertical={false} stroke="#f3f4f6" strokeDasharray="0" />
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={12}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                allowDecimals={false}
+              />
+              <Tooltip
+                content={<ChartTooltipContent />}
+                cursor={{ fill: 'rgba(0, 119, 69, 0.04)' }}
+              />
+              <Bar
+                dataKey="last"
+                name="Last Week"
+                fill="#e5e7eb"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={32}
+              />
+              <Bar
+                dataKey="current"
+                name="This Week"
+                fill="#007745"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={32}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

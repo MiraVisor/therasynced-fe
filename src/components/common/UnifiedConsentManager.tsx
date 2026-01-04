@@ -1,15 +1,34 @@
 'use client';
 
+import { AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useAuth } from '@/hooks/useAuthZustand';
 import { useConsentManager } from '@/hooks/useConsentManager';
-import { CONSENT_INFO, type ConsentType, getAllConsentsForRole } from '@/types/consent';
+import {
+  CONSENT_INFO,
+  type ConsentType,
+  getAllConsentsForRole,
+  isNonWithdrawableRequiredConsent,
+} from '@/types/consent';
+import { formatDate } from '@/utils/dateUtils';
 
+import { Alert, AlertDescription } from '../ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog';
 import { Button } from '../ui/button';
 
 interface UnifiedConsentManagerProps {
@@ -56,6 +75,20 @@ export function UnifiedConsentManager({
   const [isSaving, setIsSaving] = useState(false);
   const [savingConsentTypes, setSavingConsentTypes] = useState<Set<ConsentType>>(new Set());
 
+  // Confirmation dialog state for consent withdrawal
+  const [withdrawalDialog, setWithdrawalDialog] = useState<{
+    open: boolean;
+    type: ConsentType | null;
+    pendingGranted: boolean;
+  }>({
+    open: false,
+    type: null,
+    pendingGranted: false,
+  });
+
+  // Confirmation checkbox state for withdrawal dialogs
+  const [withdrawalConfirmed, setWithdrawalConfirmed] = useState(false);
+
   // Get consents relevant to current role
   const relevantConsents = useMemo(() => {
     if (!role) return [];
@@ -101,6 +134,31 @@ export function UnifiedConsentManager({
   };
 
   const handleConsentChange = async (type: ConsentType, granted: boolean) => {
+    // Prevent withdrawal of required, non-withdrawable consents
+    // Check both the helper function and the API response
+    const consentStatus = consents.find((c) => c.consentType === type);
+    const isReadOnly = consentStatus?.isReadOnly ?? isNonWithdrawableRequiredConsent(type);
+
+    if (isReadOnly && !granted) {
+      // This should not happen in UI (read-only), but protect against API calls
+      toast.error(
+        'Required agreements cannot be withdrawn without closing the account. If you wish to withdraw this agreement, you will need to delete your account.',
+        { autoClose: 6000 },
+      );
+      return;
+    }
+
+    // Show confirmation dialog for withdrawing specific consents
+    if (!granted && (type === 'VERIFICATION_DOCUMENTS' || type === 'FIRST_AID_CERTIFICATE')) {
+      handleOpenWithdrawalDialog(type, granted);
+      return;
+    }
+
+    // Proceed with consent change
+    await proceedWithConsentChange(type, granted);
+  };
+
+  const proceedWithConsentChange = async (type: ConsentType, granted: boolean) => {
     if (batchMode) {
       // Check if this matches the server value
       const serverValue = hasConsent(type);
@@ -123,6 +181,46 @@ export function UnifiedConsentManager({
       await updateConsent(type, granted);
       onConsentChange?.();
     }
+  };
+
+  const handleConfirmWithdrawal = async () => {
+    if (!withdrawalDialog.type || !withdrawalConfirmed) return;
+
+    try {
+      await proceedWithConsentChange(withdrawalDialog.type, withdrawalDialog.pendingGranted);
+
+      // Show success message based on consent type
+      if (withdrawalDialog.type === 'FIRST_AID_CERTIFICATE') {
+        toast.success(
+          'Certificate has been permanently deleted. Your verification status may have been updated.',
+        );
+      } else if (withdrawalDialog.type === 'VERIFICATION_DOCUMENTS') {
+        toast.success('Verification status revoked. Documents retained for audit.');
+      }
+
+      setWithdrawalDialog({ open: false, type: null, pendingGranted: false });
+      setWithdrawalConfirmed(false);
+      onConsentChange?.();
+    } catch (error) {
+      // Error is already handled by proceedWithConsentChange/updateConsent
+      // Just reset the dialog state
+      setWithdrawalDialog({ open: false, type: null, pendingGranted: false });
+      setWithdrawalConfirmed(false);
+    }
+  };
+
+  const handleOpenWithdrawalDialog = (type: ConsentType, granted: boolean) => {
+    setWithdrawalDialog({
+      open: true,
+      type,
+      pendingGranted: granted,
+    });
+    setWithdrawalConfirmed(false); // Reset confirmation when opening dialog
+  };
+
+  const handleCloseWithdrawalDialog = () => {
+    setWithdrawalDialog({ open: false, type: null, pendingGranted: false });
+    setWithdrawalConfirmed(false);
   };
 
   const handleSave = async () => {
@@ -179,23 +277,89 @@ export function UnifiedConsentManager({
             <h4
               className={`${compact ? 'text-base' : 'text-lg'} font-poppins font-semibold text-gray-900`}
             >
-              Required Consents
+              Required Agreements
             </h4>
             {!compact && (
               <p className="text-sm text-gray-600 mt-1">
-                These consents are required to use the platform
+                These agreements are necessary to provide the service
               </p>
             )}
           </div>
           <div className={cardSpacingClass}>
             {groupedConsents['required'].map(({ type, info, status }) => {
               const isGranted = getEffectiveConsent(type);
+              // Use isReadOnly from API if available, otherwise fall back to helper function
+              const isReadOnly = status?.isReadOnly ?? isNonWithdrawableRequiredConsent(type);
+              const grantedDate = status?.grantedAt
+                ? formatDate(new Date(status.grantedAt), 'short')
+                : null;
+
+              // Show read-only for non-withdrawable required consents (Terms, Privacy, GDPR Data Processing)
+              if (isReadOnly) {
+                return (
+                  <div
+                    key={type}
+                    className={`flex items-start space-x-3 rounded-lg border ${paddingClass} bg-gray-50 dark:bg-gray-900/50`}
+                  >
+                    <div className="flex items-center justify-center mt-0.5 w-5 h-5">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor={`consent-${type}`}
+                          className={`${compact ? 'text-xs' : 'text-sm'} font-medium flex-1`}
+                        >
+                          {info.type === 'TERMS_OF_SERVICE' ? (
+                            <>
+                              Terms of Service —{' '}
+                              <Link
+                                href="/terms"
+                                target="_blank"
+                                className="text-primary hover:underline"
+                              >
+                                View Terms
+                              </Link>
+                            </>
+                          ) : info.type === 'PRIVACY_POLICY' ? (
+                            <>
+                              Privacy Policy —{' '}
+                              <Link
+                                href="/privacy"
+                                target="_blank"
+                                className="text-primary hover:underline"
+                              >
+                                View Policy
+                              </Link>
+                            </>
+                          ) : (
+                            info.title
+                          )}
+                        </Label>
+                      </div>
+                      {grantedDate && (
+                        <p
+                          className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}
+                        >
+                          Accepted on {grantedDate}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Show toggle for optional required consents (e.g., Verification Documents)
               const isSavingThis = savingConsentTypes.has(type);
               const isLoadingThis = isLoading && !status;
+              const isDisabled = isSavingThis || isLoadingThis;
               return (
                 <div
                   key={type}
-                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative`}
+                  onClick={() => !isDisabled && handleConsentChange(type, !isGranted)}
+                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-900/50 ${
+                    isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   <div className="relative flex items-center justify-center mt-0.5 w-5 h-5">
                     {(isLoadingThis || isSavingThis) && (
@@ -207,44 +371,46 @@ export function UnifiedConsentManager({
                       id={`consent-${type}`}
                       checked={isGranted}
                       onCheckedChange={(checked) => handleConsentChange(type, checked === true)}
-                      className="mt-0.5"
-                      disabled={isSavingThis || isLoadingThis}
+                      className="mt-0.5 pointer-events-none"
+                      disabled={isDisabled}
                     />
                   </div>
-                  <Label
-                    htmlFor={`consent-${type}`}
-                    className={`${compact ? 'text-xs' : 'text-sm'} font-medium cursor-pointer flex-1 leading-tight`}
-                  >
-                    {info.type === 'TERMS_OF_SERVICE' ? (
-                      <>
-                        I agree to the{' '}
-                        <Link
-                          href="/terms"
-                          target="_blank"
-                          className="text-primary hover:underline"
-                        >
-                          Terms of Service
-                        </Link>
-                      </>
-                    ) : info.type === 'PRIVACY_POLICY' ? (
-                      <>
-                        I have read and agree to the{' '}
-                        <Link
-                          href="/privacy"
-                          target="_blank"
-                          className="text-primary hover:underline"
-                        >
-                          Privacy Policy
-                        </Link>
-                      </>
-                    ) : (
-                      info.description
+                  <div className="flex-1">
+                    <Label
+                      htmlFor={`consent-${type}`}
+                      className={`${compact ? 'text-xs' : 'text-sm'} font-medium cursor-pointer pointer-events-none`}
+                    >
+                      {info.title}
+                    </Label>
+                    {!compact && (
+                      <p
+                        className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1 pointer-events-none`}
+                      >
+                        {info.description}
+                      </p>
                     )}
-                  </Label>
+                  </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Info box explaining withdrawal = account deletion */}
+          {!requiredOnly && (
+            <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-900/20">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertDescription className="text-blue-800 dark:text-blue-200">
+                <div>
+                  <p className="font-medium">Withdrawing Required Agreements</p>
+                  <p className="text-sm mt-1">
+                    These agreements (Terms of Service, Privacy Policy, and Data Processing) are
+                    necessary to provide the service. If you wish to withdraw them, you will need to
+                    delete your account. See below for the delete account option.
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       )}
 
@@ -268,10 +434,14 @@ export function UnifiedConsentManager({
               const isGranted = getEffectiveConsent(type);
               const isSavingThis = savingConsentTypes.has(type);
               const isLoadingThis = isLoading && !status;
+              const isDisabled = isSavingThis || isLoadingThis;
               return (
                 <div
                   key={type}
-                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative`}
+                  onClick={() => !isDisabled && handleConsentChange(type, !isGranted)}
+                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-900/50 ${
+                    isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   <div className="relative flex items-center justify-center mt-0.5 w-5 h-5">
                     {(isLoadingThis || isSavingThis) && (
@@ -283,20 +453,20 @@ export function UnifiedConsentManager({
                       id={`consent-${type}`}
                       checked={isGranted}
                       onCheckedChange={(checked) => handleConsentChange(type, checked === true)}
-                      className="mt-0.5"
-                      disabled={isSavingThis || isLoadingThis}
+                      className="mt-0.5 pointer-events-none"
+                      disabled={isDisabled}
                     />
                   </div>
                   <div className="flex-1">
                     <Label
                       htmlFor={`consent-${type}`}
-                      className={`${compact ? 'text-xs' : 'text-sm'} font-medium cursor-pointer`}
+                      className={`${compact ? 'text-xs' : 'text-sm'} font-medium cursor-pointer pointer-events-none`}
                     >
                       {info.title}
                     </Label>
                     {!compact && (
                       <p
-                        className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}
+                        className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1 pointer-events-none`}
                       >
                         {info.description}
                       </p>
@@ -309,18 +479,19 @@ export function UnifiedConsentManager({
         </div>
       )}
 
-      {/* Financial Consents (Freelancers only) */}
+      {/* Financial Authorizations (Freelancers only) - NOT GDPR Consents */}
       {groupedConsents['financial'] && groupedConsents['financial'].length > 0 && (
         <div className="space-y-4">
           <div>
             <h4
               className={`${compact ? 'text-base' : 'text-lg'} font-poppins font-semibold text-gray-900`}
             >
-              Payment Data Consent
+              Payment Authorization
             </h4>
             {!compact && (
               <p className="text-sm text-gray-600 mt-1">
-                Consent for processing payment information
+                Contractual authorization for payment processing (not a GDPR consent). Authorization
+                ends when subscription is cancelled.
               </p>
             )}
           </div>
@@ -329,10 +500,14 @@ export function UnifiedConsentManager({
               const isGranted = getEffectiveConsent(type);
               const isSavingThis = savingConsentTypes.has(type);
               const isLoadingThis = isLoading && !status;
+              const isDisabled = isSavingThis || isLoadingThis;
               return (
                 <div
                   key={type}
-                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative`}
+                  onClick={() => !isDisabled && handleConsentChange(type, !isGranted)}
+                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-900/50 ${
+                    isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   <div className="relative flex items-center justify-center mt-0.5 w-5 h-5">
                     {(isLoadingThis || isSavingThis) && (
@@ -344,20 +519,20 @@ export function UnifiedConsentManager({
                       id={`consent-${type}`}
                       checked={isGranted}
                       onCheckedChange={(checked) => handleConsentChange(type, checked === true)}
-                      className="mt-0.5"
-                      disabled={isSavingThis || isLoadingThis}
+                      className="mt-0.5 pointer-events-none"
+                      disabled={isDisabled}
                     />
                   </div>
                   <div className="flex-1">
                     <Label
                       htmlFor={`consent-${type}`}
-                      className={`${compact ? 'text-xs' : 'text-sm'} font-medium cursor-pointer`}
+                      className={`${compact ? 'text-xs' : 'text-sm'} font-medium cursor-pointer pointer-events-none`}
                     >
                       {info.title}
                     </Label>
                     {!compact && (
                       <p
-                        className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}
+                        className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1 pointer-events-none`}
                       >
                         {info.description}
                       </p>
@@ -383,6 +558,102 @@ export function UnifiedConsentManager({
           </Button>
         </div>
       )}
+
+      {/* Withdrawal Confirmation Dialog */}
+      <AlertDialog
+        open={withdrawalDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseWithdrawalDialog();
+          }
+        }}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              {withdrawalDialog.type === 'FIRST_AID_CERTIFICATE'
+                ? 'Withdraw First Aid Certificate Consent'
+                : 'Withdraw Verification Documents Consent'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3 pt-2">
+              {withdrawalDialog.type === 'FIRST_AID_CERTIFICATE' ? (
+                <>
+                  <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                    Withdrawing this consent will permanently delete your uploaded first aid
+                    certificate and revoke any verification based on it. This action cannot be
+                    undone.
+                  </p>
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 space-y-2">
+                    <p className="text-sm font-semibold text-red-800 dark:text-red-200">
+                      What will happen:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1 text-xs text-red-700 dark:text-red-300">
+                      <li>Your first aid certificate will be permanently deleted</li>
+                      <li>Any verification based on this certificate will be revoked</li>
+                      <li>Your verified status may change to REJECTED</li>
+                      <li>This action cannot be undone</li>
+                    </ul>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                    Withdrawing this consent will remove your verified status and may limit your
+                    ability to receive bookings. Your documents will be retained for audit purposes
+                    but will no longer be used for verification.
+                  </p>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 space-y-2">
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                      What will happen:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1 text-xs text-amber-700 dark:text-amber-300">
+                      <li>Your verification status will change to REJECTED</li>
+                      <li>You will lose your verified status</li>
+                      <li>You may not be able to accept new bookings</li>
+                      <li>Your documents will be archived (retained for audit, not deleted)</li>
+                    </ul>
+                  </div>
+                </>
+              )}
+
+              {/* Confirmation Checkbox */}
+              <div className="flex items-start space-x-2 pt-2 border-t">
+                <Checkbox
+                  id="withdrawal-confirmation"
+                  checked={withdrawalConfirmed}
+                  onCheckedChange={(checked) => setWithdrawalConfirmed(checked === true)}
+                  className="mt-1"
+                />
+                <Label
+                  htmlFor="withdrawal-confirmation"
+                  className="text-sm cursor-pointer leading-tight"
+                >
+                  {withdrawalDialog.type === 'FIRST_AID_CERTIFICATE'
+                    ? 'I understand this will permanently delete my certificate'
+                    : 'I understand this will revoke my verification'}
+                </Label>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCloseWithdrawalDialog}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmWithdrawal}
+              disabled={!withdrawalConfirmed}
+              className={
+                withdrawalDialog.type === 'FIRST_AID_CERTIFICATE'
+                  ? 'bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                  : 'disabled:opacity-50 disabled:cursor-not-allowed'
+              }
+            >
+              {withdrawalDialog.type === 'FIRST_AID_CERTIFICATE'
+                ? 'Yes, delete my certificate'
+                : 'Yes, revoke my verification'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

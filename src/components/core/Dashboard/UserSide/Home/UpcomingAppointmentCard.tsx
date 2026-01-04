@@ -16,7 +16,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
   const router = useRouter();
 
   const getExpertName = (booking: Booking) => {
-    return booking?.slot?.freelancer?.name || 'Unknown Therapist';
+    return booking?.slot?.freelancer?.name || 'Unknown Freelancer';
   };
 
   const getBookingTime = (booking: Booking) => {

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
+import { formatLimit, isApproachingLimit } from '@/utils/subscriptionHelpers';
 
 import { StatusBadge } from './StatusBadge';
 
@@ -20,11 +21,40 @@ export function SubscriptionStatusWidget() {
     return null;
   }
 
+  const isTrial = subscription.status === 'TRIALING' || subscription.isInTrial === true;
   const slotsUsed = subscription.slotsUsed ?? 0;
-  const slotsLimit = subscription.slotsLimit ?? 5;
-  const percentage = slotsLimit > 0 ? Math.min((slotsUsed / slotsLimit) * 100, 100) : 0;
-  const isNearLimit = percentage >= 80;
-  const isAtLimit = slotsUsed >= slotsLimit;
+  const slotsLimit = subscription.slotsLimit ?? null; // null = unlimited
+  const daysUsed = subscription.daysUsed ?? 0;
+  const daysLimit = subscription.maxDaysPerWeek ?? null;
+  const messagesUsed = subscription.messagesUsed ?? 0;
+  const messagesLimit = subscription.maxMessagesPerBillingCycle ?? null;
+
+  // During trial, all limits are unlimited (null)
+  const isUnlimitedSlots = isTrial || slotsLimit === null;
+  const isUnlimitedDays = isTrial || daysLimit === null;
+  const isUnlimitedMessages = isTrial || messagesLimit === null;
+  const slotsPercentage =
+    !isUnlimitedSlots && slotsLimit !== null && slotsLimit > 0
+      ? Math.min((slotsUsed / slotsLimit) * 100, 100)
+      : 0;
+  const isNearSlotsLimit = isApproachingLimit(slotsUsed, slotsLimit);
+  const isAtSlotsLimit = !isUnlimitedSlots && slotsLimit !== null && slotsUsed >= slotsLimit;
+
+  const daysPercentage =
+    !isUnlimitedDays && daysLimit !== null && daysLimit > 0
+      ? Math.min((daysUsed / daysLimit) * 100, 100)
+      : 0;
+  const isNearDaysLimit = isApproachingLimit(daysUsed, daysLimit);
+  const messagesPercentage =
+    !isUnlimitedMessages && messagesLimit !== null && messagesLimit > 0
+      ? Math.min((messagesUsed / messagesLimit) * 100, 100)
+      : 0;
+  const isNearMessagesLimit = isApproachingLimit(messagesUsed, messagesLimit);
+  const isAtMessagesLimit =
+    !isUnlimitedMessages && messagesLimit !== null && messagesUsed >= messagesLimit;
+
+  const isNearAnyLimit = isNearSlotsLimit || isNearDaysLimit || isNearMessagesLimit;
+  const isAtAnyLimit = isAtSlotsLimit || isAtMessagesLimit;
 
   return (
     <Card className="fixed bottom-4 right-4 z-40 w-80 shadow-lg border-primary/20 md:relative md:bottom-0 md:right-0 md:w-full">
@@ -53,26 +83,96 @@ export function SubscriptionStatusWidget() {
                 </span>
                 <StatusBadge status={subscription.status} size="sm" />
               </div>
-              <div className="flex items-center justify-between text-xs mb-2">
-                <span className="text-gray-600 dark:text-gray-400">Slots</span>
-                <span className="font-semibold">
-                  {slotsUsed}/{slotsLimit === null ? '∞' : slotsLimit}
-                </span>
+
+              {/* Slots Limit */}
+              <div className="mb-2">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-gray-600 dark:text-gray-400">Slots</span>
+                  <span className="font-semibold">
+                    {isTrial ? (
+                      <span className="text-primary">{slotsUsed} / Unlimited</span>
+                    ) : (
+                      `${slotsUsed}/${formatLimit(slotsLimit)}`
+                    )}
+                  </span>
+                </div>
+                {!isTrial && slotsLimit !== null && (
+                  <Progress
+                    value={slotsPercentage}
+                    className={`h-1.5 ${
+                      isAtSlotsLimit
+                        ? 'bg-red-500'
+                        : isNearSlotsLimit
+                          ? 'bg-orange-500'
+                          : 'bg-primary'
+                    }`}
+                  />
+                )}
               </div>
-              {slotsLimit !== null && (
-                <Progress
-                  value={percentage}
-                  className={`h-1.5 ${isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-orange-500' : 'bg-primary'}`}
-                />
+
+              {/* Days Limit */}
+              {isTrial ? (
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-gray-600 dark:text-gray-400">Days per week</span>
+                    <span className="font-semibold text-primary">{daysUsed} / Unlimited</span>
+                  </div>
+                </div>
+              ) : (
+                daysLimit !== null && (
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">Days per week</span>
+                      <span className="font-semibold">
+                        {daysUsed}/{formatLimit(daysLimit)}
+                      </span>
+                    </div>
+                    <Progress
+                      value={daysPercentage}
+                      className={`h-1.5 ${isNearDaysLimit ? 'bg-orange-500' : 'bg-primary'}`}
+                    />
+                  </div>
+                )
+              )}
+
+              {/* Messages Limit */}
+              {isTrial ? (
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-gray-600 dark:text-gray-400">Messages</span>
+                    <span className="font-semibold text-primary">{messagesUsed} / Unlimited</span>
+                  </div>
+                </div>
+              ) : (
+                messagesLimit !== null && (
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">Messages</span>
+                      <span className="font-semibold">
+                        {messagesUsed}/{formatLimit(messagesLimit)}
+                      </span>
+                    </div>
+                    <Progress
+                      value={messagesPercentage}
+                      className={`h-1.5 ${
+                        isAtMessagesLimit
+                          ? 'bg-red-500'
+                          : isNearMessagesLimit
+                            ? 'bg-orange-500'
+                            : 'bg-primary'
+                      }`}
+                    />
+                  </div>
+                )
               )}
             </div>
-            {isNearLimit && (
+            {isNearAnyLimit && (
               <Button
                 size="sm"
                 className="w-full text-xs"
                 onClick={() => router.push('/dashboard/account?tab=subscription')}
               >
-                {isAtLimit ? 'Upgrade Now' : 'Upgrade Soon'}
+                {isAtAnyLimit ? 'Upgrade Now' : 'Upgrade Soon'}
               </Button>
             )}
           </div>

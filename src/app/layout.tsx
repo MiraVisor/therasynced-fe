@@ -34,12 +34,12 @@ export const metadata: Metadata = {
     template: '%s | TheraSynced',
   },
   description:
-    'Connect with licensed therapists, wellness professionals, and healthcare experts online. Book appointments instantly, get personalized care, and improve your mental and physical health with TheraSynced.',
+    'Connect with licensed freelancers, wellness professionals, and healthcare professionals online. Book appointments instantly, get personalized care, and improve your mental and physical health with TheraSynced.',
   keywords: [
     'online therapy',
     'mental health',
     'wellness services',
-    'professional therapists',
+    'professional freelancers',
     'healthcare booking',
     'telehealth',
     'counseling',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     siteName: 'TheraSynced',
     title: 'TheraSynced - Professional Therapy & Wellness Services',
     description:
-      'Connect with licensed therapists and wellness professionals online. Book appointments instantly and get personalized care.',
+      'Connect with licensed freelancers and wellness professionals online. Book appointments instantly and get personalized care.',
     images: [
       {
         url: '/og-image.jpg',
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'TheraSynced - Professional Therapy & Wellness Services',
     description:
-      'Connect with licensed therapists and wellness professionals online. Book appointments instantly and get personalized care.',
+      'Connect with licensed freelancers and wellness professionals online. Book appointments instantly and get personalized care.',
     images: ['/og-image.jpg'],
     creator: '@therasynced',
   },

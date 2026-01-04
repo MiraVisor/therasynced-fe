@@ -48,7 +48,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
-              Book appointments with licensed therapists. Get personalized care when you need it.
+              Book appointments with licensed freelancers. Get personalized care when you need it.
             </p>
           </div>
 

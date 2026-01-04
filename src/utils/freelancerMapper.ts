@@ -145,5 +145,7 @@ export function mapOneFreelancerToExpert(freelancer: Freelancer | Expert): Exper
     tier: freelancerData.planFeatures?.planType ?? null,
     subscriptionStatus: undefined, // Not in Freelancer type, will be populated from Expert if already an Expert
     stampInfo: null, // Not in Freelancer type, will be populated from Expert if already an Expert
+    durationPricing: freelancerData.durationPricing,
+    serviceCategoryPricing: freelancerData.serviceCategoryPricing,
   };
 }

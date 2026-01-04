@@ -100,6 +100,8 @@ export const useRescheduleBooking = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'patient'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'freelancer'] });
     },
   });
 };
