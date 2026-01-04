@@ -53,7 +53,7 @@ const Pricing = () => {
               <p className="text-sm text-gray-500 mt-2">Always free for health seekers</p>
             </div>
             <div className="mb-8">
-              <span className="text-4xl font-bold text-gray-900 dark:text-white">$0</span>
+              <span className="text-4xl font-bold text-gray-900 dark:text-white">€0</span>
               <span className="text-gray-500">/forever</span>
             </div>
             <ul className="space-y-4 mb-8 flex-1">
@@ -122,7 +122,7 @@ const Pricing = () => {
                   </div>
                   <div className="mb-8">
                     <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                      ${plan.price}
+                      €{plan.price}
                     </span>
                     <span className="text-gray-500 text-sm">/{plan.billingInterval}</span>
                   </div>
