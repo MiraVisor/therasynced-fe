@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, ExternalLink, Gift, Heart, Stamp } from 'lucide-react';
+import { CheckCircle2, Clock, ExternalLink, Heart, Stamp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -250,25 +250,15 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   </div>
 
                   {/* Reward Status */}
-                  {stampInfo.rewardReady && (
+                  {stampInfo.rewardReady && !stampInfo.rewardReserved && (
                     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      {stampInfo.rewardReserved ? (
-                        <Badge
-                          variant="secondary"
-                          className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 px-3 py-2 text-sm font-medium"
-                        >
-                          <Gift className="h-4 w-4 mr-2 inline" />
-                          Reward Reserved
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="default"
-                          className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 px-3 py-2 text-sm font-medium"
-                        >
-                          <CheckCircle2 className="h-4 w-4 mr-2 inline" />
-                          {stampInfo.discountPercentage}% Discount Available!
-                        </Badge>
-                      )}
+                      <Badge
+                        variant="default"
+                        className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 px-3 py-2 text-sm font-medium"
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2 inline" />
+                        {stampInfo.discountPercentage}% Discount Available!
+                      </Badge>
                     </div>
                   )}
 

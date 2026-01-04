@@ -8,7 +8,6 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock,
-  Gift,
   Heart,
   MapPin,
   MessageCircle,
@@ -629,19 +628,12 @@ export default function FreelancerProfilePage() {
                           </div>
 
                           {/* Reward Status */}
-                          {expert.stampInfo.rewardReady && (
+                          {expert.stampInfo.rewardReady && !expert.stampInfo.rewardReserved && (
                             <div className="pt-2">
-                              {expert.stampInfo.rewardReserved ? (
-                                <Badge className="w-full justify-center bg-yellow-100 text-yellow-800 py-2">
-                                  <Gift className="h-4 w-4 mr-2" />
-                                  Reward Reserved
-                                </Badge>
-                              ) : (
-                                <Badge className="w-full justify-center bg-green-100 text-green-800 py-2">
-                                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                                  {expert.stampInfo.discountPercentage}% Off Next Booking!
-                                </Badge>
-                              )}
+                              <Badge className="w-full justify-center bg-green-100 text-green-800 py-2">
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                {expert.stampInfo.discountPercentage}% Off Next Booking!
+                              </Badge>
                             </div>
                           )}
                         </div>

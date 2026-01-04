@@ -10,7 +10,7 @@ export interface FileMetadata {
   fileName: string;
   fileSize: number;
   fileType: string;
-  category: FileCategory;
+  category?: FileCategory | null;
   createdAt: string;
   updatedAt: string;
 }
