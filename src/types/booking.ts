@@ -108,3 +108,7 @@ export interface CompleteBookingDto {
   bookingId: string;
   completionNotes?: string;
 }
+
+export interface CompleteBookingBulkDto {
+  bookingIds: string[];
+}

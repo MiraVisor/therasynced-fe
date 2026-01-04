@@ -33,9 +33,192 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
     return availableServices.filter((service) => selectedServiceIds.includes(service.id));
   }, [slot, selectedServiceIds]);
 
-  // Calculate total price
+  // Calculate base price and service prices
+  // When service categories are selected: total = basePrice + sum of service prices
+  // When no service categories: total = basePrice
+  const { basePrice, servicePriceTotal, subtotal } = useMemo(() => {
+    const slotBasePrice = slot.basePrice || 0;
+
+    // If no service categories selected, use slot's basePrice only
+    if (selectedServices.length === 0 || !selectedLocationType) {
+      return {
+        basePrice: slotBasePrice,
+        servicePriceTotal: 0,
+        subtotal: slotBasePrice,
+      };
+    }
+
+    // Calculate service category prices
+    let totalServicePrice = 0;
+    let hasCategoryPricing = false;
+    let hasNullPricing = false;
+
+    if (slot.availableServiceCategories && slot.availableServiceCategories.length > 0) {
+      selectedServices.forEach((service) => {
+        const category = slot.availableServiceCategories?.find((cat) => cat.id === service.id);
+        if (!category?.pricing) {
+          hasNullPricing = true;
+          return;
+        }
+
+        const locationPricing = category.pricing[selectedLocationType];
+        if (
+          locationPricing &&
+          locationPricing.price !== null &&
+          locationPricing.price !== undefined
+        ) {
+          hasCategoryPricing = true;
+          totalServicePrice += locationPricing.price;
+        } else {
+          hasNullPricing = true;
+        }
+      });
+    }
+
+    // If any service has null pricing, fall back to slot's basePrice only
+    if (hasNullPricing) {
+      return {
+        basePrice: slotBasePrice,
+        servicePriceTotal: 0,
+        subtotal: slotBasePrice,
+      };
+    }
+
+    // If services have pricing, total = basePrice + service prices
+    if (hasCategoryPricing) {
+      return {
+        basePrice: slotBasePrice,
+        servicePriceTotal: totalServicePrice,
+        subtotal: slotBasePrice + totalServicePrice,
+      };
+    }
+
+    // Fallback
+    return {
+      basePrice: slotBasePrice,
+      servicePriceTotal: 0,
+      subtotal: slotBasePrice,
+    };
+  }, [slot, selectedServices, selectedLocationType]);
+
+  // Check for service category-level discounts
+  // Discount applies to subtotal (basePrice + sum of all selected service prices)
+  const serviceCategoryDiscounts = useMemo(() => {
+    if (
+      !slot.availableServiceCategories ||
+      selectedServices.length === 0 ||
+      !selectedLocationType
+    ) {
+      return null;
+    }
+
+    // Check if all selected services have valid pricing
+    let hasNullPricing = false;
+    let hasAnyDiscount = false;
+    let discountPercentage = 0;
+
+    for (const service of selectedServices) {
+      const category = slot.availableServiceCategories?.find((cat) => cat.id === service.id);
+      if (!category?.pricing) {
+        hasNullPricing = true;
+        continue;
+      }
+
+      const locationPricing = category.pricing[selectedLocationType];
+      if (
+        !locationPricing ||
+        locationPricing.price === null ||
+        locationPricing.price === undefined
+      ) {
+        hasNullPricing = true;
+        continue;
+      }
+
+      // Check if this service has a discount
+      if (locationPricing.discount?.applicable) {
+        hasAnyDiscount = true;
+        // Use the discount percentage (should be the same for all services with discounts)
+        discountPercentage = locationPricing.discount.discountPercentage;
+      }
+    }
+
+    // If any service has null pricing, don't use service category discounts
+    if (hasNullPricing) {
+      return null;
+    }
+
+    // If we have discounts, calculate based on the total subtotal (basePrice + sum of all service prices)
+    if (hasAnyDiscount && subtotal > 0) {
+      const discountAmount = (subtotal * discountPercentage) / 100;
+      const finalAmount = subtotal - discountAmount;
+
+      return {
+        applicable: true,
+        subtotal: subtotal,
+        discountPercentage: discountPercentage,
+        discountAmount: discountAmount,
+        finalAmount: finalAmount,
+      };
+    }
+
+    return null;
+  }, [slot, selectedServices, selectedLocationType, subtotal]);
+
+  // Check if selected services have valid pricing
+  const hasValidServicePricing = useMemo(() => {
+    if (selectedServices.length === 0 || !selectedLocationType) return false;
+
+    if (!slot.availableServiceCategories) return false;
+
+    // Check if all selected services have valid pricing
+    for (const service of selectedServices) {
+      const category = slot.availableServiceCategories.find((cat) => cat.id === service.id);
+      if (!category?.pricing) return false;
+
+      const locationPricing = category.pricing[selectedLocationType];
+      if (
+        !locationPricing ||
+        locationPricing.price === null ||
+        locationPricing.price === undefined
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }, [slot, selectedServices, selectedLocationType]);
+
+  // Get slot-level discount
+  const slotDiscount = slot.discount;
+  // Use slot discount if: no services selected OR services selected but no valid pricing
+  const hasSlotDiscount = slotDiscount?.applicable === true && !hasValidServicePricing;
+  const hasServiceCategoryDiscount = serviceCategoryDiscounts?.applicable === true;
+
+  // Calculate discount amounts
+  const discountPercentage = hasServiceCategoryDiscount
+    ? serviceCategoryDiscounts.discountPercentage
+    : hasSlotDiscount
+      ? slotDiscount.discountPercentage
+      : 0;
+
+  const discountAmount = hasServiceCategoryDiscount
+    ? serviceCategoryDiscounts.discountAmount
+    : hasSlotDiscount
+      ? slotDiscount.discountAmount
+      : 0;
+
+  // Calculate final price
+  // For service category discounts, use finalAmount directly (already includes basePrice + service price - discount)
+  // For slot discounts, use finalAmount directly (already includes basePrice - discount)
+  const finalPrice = hasServiceCategoryDiscount
+    ? serviceCategoryDiscounts.finalAmount
+    : hasSlotDiscount
+      ? slotDiscount.finalAmount
+      : subtotal - discountAmount;
+
+  // Add location fee if applicable
   const totalPrice = useMemo(() => {
-    let total = slot.basePrice;
+    let total = finalPrice;
     if (
       slot.location &&
       selectedLocationType === LocationType.CLINIC &&
@@ -43,14 +226,10 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
     ) {
       total += slot.location.additionalFee;
     }
-    // Add service prices if they have additional prices
-    selectedServices.forEach((service) => {
-      if ('additionalPrice' in service && service.additionalPrice) {
-        total += Number(service.additionalPrice);
-      }
-    });
     return total;
-  }, [slot, selectedLocationType, selectedServices]);
+  }, [finalPrice, slot.location, selectedLocationType]);
+
+  const hasDiscount = hasSlotDiscount || hasServiceCategoryDiscount;
 
   const canConfirm =
     selectedLocationType !== null &&
@@ -184,8 +363,30 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">Base Price</span>
-                  <span className="font-medium">€{slot.basePrice.toFixed(2)}</span>
+                  <span className="font-medium">€{basePrice.toFixed(2)}</span>
                 </div>
+                {servicePriceTotal > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Service Price</span>
+                    <span className="font-medium">€{servicePriceTotal.toFixed(2)}</span>
+                  </div>
+                )}
+                {hasDiscount && (
+                  <>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-600 dark:text-green-400 font-medium">
+                        Stamp Discount ({discountPercentage.toFixed(0)}%):
+                      </span>
+                      <span className="text-green-600 dark:text-green-400 font-medium">
+                        -€{discountAmount.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Price After Discount</span>
+                      <span className="font-medium">€{finalPrice.toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
                 {slot.location &&
                   selectedLocationType === LocationType.CLINIC &&
                   slot.location.additionalFee > 0 && (
@@ -199,7 +400,16 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                     <span className="font-semibold text-lg text-charcoal dark:text-white">
                       Total
                     </span>
-                    <span className="font-bold text-lg text-primary">€{totalPrice.toFixed(2)}</span>
+                    <div className="flex flex-col items-end">
+                      <span className="font-bold text-lg text-primary">
+                        €{totalPrice.toFixed(2)}
+                      </span>
+                      {hasDiscount && (
+                        <span className="text-xs font-inter text-gray-500 line-through">
+                          €{(subtotal + (slot.location?.additionalFee || 0)).toFixed(2)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -220,6 +430,117 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                     : 'Please provide your address'}
                 </p>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Debug Information */}
+          <Card className="mt-6 border-2 border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20">
+            <CardContent className="p-4">
+              <h5 className="font-semibold text-sm mb-3 text-yellow-800 dark:text-yellow-200">
+                🔍 Debug Information
+              </h5>
+              <div className="space-y-2 text-xs font-mono">
+                <div>
+                  <strong>Selected Services:</strong>{' '}
+                  {selectedServices.length > 0
+                    ? selectedServices.map((s) => s.name).join(', ')
+                    : 'None'}
+                </div>
+                <div>
+                  <strong>Selected Location Type:</strong> {selectedLocationType || 'Not selected'}
+                </div>
+                <div className="border-t pt-2 mt-2">
+                  <strong>Slot Data:</strong>
+                  <div className="ml-4 mt-1">
+                    <div>basePrice: {slot.basePrice}</div>
+                    <div>
+                      slot.discount:{' '}
+                      {slot.discount ? JSON.stringify(slot.discount, null, 2) : 'null/undefined'}
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t pt-2 mt-2">
+                  <strong>Calculated Values:</strong>
+                  <div className="ml-4 mt-1">
+                    <div>basePrice: {basePrice}</div>
+                    <div>servicePriceTotal: {servicePriceTotal}</div>
+                    <div>subtotal: {subtotal}</div>
+                    <div>hasValidServicePricing: {hasValidServicePricing ? 'true' : 'false'}</div>
+                    <div>hasSlotDiscount: {hasSlotDiscount ? 'true' : 'false'}</div>
+                    <div>
+                      hasServiceCategoryDiscount: {hasServiceCategoryDiscount ? 'true' : 'false'}
+                    </div>
+                    <div>hasDiscount: {hasDiscount ? 'true' : 'false'}</div>
+                    <div>discountPercentage: {discountPercentage}</div>
+                    <div>discountAmount: {discountAmount}</div>
+                    <div>finalPrice: {finalPrice}</div>
+                    <div>totalPrice: {totalPrice}</div>
+                  </div>
+                </div>
+                <div className="border-t pt-2 mt-2">
+                  <strong>Service Category Discounts:</strong>
+                  <div className="ml-4 mt-1">
+                    {serviceCategoryDiscounts
+                      ? JSON.stringify(serviceCategoryDiscounts, null, 2)
+                      : 'null'}
+                  </div>
+                </div>
+                <div className="border-t pt-2 mt-2">
+                  <strong>Available Service Categories:</strong>
+                  <div className="ml-4 mt-1 max-h-40 overflow-y-auto">
+                    {slot.availableServiceCategories && slot.availableServiceCategories.length > 0
+                      ? slot.availableServiceCategories.map((cat) => (
+                          <div key={cat.id} className="mb-2">
+                            <div>
+                              <strong>{cat.name}</strong> (ID: {cat.id})
+                            </div>
+                            {cat.pricing && selectedLocationType && (
+                              <div className="ml-4">
+                                <div>
+                                  Price:{' '}
+                                  {cat.pricing[selectedLocationType]?.price ?? 'null/undefined'}
+                                </div>
+                                <div>
+                                  Discount:{' '}
+                                  {cat.pricing[selectedLocationType]?.discount
+                                    ? JSON.stringify(
+                                        cat.pricing[selectedLocationType]?.discount,
+                                        null,
+                                        2,
+                                      )
+                                    : 'null/undefined'}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      : 'None'}
+                  </div>
+                </div>
+                <div className="border-t pt-2 mt-2">
+                  <strong>Full Slot Object (selected fields):</strong>
+                  <div className="ml-4 mt-1 max-h-40 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap break-words">
+                      {JSON.stringify(
+                        {
+                          id: slot.id,
+                          basePrice: slot.basePrice,
+                          discount: slot.discount,
+                          availableServiceCategories: slot.availableServiceCategories?.map(
+                            (cat) => ({
+                              id: cat.id,
+                              name: cat.name,
+                              pricing: cat.pricing,
+                            }),
+                          ),
+                        },
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

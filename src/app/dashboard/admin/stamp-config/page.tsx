@@ -1,7 +1,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Edit, Save, Settings, Trash2 } from 'lucide-react';
+import { Award, Clock, Edit, Gift, Save, Settings, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { DataTable } from '@/components/common/DataTable/data-table';
@@ -112,6 +112,60 @@ const StampConfigPage = () => {
     }
   };
 
+  // Helper function to get status badge variant and label
+  const getStatusBadge = (status?: string) => {
+    if (!status) {
+      return { variant: 'secondary' as const, label: 'Unknown' };
+    }
+
+    const statusConfig: Record<
+      string,
+      {
+        variant: 'default' | 'secondary' | 'destructive' | 'outline';
+        label: string;
+        className?: string;
+      }
+    > = {
+      INACTIVE: {
+        variant: 'secondary',
+        label: 'Inactive',
+        className: 'bg-gray-100 text-gray-700',
+      },
+      ACTIVE_NO_PATIENTS: {
+        variant: 'outline',
+        label: 'No Clients',
+        className: 'bg-blue-50 text-blue-700 border-blue-200',
+      },
+      ACTIVE_WITH_PENDING_REWARDS: {
+        variant: 'default',
+        label: 'Pending Rewards',
+        className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      },
+      ACTIVE_WITH_REDEMPTIONS: {
+        variant: 'default',
+        label: 'Has Redemptions',
+        className: 'bg-green-100 text-green-800 border-green-200',
+      },
+      ACTIVE_WITH_READY_REWARDS: {
+        variant: 'default',
+        label: 'Ready Rewards',
+        className: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      },
+      ACTIVE_WITH_STAMPS: {
+        variant: 'outline',
+        label: 'Active (Stamps)',
+        className: 'bg-purple-50 text-purple-700 border-purple-200',
+      },
+      ACTIVE: {
+        variant: 'outline',
+        label: 'Active',
+        className: 'bg-gray-50 text-gray-700 border-gray-200',
+      },
+    };
+
+    return statusConfig[status] || { variant: 'secondary' as const, label: status, className: '' };
+  };
+
   // Column definitions for stamp configs table
   const columns: ColumnDef<TherapistStampConfig>[] = [
     {
@@ -152,12 +206,70 @@ const StampConfigPage = () => {
     },
     {
       accessorKey: 'isActive',
-      header: 'Status',
+      header: 'Config Status',
       cell: ({ row }) => (
         <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
           {row.original.isActive ? 'Active' : 'Inactive'}
         </Badge>
       ),
+    },
+    {
+      id: 'activityStatus',
+      header: 'Activity Status',
+      cell: ({ row }) => {
+        const stats = row.original.statistics;
+        const statusInfo = getStatusBadge(stats?.status);
+        return (
+          <Badge variant={statusInfo.variant} className={statusInfo.className}>
+            {statusInfo.label}
+          </Badge>
+        );
+      },
+    },
+    {
+      id: 'statistics',
+      header: 'Statistics',
+      cell: ({ row }) => {
+        const stats = row.original.statistics;
+        if (!stats) {
+          return <span className="font-inter text-xs text-muted-foreground">No data</span>;
+        }
+        return (
+          <div className="flex flex-col gap-1.5 text-xs min-w-[140px]">
+            <div className="flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5 text-blue-600" />
+              <span className="font-inter font-medium">{stats.totalPatients}</span>
+              <span className="font-inter text-muted-foreground">clients</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Award className="h-3.5 w-3.5 text-purple-600" />
+              <span className="font-inter font-medium">{stats.totalStampsIssued}</span>
+              <span className="font-inter text-muted-foreground">stamps</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Gift className="h-3.5 w-3.5 text-green-600" />
+              <span className="font-inter font-medium">{stats.totalRewardsRedeemed}</span>
+              <span className="font-inter text-muted-foreground">redeemed</span>
+              {stats.activeRewardsReady > 0 && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="font-inter font-medium text-emerald-600">
+                    {stats.activeRewardsReady} ready
+                  </span>
+                </>
+              )}
+            </div>
+            {stats.pendingRewards > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-yellow-600" />
+                <span className="font-inter font-medium text-yellow-700">
+                  {stats.pendingRewards} pending
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'updatedAt',
@@ -243,11 +355,11 @@ const StampConfigPage = () => {
           title="Stamp Configurations"
           searchKey="therapist.name"
           searchPlaceholder="Search freelancers..."
-          enableSorting={true}
-          enableFiltering={true}
+          enableSorting={false}
+          enableFiltering={false}
           enableColumnVisibility={true}
           enablePagination={true}
-          showSearch={true}
+          showSearch={false}
           showSorting={true}
           initialLoading={isLoadingConfigs && configs.length === 0}
         />

@@ -1,145 +1,146 @@
 'use client';
 
-import {
-  Award,
-  CheckCircle,
-  Clock,
-  Gift,
-  History,
-  Medal,
-  Sparkles,
-  TrendingUp,
-  XCircle,
-} from 'lucide-react';
-import { useState } from 'react';
+import { useQueries } from '@tanstack/react-query';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { StampDetail } from '@/components/core/Dashboard/UserSide/Loyalty/StampDetail';
-import { StampSummary } from '@/components/core/Dashboard/UserSide/Loyalty/StampSummary';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { LoyaltySectionSkeleton } from '@/components/ui/skeletons/LoyaltySectionSkeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  useLoyaltyProfile,
-  useLoyaltyRewards,
-  useRedeemReward,
-  useRedemptionHistory,
-} from '@/hooks/queries/useLoyalty';
-import { useStampStore } from '@/stores/stampStore';
-import { LoyaltyTier } from '@/types/types';
+import FavoriteFreelancerCard from '@/components/core/Dashboard/UserSide/Home/FavoriteTherapistCard';
+import { Card, CardContent } from '@/components/ui/card';
+import LoadingSpinner from '@/components/ui/loading-spinner';
+import { usePatientStamps } from '@/hooks/queries/useLoyalty';
+import { getFreelancerById } from '@/services/freelancerService';
+import { Expert } from '@/types/types';
 
 export default function LoyaltyPage() {
-  const { data: profile, isLoading: isLoadingProfile } = useLoyaltyProfile();
-  const { data: rewards = [], isLoading: isLoadingRewards } = useLoyaltyRewards();
-  const { data: redemptions = [], isLoading: isLoadingRedemptions } = useRedemptionHistory();
-  const { mutate: redeemRewardMutation, isPending: isRedeeming } = useRedeemReward();
-  const { selectedTherapistId } = useStampStore();
-  const [activeTab, setActiveTab] = useState<'points' | 'stamps'>('points');
-  const [viewingStampDetail, setViewingStampDetail] = useState(false);
+  const { data: stampSummaries = [], isLoading, error } = usePatientStamps();
 
-  const isLoading = isLoadingProfile || isLoadingRewards || isLoadingRedemptions;
-
-  const handleRedeem = (rewardId: string) => {
-    redeemRewardMutation(rewardId, {
-      onSuccess: () => {
-        // React Query will automatically refetch the queries
+  // Fetch freelancer details for each therapist to get presigned URLs
+  const freelancerQueries = useQueries({
+    queries: stampSummaries.map((stamp) => ({
+      queryKey: ['freelancer', stamp.therapist.id],
+      queryFn: async () => {
+        const response = await getFreelancerById(stamp.therapist.id);
+        return response.data;
       },
-    });
-  };
+      enabled: !!stamp.therapist.id,
+      staleTime: 60 * 60 * 1000, // 1 hour - same as presigned URL expiry
+    })),
+  });
 
-  const getTierColor = (tier: LoyaltyTier) => {
-    switch (tier) {
-      case 'BRONZE':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'SILVER':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'GOLD':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'PLATINUM':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+  // Create a map of freelancer IDs to their profile pictures (presigned URLs)
+  const profilePictureMap = new Map<string, string | null>();
+  freelancerQueries.forEach((query, index) => {
+    if (query.data?.profile?.profilePicture) {
+      const therapistId = stampSummaries[index]?.therapist.id;
+      if (therapistId) {
+        profilePictureMap.set(therapistId, query.data.profile.profilePicture);
+      }
     }
-  };
+  });
 
-  const getTierIcon = (tier: LoyaltyTier) => {
-    switch (tier) {
-      case 'BRONZE':
-        return <Medal className="h-5 w-5" />;
-      case 'SILVER':
-        return <Medal className="h-5 w-5" />;
-      case 'GOLD':
-        return <Medal className="h-5 w-5" />;
-      case 'PLATINUM':
-        return <Award className="h-5 w-5" />;
-      default:
-        return <Medal className="h-5 w-5" />;
-    }
-  };
+  // Convert TherapistStampSummary to Expert format for FavoriteFreelancerCard
+  // Use presigned URLs from freelancer details if available
+  const experts: Expert[] = stampSummaries.map((stamp) => {
+    // Get presigned URL from freelancer details, fallback to stamp data
+    const presignedUrl =
+      profilePictureMap.get(stamp.therapist.id) || stamp.therapist.profilePicture;
 
-  if (isLoading && !profile) {
+    return {
+      id: stamp.therapist.id,
+      name: stamp.therapist.name,
+      specialty: 'Therapist', // Default since not in stamp summary
+      jobTitle: undefined,
+      rating: undefined,
+      reviews: 0,
+      description: '',
+      isFavorite: true, // These are stamp holders, so they're likely favorites
+      profilePicture: presignedUrl || undefined,
+      services: [],
+      location: undefined,
+      sessionTypes: undefined,
+      verificationStatus: 'unverified', // Default since not in stamp summary
+      firstAidCertificateStatus: undefined,
+      cardInfo: {
+        name: stamp.therapist.name,
+        totalRatings: 0,
+        averageRating: undefined,
+      },
+      availableSlots: 0,
+      totalSlots: 0,
+      stampInfo: {
+        currentStampCount: stamp.currentStampCount,
+        stampTarget: stamp.stampTarget,
+        stampsRemaining: stamp.stampsRemaining,
+        rewardReady: stamp.rewardReady,
+        rewardReserved: stamp.rewardReserved || false,
+        discountPercentage: stamp.discountPercentage,
+        customConfigApplied: stamp.customConfigApplied || false,
+      },
+    };
+  });
+
+  // Check if any freelancer queries are still loading
+  const isLoadingFreelancers = freelancerQueries.some((query) => query.isLoading);
+
+  if (isLoading || isLoadingFreelancers) {
     return (
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-poppins font-bold text-gray-900">Loyalty Program</h1>
-            <p className="text-gray-600 font-inter">Earn points and redeem rewards</p>
+            <h1 className="text-3xl font-poppins font-bold text-gray-900">Freelancer Stamps</h1>
+            <p className="text-gray-600 font-inter">Track your stamp progress with freelancers</p>
           </div>
         }
       >
-        <LoyaltySectionSkeleton />
+        <Card>
+          <CardContent className="p-8 flex items-center justify-center">
+            <LoadingSpinner />
+          </CardContent>
+        </Card>
       </DashboardPageWrapper>
     );
   }
 
-  // Show skeleton as fallback when no profile data is available
-  if (!profile) {
+  if (error) {
     return (
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-poppins font-bold text-gray-900">Loyalty Program</h1>
-            <p className="text-gray-600 font-inter">Earn points and redeem rewards</p>
+            <h1 className="text-3xl font-poppins font-bold text-gray-900">Freelancer Stamps</h1>
+            <p className="text-gray-600 font-inter">Track your stamp progress with freelancers</p>
           </div>
         }
       >
-        <LoyaltySectionSkeleton />
+        <Card>
+          <CardContent className="p-8">
+            <div className="text-center text-red-600">
+              <p>Error loading stamps: {error instanceof Error ? error.message : String(error)}</p>
+            </div>
+          </CardContent>
+        </Card>
       </DashboardPageWrapper>
     );
   }
 
-  const pointsToNextTier = profile.pointsToNextTier ?? 0;
-  const availablePoints = profile.availablePoints ?? 0;
-  const progressPercentage =
-    pointsToNextTier > 0 ? Math.min((availablePoints / pointsToNextTier) * 100, 100) : 100;
-  const pointsRemaining = Math.max(0, pointsToNextTier - availablePoints);
-
-  const handleViewStampDetail = (_therapistId: string) => {
-    setViewingStampDetail(true);
-    setActiveTab('stamps');
-  };
-
-  const handleBackToStamps = () => {
-    setViewingStampDetail(false);
-  };
-
-  // If viewing stamp detail, show detail view
-  if (viewingStampDetail && selectedTherapistId) {
+  if (!stampSummaries || stampSummaries.length === 0) {
     return (
       <DashboardPageWrapper
         header={
           <div>
-            <h1 className="text-3xl font-poppins font-bold text-gray-900">Stamp Details</h1>
-            <p className="text-gray-600 font-inter">
-              View your stamp progress with this freelancer
-            </p>
+            <h1 className="text-3xl font-poppins font-bold text-gray-900">Freelancer Stamps</h1>
+            <p className="text-gray-600 font-inter">Track your stamp progress with freelancers</p>
           </div>
         }
       >
-        <StampDetail therapistId={selectedTherapistId} onBack={handleBackToStamps} />
+        <Card>
+          <CardContent>
+            <div className="text-center py-8 text-gray-500">
+              <p>You don&apos;t have any stamps yet.</p>
+              <p className="text-sm mt-2">
+                Book appointments with freelancers to start earning stamps!
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </DashboardPageWrapper>
     );
   }
@@ -148,249 +149,24 @@ export default function LoyaltyPage() {
     <DashboardPageWrapper
       header={
         <div>
-          <h1 className="text-3xl font-poppins font-bold text-gray-900">Loyalty Program</h1>
-          <p className="text-gray-600 font-inter">Earn points and redeem rewards</p>
+          <h1 className="text-3xl font-poppins font-bold text-gray-900">Freelancer Stamps</h1>
+          <p className="text-gray-600 font-inter">Track your stamp progress with freelancers</p>
         </div>
       }
     >
-      <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as 'points' | 'stamps')}
-        className="w-full"
-      >
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="points">Points & Rewards</TabsTrigger>
-          <TabsTrigger value="stamps">Freelancer Stamps</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="points" className="space-y-8 mt-6">
-          <div className="space-y-8">
-            {/* Hero Section - Simplified Focus on Progress */}
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  {/* Points and Tier Row */}
-                  <div className="flex items-end justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-inter text-gray-600 mb-1">Available Points</p>
-                      <h2 className="text-4xl font-poppins font-bold text-gray-900">
-                        {profile.availablePoints ? profile.availablePoints.toLocaleString() : 0}
-                      </h2>
-                    </div>
-                    <div className={`px-4 py-2 rounded-lg border-2 ${getTierColor(profile.tier)}`}>
-                      <div className="flex items-center gap-2">
-                        {getTierIcon(profile.tier)}
-                        <span className="text-base font-poppins font-bold">{profile.tier}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress Section */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-inter text-gray-700">
-                        Progress to {profile.nextTier}
-                      </span>
-                      <span className="font-poppins font-semibold text-primary">
-                        {pointsRemaining} points to go
-                      </span>
-                    </div>
-                    <Progress value={progressPercentage} className="h-2.5" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tier Benefits */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  Your Tier Benefits
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {profile.tierBenefits.map((benefit, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="text-sm text-gray-700">{benefit}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Available Rewards */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gift className="h-5 w-5" />
-                  Available Rewards
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="h-5 bg-gray-200 rounded animate-pulse w-24" />
-                          <div className="h-6 bg-gray-200 rounded animate-pulse w-16" />
-                        </div>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse w-full mb-2" />
-                        <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mb-4" />
-                        <div className="h-10 bg-gray-200 rounded animate-pulse w-full" />
-                      </div>
-                    ))}
-                  </div>
-                ) : rewards.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {rewards.map((reward) => {
-                      const canRedeem = profile.availablePoints >= reward.pointsCost;
-                      return (
-                        <div
-                          key={reward.id}
-                          className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold text-gray-900">{reward.name}</h4>
-                            <Badge variant="secondary">{reward.pointsCost} pts</Badge>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-4">{reward.description}</p>
-                          <Button
-                            onClick={() => handleRedeem(reward.id)}
-                            disabled={!canRedeem || isRedeeming}
-                            className="w-full"
-                            variant={canRedeem ? 'default' : 'outline'}
-                          >
-                            {canRedeem ? 'Redeem' : 'Insufficient Points'}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">No rewards available</div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Points History - Collapsible */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
-                  Points History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {profile.pointTransactions && profile.pointTransactions.length > 0 ? (
-                  <details className="group">
-                    <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 mb-4">
-                      View History ({profile.pointTransactions.length} transactions)
-                    </summary>
-                    <div className="space-y-3 mt-4">
-                      {profile.pointTransactions.slice(0, 10).map((transaction) => (
-                        <div
-                          key={transaction.id}
-                          className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            {transaction.type === 'EARNED' ? (
-                              <div className="p-2 rounded-full bg-green-100">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                              </div>
-                            ) : (
-                              <div className="p-2 rounded-full bg-red-100">
-                                <XCircle className="h-4 w-4 text-red-600" />
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-sm font-inter font-medium text-gray-900">
-                                {transaction.description}
-                              </p>
-                              <p className="text-xs font-inter text-gray-500">
-                                {new Date(transaction.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className={`text-sm font-poppins font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}
-                          >
-                            {transaction.type === 'EARNED' ? '+' : '-'}
-                            {transaction.points}
-                          </div>
-                        </div>
-                      ))}
-                      {profile.pointTransactions.length > 10 && (
-                        <p className="text-xs text-center text-gray-500 pt-2">
-                          Showing 10 of {profile.pointTransactions.length} transactions
-                        </p>
-                      )}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">No transaction history</div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Redemption History */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Redemption History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {redemptions.length > 0 ? (
-                  <div className="space-y-3">
-                    {redemptions.map((redemption) => (
-                      <div
-                        key={redemption.id}
-                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-full bg-blue-100">
-                            <Gift className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-inter font-medium text-gray-900">
-                              {redemption.reward.name}
-                            </p>
-                            <p className="text-xs font-inter text-gray-500">
-                              {new Date(redemption.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={
-                            redemption.status === 'FULFILLED'
-                              ? 'default'
-                              : redemption.status === 'PENDING'
-                                ? 'secondary'
-                                : 'destructive'
-                          }
-                        >
-                          {redemption.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">No redemptions yet</div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="stamps" className="mt-6">
-          <StampSummary onViewDetail={handleViewStampDetail} />
-        </TabsContent>
-      </Tabs>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">Your Stamps</h2>
+          <p className="text-sm text-gray-600">
+            {stampSummaries.length} freelancer{stampSummaries.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {experts.map((expert) => (
+            <FavoriteFreelancerCard key={expert.id} freelancer={expert} />
+          ))}
+        </div>
+      </div>
     </DashboardPageWrapper>
   );
 }

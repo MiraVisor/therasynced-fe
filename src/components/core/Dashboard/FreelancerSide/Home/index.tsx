@@ -177,11 +177,7 @@ const TodayAppointments = () => {
               {format(new Date(), 'EEEE, MMMM d, yyyy')}
             </CardDescription>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push('/dashboard/appointments')}
-          >
+          <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/slots')}>
             View All
           </Button>
         </div>
@@ -274,8 +270,6 @@ const TodayAppointments = () => {
 // ============================================================================
 
 const QuickStats = ({ dashboardData, isLoading }: { dashboardData: any; isLoading: boolean }) => {
-  const router = useRouter();
-
   const formatRevenue = (cents: number) =>
     `€${(cents / 100).toLocaleString('en-IE', { minimumFractionDigits: 0 })}`;
 
@@ -283,26 +277,22 @@ const QuickStats = ({ dashboardData, isLoading }: { dashboardData: any; isLoadin
     {
       label: "Today's Bookings",
       value: dashboardData?.todayBookings?.toString() || '0',
-      onClick: () => router.push('/dashboard/appointments'),
     },
     {
       label: 'Weekly Revenue',
       value: formatRevenue(dashboardData?.weeklyRevenue?.value || 0),
       change: dashboardData?.weeklyRevenue?.trendPercentage,
       isUp: dashboardData?.weeklyRevenue?.trendDirection === 'up',
-      onClick: () => router.push('/dashboard/analytics'),
     },
     {
       label: 'Total Appointments',
       value: dashboardData?.totalAppointments?.value?.toString() || '0',
       change: dashboardData?.totalAppointments?.trendPercentage,
       isUp: dashboardData?.totalAppointments?.trendDirection === 'up',
-      onClick: () => router.push('/dashboard/appointments'),
     },
     {
       label: 'Unread Messages',
       value: dashboardData?.unreadMessages?.toString() || '0',
-      onClick: () => router.push('/dashboard/messages'),
     },
   ];
 
@@ -340,8 +330,7 @@ const QuickStats = ({ dashboardData, isLoading }: { dashboardData: any; isLoadin
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
-              onClick={stat.onClick}
+              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
             >
               <p className="text-xs font-inter text-gray-500 dark:text-gray-400 mb-1">
                 {stat.label}

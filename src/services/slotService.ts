@@ -76,6 +76,7 @@ export const getAvailableSlots = async (
     limit?: number;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    patientId?: string; // Optional: Include to get discount previews
   },
 ): Promise<ApiResponse<Slot[]>> => {
   const response = await api.get(`/slot/available/${freelancerId}`, { params });
@@ -112,6 +113,7 @@ export const getAvailableSlotsByDate = async (params: {
   freelancerId: string; // Required: Filter by specific freelancer
   page?: number;
   limit?: number;
+  patientId?: string; // Optional: Include to get discount previews
 }): Promise<ApiResponse<Slot[]>> => {
   const response = await api.get('/slot/available-by-date', { params });
   return response.data;

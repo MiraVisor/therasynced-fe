@@ -25,6 +25,12 @@ export interface Slot {
   endTime: string;
   duration: number;
   basePrice: number;
+  discount?: {
+    applicable: boolean;
+    discountPercentage: number;
+    discountAmount: number;
+    finalAmount: number;
+  };
   status: 'AVAILABLE' | 'RESERVED' | 'BOOKED' | 'CANCELLED';
   reservedUntil?: string;
   notes?: string;
@@ -38,6 +44,30 @@ export interface Slot {
       name: string;
     };
     locationTypes: ('HOME' | 'CLINIC')[]; // REQUIRED: Location types this service supports (always present in slot responses)
+    pricing?: {
+      HOME?: {
+        price: number;
+        currency: string;
+        discount?: {
+          applicable: boolean;
+          subtotal?: number; // basePrice + service price (total before discount)
+          discountPercentage: number;
+          discountAmount: number;
+          finalAmount: number; // Final price after discount
+        };
+      };
+      CLINIC?: {
+        price: number;
+        currency: string;
+        discount?: {
+          applicable: boolean;
+          subtotal?: number; // basePrice + service price (total before discount)
+          discountPercentage: number;
+          discountAmount: number;
+          finalAmount: number; // Final price after discount
+        };
+      };
+    };
   }>; // Service categories available for this slot (matches API response structure)
   booking?: {
     id: string;
@@ -54,10 +84,19 @@ export interface Slot {
     };
     discountAmount?: number;
     discountPercentage?: number;
+    breakdown?: {
+      basePrice: number;
+      servicePrice: number;
+      discountAmount: number;
+    };
     serviceCategories: Array<{
       id: string;
       name: string;
       description?: string;
+      jobTitle?: {
+        id: string;
+        name: string;
+      };
     }>; // Service categories booked for this appointment (required in API response)
     rating?: BookingRating | null; // The rating object if the booking has been rated
     createdAt: string;

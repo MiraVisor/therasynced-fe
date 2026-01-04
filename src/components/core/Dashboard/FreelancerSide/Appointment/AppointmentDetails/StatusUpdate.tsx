@@ -59,6 +59,14 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
     try {
       await api.patch(`/booking/${appointment.id}/status`, { status: newStatus });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['slots'] });
+
+      // If status is changed to COMPLETED, invalidate stamps and favorites to refresh stamp data
+      if (newStatus === 'COMPLETED') {
+        queryClient.invalidateQueries({ queryKey: ['stamps'] });
+        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      }
+
       closeEventDialog();
       toast.success(`Appointment status updated to ${newStatus.toLowerCase()}`, {
         position: 'top-right',
