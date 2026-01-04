@@ -33,7 +33,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TierBadge } from '@/components/ui/tier-badge';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
-import { useProfile, useUpdateProfile } from '@/hooks/queries/useProfile';
+import { useProfile } from '@/hooks/queries/useProfile';
 import { useAvailableSlotsByDate, useFreelancersByDate } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
 import { searchFreelancers } from '@/services/freelancerService';
@@ -82,8 +82,6 @@ export function EnhancedBookingSearch() {
   const [locationType, setLocationType] = useState<LocationType | null>(null);
   const [homeAddress, setHomeAddress] = useState('');
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
-  const [showAddressDialog, setShowAddressDialog] = useState(false);
-  const [tempAddress, setTempAddress] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Refs
@@ -92,7 +90,6 @@ export function EnhancedBookingSearch() {
 
   const { mutate: createBooking, isPending: isCreating } = useCreateBooking();
   const { data: userProfile } = useProfile();
-  const { mutate: updateProfile } = useUpdateProfile();
 
   // Get freelancers available on selected date (for date browse method)
   const { data: freelancersByDate = [], isLoading: isLoadingByDate } = useFreelancersByDate({
@@ -142,14 +139,14 @@ export function EnhancedBookingSearch() {
         reviews: 0,
         description: '',
         profilePicture: freelancer.profilePicture,
-        jobTitle: { id: '', name: jobTitleName },
+        jobTitle: { id: '', name: jobTitleName, description: '' },
         cardInfo: {
           name: freelancer.name || '',
           averageRating: freelancer.rating || 0,
           totalRatings: 0,
         },
-        city: freelancer.city,
-        clinicAddress: freelancer.clinicAddress,
+        city: undefined,
+        clinicAddress: undefined,
       };
     }) as Expert[];
   }, [selectedDate, freelancersByDate]);
@@ -483,31 +480,10 @@ export function EnhancedBookingSearch() {
       return;
     }
     if (locationType === LocationType.HOME && !homeAddress.trim()) {
-      setTempAddress(homeAddress);
-      setShowAddressDialog(true);
+      toast.error('Please enter your address for home visit appointments');
       return;
     }
     proceedWithBooking();
-  };
-
-  const handleSaveAddress = () => {
-    if (tempAddress.trim()) {
-      const addressToSave = tempAddress.trim();
-      setHomeAddress(addressToSave);
-      setShowAddressDialog(false);
-      setTempAddress('');
-
-      if (userProfile && userProfile.homeAddress !== addressToSave) {
-        updateProfile(
-          { homeAddress: addressToSave },
-          { onError: () => console.warn('Failed to save address to profile') },
-        );
-      }
-
-      proceedWithBooking();
-    } else {
-      toast.error('Please enter a valid address');
-    }
   };
 
   // Determine which results to show
