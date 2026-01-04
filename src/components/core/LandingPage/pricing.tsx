@@ -20,12 +20,13 @@ const Pricing = () => {
   const sortedPlans = [...subscriptionPlans].sort((a, b) => (a.price || 0) - (b.price || 0));
 
   return (
-    <section id="pricing" className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-white dark:bg-black">
+    <section id="pricing" className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-[#faf9f6] dark:bg-black">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-16 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -41,8 +42,9 @@ const Pricing = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="flex flex-col p-8 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-900/30 h-full"
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col p-8 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#f5f4f1] dark:bg-neutral-900/30 h-full transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
           >
             <div className="mb-8">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">For Clients</h3>
@@ -67,7 +69,7 @@ const Pricing = () => {
             </ul>
             <Button
               onClick={() => router.push('/authentication/sign-in')}
-              className="w-full h-12 bg-primary text-white font-semibold rounded-xl"
+              className="w-full h-12 bg-primary text-white font-semibold rounded-xl transition-all duration-300 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               Get Started Free
             </Button>
@@ -78,7 +80,7 @@ const Pricing = () => {
             ? [1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-[450px] rounded-2xl bg-gray-50 dark:bg-neutral-900 animate-pulse border border-gray-100 dark:border-neutral-800"
+                  className="h-[450px] rounded-2xl bg-[#f5f4f1] dark:bg-neutral-900 animate-pulse border border-gray-100 dark:border-neutral-800"
                 />
               ))
             : sortedPlans.map((plan, index) => (
@@ -86,12 +88,12 @@ const Pricing = () => {
                   key={plan.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex flex-col p-8 rounded-2xl border h-full transition-all ${
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ delay: index * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className={`flex flex-col p-8 rounded-2xl border h-full transition-all duration-300 ${
                     plan.name === 'GOLD'
-                      ? 'border-primary bg-white dark:bg-neutral-900 shadow-xl shadow-primary/5'
-                      : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900'
+                      ? 'border-primary bg-[#faf9f6] dark:bg-neutral-900 shadow-xl shadow-primary/10 hover:shadow-2xl hover:shadow-primary/20'
+                      : 'border-gray-100 dark:border-neutral-800 bg-[#faf9f6] dark:bg-neutral-900 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5'
                   }`}
                 >
                   <div className="mb-8">
@@ -100,9 +102,14 @@ const Pricing = () => {
                         {plan.displayName}
                       </h3>
                       {plan.name === 'GOLD' && (
-                        <span className="px-3 py-1 text-[10px] font-bold bg-primary/10 text-primary rounded-full uppercase tracking-wider">
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+                          className="px-3 py-1 text-[10px] font-bold bg-primary/10 text-primary rounded-full uppercase tracking-wider shadow-sm"
+                        >
                           Popular
-                        </span>
+                        </motion.span>
                       )}
                     </div>
                     <p className="text-sm text-gray-500 mt-2">{plan.description}</p>
@@ -127,7 +134,11 @@ const Pricing = () => {
                   <Button
                     onClick={() => router.push('/authentication/sign-in')}
                     variant={plan.name === 'GOLD' ? 'default' : 'outline'}
-                    className={`w-full h-12 font-semibold rounded-xl ${plan.name === 'GOLD' ? 'bg-primary text-white shadow-lg shadow-primary/20' : ''}`}
+                    className={`w-full h-12 font-semibold rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                      plan.name === 'GOLD'
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:bg-primary/90'
+                        : 'hover:border-primary hover:text-primary'
+                    }`}
                   >
                     Start with {plan.displayName}
                   </Button>
@@ -136,13 +147,14 @@ const Pricing = () => {
         </div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-12 p-8 rounded-2xl bg-gray-50/50 dark:bg-neutral-900/30 border border-dashed border-gray-200 dark:border-neutral-800 text-center"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-12 p-8 rounded-2xl bg-[#f5f4f1] dark:bg-neutral-900/30 border border-dashed border-gray-200 dark:border-neutral-800 text-center"
         >
-          <p className="text-sm text-gray-500">
-            Looking for clinic or team plans? <strong>Teams is coming soon.</strong>
+          <p className=" text-gray-500">
+            Looking for team plan? <strong>Team plan is coming soon.</strong>
           </p>
         </motion.div>
       </div>

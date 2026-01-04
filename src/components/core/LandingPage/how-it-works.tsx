@@ -32,12 +32,16 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-white dark:bg-black">
+    <section
+      id="how-it-works"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-[#f5f4f1] dark:bg-neutral-950/50"
+    >
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-20 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -53,20 +57,31 @@ const HowItWorks = () => {
           {steps.map((step, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="relative group"
             >
-              {/* Connector line for desktop */}
+              {/* Enhanced connector line for desktop with animated dashes */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-8 left-1/2 w-full h-[1px] bg-gray-100 dark:bg-neutral-800 -z-0" />
+                <div className="hidden lg:block absolute top-8 left-1/2 w-full h-[1px] -z-0 overflow-hidden">
+                  <div className="w-full h-full bg-gradient-to-r from-transparent via-gray-200 dark:via-neutral-700 to-transparent" />
+                  <motion.div
+                    initial={{ x: '-100%' }}
+                    whileInView={{ x: '100%' }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, delay: index * 0.2, ease: 'easeInOut' }}
+                    className="absolute top-0 left-0 w-full h-full bg-primary/30"
+                    style={{ clipPath: 'polygon(0 0, 20% 0, 20% 100%, 0 100%)' }}
+                  />
+                </div>
               )}
 
               <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 flex items-center justify-center shadow-sm group-hover:border-primary group-hover:shadow-lg group-hover:shadow-primary/5 transition-all duration-300">
-                  <step.icon className="w-7 h-7 text-primary" />
+                <div className="w-16 h-16 rounded-2xl bg-[#faf9f6] dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 flex items-center justify-center shadow-sm group-hover:border-primary group-hover:shadow-lg group-hover:shadow-primary/10 transition-all duration-300 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <step.icon className="w-7 h-7 text-primary relative z-10 transition-colors duration-300" />
                 </div>
 
                 <div className="space-y-2">

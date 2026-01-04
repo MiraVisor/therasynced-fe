@@ -38,7 +38,12 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black font-sans selection:bg-primary/10 selection:text-primary overflow-x-hidden">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-[#faf9f6] dark:bg-black font-sans selection:bg-primary/10 selection:text-primary overflow-x-hidden"
+    >
       <Navbar />
       <main className="relative">
         <Hero />
@@ -53,18 +58,18 @@ const LandingPage = () => {
       <AnimatePresence>
         {isVisible && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
             onClick={scrollToTop}
-            className="fixed bottom-8 right-8 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 text-primary p-4 rounded-2xl shadow-2xl shadow-primary/10 hover:border-primary transition-all z-50 group"
+            className="fixed bottom-8 right-8 bg-[#faf9f6] dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 text-primary p-4 rounded-2xl shadow-2xl shadow-primary/10 hover:border-primary hover:shadow-primary/20 transition-all duration-300 z-50 group focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label="Back to top"
           >
-            <ChevronUp size={24} className="group-hover:-translate-y-1 transition-transform" />
+            <ChevronUp size={24} className="transition-colors duration-300" />
           </motion.button>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 

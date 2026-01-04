@@ -8,7 +8,7 @@ const Footer = () => {
   const { resolvedTheme } = useTheme();
 
   return (
-    <footer className="w-full bg-white dark:bg-black border-t border-gray-100 dark:border-neutral-900">
+    <footer className="w-full bg-[#faf9f6] dark:bg-black border-t border-gray-100 dark:border-neutral-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Column */}
@@ -19,7 +19,7 @@ const Footer = () => {
                 alt="TheraSynced"
                 width={140}
                 height={40}
-                className="h-8 w-auto"
+                className="h-12 w-auto transition-opacity hover:opacity-80"
               />
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
@@ -35,24 +35,30 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4 text-sm text-gray-500">
               <li>
-                <Link href="#how-it-works" className="hover:text-primary transition-colors">
+                <Link
+                  href="#how-it-works"
+                  className="hover:text-primary transition-colors duration-300"
+                >
                   How it Works
                 </Link>
               </li>
               <li>
-                <Link href="#features" className="hover:text-primary transition-colors">
+                <Link
+                  href="#features"
+                  className="hover:text-primary transition-colors duration-300"
+                >
                   Features
                 </Link>
               </li>
               <li>
-                <Link href="#pricing" className="hover:text-primary transition-colors">
+                <Link href="#pricing" className="hover:text-primary transition-colors duration-300">
                   Pricing
                 </Link>
               </li>
               <li>
                 <Link
                   href="/authentication/sign-in"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-colors duration-300"
                 >
                   Join as Therapist
                 </Link>
@@ -67,17 +73,17 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4 text-sm text-gray-500">
               <li>
-                <Link href="/privacy" className="hover:text-primary transition-colors">
+                <Link href="/privacy" className="hover:text-primary transition-colors duration-300">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-primary transition-colors">
+                <Link href="/terms" className="hover:text-primary transition-colors duration-300">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="hover:text-primary transition-colors">
+                <Link href="/cookies" className="hover:text-primary transition-colors duration-300">
                   Cookie Policy
                 </Link>
               </li>
@@ -93,13 +99,13 @@ const Footer = () => {
               <li>
                 <a
                   href="mailto:support@therasynced.com"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-colors duration-300"
                 >
                   support@therasynced.com
                 </a>
               </li>
               <li>
-                <Link href="#" className="hover:text-primary transition-colors">
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
                   Help Center
                 </Link>
               </li>
@@ -108,7 +114,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-gray-100 dark:border-neutral-900 flex flex-col md:flex-row justify-between gap-6">
+        <div className="mt-16 pt-8 border-t border-gray-100 dark:border-neutral-900 flex flex-col md:flex-row justify-between gap-6 relative">
           <p className="text-xs text-gray-400">
             © {new Date().getFullYear()} TheraSynced. All rights reserved.
           </p>

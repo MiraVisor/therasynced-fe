@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
@@ -56,7 +57,7 @@ const Navbar = () => {
             alt="TheraSynced"
             width={180}
             height={45}
-            className="h-10 w-auto"
+            className="h-14 w-auto transition-opacity hover:opacity-80"
           />
         </Link>
 
@@ -66,9 +67,10 @@ const Navbar = () => {
             <button
               key={link.href}
               onClick={() => handleNavClick(link.href)}
-              className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors"
+              className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors relative group"
             >
               {link.label}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </button>
           ))}
           <div className="w-px h-4 bg-gray-200 dark:bg-neutral-800" />
@@ -89,24 +91,32 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 p-6 space-y-4 shadow-xl">
-          {navLinks.map((link) => (
-            <button
-              key={link.href}
-              onClick={() => handleNavClick(link.href)}
-              className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400"
-            >
-              {link.label}
-            </button>
-          ))}
-          <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'} className="block">
-            <Button className="w-full bg-primary text-white">
-              {hasValidToken ? 'Dashboard' : 'Sign In'}
-            </Button>
-          </Link>
-        </div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 p-6 space-y-4 shadow-xl"
+          >
+            {navLinks.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => handleNavClick(link.href)}
+                className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400"
+              >
+                {link.label}
+              </button>
+            ))}
+            <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'} className="block">
+              <Button className="w-full bg-primary text-white">
+                {hasValidToken ? 'Dashboard' : 'Sign In'}
+              </Button>
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

@@ -46,13 +46,14 @@ const WhyChooseUs = () => {
   return (
     <section
       id="why-choose-us"
-      className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-white dark:bg-black"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-[#f5f4f1] dark:bg-neutral-950/50"
     >
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-20 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -68,15 +69,15 @@ const WhyChooseUs = () => {
           {trustFactors.map((factor, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="flex gap-6 group"
             >
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  <factor.icon className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
+                <div className="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md group-hover:shadow-primary/20">
+                  <factor.icon className="w-6 h-6 text-primary group-hover:text-white transition-colors duration-300" />
                 </div>
               </div>
               <div className="space-y-2">
