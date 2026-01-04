@@ -199,40 +199,60 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
     // Use the first day's slot duration as default (they can vary per day, but API expects one duration)
     const defaultDuration = dayConfigs[0]?.slotDuration || 60;
 
-    // Extract break times from day configurations (use first day's break times if they exist)
-    // Break times should be the same across all days, or we use the first day's break time
-    const firstConfig = dayConfigs[0];
-    const hasBreakFrom = firstConfig?.breakFrom && firstConfig.breakFrom.trim() !== '';
-    const hasBreakTill = firstConfig?.breakTill && firstConfig.breakTill.trim() !== '';
+    // Add per-slot break times based on each slot's date and day configuration
+    // Each slot gets break times from its specific day configuration
+    const slotsWithBreakTimes = slots.map((slot) => {
+      const slotDate = new Date(slot.startTime);
+      // Get day name matching the format used in DaySlotConfiguration (Monday = 0, Sunday = 6)
+      const dayIndex = slotDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const dayNames = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+      ] as const;
+      // Convert: Sunday (0) -> 6, Monday (1) -> 0, Tuesday (2) -> 1, etc.
+      const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+      const dayName = dayNames[mappedIndex];
 
-    let breakFrom: string | undefined;
-    let breakTill: string | undefined;
+      // Find the configuration for this slot's day
+      const dayConfig = dayConfigs.find((config) => config.day === dayName);
 
-    if (hasBreakFrom && hasBreakTill && slots.length > 0) {
-      // Convert break time strings (HH:mm) to ISO datetime strings
-      // Use the date from the first slot for the break time reference
-      // Note: Break times are sent as metadata - the frontend has already filtered slots
-      const firstSlotDate = slots[0] ? new Date(slots[0].startTime) : new Date();
-      const [breakFromHour, breakFromMinute] = firstConfig.breakFrom.split(':').map(Number);
-      const [breakTillHour, breakTillMinute] = firstConfig.breakTill.split(':').map(Number);
+      if (dayConfig?.breakFrom && dayConfig.breakTill) {
+        const hasBreakFrom = dayConfig.breakFrom.trim() !== '';
+        const hasBreakTill = dayConfig.breakTill.trim() !== '';
 
-      // Create datetime objects for break times using the first slot's date
-      const breakFromDate = new Date(firstSlotDate);
-      breakFromDate.setHours(breakFromHour || 0, breakFromMinute || 0, 0, 0);
+        if (hasBreakFrom && hasBreakTill) {
+          // Convert break time strings (HH:mm) to ISO datetime strings for this specific date
+          const [breakFromHour, breakFromMinute] = dayConfig.breakFrom.split(':').map(Number);
+          const [breakTillHour, breakTillMinute] = dayConfig.breakTill.split(':').map(Number);
 
-      const breakTillDate = new Date(firstSlotDate);
-      breakTillDate.setHours(breakTillHour || 0, breakTillMinute || 0, 0, 0);
+          // Create datetime objects for break times using the slot's date
+          const breakFromDate = new Date(slotDate);
+          breakFromDate.setHours(breakFromHour || 0, breakFromMinute || 0, 0, 0);
 
-      breakFrom = breakFromDate.toISOString();
-      breakTill = breakTillDate.toISOString();
-    }
+          const breakTillDate = new Date(slotDate);
+          breakTillDate.setHours(breakTillHour || 0, breakTillMinute || 0, 0, 0);
+
+          return {
+            ...slot,
+            breakFrom: breakFromDate.toISOString(),
+            breakTill: breakTillDate.toISOString(),
+          };
+        }
+      }
+
+      // Return slot without break times if day doesn't have break configured
+      return slot;
+    });
 
     const submitData: CreateSlotsDto = {
       ...(locationType && { locationType }), // Optional - only include if specified
       duration: defaultDuration,
-      ...(breakFrom && { breakFrom }),
-      ...(breakTill && { breakTill }),
-      slots,
+      slots: slotsWithBreakTimes,
     };
 
     createSlot(submitData, {
