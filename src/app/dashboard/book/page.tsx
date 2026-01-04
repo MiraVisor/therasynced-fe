@@ -49,7 +49,7 @@ import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
 import { useFavoriteFreelancers } from '@/hooks/queries/useFreelancers';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/useProfile';
-import { useAvailableSlots, useAvailableSlotsByDate } from '@/hooks/queries/useSlots';
+import { useAvailableSlotsByDate, useFreelancersByDate } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
 import { searchFreelancersAutocomplete } from '@/services/freelancerService';
 import { getApiErrorMessage } from '@/types/common';
@@ -103,19 +103,20 @@ export default function BookingPage() {
 
   const today = startOfToday();
 
-  // Get slots for selected date
-  const { data: slotsForDate = [], isLoading: isLoadingSlotsForDate } = useAvailableSlotsByDate({
-    date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
-    limit: 100,
-  });
+  // Get freelancers who have available slots on the selected date
+  const { data: freelancersByDate = [], isLoading: isLoadingFreelancersByDate } =
+    useFreelancersByDate({
+      date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+      limit: 100,
+    });
 
-  // Get slots for selected freelancer
-  const { data: freelancerSlots = [], isLoading: isLoadingFreelancerSlots } = useAvailableSlots(
-    selectedFreelancer ?? null,
-    {
-      date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
-    },
-  );
+  // Get slots for selected freelancer and date (now requires both)
+  const { data: freelancerSlots = [], isLoading: isLoadingFreelancerSlots } =
+    useAvailableSlotsByDate({
+      date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+      freelancerId: selectedFreelancer ?? '',
+      limit: 100,
+    });
 
   // Pre-populate address from user profile
   useEffect(() => {
@@ -264,38 +265,42 @@ export default function BookingPage() {
     }
   };
 
-  // Get unique freelancers with slots for selected date
+  // Get freelancers with available slots for selected date (from new endpoint)
   const freelancersWithSlots = useMemo(() => {
-    if (!selectedDate || !slotsForDate.length) return [];
+    if (!selectedDate || !freelancersByDate.length) return [];
 
-    const freelancersMap = new Map<string, Expert & { slotCount: number }>();
-
-    slotsForDate.forEach((slot) => {
-      if (!freelancersMap.has(slot.freelancerId)) {
-        freelancersMap.set(slot.freelancerId, {
-          id: slot.freelancerId,
-          name: slot.freelancerName || 'Unknown',
-          specialty: '',
-          rating: slot.averageRating || 0,
-          reviews: slot.numberOfRatings || 0,
-          description: '',
-          profilePicture: slot.profilePicture,
-          jobTitle: { id: '', name: slot.freelancerName || '' },
-          cardInfo: {
-            name: slot.freelancerName || 'Unknown',
-            averageRating: slot.averageRating || 0,
-            totalRatings: slot.numberOfRatings || 0,
-          },
-          slotCount: 1,
-        } as Expert & { slotCount: number });
-      } else {
-        const existing = freelancersMap.get(slot.freelancerId)!;
-        existing.slotCount++;
+    // Map the freelancers from the API response to Expert format
+    return freelancersByDate.map((freelancer) => {
+      // Handle jobTitle - it might be a string or an object
+      let jobTitleName = '';
+      if (typeof freelancer.jobTitle === 'string') {
+        jobTitleName = freelancer.jobTitle;
+      } else if (
+        freelancer.jobTitle &&
+        typeof freelancer.jobTitle === 'object' &&
+        'name' in freelancer.jobTitle
+      ) {
+        jobTitleName = (freelancer.jobTitle as { name: string }).name;
       }
-    });
 
-    return Array.from(freelancersMap.values());
-  }, [selectedDate, slotsForDate]);
+      return {
+        id: freelancer.id,
+        name: freelancer.name || '',
+        specialty: '',
+        rating: freelancer.rating || 0,
+        reviews: 0,
+        description: '',
+        profilePicture: freelancer.profilePicture,
+        jobTitle: { id: '', name: jobTitleName },
+        cardInfo: {
+          name: freelancer.name || '',
+          averageRating: freelancer.rating || 0,
+          totalRatings: 0,
+        },
+        slotCount: 1, // API doesn't return slot count, defaulting to 1
+      };
+    }) as (Expert & { slotCount: number })[];
+  }, [selectedDate, freelancersByDate]);
 
   // Handle therapist selection from date-first flow
   const handleTherapistSelect = (freelancer: Expert) => {
@@ -326,10 +331,19 @@ export default function BookingPage() {
   };
 
   const handlePreviousStep = () => {
-    if (bookingStep === 'service') {
+    if (bookingStep === 'time') {
+      // Go back to freelancer selection
+      setSelectedFreelancer(null);
+      setSelectedFreelancerData(null);
+      setSelectedSlot(null);
+      setFlow('date-selected');
+    } else if (bookingStep === 'service') {
       setBookingStep('time');
+      setSelectedSlot(null);
+      setSelectedService('');
     } else if (bookingStep === 'location') {
       setBookingStep('service');
+      setLocationType(null);
     } else if (bookingStep === 'confirm') {
       setBookingStep('location');
     }
@@ -346,39 +360,26 @@ export default function BookingPage() {
   };
 
   const canGoPrevious = () => {
-    return bookingStep !== 'time';
+    // Can always go back, even from time step
+    return true;
   };
 
-  // Get available slots for display
+  // Get available slots for display (now requires both date and freelancer)
   const availableSlots = useMemo(() => {
-    if (!selectedDate) return [];
+    if (!selectedDate || !selectedFreelancer) return [];
 
-    if (selectedFreelancer && freelancerSlots.length > 0) {
-      return freelancerSlots.filter((slot) => {
-        const slotDate = format(parseISO(slot.startTime), 'yyyy-MM-dd');
-        const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-        return slotDate === selectedDateStr && slot.status === 'AVAILABLE';
-      });
-    }
-
-    return slotsForDate.filter((slot) => {
+    return freelancerSlots.filter((slot) => {
       const slotDate = format(parseISO(slot.startTime), 'yyyy-MM-dd');
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-      return (
-        slotDate === selectedDateStr &&
-        (!selectedFreelancer || slot.freelancerId === selectedFreelancer) &&
-        slot.status === 'AVAILABLE'
-      );
+      return slotDate === selectedDateStr && slot.status === 'AVAILABLE';
     });
-  }, [selectedDate, selectedFreelancer, freelancerSlots, slotsForDate]);
+  }, [selectedDate, selectedFreelancer, freelancerSlots]);
 
   // Get selected slot data
   const selectedSlotData = useMemo(() => {
     if (!selectedSlot) return null;
-    const allSlots = [...freelancerSlots, ...slotsForDate];
-    const uniqueSlots = Array.from(new Map(allSlots.map((slot) => [slot.id, slot])).values());
-    return uniqueSlots.find((s) => s.id === selectedSlot) || null;
-  }, [selectedSlot, freelancerSlots, slotsForDate]);
+    return freelancerSlots.find((s) => s.id === selectedSlot) || null;
+  }, [selectedSlot, freelancerSlots]);
 
   // Get available services from selected slot
   const availableServices = useMemo(() => {
@@ -553,8 +554,8 @@ export default function BookingPage() {
               Find Your Freelancer
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 font-inter max-w-2xl mx-auto">
-              Search by name or browse available dates to find the perfect match for your wellness
-              journey
+              Search by name or browse available dates to find the perfect match for your
+              wellnessjourney
             </p>
           </div>
         </div>
@@ -980,11 +981,34 @@ export default function BookingPage() {
                             </h2>
                           </div>
 
-                          {isLoadingSlotsForDate ? (
-                            <div className="space-y-3">
-                              {[1, 2, 3].map((i) => (
-                                <Skeleton key={i} className="h-20 w-full rounded-lg" />
-                              ))}
+                          {isLoadingFreelancersByDate ? (
+                            <div className="space-y-4">
+                              <div className="space-y-4 md:space-y-3">
+                                {[1, 2, 3].map((i) => (
+                                  <div
+                                    key={i}
+                                    className="w-full p-5 md:p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 min-h-[100px] md:min-h-[90px]"
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                                      <div className="flex-1 min-w-0 space-y-2">
+                                        <div className="flex items-center gap-2">
+                                          <Skeleton className="h-5 w-32" />
+                                          <Skeleton className="h-4 w-4 rounded-full" />
+                                        </div>
+                                        <Skeleton className="h-4 w-24" />
+                                        <div className="flex items-center gap-3">
+                                          <Skeleton className="h-4 w-20" />
+                                          <Skeleton className="h-4 w-16" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+                                Loading available freelancers...
+                              </p>
                             </div>
                           ) : freelancersWithSlots.length === 0 ? (
                             <div className="text-center py-8">
@@ -1114,13 +1138,23 @@ export default function BookingPage() {
                                   </h3>
                                 </div>
                                 {isLoadingFreelancerSlots ? (
-                                  <div className="grid grid-cols-3 gap-2">
-                                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                                      <Skeleton key={i} className="h-10 rounded-lg" />
-                                    ))}
+                                  <div className="space-y-3">
+                                    <div className="grid grid-cols-3 gap-3 md:gap-2">
+                                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+                                        <Skeleton
+                                          key={i}
+                                          className="h-12 md:h-10 rounded-lg min-h-[44px] md:min-h-0"
+                                        />
+                                      ))}
+                                    </div>
+                                    <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+                                      Loading available times...
+                                    </p>
                                   </div>
                                 ) : availableSlots.length === 0 ? (
-                                  <p className="text-gray-500 text-sm">No available slots</p>
+                                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                    No available slots
+                                  </p>
                                 ) : (
                                   <div className="grid grid-cols-3 gap-3 md:gap-2 flex-1">
                                     {availableSlots.map((slot) => {

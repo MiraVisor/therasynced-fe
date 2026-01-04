@@ -129,77 +129,85 @@ export const BookingPagePreview = () => {
           applied.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Calendar */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-charcoal">Select Date</h3>
-          <div className="border border-gray-200 rounded-lg p-4 bg-white">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              modifiers={{
-                hasSlots: Array.from(datesWithSlots).map((d) => {
-                  const [yearStr, monthStr, dayStr] = d.split('-');
-                  const year = Number(yearStr) || 0;
-                  const month = Number(monthStr) || 0;
-                  const day = Number(dayStr) || 0;
-                  // JavaScript Date months are 0-indexed (0-11), but parsed month is 1-indexed (1-12)
-                  return new Date(year, month - 1, day);
-                }),
-              }}
-              modifiersClassNames={{
-                hasSlots: 'bg-primary/10 text-primary font-semibold',
-              }}
-              captionLayout="dropdown"
-              className="rounded-lg"
-            />
+      <CardContent className="pb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Calendar - Left Column */}
+          <div className="flex flex-col space-y-2">
+            <h3 className="text-sm font-semibold text-charcoal">Select Date</h3>
+            <div className="flex lg:flex-row flex-col space-x-2">
+              <div className="border border-gray-200 rounded-lg p-3 bg-white w-fit mx-auto lg:mx-0">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  modifiers={{
+                    hasSlots: Array.from(datesWithSlots).map((d) => {
+                      const [yearStr, monthStr, dayStr] = d.split('-');
+                      const year = Number(yearStr) || 0;
+                      const month = Number(monthStr) || 0;
+                      const day = Number(dayStr) || 0;
+                      // JavaScript Date months are 0-indexed (0-11), but parsed month is 1-indexed (1-12)
+                      return new Date(year, month - 1, day);
+                    }),
+                  }}
+                  modifiersClassNames={{
+                    hasSlots: 'bg-primary/10 text-primary font-semibold',
+                  }}
+                  captionLayout="dropdown"
+                  className="rounded-lg"
+                />
+              </div>
+              {/* Info */}
+              <div className="p-3 bg-muted/50 rounded-lg space-y-1.5">
+                <p className="text-xs font-semibold text-charcoal">Preview Info:</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5">
+                  <li>• Total slots: {allSlots.length}</li>
+                  <li>• Visible to clients: {filteredSlots.length}</li>
+                  <li>• Blocked dates: {blockedDates.length}</li>
+                  <li>• Tier limit: {maxDays} days</li>
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Time Slots */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-charcoal">Available Times</h3>
-          {selectedDate ? (
-            <div className="border border-gray-200 rounded-lg p-4 bg-white">
-              {selectedDateSlots.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto">
-                  {selectedDateSlots
-                    .filter((slot) => slot.status === 'AVAILABLE')
-                    .map((slot) => {
-                      const time = format(new Date(slot.startTime), 'h:mm a');
-                      return (
-                        <button
-                          key={slot.id}
-                          className="p-3 rounded-lg border-2 border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5 font-medium text-sm transition-all"
-                        >
-                          {time}
-                        </button>
-                      );
-                    })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  No available times for this date
-                </div>
-              )}
+          {/* Time Slots & Info - Right Column */}
+          <div className="h-[300px] overflow-y-auto pr-2">
+            <div className="space-y-4">
+              {/* Time Slots */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-charcoal">Available Times</h3>
+                {selectedDate ? (
+                  <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                    {selectedDateSlots.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 h-[300px] overflow-y-auto">
+                        {selectedDateSlots
+                          .filter((slot) => slot.status === 'AVAILABLE')
+                          .map((slot) => {
+                            const time = format(new Date(slot.startTime), 'h:mm a');
+                            return (
+                              <button
+                                key={slot.id}
+                                className="h-12 px-3 py-2 rounded-lg border-2 border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5 font-medium text-sm transition-all flex items-center justify-center"
+                              >
+                                {time}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-gray-500 text-sm">
+                        No available times for this date
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="border border-gray-200 rounded-lg p-6 bg-white text-center text-gray-500 text-sm">
+                    Select a date to see available times
+                  </div>
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="border border-gray-200 rounded-lg p-8 bg-white text-center text-gray-500 text-sm">
-              Select a date to see available times
-            </div>
-          )}
-        </div>
-
-        {/* Info */}
-        <div className="p-4 bg-muted/50 rounded-lg space-y-2">
-          <p className="text-xs font-semibold text-charcoal">Preview Info:</p>
-          <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• Total slots: {allSlots.length}</li>
-            <li>• Visible to clients: {filteredSlots.length}</li>
-            <li>• Blocked dates: {blockedDates.length}</li>
-            <li>• Tier limit: {maxDays} days</li>
-          </ul>
+          </div>
         </div>
       </CardContent>
     </Card>

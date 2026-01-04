@@ -141,7 +141,7 @@ export const AvailabilityPageContent = () => {
               </CardTitle>
               <CardDescription className="font-inter text-muted-foreground mt-2">
                 Select your available days and configure time slots for each day. Slots will be
-                generated for the next 3 months. Pricing will be automatically calculated based on
+                generated for the next 1 month. Pricing will be automatically calculated based on
                 your pricing settings.
               </CardDescription>
             </CardHeader>

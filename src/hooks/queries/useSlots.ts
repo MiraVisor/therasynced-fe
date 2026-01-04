@@ -81,18 +81,34 @@ export const useAvailableSlots = (
 };
 
 /**
- * Hook to fetch available slots by date (across all freelancers or filtered)
+ * Hook to fetch freelancers who have available slots on a specific date
+ */
+export const useFreelancersByDate = (params: {
+  date: string; // ISO date format YYYY-MM-DD (required)
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: ['slots', 'freelancers-by-date', params],
+    queryFn: () => slotApi.getFreelancersByDate(params),
+    enabled: !!params.date,
+    select: (data) => data.data,
+  });
+};
+
+/**
+ * Hook to fetch available slots by date for a specific freelancer (now requires freelancerId)
  */
 export const useAvailableSlotsByDate = (params: {
   date: string; // ISO date format YYYY-MM-DD (required)
-  freelancerId?: string; // Optional: Filter by specific freelancer
+  freelancerId: string; // Required: Filter by specific freelancer
   page?: number;
   limit?: number;
 }) => {
   return useQuery({
     queryKey: ['slots', 'available-by-date', params],
     queryFn: () => slotApi.getAvailableSlotsByDate(params),
-    enabled: !!params.date,
+    enabled: !!params.date && !!params.freelancerId,
     select: (data) => data.data,
   });
 };
