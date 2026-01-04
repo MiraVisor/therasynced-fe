@@ -53,14 +53,16 @@ export const BookingPagePreview = () => {
       (a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b),
     );
 
-    // Apply tier filtering
+    // Apply tier filtering - show slots for days up to tier limit
+    // If freelancer has more days than tier allows, show only first N days from their configured days
     let allowedDays: string[];
     if (configuredDays.length <= maxDays) {
-      // Respect freelancer's choice if within tier limit
+      // Respect freelancer's choice if within tier limit - show all their configured days
       allowedDays = configuredDays;
     } else {
-      // Fallback: show only first N days
-      allowedDays = dayOrder.slice(0, maxDays);
+      // If they have more days than tier allows, show first N days from their actual configured days
+      // (not from the week order, but from their actual slot days)
+      allowedDays = configuredDays.slice(0, maxDays);
     }
 
     // Filter slots by allowed days and blocked dates
