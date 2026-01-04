@@ -1,22 +1,20 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import Features from './features';
-import Feedback from './feedback';
 import Footer from './footer';
-import Freelancers from './freelancers';
 import Hero from './hero';
+import HowItWorks from './how-it-works';
 import Navbar from './navbar';
 import Pricing from './pricing';
-import Services from './services';
-import WhoItsFor from './who-its-for';
+import WhyChooseUs from './why-choose-us';
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
 
-  // Show button when page is scrolled down
   const toggleVisibility = () => {
     if (window.scrollY > 400) {
       setIsVisible(true);
@@ -25,7 +23,6 @@ const LandingPage = () => {
     }
   };
 
-  // Scroll to top when button is clicked
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -41,30 +38,33 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <>
-      <div className="transition-all duration-300 bg-white dark:bg-black">
-        <Navbar />
+    <div className="min-h-screen bg-white dark:bg-black font-sans selection:bg-primary/10 selection:text-primary overflow-x-hidden">
+      <Navbar />
+      <main className="relative">
         <Hero />
-        <WhoItsFor />
-        <Services />
+        <HowItWorks />
         <Features />
-        <Freelancers />
+        <WhyChooseUs />
         <Pricing />
-        <Feedback />
-        <Footer />
+      </main>
+      <Footer />
 
-        {/* Back to Top Button */}
-        <button
-          onClick={scrollToTop}
-          className={`fixed bottom-10 right-10 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/90 transition-all duration-300 z-50 ${
-            isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          aria-label="Back to top"
-        >
-          <ChevronUp size={24} />
-        </button>
-      </div>
-    </>
+      {/* Back to Top Button */}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 text-primary p-4 rounded-2xl shadow-2xl shadow-primary/10 hover:border-primary transition-all z-50 group"
+            aria-label="Back to top"
+          >
+            <ChevronUp size={24} className="group-hover:-translate-y-1 transition-transform" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

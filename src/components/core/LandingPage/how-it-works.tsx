@@ -1,107 +1,86 @@
 'use client';
 
-import { Award, Calendar, MessageCircle, Search } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Award, Calendar, MessageSquare, Search } from 'lucide-react';
 
-import SlideArrowButton from '@/components/ui/SlideArrowButton';
-import { isTokenValid } from '@/lib/utils';
-
-const stepsData = [
+const steps = [
   {
-    id: 1,
-    title: 'Browse & Search',
-    description: 'Find licensed freelancers by specialty, location, or availability.',
+    title: 'Search & Filter',
+    description:
+      'Browse verified profiles by specialty, location, or availability. Find the right professional for your specific health goals.',
     icon: Search,
   },
   {
-    id: 2,
-    title: 'Book Appointment',
-    description: 'Select your preferred time slot and service type.',
+    title: 'Select a Slot',
+    description:
+      'View real-time availability. Choose a time that fits your schedule and book instantly—no waiting for callbacks.',
     icon: Calendar,
   },
   {
-    id: 3,
-    title: 'Connect & Communicate',
-    description: 'Message your freelancer before and after sessions.',
-    icon: MessageCircle,
+    title: 'Secure Consultation',
+    description:
+      'Message your therapist directly through our secure platform. Discuss your needs before or after your session.',
+    icon: MessageSquare,
   },
   {
-    id: 4,
     title: 'Earn Rewards',
-    description: 'Get points and stamps for discounts on future bookings.',
+    description:
+      'Get loyalty stamps for every session you attend. Redeem them for discounts on future treatments.',
     icon: Award,
   },
 ];
 
 const HowItWorks = () => {
-  const router = useRouter();
-  const [hasValidToken, setHasValidToken] = useState(false);
-
-  useEffect(() => {
-    setHasValidToken(isTokenValid());
-  }, []);
-
-  const handleCTAClick = () => {
-    if (hasValidToken) {
-      router.push('/dashboard/explore');
-    } else {
-      router.push('/authentication/sign-in');
-    }
-  };
-
   return (
-    <section
-      id="how-it-works"
-      className="w-full px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 bg-white dark:bg-black"
-    >
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center space-y-4 mb-12 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-            How It <span className="text-primary">Works</span>
+    <section id="how-it-works" className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-white dark:bg-black">
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-20 space-y-4"
+        >
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+            Simple, transparent booking
           </h2>
-          <p className="text-lg sm:text-xl text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto">
-            Getting started is simple. Follow these four easy steps to connect with licensed
-            freelancers and begin your wellness journey.
+          <p className="text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto">
+            We've streamlined the process of finding and booking healthcare services. No more
+            endless phone calls or manual forms.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Steps - Simple Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12">
-          {stepsData.map((step) => (
-            <div
-              key={step.id}
-              className="group relative bg-white dark:bg-neutral-900 rounded-xl p-6 sm:p-8 border border-gray-200 dark:border-neutral-800 hover:border-primary/50 transition-all duration-300"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {steps.map((step, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="relative group"
             >
-              {/* Icon */}
-              <div className="mb-6 w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors">
-                <step.icon className="w-7 h-7 text-primary" />
-              </div>
+              {/* Connector line for desktop */}
+              {index < steps.length - 1 && (
+                <div className="hidden lg:block absolute top-8 left-1/2 w-full h-[1px] bg-gray-100 dark:bg-neutral-800 -z-0" />
+              )}
 
-              {/* Step Number */}
-              <div className="absolute top-6 right-6 text-4xl font-bold text-gray-100 dark:text-neutral-800 group-hover:text-primary/20 transition-colors">
-                {step.id}
-              </div>
+              <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 flex items-center justify-center shadow-sm group-hover:border-primary group-hover:shadow-lg group-hover:shadow-primary/5 transition-all duration-300">
+                  <step.icon className="w-7 h-7 text-primary" />
+                </div>
 
-              {/* Content */}
-              <div className="space-y-3 relative z-10">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{step.title}</h3>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-neutral-400 leading-relaxed">
-                  {step.description}
-                </p>
+                <div className="space-y-2">
+                  <div className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
+                    Step 0{index + 1}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{step.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-neutral-400 leading-relaxed px-4">
+                    {step.description}
+                  </p>
+                </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center">
-          <SlideArrowButton
-            text={hasValidToken ? 'Explore Freelancers' : 'Get Started Free'}
-            className="w-full sm:w-auto min-w-[240px] h-14 text-lg font-medium"
-            onClick={handleCTAClick}
-          />
         </div>
       </div>
     </section>

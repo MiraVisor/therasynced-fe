@@ -1,15 +1,18 @@
 'use client';
 
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import SlideArrowButton from '@/components/ui/SlideArrowButton';
+import { Button } from '@/components/ui/button';
 import { isTokenValid } from '@/lib/utils';
 
 const Hero = () => {
   const [hasValidToken, setHasValidToken] = useState(false);
   const router = useRouter();
+
   useEffect(() => {
     setHasValidToken(isTokenValid());
   }, []);
@@ -24,48 +27,78 @@ const Hero = () => {
 
   return (
     <section
-      id="about"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
+      id="hero"
+      className="relative w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-40 bg-white dark:bg-black overflow-hidden"
     >
-      <div className="relative w-full aspect-[4/5] xs:aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] rounded-xl overflow-hidden">
-        {/* background image */}
-        <Image
-          src="/svgs/header.svg"
-          alt="hero"
-          fill
-          className="object-cover transition-transform duration-500 hover:scale-105"
-          priority
-        />
+      {/* Subtle green ambient background */}
+      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
-        {/* gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 dark:from-black/70 via-black/70 dark:via-black/60 to-black/60 dark:to-black/50" />
-
-        {/* content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-8 md:px-12 gap-6 sm:gap-8 lg:gap-10">
-          <div className="max-w-[95vw] xs:max-w-sm sm:max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6">
-            <h1 className="capitalize font-bold text-white text-balance leading-[1.1] tracking-tight text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
-              Feel Better, <span className="text-primary">One Click</span> Away
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex-1 text-left space-y-8"
+          >
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+              Connecting you with <br />
+              <span className="text-primary">care that matters.</span>
             </h1>
 
-            <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
-              Book appointments with licensed freelancers. Get personalized care when you need it.
+            <p className="text-lg sm:text-xl text-gray-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+              Find licensed physiotherapists, massage therapists, and wellness experts near you.
+              Real availability, instant booking, and secure messaging—designed for your well-being.
             </p>
-          </div>
 
-          {/* CTA Button */}
-          <div className="flex justify-center">
-            <SlideArrowButton
-              text={hasValidToken ? 'Go to Dashboard' : 'Get Started Free'}
-              reverse={true}
-              className="w-full sm:w-auto min-w-[240px] h-14 text-lg font-medium"
-              onClick={handleCTAClick}
-            />
-          </div>
+            <div className="flex flex-col sm:flex-row items-center gap-5 pt-4">
+              <Button
+                onClick={handleCTAClick}
+                size="lg"
+                className="w-full sm:w-auto px-10 h-14 text-lg font-semibold bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+              >
+                {hasValidToken ? 'Go to Dashboard' : 'Find a Therapist'}
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={() => {
+                  const el = document.getElementById('how-it-works');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="w-full sm:w-auto px-10 h-14 text-lg font-semibold text-gray-600 dark:text-neutral-400 hover:text-primary transition-all"
+              >
+                Learn more
+              </Button>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex-1 w-full max-w-[500px] lg:max-w-none"
+          >
+            <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square flex items-center justify-center">
+              {/* Illustration using an existing SVG if possible, otherwise a clean abstract representation */}
+              <div className="relative w-full h-full">
+                <Image
+                  src="/svgs/header.svg"
+                  alt="Wellness and Therapy Illustration"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+
+              {/* Subtle accent shadows/decorations */}
+              <div className="absolute -z-10 w-4/5 h-4/5 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+            </div>
+          </motion.div>
         </div>
       </div>
-
-      {/* Bottom decorative line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
     </section>
   );
 };

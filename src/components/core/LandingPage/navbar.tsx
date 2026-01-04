@@ -1,19 +1,20 @@
 'use client';
 
-import { MenuIcon, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import SlideArrowButton from '@/components/ui/SlideArrowButton';
+import { Button } from '@/components/ui/button';
 import { isTokenValid } from '@/lib/utils';
 
 const navLinks = [
-  { href: '#services', label: 'Our Services' },
+  { href: '#how-it-works', label: 'Process' },
   { href: '#features', label: 'Features' },
-  { href: '#how-it-works', label: 'How It Works' },
+  { href: '#why-choose-us', label: 'Trust' },
+  { href: '#pricing', label: 'Pricing' },
 ];
 
 const Navbar = () => {
@@ -21,130 +22,94 @@ const Navbar = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [hasValidToken, setHasValidToken] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     setHasValidToken(isTokenValid());
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleMenu = () => setIsOpen((prev) => !prev);
-  const closeMenu = () => setIsOpen(false);
+  const handleNavClick = (href: string) => {
+    setIsOpen(false);
+    if (href.startsWith('#')) {
+      const id = href.slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
 
   return (
-    <header className="w-full z-50 px-4 sm:px-6 lg:px-8 py-2.5 border-b border-muted/10">
-      <div className=" max-w-screen-xl mx-auto flex items-center justify-between">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-200 border-b ${
+        scrolled
+          ? 'bg-white/80 dark:bg-black/80 backdrop-blur-md border-gray-100 dark:border-neutral-900 py-3'
+          : 'bg-transparent border-transparent py-5'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center" onClick={closeMenu}>
+        <Link href="/" className="flex items-center">
           <Image
             src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
-            alt="logo"
-            width={100}
-            height={80}
-            className="transition-transform duration-300"
+            alt="TheraSynced"
+            width={180}
+            height={45}
+            className="h-10 w-auto"
           />
         </Link>
 
-        {/* Desktop Nav */}
-        <ul className="hidden md:flex items-center gap-6 lg:gap-8">
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                onClick={(e) => {
-                  if (typeof link.href === 'string' && link.href.startsWith('#')) {
-                    e.preventDefault();
-                    const id = link.href.slice(1);
-                    const el = document.getElementById(id);
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } else {
-                      // If the element isn't on this page, navigate to the anchor on the home page
-                      router.push(`/${link.href}`);
-                    }
-                  }
-                }}
-                className="relative px-3 py-1.5 text-lg font-medium tracking-wide text-gray-600 dark:text-zinc-300 hover:text-primary dark:hover:text-primary transition-colors"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        {/* CTA + Theme Toggle */}
-        <div className="flex items-center gap-4">
-          <Link
-            href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}
-            prefetch={true}
-            className="hidden sm:flex"
-          >
-            <SlideArrowButton
-              text={hasValidToken ? 'Dashboard' : 'Get Started'}
-              className="lg:w-52 lg:h-12"
-            />
-          </Link>
-
-          {/* Mobile Hamburger */}
-          <button
-            className="md:hidden inline-flex items-center justify-center p-2"
-            onClick={toggleMenu}
-            aria-label="Toggle Menu"
-          >
-            {isOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Drawer */}
-      <div
-        className={`md:hidden fixed top-0 right-0 h-full w-64 bg-white dark:bg-zinc-900 shadow-lg transform transition-transform duration-300 z-40 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex flex-col p-6 gap-6 pt-20">
-          {navLinks.map((link) => (
-            <Link
+            <button
               key={link.href}
-              href={link.href}
-              onClick={(e) => {
-                if (typeof link.href === 'string' && link.href.startsWith('#')) {
-                  e.preventDefault();
-                  closeMenu();
-                  const id = link.href.slice(1);
-                  const el = document.getElementById(id);
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  } else {
-                    router.push(`/${link.href}`);
-                  }
-                } else {
-                  closeMenu();
-                }
-              }}
-              className="text-base font-medium text-gray-800 dark:text-gray-200 hover:text-primary transition-colors"
+              onClick={() => handleNavClick(link.href)}
+              className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors"
             >
               {link.label}
-            </Link>
+            </button>
           ))}
-
-          <Link
-            href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}
-            prefetch={true}
-            onClick={closeMenu}
-            className="w-full"
-          >
-            <SlideArrowButton
-              text={hasValidToken ? 'Dashboard' : 'Get Started'}
-              className="w-full lg:w-52 lg:h-12"
-            />
+          <div className="w-px h-4 bg-gray-200 dark:bg-neutral-800" />
+          <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}>
+            <Button size="sm" className="bg-primary text-white font-semibold">
+              {hasValidToken ? 'Go to Dashboard' : 'Sign In'}
+            </Button>
           </Link>
         </div>
+
+        {/* Mobile Toggle */}
+        <button
+          className="md:hidden p-2 text-gray-600 dark:text-neutral-400"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
-      {/* Overlay when menu is open */}
+      {/* Mobile Menu */}
       {isOpen && (
-        <div className="fixed inset-0 z-30 bg-black bg-opacity-40 md:hidden" onClick={closeMenu} />
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 p-6 space-y-4 shadow-xl">
+          {navLinks.map((link) => (
+            <button
+              key={link.href}
+              onClick={() => handleNavClick(link.href)}
+              className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400"
+            >
+              {link.label}
+            </button>
+          ))}
+          <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'} className="block">
+            <Button className="w-full bg-primary text-white">
+              {hasValidToken ? 'Dashboard' : 'Sign In'}
+            </Button>
+          </Link>
+        </div>
       )}
-    </header>
+    </nav>
   );
 };
 
