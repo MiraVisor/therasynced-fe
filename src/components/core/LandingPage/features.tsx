@@ -13,8 +13,11 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+import { useIsMobile } from '@/hooks/use-mobile';
+
 const Features = () => {
   const [activeTab, setActiveTab] = useState<'client' | 'therapist'>('client');
+  const isMobile = useIsMobile();
 
   const features = {
     client: [
@@ -75,10 +78,10 @@ const Features = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-8">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: isMobile ? 0 : -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: isMobile ? '0px' : '-100px' }}
+            transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4 max-w-2xl"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -91,10 +94,10 @@ const Features = () => {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: isMobile ? 0 : 20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: isMobile ? '0px' : '-100px' }}
+            transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="flex bg-[#f5f4f1] dark:bg-neutral-900 p-1.5 rounded-xl border border-gray-100 dark:border-neutral-800 self-start"
           >
             <button
@@ -133,9 +136,12 @@ const Features = () => {
               {features[activeTab].map((feature, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05, duration: 0.5 }}
+                  transition={{
+                    delay: isMobile ? 0 : index * 0.05,
+                    duration: isMobile ? 0.2 : 0.5,
+                  }}
                   className="p-8 rounded-2xl border border-gray-100 dark:border-neutral-900 bg-[#faf9f6] dark:bg-neutral-900/50 hover:border-primary/50 transition-all duration-300 group hover:shadow-xl hover:shadow-primary/10"
                 >
                   <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors duration-300">

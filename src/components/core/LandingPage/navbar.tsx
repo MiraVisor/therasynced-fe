@@ -25,8 +25,20 @@ const Navbar = () => {
 
   useEffect(() => {
     setHasValidToken(isTokenValid());
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+
+    // Throttle scroll handler for better performance
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -58,6 +70,8 @@ const Navbar = () => {
             width={180}
             height={45}
             className="h-14 w-auto transition-opacity hover:opacity-80"
+            priority
+            sizes="(max-width: 768px) 150px, 180px"
           />
         </Link>
 

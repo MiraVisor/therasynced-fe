@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { Award, Calendar, MessageSquare, Search } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/use-mobile';
+
 const steps = [
   {
     title: 'Search & Filter',
@@ -31,6 +33,8 @@ const steps = [
 ];
 
 const HowItWorks = () => {
+  const isMobile = useIsMobile();
+
   return (
     <section
       id="how-it-works"
@@ -38,10 +42,10 @@ const HowItWorks = () => {
     >
       <div className="max-w-7xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: isMobile ? '0px' : '-100px' }}
+          transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-20 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -57,14 +61,18 @@ const HowItWorks = () => {
           {steps.map((step, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: isMobile ? 0 : 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+              transition={{
+                delay: isMobile ? 0 : index * 0.1,
+                duration: isMobile ? 0.3 : 0.6,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               className="relative group"
             >
-              {/* Enhanced connector line for desktop with animated dashes */}
-              {index < steps.length - 1 && (
+              {/* Enhanced connector line for desktop with animated dashes - disabled on mobile */}
+              {index < steps.length - 1 && !isMobile && (
                 <div className="hidden lg:block absolute top-8 left-1/2 w-full h-[1px] -z-0 overflow-hidden">
                   <div className="w-full h-full bg-gradient-to-r from-transparent via-gray-200 dark:via-neutral-700 to-transparent" />
                   <motion.div

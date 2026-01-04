@@ -7,11 +7,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { isTokenValid } from '@/lib/utils';
 
 const Hero = () => {
   const [hasValidToken, setHasValidToken] = useState(false);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setHasValidToken(isTokenValid());
@@ -30,19 +32,23 @@ const Hero = () => {
       id="hero"
       className="relative w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-40 bg-[#faf9f6] dark:bg-black overflow-hidden"
     >
-      {/* Enhanced subtle green ambient background with animation */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5, ease: 'easeOut' }}
-        className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"
-      />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
-        className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"
-      />
+      {/* Reduced blur effects on mobile for better performance */}
+      {!isMobile && (
+        <>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
+            className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
+            className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"
+          />
+        </>
+      )}
       {/* Subtle geometric pattern overlay */}
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
         <div className="absolute top-20 right-20 w-32 h-32 border border-primary rounded-full" />
@@ -52,9 +58,9 @@ const Hero = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: isMobile ? 0 : 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: isMobile ? 0.3 : 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex-1 text-left space-y-8"
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
@@ -91,9 +97,13 @@ const Hero = () => {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: isMobile ? 1 : 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: isMobile ? 0.3 : 0.9,
+              delay: isMobile ? 0 : 0.2,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             className="flex-1 w-full max-w-[500px] lg:max-w-none"
           >
             <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square flex items-center justify-center">
@@ -105,11 +115,14 @@ const Hero = () => {
                   fill
                   className="object-contain"
                   priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
                 />
               </div>
 
-              {/* Subtle accent shadows/decorations */}
-              <div className="absolute -z-10 w-4/5 h-4/5 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+              {/* Subtle accent shadows/decorations - disabled on mobile */}
+              {!isMobile && (
+                <div className="absolute -z-10 w-4/5 h-4/5 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+              )}
             </div>
           </motion.div>
         </div>

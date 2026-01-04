@@ -6,10 +6,12 @@ import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { getPublicSubscriptionPlans } from '@/services/subscriptionService';
 
 const Pricing = () => {
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   const { data: subscriptionPlans = [], isLoading } = useQuery({
     queryKey: ['public-subscription-plans'],
@@ -23,10 +25,10 @@ const Pricing = () => {
     <section id="pricing" className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-[#faf9f6] dark:bg-black">
       <div className="max-w-7xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: isMobile ? '0px' : '-100px' }}
+          transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-16 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -40,10 +42,10 @@ const Pricing = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Client Plan - Always First */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: isMobile ? 1 : 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+            transition={{ duration: isMobile ? 0.2 : 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col p-8 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#f5f4f1] dark:bg-neutral-900/30 h-full transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
           >
             <div className="mb-8">
@@ -86,10 +88,14 @@ const Pricing = () => {
             : sortedPlans.map((plan, index) => (
                 <motion.div
                   key={plan.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: isMobile ? 1 : 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ delay: index * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+                  transition={{
+                    delay: isMobile ? 0 : index * 0.1,
+                    duration: isMobile ? 0.2 : 0.5,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                   className={`flex flex-col p-8 rounded-2xl border h-full transition-all duration-300 ${
                     plan.name === 'GOLD'
                       ? 'border-primary bg-[#faf9f6] dark:bg-neutral-900 shadow-xl shadow-primary/10 hover:shadow-2xl hover:shadow-primary/20'
@@ -121,9 +127,9 @@ const Pricing = () => {
                     <span className="text-gray-500 text-sm">/{plan.billingInterval}</span>
                   </div>
                   <ul className="space-y-4 mb-8 flex-1">
-                    {plan.features?.map((f, i) => (
+                    {plan.features?.map((f) => (
                       <li
-                        key={i}
+                        key={f}
                         className="flex items-center gap-2 text-sm text-gray-600 dark:text-neutral-400"
                       >
                         <Check className="w-4 h-4 text-primary" />
@@ -147,10 +153,10 @@ const Pricing = () => {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: isMobile ? 0 : 10 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+          transition={{ duration: isMobile ? 0.2 : 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="mt-12 p-8 rounded-2xl bg-[#f5f4f1] dark:bg-neutral-900/30 border border-dashed border-gray-200 dark:border-neutral-800 text-center"
         >
           <p className=" text-gray-500">

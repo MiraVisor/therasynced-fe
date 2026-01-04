@@ -2,26 +2,42 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useState } from 'react';
 
-import Features from './features';
 import Footer from './footer';
 import Hero from './hero';
-import HowItWorks from './how-it-works';
 import Navbar from './navbar';
-import Pricing from './pricing';
-import WhyChooseUs from './why-choose-us';
+
+// Lazy load below-the-fold components to improve initial load time
+const HowItWorks = dynamic(() => import('./how-it-works'), {
+  ssr: true,
+  loading: () => <div className="h-[600px] bg-[#f5f4f1] dark:bg-neutral-950/50" />,
+});
+
+const Features = dynamic(() => import('./features'), {
+  ssr: true,
+  loading: () => <div className="h-[600px] bg-[#faf9f6] dark:bg-black" />,
+});
+
+const WhyChooseUs = dynamic(() => import('./why-choose-us'), {
+  ssr: true,
+  loading: () => <div className="h-[600px] bg-[#f5f4f1] dark:bg-neutral-950/50" />,
+});
+
+const Pricing = dynamic(() => import('./pricing'), {
+  ssr: true,
+  loading: () => <div className="h-[600px] bg-[#faf9f6] dark:bg-black" />,
+});
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
 
-  const toggleVisibility = () => {
-    if (window.scrollY > 400) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  };
+  // Throttle scroll handler for better performance
+  const toggleVisibility = useCallback(() => {
+    const { scrollY } = window;
+    setIsVisible(scrollY > 400);
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -31,19 +47,26 @@ const LandingPage = () => {
   };
 
   useEffect(() => {
-    window.addEventListener('scroll', toggleVisibility);
-    return () => {
-      window.removeEventListener('scroll', toggleVisibility);
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          toggleVisibility();
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-  }, []);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [toggleVisibility]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-[#faf9f6] dark:bg-black font-sans selection:bg-primary/10 selection:text-primary overflow-x-hidden"
-    >
+    <div className="min-h-screen bg-[#faf9f6] dark:bg-black font-sans selection:bg-primary/10 selection:text-primary overflow-x-hidden">
       <Navbar />
       <main className="relative">
         <Hero />
@@ -69,7 +92,7 @@ const LandingPage = () => {
           </motion.button>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
 

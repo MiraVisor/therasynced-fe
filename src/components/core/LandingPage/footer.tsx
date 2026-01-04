@@ -20,6 +20,8 @@ const Footer = () => {
                 width={140}
                 height={40}
                 className="h-12 w-auto transition-opacity hover:opacity-80"
+                priority={false}
+                loading="lazy"
               />
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed max-w-xs">

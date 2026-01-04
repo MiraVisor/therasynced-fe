@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { Clock, Heart, Lock, ShieldCheck, Star, Zap } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/use-mobile';
+
 const trustFactors = [
   {
     title: 'Verification Process',
@@ -43,6 +45,8 @@ const trustFactors = [
 ];
 
 const WhyChooseUs = () => {
+  const isMobile = useIsMobile();
+
   return (
     <section
       id="why-choose-us"
@@ -50,10 +54,10 @@ const WhyChooseUs = () => {
     >
       <div className="max-w-7xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: isMobile ? '0px' : '-100px' }}
+          transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-20 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
@@ -69,10 +73,14 @@ const WhyChooseUs = () => {
           {trustFactors.map((factor, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: isMobile ? 0 : 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+              transition={{
+                delay: isMobile ? 0 : index * 0.1,
+                duration: isMobile ? 0.3 : 0.6,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               className="flex gap-6 group"
             >
               <div className="flex-shrink-0">
