@@ -92,7 +92,21 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
         return false;
       }
 
-      if (config.breakFrom && config.breakTill) {
+      // Check if only one break time is set (invalid state)
+      const hasBreakFrom = config.breakFrom && config.breakFrom.trim() !== '';
+      const hasBreakTill = config.breakTill && config.breakTill.trim() !== '';
+
+      if (hasBreakFrom && !hasBreakTill) {
+        toast.error(`${day}: Break end time is required when break start time is set`);
+        return false;
+      }
+
+      if (!hasBreakFrom && hasBreakTill) {
+        toast.error(`${day}: Break start time is required when break end time is set`);
+        return false;
+      }
+
+      if (hasBreakFrom && hasBreakTill) {
         if (config.breakFrom >= config.breakTill) {
           toast.error(`${day}: Break start time must be before break end time`);
           return false;
@@ -105,6 +119,23 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
       }
     }
     return true;
+  };
+
+  // Check if break times are invalid (one is set but not the other) for button disable state
+  const hasInvalidBreakTimes = (): boolean => {
+    for (const day of selectedDays) {
+      const config = configurations[day];
+      if (!config) continue;
+
+      const hasBreakFrom = config.breakFrom && config.breakFrom.trim() !== '';
+      const hasBreakTill = config.breakTill && config.breakTill.trim() !== '';
+
+      // Invalid if only one is set
+      if ((hasBreakFrom && !hasBreakTill) || (!hasBreakFrom && hasBreakTill)) {
+        return true;
+      }
+    }
+    return false;
   };
 
   const handleNext = () => {
@@ -128,9 +159,9 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
       .map((day) => configurations[day])
       .filter((config): config is DaySlotConfiguration => config !== undefined);
 
-    // Generate slots for 3 months ahead
+    // Generate slots for 1 month ahead
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-    const endDate = addMonths(weekStart, 3);
+    const endDate = addMonths(weekStart, 1);
     const generatedSlots = generateSlotsFromDayConfigurations(dayConfigs, weekStart, endDate);
 
     if (generatedSlots.length === 0) {
@@ -168,9 +199,39 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
     // Use the first day's slot duration as default (they can vary per day, but API expects one duration)
     const defaultDuration = dayConfigs[0]?.slotDuration || 60;
 
+    // Extract break times from day configurations (use first day's break times if they exist)
+    // Break times should be the same across all days, or we use the first day's break time
+    const firstConfig = dayConfigs[0];
+    const hasBreakFrom = firstConfig?.breakFrom && firstConfig.breakFrom.trim() !== '';
+    const hasBreakTill = firstConfig?.breakTill && firstConfig.breakTill.trim() !== '';
+
+    let breakFrom: string | undefined;
+    let breakTill: string | undefined;
+
+    if (hasBreakFrom && hasBreakTill && slots.length > 0) {
+      // Convert break time strings (HH:mm) to ISO datetime strings
+      // Use the date from the first slot for the break time reference
+      // Note: Break times are sent as metadata - the frontend has already filtered slots
+      const firstSlotDate = new Date(slots[0].startTime);
+      const [breakFromHour, breakFromMinute] = firstConfig.breakFrom.split(':').map(Number);
+      const [breakTillHour, breakTillMinute] = firstConfig.breakTill.split(':').map(Number);
+
+      // Create datetime objects for break times using the first slot's date
+      const breakFromDate = new Date(firstSlotDate);
+      breakFromDate.setHours(breakFromHour || 0, breakFromMinute || 0, 0, 0);
+
+      const breakTillDate = new Date(firstSlotDate);
+      breakTillDate.setHours(breakTillHour || 0, breakTillMinute || 0, 0, 0);
+
+      breakFrom = breakFromDate.toISOString();
+      breakTill = breakTillDate.toISOString();
+    }
+
     const submitData: CreateSlotsDto = {
       ...(locationType && { locationType }), // Optional - only include if specified
       duration: defaultDuration,
+      ...(breakFrom && { breakFrom }),
+      ...(breakTill && { breakTill }),
       slots,
     };
 
@@ -358,7 +419,7 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={isCreating}
+            disabled={isCreating || hasInvalidBreakTimes()}
             className="h-11 min-h-[44px] px-6 flex-1 sm:flex-initial"
           >
             {isCreating ? (

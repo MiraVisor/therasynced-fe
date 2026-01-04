@@ -58,20 +58,14 @@ export function RescheduleBookingDialog({
   // Format date for API (YYYY-MM-DD)
   const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
 
-  // Fetch available slots for selected date
+  // Fetch available slots for selected date and freelancer (now requires both)
   const { data: slotsData, isLoading: isLoadingSlots } = useAvailableSlotsByDate({
     date: formattedDate || '',
-    freelancerId: freelancerId || undefined,
+    freelancerId: freelancerId || '',
     limit: 50,
   });
 
-  const availableSlots = slotsData || [];
-
-  // Filter slots for the selected freelancer
-  const filteredSlots = useMemo(() => {
-    if (!freelancerId) return [];
-    return availableSlots.filter((slot) => slot.freelancerId === freelancerId);
-  }, [availableSlots, freelancerId]);
+  const filteredSlots = slotsData || [];
 
   // Get selected slot data
   const selectedSlot = useMemo(() => {

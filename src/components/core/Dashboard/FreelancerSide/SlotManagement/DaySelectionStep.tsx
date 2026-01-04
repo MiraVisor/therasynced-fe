@@ -84,11 +84,11 @@ export const DaySelectionStep = ({
             </Badge>
           )}
         </div>
-        {isAtLimit && (
+        {isAtLimit && tier !== 'GOLD' && maxDays < 7 && (
           <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <p className="text-xs text-primary">
-              You've reached your {tierDisplayName} plan limit of {maxDays} days. Upgrade to select
-              more days.
+              You&apos;ve reached your {tierDisplayName} plan limit of {maxDays} days. Upgrade to
+              select more days.
             </p>
           </div>
         )}

@@ -240,15 +240,15 @@ function calculateSlotTimesWithBreakRange(
 }
 
 /**
- * Generate slots from day configurations for a date range (defaults to 3 months)
+ * Generate slots from day configurations for a date range (defaults to 1 month)
  */
 export function generateSlotsFromDayConfigurations(
   dayConfigurations: DaySlotConfiguration[],
   startDate: Date = startOfWeek(new Date(), { weekStartsOn: 1 }),
   endDate?: Date,
 ): GeneratedSlot[] {
-  // Default to 3 months ahead if endDate not provided
-  const finalEndDate = endDate || addMonths(startDate, 3);
+  // Default to 1 month ahead if endDate not provided
+  const finalEndDate = endDate || addMonths(startDate, 1);
 
   // Get all weeks in the date range
   const weeks = eachWeekOfInterval({ start: startDate, end: finalEndDate }, { weekStartsOn: 1 });

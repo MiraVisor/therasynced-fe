@@ -617,12 +617,16 @@ export interface CreateSlotsDto {
   locationId?: string; // Added to support location selection
   basePrice?: number; // Optional - default price used when slots don't specify their own
   duration: number;
+  breakFrom?: string; // Optional: ISO 8601 datetime string for break start time
+  breakTill?: string; // Optional: ISO 8601 datetime string for break end time
   slots: Array<{
     startTime: string;
     endTime: string;
     basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
     locationType?: LocationType; // Optional - defaults to CLINIC if not provided
     serviceCategoryIds?: string[]; // Optional - per-slot service categories
+    breakFrom?: string; // Optional: ISO 8601 datetime string for per-slot break start time
+    breakTill?: string; // Optional: ISO 8601 datetime string for per-slot break end time
   }>;
   serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
