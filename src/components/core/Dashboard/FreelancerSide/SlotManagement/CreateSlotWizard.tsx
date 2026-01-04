@@ -212,7 +212,7 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
       // Convert break time strings (HH:mm) to ISO datetime strings
       // Use the date from the first slot for the break time reference
       // Note: Break times are sent as metadata - the frontend has already filtered slots
-      const firstSlotDate = new Date(slots[0].startTime);
+      const firstSlotDate = slots[0] ? new Date(slots[0].startTime) : new Date();
       const [breakFromHour, breakFromMinute] = firstConfig.breakFrom.split(':').map(Number);
       const [breakTillHour, breakTillMinute] = firstConfig.breakTill.split(':').map(Number);
 
