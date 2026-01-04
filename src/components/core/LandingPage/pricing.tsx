@@ -1,356 +1,162 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { getPublicSubscriptionPlans } from '@/services/subscriptionService';
-import type { SubscriptionPlan } from '@/types/subscription';
-
-const pricingPlans = [
-  {
-    id: 1,
-    title: 'For Customers',
-    description:
-      'Book sessions with certified physiotherapists, massage professionals, and wellness freelancers—anytime, anywhere.',
-    button: {
-      text: 'Join Free - No Card Needed',
-      variant: 'light-green',
-      href: '#',
-    },
-    features: [
-      'Book unlimited sessions',
-      'View profiles and ratings',
-      'Secure in-app messaging',
-      'Flexible scheduling tools',
-      'No booking fees',
-    ],
-  },
-  {
-    id: 2,
-    title: 'For Freelancers',
-    description:
-      'Grow your wellness business with powerful tools to manage appointments, build your brand, and get paid on time.',
-    button: {
-      text: 'Start Earning',
-      variant: 'primary',
-      href: '#',
-    },
-    features: [
-      'Professional public profile',
-      'Client booking system',
-      'Automated calendar sync',
-      'Secure payments & payouts',
-      'Advanced analytics & reporting',
-      'Priority support',
-    ],
-  },
-  {
-    id: 3,
-    title: 'For Teams',
-    description:
-      'Manage your clinic or group practice with tools for team scheduling, freelancer performance, and client bookings.',
-    button: {
-      text: 'Try Teams for Free',
-      variant: 'light-green',
-      href: '#',
-    },
-    features: [
-      'Multi-user team dashboard',
-      'Assign bookings to staff',
-      'Unified calendar management',
-      'Performance insights & reports',
-      'Custom branding options',
-      'No monthly fee (limited time)',
-    ],
-  },
-];
 
 const Pricing = () => {
-  useTheme();
+  const router = useRouter();
 
-  // Fetch subscription plans for freelancer section
-  const {
-    data: subscriptionPlans = [],
-    isLoading: isLoadingPlans,
-    error: plansError,
-  } = useQuery({
+  const { data: subscriptionPlans = [], isLoading } = useQuery({
     queryKey: ['public-subscription-plans'],
     queryFn: getPublicSubscriptionPlans,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    retry: 2, // Retry failed requests twice
+    staleTime: 10 * 60 * 1000,
   });
 
-  // Sort plans: Gold, Silver, Bronze (as returned by backend)
-  const sortedPlans = [...subscriptionPlans].sort((a, b) => {
-    const order: Record<string, number> = { GOLD: 1, SILVER: 2, BRONZE: 3 };
-    return (order[a.name] || 999) - (order[b.name] || 999);
-  });
+  const sortedPlans = [...subscriptionPlans].sort((a, b) => (a.price || 0) - (b.price || 0));
 
   return (
-    <section
-      id="pricing"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
-    >
-      <div className="max-w-screen-xl mx-auto flex flex-col items-center gap-8 sm:gap-12 lg:gap-16">
-        {/* Header */}
-        <div className="text-center space-y-3 sm:space-y-4 lg:space-y-6 max-w-4xl mx-auto">
-          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-            Choose Your <span className="text-primary">Plan</span>
+    <section id="pricing" className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-[#faf9f6] dark:bg-black">
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-16 space-y-4"
+        >
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+            Plans for every practice size
           </h2>
-          <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 dark:text-neutral-400 leading-relaxed">
-            Select the perfect plan that aligns with your needs and goals. All plans include
-            personalized support and professional guidance.
+          <p className="text-lg text-gray-600 dark:text-neutral-400">
+            Transparent pricing for therapists. Always free for all clients.
           </p>
-        </div>
+        </motion.div>
 
-        {/* For Customers and Teams Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 w-full max-w-4xl mx-auto">
-          {/* For Customers Card */}
-          <div
-            className={`flex flex-col rounded-2xl p-5 sm:p-6 lg:p-8 gap-4 sm:gap-6 
-              bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm
-              border-2 border-gray-200/50 dark:border-neutral-800/50
-              hover:border-primary/30 dark:hover:border-primary/30
-              transition-all duration-300
-              shadow-lg shadow-primary/5 dark:shadow-primary/10
-              hover:shadow-xl hover:shadow-neutral-900/80 dark:hover:shadow-white/20
-              h-full`}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Client Plan - Always First */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col p-8 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#f5f4f1] dark:bg-neutral-900/30 h-full transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
           >
-            <div className="flex flex-col gap-2 sm:gap-3">
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary dark:text-primary/90">
-                {pricingPlans[0]?.title}
-              </h3>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-700 dark:text-neutral-300">
-                {pricingPlans[0]?.description}
-              </p>
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">For Clients</h3>
+              <p className="text-sm text-gray-500 mt-2">Always free for health seekers</p>
             </div>
-
-            <div className="flex flex-col gap-3 sm:gap-4 flex-grow">
-              <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                What&apos;s included?
-              </h4>
-              <ul className="flex flex-col gap-2">
-                {pricingPlans[0]?.features.map((feature, index) => (
+            <div className="mb-8">
+              <span className="text-4xl font-bold text-gray-900 dark:text-white">$0</span>
+              <span className="text-gray-500">/forever</span>
+            </div>
+            <ul className="space-y-4 mb-8 flex-1">
+              {['Unlimited bookings', 'Search directory', 'Secure chat', 'Rewards program'].map(
+                (f) => (
                   <li
-                    key={index}
-                    className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-neutral-300"
+                    key={f}
+                    className="flex items-center gap-2 text-sm text-gray-600 dark:text-neutral-400"
                   >
-                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary dark:text-primary/90 flex-shrink-0" />
-                    {feature}
+                    <Check className="w-4 h-4 text-primary" />
+                    {f}
                   </li>
-                ))}
-              </ul>
-            </div>
-
+                ),
+              )}
+            </ul>
             <Button
-              asChild
-              className={`w-full h-9 sm:h-10 lg:h-11 rounded-xl text-sm sm:text-base font-medium 
-                shadow-md shadow-primary/5 dark:shadow-primary/10
-                transition-all duration-300 
-                bg-primary hover:bg-primary/90 text-white
-                hover:shadow-lg hover:shadow-neutral-900/80 dark:hover:shadow-white/20
-                hover:scale-[1.02]`}
+              onClick={() => router.push('/authentication/sign-in')}
+              className="w-full h-12 bg-primary text-white font-semibold rounded-xl transition-all duration-300 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <Link href={pricingPlans[0]?.button.href ?? ''}>{pricingPlans[0]?.button.text}</Link>
+              Get Started Free
             </Button>
-          </div>
+          </motion.div>
 
-          {/* For Teams Card */}
-          <div
-            className={`flex flex-col rounded-2xl p-5 sm:p-6 lg:p-8 gap-4 sm:gap-6 
-              bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm
-              border-2 border-gray-200/50 dark:border-neutral-800/50
-              hover:border-primary/30 dark:hover:border-primary/30
-              transition-all duration-300
-              shadow-lg shadow-primary/5 dark:shadow-primary/10
-              hover:shadow-xl hover:shadow-neutral-900/80 dark:hover:shadow-white/20
-              h-full`}
-          >
-            <div className="flex flex-col gap-2 sm:gap-3">
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary dark:text-primary/90">
-                {pricingPlans[2]?.title}
-              </h3>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-700 dark:text-neutral-300">
-                {pricingPlans[2]?.description}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:gap-4 flex-grow">
-              <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                What&apos;s included?
-              </h4>
-              <ul className="flex flex-col gap-2">
-                {pricingPlans[2]?.features.map((feature, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-neutral-300"
-                  >
-                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary dark:text-primary/90 flex-shrink-0" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <Button
-              asChild
-              className={`w-full h-9 sm:h-10 lg:h-11 rounded-xl text-sm sm:text-base font-medium 
-                shadow-md shadow-primary/5 dark:shadow-primary/10
-                transition-all duration-300 
-                bg-primary hover:bg-primary/90 text-white
-                hover:shadow-lg hover:shadow-neutral-900/80 dark:hover:shadow-white/20
-                hover:scale-[1.02]`}
-            >
-              <Link href={pricingPlans[2]?.button.href ?? ''}>{pricingPlans[2]?.button.text}</Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Freelancer Subscription Plans Section */}
-        <div className="w-full">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              For <span className="text-primary">Freelancers</span>
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-neutral-400">
-              Choose the subscription plan that fits your business needs
-            </p>
-          </div>
-
-          {isLoadingPlans ? (
-            // Loading state - show skeleton for all three plan slots
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 w-full max-w-6xl mx-auto">
-              {[1, 2, 3].map((i) => (
+          {/* Freelancer Plans */}
+          {isLoading
+            ? [1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="flex flex-col rounded-2xl p-5 sm:p-6 lg:p-8 gap-4 sm:gap-6 
-                    bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm
-                    border-2 border-gray-200/50 dark:border-neutral-800/50
-                    h-full animate-pulse"
-                >
-                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-4" />
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
-                  <div className="space-y-2 flex-grow">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
-                  </div>
-                  <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-                </div>
-              ))}
-            </div>
-          ) : sortedPlans.length > 0 ? (
-            // Display subscription plans from backend
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 w-full max-w-6xl mx-auto">
-              {sortedPlans.map((plan: SubscriptionPlan) => (
-                <div
+                  className="h-[450px] rounded-2xl bg-[#f5f4f1] dark:bg-neutral-900 animate-pulse border border-gray-100 dark:border-neutral-800"
+                />
+              ))
+            : sortedPlans.map((plan, index) => (
+                <motion.div
                   key={plan.id}
-                  className={`flex flex-col rounded-2xl p-5 sm:p-6 lg:p-8 gap-4 sm:gap-6 
-                    bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm
-                    border-2 border-gray-200/50 dark:border-neutral-800/50
-                    hover:border-primary/30 dark:hover:border-primary/30
-                    transition-all duration-300
-                    shadow-lg shadow-primary/5 dark:shadow-primary/10
-                    hover:shadow-xl hover:shadow-neutral-900/80 dark:hover:shadow-white/20
-                    h-full`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ delay: index * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className={`flex flex-col p-8 rounded-2xl border h-full transition-all duration-300 ${
+                    plan.name === 'GOLD'
+                      ? 'border-primary bg-[#faf9f6] dark:bg-neutral-900 shadow-xl shadow-primary/10 hover:shadow-2xl hover:shadow-primary/20'
+                      : 'border-gray-100 dark:border-neutral-800 bg-[#faf9f6] dark:bg-neutral-900 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5'
+                  }`}
                 >
-                  {/* Plan Title & Description */}
-                  <div className="flex flex-col gap-2 sm:gap-3">
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary dark:text-primary/90">
-                      {plan.displayName}
-                    </h3>
-                    <p className="text-sm sm:text-base lg:text-lg text-gray-700 dark:text-neutral-300">
-                      {plan.description}
-                    </p>
-                    {/* Price */}
-                    <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white">
-                        EUR {plan.price.toFixed(2)}
-                      </span>
-                      <span className="text-sm sm:text-base text-gray-600 dark:text-neutral-400">
-                        /{plan.billingInterval}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <div className="flex flex-col gap-3 sm:gap-4 flex-grow">
-                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                      Features Included
-                    </h4>
-                    <ul className="flex flex-col gap-2">
-                      {plan.features && plan.features.length > 0 ? (
-                        plan.features.map((feature, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-neutral-300"
-                          >
-                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary dark:text-primary/90 flex-shrink-0" />
-                            {feature}
-                          </li>
-                        ))
-                      ) : (
-                        <li className="text-sm text-gray-500 dark:text-neutral-400 italic">
-                          No features listed
-                        </li>
+                  <div className="mb-8">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                        {plan.displayName}
+                      </h3>
+                      {plan.name === 'GOLD' && (
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+                          className="px-3 py-1 text-[10px] font-bold bg-primary/10 text-primary rounded-full uppercase tracking-wider shadow-sm"
+                        >
+                          Popular
+                        </motion.span>
                       )}
-                    </ul>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">{plan.description}</p>
                   </div>
-
-                  {/* CTA Button */}
+                  <div className="mb-8">
+                    <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                      ${plan.price}
+                    </span>
+                    <span className="text-gray-500 text-sm">/{plan.billingInterval}</span>
+                  </div>
+                  <ul className="space-y-4 mb-8 flex-1">
+                    {plan.features?.map((f, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 text-sm text-gray-600 dark:text-neutral-400"
+                      >
+                        <Check className="w-4 h-4 text-primary" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                   <Button
-                    asChild
-                    className={`w-full h-9 sm:h-10 lg:h-11 rounded-xl text-sm sm:text-base font-medium 
-                      shadow-md shadow-primary/5 dark:shadow-primary/10
-                      transition-all duration-300 
-                      bg-primary hover:bg-primary/90 text-white
-                      hover:shadow-lg hover:shadow-neutral-900/80 dark:hover:shadow-white/20
-                      hover:scale-[1.02]`}
+                    onClick={() => router.push('/authentication/sign-in')}
+                    variant={plan.name === 'GOLD' ? 'default' : 'outline'}
+                    className={`w-full h-12 font-semibold rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                      plan.name === 'GOLD'
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:bg-primary/90'
+                        : 'hover:border-primary hover:text-primary'
+                    }`}
                   >
-                    <Link href="/authentication/signup">Start Earning</Link>
+                    Start with {plan.displayName}
                   </Button>
-                </div>
+                </motion.div>
               ))}
-            </div>
-          ) : plansError ? (
-            // Error state
-            <div className="w-full max-w-6xl mx-auto">
-              <div
-                className={`flex flex-col rounded-2xl p-5 sm:p-6 lg:p-8 gap-4 sm:gap-6 
-                  bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm
-                  border-2 border-red-200/50 dark:border-red-800/50
-                  h-full`}
-              >
-                <p className="text-center text-red-600 dark:text-red-400">
-                  Unable to load subscription plans. Please check your connection and try again.
-                </p>
-                {process.env.NODE_ENV === 'development' && (
-                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Error: {plansError instanceof Error ? plansError.message : 'Unknown error'}
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : (
-            // Fallback if no plans are available
-            <div className="w-full max-w-6xl mx-auto">
-              <div
-                className={`flex flex-col rounded-2xl p-5 sm:p-6 lg:p-8 gap-4 sm:gap-6 
-                  bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm
-                  border-2 border-gray-200/50 dark:border-neutral-800/50
-                  h-full`}
-              >
-                <p className="text-center text-gray-600 dark:text-neutral-400">
-                  Subscription plans are currently unavailable. Please check back later.
-                </p>
-              </div>
-            </div>
-          )}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-12 p-8 rounded-2xl bg-[#f5f4f1] dark:bg-neutral-900/30 border border-dashed border-gray-200 dark:border-neutral-800 text-center"
+        >
+          <p className=" text-gray-500">
+            Looking for team plan? <strong>Team plan is coming soon.</strong>
+          </p>
+        </motion.div>
       </div>
     </section>
   );

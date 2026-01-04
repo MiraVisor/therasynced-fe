@@ -40,14 +40,17 @@ const Services = () => {
   return (
     <section
       id="services"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
+      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 mt-32 transition-all duration-500 bg-gray-100"
+      data-aos="zoom-in"
+      data-aos-once="false"
+      data-aos-mirror="true"
     >
       <div className="max-w-screen-xl mx-auto flex flex-col h-full lg:flex-row gap-10 lg:gap-16 items-stretch">
-        {/* Image Section (hidden on small screens) - Replace with therapy equipment image */}
-        <div className="relative w-full max-w-[300px] mx-0 aspect-[9/16] rounded-2xl overflow-hidden hidden lg:block">
+        {/* Image Section (hidden on small screens) */}
+        <div className="relative w-full max-w-[400px] mx-0 aspect-[9/16] rounded-2xl overflow-hidden hidden lg:block">
           <Image
-            src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&q=80"
-            alt="Therapy equipment"
+            src={'/images/rehabilitation.jpg'}
+            alt="Wellness Services"
             fill
             className="object-cover transition-transform duration-500 hover:scale-105"
             priority

@@ -1,128 +1,128 @@
 'use client';
 
 import { useTheme } from 'next-themes';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 const Footer = () => {
-  useTheme();
-  const router = useRouter();
+  const { resolvedTheme } = useTheme();
 
   return (
-    <footer className="w-full flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-100 dark:bg-neutral-900/50 backdrop-blur-sm transition-colors duration-300">
-      <div className="w-full max-w-screen-2xl my-6 sm:my-8 lg:my-12 flex flex-col gap-8 sm:gap-12 text-gray-700 dark:text-neutral-300">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
-          {/* Branding */}
-          <div className="col-span-1 sm:col-span-2 space-y-4">
-            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-bold tracking-wide text-gray-900 dark:text-white">
-              THERA<span className="text-primary dark:text-primary/90">SYNCED</span>
-            </h2>
-            <p className="text-base xs:text-lg text-gray-700 dark:text-neutral-300 max-w-md leading-relaxed">
-              Discover professional freelancers ready to help you relax, recover, and recharge.
+    <footer className="w-full bg-[#faf9f6] dark:bg-black border-t border-gray-100 dark:border-neutral-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {/* Brand Column */}
+          <div className="space-y-6">
+            <Link href="/" className="inline-block">
+              <Image
+                src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
+                alt="TheraSynced"
+                width={140}
+                height={40}
+                className="h-12 w-auto transition-opacity hover:opacity-80"
+              />
+            </Link>
+            <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
+              A professional infrastructure for wellness professionals and their clients. Built for
+              security, privacy, and efficiency.
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-lg xs:text-xl font-semibold text-gray-900 dark:text-white">
-              Quick Links
+          {/* Platform Links */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">
+              Platform
             </h3>
-            <ul className="space-y-2 text-base xs:text-lg text-gray-700 dark:text-neutral-300">
+            <ul className="space-y-4 text-sm text-gray-500">
               <li>
                 <Link
-                  href="#services"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById('services');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else router.push('/#services');
-                  }}
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
+                  href="#how-it-works"
+                  className="hover:text-primary transition-colors duration-300"
                 >
-                  Services
+                  How it Works
                 </Link>
               </li>
               <li>
                 <Link
                   href="#features"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById('features');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else router.push('/#features');
-                  }}
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
+                  className="hover:text-primary transition-colors duration-300"
                 >
                   Features
                 </Link>
               </li>
               <li>
+                <Link href="#pricing" className="hover:text-primary transition-colors duration-300">
+                  Pricing
+                </Link>
+              </li>
+              <li>
                 <Link
-                  href="#how-it-works"
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
+                  href="/authentication/sign-in"
+                  className="hover:text-primary transition-colors duration-300"
                 >
-                  How It Works
+                  Join as Therapist
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Legal & Support */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-lg xs:text-xl font-semibold text-gray-900 dark:text-white">
-              Legal & Support
+          {/* Legal Links */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">
+              Legal
             </h3>
-            <ul className="space-y-2 text-base xs:text-lg text-gray-700 dark:text-neutral-300">
+            <ul className="space-y-4 text-sm text-gray-500">
               <li>
-                <Link
-                  href="/privacy"
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-                >
+                <Link href="/privacy" className="hover:text-primary transition-colors duration-300">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-                >
+                <Link href="/terms" className="hover:text-primary transition-colors duration-300">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/cookies"
-                  className="hover:text-primary dark:hover:text-primary/90 transition-colors"
-                >
+                <Link href="/cookies" className="hover:text-primary transition-colors duration-300">
                   Cookie Policy
                 </Link>
               </li>
             </ul>
           </div>
-        </div>
 
-        {/* Platform Disclaimer */}
-        <div className="border-t border-gray-200/50 dark:border-neutral-800/50 pt-6">
-          <p className="text-sm text-gray-600 dark:text-neutral-400 text-center max-w-4xl mx-auto">
-            <strong className="text-gray-900 dark:text-white">Platform Disclaimer:</strong>{' '}
-            TheraSynced is a booking platform that connects clients with licensed healthcare
-            professionals and freelancers. We do not provide medical advice, diagnosis, or treatment
-            services. All healthcare services are provided by independent practitioners who are
-            responsible for their own professional conduct and services.
-          </p>
+          {/* Contact Column */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">
+              Support
+            </h3>
+            <ul className="space-y-4 text-sm text-gray-500">
+              <li>
+                <a
+                  href="mailto:support@therasynced.com"
+                  className="hover:text-primary transition-colors duration-300"
+                >
+                  support@therasynced.com
+                </a>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Help Center
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-200/50 dark:border-neutral-800/50 pt-6 text-sm flex flex-col sm:flex-row justify-between items-center gap-4 text-gray-700 dark:text-neutral-300">
-          <div className="text-center sm:text-left">
-            <p className="mb-2">Copyright © 2025 therasynced | All Rights Reserved</p>
-          </div>
-          <div className="flex flex-wrap justify-center sm:justify-end gap-4">
-            <p className="mb-2">
-              For data protection inquiries:{' '}
-              <a href="mailto:privacy@therasynced.com" className="text-primary hover:underline">
-                privacy@therasynced.com
-              </a>
+        <div className="mt-16 pt-8 border-t border-gray-100 dark:border-neutral-900 flex flex-col md:flex-row justify-between gap-6 relative">
+          <p className="text-xs text-gray-400">
+            © {new Date().getFullYear()} TheraSynced. All rights reserved.
+          </p>
+          <div className="max-w-2xl">
+            <p className="text-[10px] text-gray-400 leading-relaxed">
+              <strong>Disclaimer:</strong> TheraSynced is a platform connecting clients with
+              independent therapists. We do not provide medical advice or treatment. Therapists are
+              responsible for their own professional conduct.
             </p>
           </div>
         </div>
