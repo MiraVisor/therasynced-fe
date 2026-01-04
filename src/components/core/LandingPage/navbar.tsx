@@ -4,7 +4,6 @@ import { Menu, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,6 @@ const navLinks = [
 
 const Navbar = () => {
   const { resolvedTheme } = useTheme();
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [hasValidToken, setHasValidToken] = useState(false);
   const [scrolled, setScrolled] = useState(false);

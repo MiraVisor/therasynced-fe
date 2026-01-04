@@ -106,26 +106,26 @@ const WhoItsFor = () => {
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold">
-                  {audience[0].badge}
+                  {audience[0]?.badge}
                 </span>
                 <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary/90">
-                  {audience[0].title}
+                  {audience[0]?.title}
                 </h3>
               </div>
               <div className="w-full h-36 sm:h-44 rounded-xl overflow-hidden relative mb-3">
                 <Image
-                  src={audience[0].image}
-                  alt={audience[0].alt}
+                  src={audience[0]?.image ?? ''}
+                  alt={audience[0]?.alt ?? ''}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   priority
                 />
               </div>
               <p className="text-sm text-gray-700 dark:text-neutral-300 leading-relaxed mb-3">
-                {audience[0].subtitle}
+                {audience[0]?.subtitle}
               </p>
               <ul className="flex flex-wrap gap-2">
-                {audience[0].bullets.map((bullet) => (
+                {audience[0]?.bullets.map((bullet) => (
                   <li
                     key={bullet}
                     className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-neutral-400 bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-full"
@@ -147,26 +147,26 @@ const WhoItsFor = () => {
               <article className="xl:absolute xl:top-[240px] xl:left-1/2 xl:-translate-x-1/2 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm shadow-lg shadow-primary/5 dark:shadow-primary/10">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold">
-                    {audience[1].badge}
+                    {audience[1]?.badge}
                   </span>
                   <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary/90">
-                    {audience[1].title}
+                    {audience[1]?.title}
                   </h3>
                 </div>
                 <div className="w-full h-36 sm:h-44 rounded-xl overflow-hidden relative mb-3">
                   <Image
-                    src={audience[1].image}
-                    alt={audience[1].alt}
+                    src={audience[1]?.image ?? ''}
+                    alt={audience[1]?.alt ?? ''}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     priority
                   />
                 </div>
                 <p className="text-sm text-gray-700 dark:text-neutral-300 leading-relaxed mb-3">
-                  {audience[1].subtitle}
+                  {audience[1]?.subtitle}
                 </p>
                 <ul className="flex flex-wrap gap-2">
-                  {audience[1].bullets.map((bullet) => (
+                  {audience[1]?.bullets.map((bullet) => (
                     <li
                       key={bullet}
                       className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-neutral-400 bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-full"
@@ -189,26 +189,26 @@ const WhoItsFor = () => {
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold">
-                  {audience[2].badge}
+                  {audience[2]?.badge}
                 </span>
                 <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary/90">
-                  {audience[2].title}
+                  {audience[2]?.title}
                 </h3>
               </div>
               <div className="w-full h-36 sm:h-44 rounded-xl overflow-hidden relative mb-3">
                 <Image
-                  src={audience[2].image}
-                  alt={audience[2].alt}
+                  src={audience[2]?.image ?? ''}
+                  alt={audience[2]?.alt ?? ''}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   priority
                 />
               </div>
               <p className="text-sm text-gray-700 dark:text-neutral-300 leading-relaxed mb-3">
-                {audience[2].subtitle}
+                {audience[2]?.subtitle}
               </p>
               <ul className="flex flex-wrap gap-2">
-                {audience[2].bullets.map((bullet) => (
+                {audience[2]?.bullets.map((bullet) => (
                   <li
                     key={bullet}
                     className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-neutral-400 bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-full"
