@@ -160,19 +160,21 @@ const Feedback = () => {
 
               <div className="relative z-10">
                 <Quote className="w-12 h-12 text-primary/30 mb-6" />
-                <div className="flex gap-1 mb-4">{renderStars(featuredTestimonial.rating)}</div>
+                <div className="flex gap-1 mb-4">
+                  {renderStars(featuredTestimonial?.rating ?? 0)}
+                </div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4 font-playfair">
-                  {featuredTestimonial.title}
+                  {featuredTestimonial?.title}
                 </h3>
                 <p className="text-lg text-gray-700 dark:text-neutral-300 leading-relaxed mb-8 font-open-sans">
-                  "{featuredTestimonial.description}"
+                  "{featuredTestimonial?.description}"
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="relative flex-shrink-0">
                     <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-purple-600/20 ring-4 ring-white dark:ring-neutral-900">
                       <Image
-                        src={featuredTestimonial.image}
-                        alt={featuredTestimonial.author}
+                        src={featuredTestimonial?.image ?? ''}
+                        alt={featuredTestimonial?.author ?? ''}
                         width={64}
                         height={64}
                         className="w-full h-full object-cover"
@@ -181,13 +183,13 @@ const Feedback = () => {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-gray-900 dark:text-white text-lg font-poppins">
-                      {featuredTestimonial.author}
+                      {featuredTestimonial?.author}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-neutral-400 font-inter">
-                      {featuredTestimonial.handle}
+                      {featuredTestimonial?.handle}
                     </p>
                     <p className="text-xs text-primary font-semibold mt-1 font-inter">
-                      with {featuredTestimonial.therapist}
+                      with {featuredTestimonial?.therapist}
                     </p>
                   </div>
                 </div>
