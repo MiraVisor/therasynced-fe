@@ -56,7 +56,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   const selectedSlot = slotsByDate[selectedDate]?.find((s) => s.id === selectedTime);
   const selectedCategoryIds = serviceForm.watch('serviceCategoryIds') || [];
 
-  // Calculate price based on location and service categories
+  // Calculate base price (original price before discounts) based on location and service categories
   const basePrice = useMemo(() => {
     if (!selectedSlot) return 0;
 
@@ -66,44 +66,158 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
     }
 
     // If location type not selected yet, use slot's basePrice as fallback
-    if (!selectedLocationType || !pricing?.servicePricing) {
+    if (!selectedLocationType) {
       return selectedSlot.basePrice || 0;
     }
 
-    // Calculate total price from selected categories and location
-    let totalPrice = 0;
-    selectedCategoryIds.forEach((categoryId) => {
-      const servicePricing = pricing.servicePricing.find((sp) => sp.serviceId === categoryId);
-      if (!servicePricing) return;
+    // First, try to get pricing from slot's availableServiceCategories (use original price, not discounted)
+    if (
+      selectedSlot.availableServiceCategories &&
+      selectedSlot.availableServiceCategories.length > 0
+    ) {
+      let totalPrice = 0;
+      let hasCategoryPricing = false;
 
-      // Use location-based pricing if available
-      if (servicePricing.locations && servicePricing.locations.length > 0) {
-        const locationPricing = servicePricing.locations.find(
-          (loc) => loc.locationType === selectedLocationType,
+      selectedCategoryIds.forEach((categoryId) => {
+        const category = selectedSlot.availableServiceCategories?.find(
+          (cat) => cat.id === categoryId,
         );
-        if (locationPricing) {
-          totalPrice += locationPricing.price;
-          return;
-        }
-      }
+        if (!category?.pricing) return;
 
-      // Fallback to legacy price (assume CLINIC)
-      if (servicePricing.price > 0) {
-        totalPrice += servicePricing.price;
+        const locationPricing = category.pricing[selectedLocationType];
+        if (locationPricing) {
+          hasCategoryPricing = true;
+          // Always use original price for basePrice calculation (discounts handled separately)
+          totalPrice += locationPricing.price;
+        }
+      });
+
+      if (hasCategoryPricing && totalPrice > 0) {
+        return totalPrice;
+      }
+    }
+
+    // Fallback to pricing from props (legacy pricing structure)
+    if (pricing?.servicePricing) {
+      let totalPrice = 0;
+      selectedCategoryIds.forEach((categoryId) => {
+        const servicePricing = pricing.servicePricing.find((sp) => sp.serviceId === categoryId);
+        if (!servicePricing) return;
+
+        // Use location-based pricing if available
+        if (servicePricing.locations && servicePricing.locations.length > 0) {
+          const locationPricing = servicePricing.locations.find(
+            (loc) => loc.locationType === selectedLocationType,
+          );
+          if (locationPricing) {
+            totalPrice += locationPricing.price;
+            return;
+          }
+        }
+
+        // Fallback to legacy price (assume CLINIC)
+        if (servicePricing.price > 0) {
+          totalPrice += servicePricing.price;
+        }
+      });
+
+      if (totalPrice > 0) {
+        return totalPrice;
+      }
+    }
+
+    // Final fallback to slot's basePrice
+    return selectedSlot.basePrice || 0;
+  }, [selectedSlot, selectedCategoryIds, selectedLocationType, pricing]);
+
+  // Check for service category-level discounts (when service categories are selected)
+  const serviceCategoryDiscounts = useMemo(() => {
+    if (
+      !selectedSlot?.availableServiceCategories ||
+      selectedCategoryIds.length === 0 ||
+      !selectedLocationType
+    ) {
+      return null;
+    }
+
+    let totalOriginalPrice = 0;
+    let totalDiscountedPrice = 0;
+    let totalDiscountAmount = 0;
+    let hasAnyDiscount = false;
+    let discountPercentage = 0;
+
+    selectedCategoryIds.forEach((categoryId) => {
+      const category = selectedSlot.availableServiceCategories?.find(
+        (cat) => cat.id === categoryId,
+      );
+      if (!category?.pricing) return;
+
+      const locationPricing = category.pricing[selectedLocationType];
+      if (locationPricing) {
+        totalOriginalPrice += locationPricing.price;
+        if (locationPricing.discount?.applicable) {
+          hasAnyDiscount = true;
+          totalDiscountedPrice += locationPricing.discount.finalAmount;
+          totalDiscountAmount += locationPricing.discount.discountAmount;
+        } else {
+          totalDiscountedPrice += locationPricing.price;
+        }
       }
     });
 
-    // If no category pricing found, fall back to slot's basePrice
-    return totalPrice > 0 ? totalPrice : selectedSlot.basePrice || 0;
-  }, [selectedSlot, selectedCategoryIds, selectedLocationType, pricing]);
+    if (hasAnyDiscount && totalOriginalPrice > 0) {
+      discountPercentage = (totalDiscountAmount / totalOriginalPrice) * 100;
+    }
 
-  const hasDiscount =
+    return hasAnyDiscount
+      ? {
+          applicable: true,
+          discountPercentage,
+          discountAmount: totalDiscountAmount,
+          finalAmount: totalDiscountedPrice,
+          originalAmount: totalOriginalPrice,
+        }
+      : null;
+  }, [selectedSlot, selectedCategoryIds, selectedLocationType]);
+
+  // Prefer discount from slot data (backend-calculated), fallback to manual calculation
+  // Use service category discounts if available (when categories are selected)
+  const slotDiscount = selectedSlot?.discount;
+  const hasSlotDiscount = slotDiscount?.applicable === true && selectedCategoryIds.length === 0;
+  const hasServiceCategoryDiscount = serviceCategoryDiscounts?.applicable === true;
+
+  // Fallback to manual calculation if no discounts available
+  const hasManualDiscount =
+    !hasSlotDiscount &&
+    !hasServiceCategoryDiscount &&
     stampDetail?.rewardReady &&
     !stampDetail?.rewardReserved &&
     stampDetail?.therapist?.id === therapist?.id;
-  const discountPercentage = hasDiscount ? stampDetail?.discountPercentage || 0 : 0;
-  const discountAmount = hasDiscount ? (basePrice * discountPercentage) / 100 : 0;
-  const finalPrice = basePrice - discountAmount;
+
+  const hasDiscount = hasSlotDiscount || hasServiceCategoryDiscount || hasManualDiscount;
+
+  // Use service category discount if available, then slot discount, then manual calculation
+  const discountPercentage = hasServiceCategoryDiscount
+    ? serviceCategoryDiscounts.discountPercentage
+    : hasSlotDiscount
+      ? slotDiscount.discountPercentage
+      : hasManualDiscount
+        ? stampDetail?.discountPercentage || 0
+        : 0;
+
+  const discountAmount = hasServiceCategoryDiscount
+    ? serviceCategoryDiscounts.discountAmount
+    : hasSlotDiscount
+      ? slotDiscount.discountAmount
+      : hasManualDiscount
+        ? (basePrice * discountPercentage) / 100
+        : 0;
+
+  const finalPrice = hasServiceCategoryDiscount
+    ? serviceCategoryDiscounts.finalAmount
+    : hasSlotDiscount
+      ? slotDiscount.finalAmount
+      : basePrice - discountAmount;
 
   return (
     <div>

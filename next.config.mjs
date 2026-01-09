@@ -23,6 +23,13 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
 
+  // Remove console logs in production (keeps console.error and console.warn)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
+
   // Fix for @tanstack/react-table ES module parsing
   webpack: (config, { isServer }) => {
     if (!isServer) {

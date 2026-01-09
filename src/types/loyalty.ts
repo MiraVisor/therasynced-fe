@@ -103,6 +103,24 @@ export interface StampHistory {
   createdAt: string;
 }
 
+export interface TherapistStampConfigStatistics {
+  totalPatients: number;
+  totalRewardsRedeemed: number;
+  activeRewardsReady: number;
+  pendingRewards: number;
+  totalStampsIssued: number;
+  totalRewardCycles: number;
+  hasRedeemedRewards: boolean;
+  status:
+    | 'INACTIVE'
+    | 'ACTIVE_NO_PATIENTS'
+    | 'ACTIVE_WITH_PENDING_REWARDS'
+    | 'ACTIVE_WITH_REDEMPTIONS'
+    | 'ACTIVE_WITH_READY_REWARDS'
+    | 'ACTIVE_WITH_STAMPS'
+    | 'ACTIVE';
+}
+
 export interface TherapistStampConfig {
   therapistId: string;
   stampTarget: number | null;
@@ -117,6 +135,7 @@ export interface TherapistStampConfig {
     email: string;
     isActive: boolean;
   };
+  statistics?: TherapistStampConfigStatistics;
 }
 
 export interface CreateTherapistStampConfigDto {

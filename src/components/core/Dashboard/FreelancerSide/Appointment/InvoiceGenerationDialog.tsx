@@ -3,7 +3,6 @@
 import { pdf } from '@react-pdf/renderer';
 import { format } from 'date-fns';
 import { Download, FileText, Loader2, Plus, Trash2, X } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -16,14 +15,6 @@ import { useProfile } from '@/hooks/queries/useProfile';
 import { Appointment } from '@/types/types';
 
 import type { InvoiceData } from './InvoicePDF';
-
-// Dynamically import heavy PDF component
-const InvoicePDF = dynamic(
-  () => import('./InvoicePDF').then((mod) => ({ default: mod.InvoicePDF })),
-  {
-    ssr: false,
-  },
-);
 
 interface InvoiceGenerationDialogProps {
   appointment: Appointment;
@@ -122,7 +113,28 @@ export const InvoiceGenerationDialog = ({
     setIsGenerating(true);
 
     try {
-      // Use profile from Redux instead of localStorage
+      // Validate appointment dates
+      if (!appointment.start || !appointment.end) {
+        throw new Error('Appointment start or end date is missing');
+      }
+
+      const startDate = new Date(appointment.start);
+      const endDate = new Date(appointment.end);
+
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Invalid appointment date format');
+      }
+
+      if (startDate >= endDate) {
+        throw new Error('Appointment end time must be after start time');
+      }
+
+      // Validate client name
+      if (!appointment.clientName || appointment.clientName.trim() === '') {
+        throw new Error('Client name is missing');
+      }
+
+      // Prepare invoice data
       const invoiceData: InvoiceData = {
         invoiceNumber: generateInvoiceNumber(),
         invoiceDate: new Date().toISOString(),
@@ -134,10 +146,8 @@ export const InvoiceGenerationDialog = ({
         userName: appointment.clientName,
         userEmail: '', // Not available in appointment data
         appointmentDate: appointment.start,
-        appointmentTime: `${format(new Date(appointment.start), 'h:mm a')} - ${format(new Date(appointment.end), 'h:mm a')}`,
-        duration: Math.round(
-          (new Date(appointment.end).getTime() - new Date(appointment.start).getTime()) / 60000,
-        ),
+        appointmentTime: `${format(startDate, 'h:mm a')} - ${format(endDate, 'h:mm a')}`,
+        duration: Math.round((endDate.getTime() - startDate.getTime()) / 60000),
         services: services.map((service) => ({
           name: service.name,
           price: parseFloat(service.price),
@@ -152,8 +162,59 @@ export const InvoiceGenerationDialog = ({
             : appointment.clientAddress || undefined,
       };
 
-      // Generate PDF
-      const blob = await pdf(<InvoicePDF data={invoiceData} />).toBlob();
+      // Ensure the InvoicePDF component is loaded
+      // Dynamic imports need to be resolved before use
+      let InvoicePDFComponent;
+      try {
+        const pdfModule = await import('./InvoicePDF');
+        InvoicePDFComponent = pdfModule.InvoicePDF;
+
+        if (!InvoicePDFComponent) {
+          throw new Error('InvoicePDF component not found in module');
+        }
+      } catch (importError) {
+        console.error('Failed to import InvoicePDF:', importError);
+        throw new Error(
+          importError instanceof Error
+            ? `Failed to load PDF component: ${importError.message}`
+            : 'Failed to load PDF component',
+        );
+      }
+
+      // Generate PDF using the loaded component
+      let pdfDoc;
+      try {
+        pdfDoc = pdf(<InvoicePDFComponent data={invoiceData} />);
+        if (!pdfDoc) {
+          throw new Error('pdf() function returned undefined');
+        }
+      } catch (pdfCreateError) {
+        console.error('Failed to create PDF document:', pdfCreateError);
+        throw new Error(
+          pdfCreateError instanceof Error
+            ? `Failed to create PDF: ${pdfCreateError.message}`
+            : 'Failed to create PDF document',
+        );
+      }
+
+      // Generate blob with error handling
+      let blob: Blob;
+      try {
+        blob = await pdfDoc.toBlob();
+      } catch (pdfError) {
+        console.error('PDF blob generation error:', pdfError);
+        throw new Error(
+          pdfError instanceof Error
+            ? `PDF generation failed: ${pdfError.message}`
+            : pdfError === null || pdfError === undefined
+              ? 'PDF generation failed: No error details available'
+              : 'PDF generation failed: Unknown error',
+        );
+      }
+
+      if (!blob || blob.size === 0) {
+        throw new Error('Failed to generate PDF blob - blob is empty or invalid');
+      }
 
       // Create download link
       const url = URL.createObjectURL(blob);
@@ -169,7 +230,48 @@ export const InvoiceGenerationDialog = ({
       onOpenChange(false);
     } catch (error) {
       console.error('Error generating invoice:', error);
-      toast.error('Failed to generate invoice. Please try again.');
+
+      // Provide more detailed error information
+      let errorMessage = 'Unknown error occurred';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object') {
+        if ('message' in error) {
+          errorMessage = String(error.message);
+        } else {
+          // For objects without a message, use a generic error message
+          // to avoid '[object Object]' stringification
+          errorMessage = 'An error occurred during invoice generation';
+        }
+      } else if (error === null || error === undefined) {
+        errorMessage =
+          'PDF generation failed - no error details available. This may be due to a component loading issue or browser compatibility.';
+      }
+
+      // Log comprehensive error details
+      console.error('Error details:', {
+        message: errorMessage,
+        error,
+        errorType: typeof error,
+        errorString: String(error),
+        errorConstructor: error?.constructor?.name,
+        stack: error instanceof Error ? error.stack : undefined,
+        invoiceData: {
+          businessName,
+          basePrice,
+          servicesCount: services.length,
+          appointmentId: appointment.id,
+          hasStartDate: !!appointment.start,
+          hasEndDate: !!appointment.end,
+          hasClientName: !!appointment.clientName,
+          hasProfile: !!profile,
+        },
+      });
+
+      toast.error(`Failed to generate invoice: ${errorMessage}`);
     } finally {
       setIsGenerating(false);
     }

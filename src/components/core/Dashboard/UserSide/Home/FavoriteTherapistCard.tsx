@@ -75,23 +75,23 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
 
   return (
     <TooltipProvider>
-      <Card className="group border-gray-200/80 dark:border-gray-700 overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm shadow-soft min-h-[320px] flex flex-col">
-        <CardHeader className="pb-3 px-4">
+      <Card className="group border-2 border-gray-200/60 dark:border-gray-700 overflow-hidden bg-gradient-to-br from-white via-white to-primary/5 dark:from-gray-800 dark:via-gray-800 dark:to-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 min-h-[340px] flex flex-col hover:border-primary/40 hover:scale-[1.02]">
+        <CardHeader className="pb-4 px-5 pt-5 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
           <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <Avatar className="w-12 h-12 flex-shrink-0 border-2 border-primary/20">
+            <div className="flex items-start gap-4 flex-1 min-w-0">
+              <Avatar className="w-14 h-14 flex-shrink-0 border-[3px] border-primary/30 shadow-md ring-2 ring-primary/10">
                 <ProfileAvatarImage
                   src={freelancer.profilePicture || undefined}
                   alt={freelancerName || 'Freelancer'}
                 />
-                <AvatarFallback className="bg-primary/15 text-primary font-bold text-base">
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/30 text-primary font-bold text-lg">
                   {freelancerName?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0 space-y-1.5">
+              <div className="flex-1 min-w-0 space-y-2">
                 {/* Row 1: Name and Verification Badge */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="text-base font-poppins font-semibold text-gray-900 dark:text-white truncate">
+                  <h4 className="text-lg font-poppins font-bold text-gray-900 dark:text-white truncate">
                     {freelancerName}
                   </h4>
                   <VerificationBadge
@@ -118,11 +118,11 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
             </div>
 
             <button
-              className={`p-2 rounded-full flex-shrink-0 ${
+              className={`p-2.5 rounded-full flex-shrink-0 transition-all duration-200 ${
                 freelancer.isFavorite
-                  ? 'text-red-500 bg-red-50 dark:bg-red-900/20'
-                  : 'text-gray-400'
-              } ${isFavoriteLoading ? 'cursor-not-allowed opacity-50' : ''}`}
+                  ? 'text-red-500 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/20 shadow-md'
+                  : 'text-gray-400 hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+              } ${isFavoriteLoading ? 'cursor-not-allowed opacity-50' : 'hover:scale-110'}`}
               onClick={handleFavorite}
               disabled={isFavoriteLoading}
               aria-label={freelancer.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -136,20 +136,22 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
           </div>
         </CardHeader>
 
-        <CardContent className="pt-4 pb-4 px-4 flex-1 flex flex-col">
+        <CardContent className="pt-5 pb-5 px-5 flex-1 flex flex-col">
           {/* Expert Details */}
-          <div className="mb-4 space-y-2 bg-gradient-to-br from-mint/10 to-transparent rounded-lg p-3">
+          <div className="mb-5 space-y-3 bg-gradient-to-br from-primary/8 via-primary/5 to-transparent rounded-xl p-4 border border-primary/20 shadow-sm">
             {freelancer.reviews && freelancer.reviews > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="font-inter text-muted-foreground">Reviews:</span>
-                <span className="font-poppins font-semibold text-charcoal">
+                <span className="font-inter text-gray-600 dark:text-gray-400">Reviews:</span>
+                <span className="font-poppins font-bold text-gray-900 dark:text-white">
                   {freelancer.reviews}
                 </span>
               </div>
             )}
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-inter text-muted-foreground">Stamps:</span>
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="font-inter text-sm font-medium text-gray-700 dark:text-gray-300">
+                Stamps:
+              </span>
+              <div className="flex items-center gap-2">
                 {(() => {
                   const target = stampInfo?.stampTarget ?? 5;
                   const currentCount = Number(stampInfo?.currentStampCount ?? 0);
@@ -159,27 +161,32 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
                     return (
                       <div
                         key={index}
-                        className={`flex items-center justify-center w-5 h-5 rounded-full border ${
+                        className={`flex items-center justify-center w-6 h-6 rounded-full border-2 transition-all duration-200 ${
                           isFilled
-                            ? 'bg-primary border-primary text-white'
-                            : 'bg-gray-100 border-gray-300 text-gray-400'
+                            ? 'bg-gradient-to-br from-primary to-primary/80 border-primary shadow-md scale-110'
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
                         }`}
                       >
                         {isFilled ? (
-                          <CheckCircle2 className="h-3 w-3" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-white" />
                         ) : (
-                          <Stamp className="h-3 w-3" />
+                          <Stamp className="h-3.5 w-3.5 text-gray-400" />
                         )}
                       </div>
                     );
                   });
                 })()}
+                {stampInfo && (
+                  <span className="ml-2 text-xs font-poppins font-semibold text-gray-600 dark:text-gray-400">
+                    {stampInfo.currentStampCount}/{stampInfo.stampTarget}
+                  </span>
+                )}
               </div>
             </div>
             {(freelancer.availableSlots || 0) > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="font-inter text-muted-foreground">Availability:</span>
-                <span className="font-poppins font-semibold text-success">
+                <span className="font-inter text-gray-600 dark:text-gray-400">Availability:</span>
+                <span className="font-poppins font-bold text-green-600 dark:text-green-400">
                   {freelancer.availableSlots || 0} slots
                 </span>
               </div>
@@ -187,10 +194,10 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
           </div>
 
           {/* Actions */}
-          <div className="mt-auto space-y-3">
+          <div className="mt-auto">
             <Button
               variant="outline"
-              className="w-full border-primary text-primary h-9 text-sm"
+              className="w-full border-2 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/50 h-10 text-sm font-semibold transition-all duration-200 hover:shadow-md"
               onClick={handleViewProfile}
             >
               View Profile

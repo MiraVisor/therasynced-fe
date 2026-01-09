@@ -300,6 +300,22 @@ const VerificationDetailPage = () => {
     }
   };
 
+  // Helper to get category badge
+  const getCategoryBadge = (category: string | null | undefined) => {
+    if (!category) return null;
+    const categoryLabels: Record<string, { label: string; className: string }> = {
+      VERIFICATION: { label: 'Verification', className: 'bg-blue-100 text-blue-800' },
+      FIRST_AID_CERTIFICATE: { label: 'First Aid', className: 'bg-green-100 text-green-800' },
+    };
+    const config = categoryLabels[category];
+    if (!config) return null;
+    return (
+      <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${config.className}`}>
+        {config.label}
+      </Badge>
+    );
+  };
+
   // Table columns for files
   const fileColumns: ColumnDef<FileMetadata>[] = [
     {
@@ -316,6 +332,7 @@ const VerificationDetailPage = () => {
           >
             {row.original.title}
           </a>
+          {getCategoryBadge(row.original.category)}
         </div>
       ),
     },
@@ -330,6 +347,17 @@ const VerificationDetailPage = () => {
       accessorKey: 'fileSize',
       header: 'Size',
       cell: ({ row }) => <span className="text-sm">{formatFileSize(row.original.fileSize)}</span>,
+    },
+    {
+      accessorKey: 'category',
+      header: 'Category',
+      cell: ({ row }) => (
+        <div className="flex items-center">
+          {getCategoryBadge(row.original.category) || (
+            <span className="text-sm text-muted-foreground">-</span>
+          )}
+        </div>
+      ),
     },
     {
       accessorKey: 'createdAt',

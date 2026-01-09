@@ -1,20 +1,24 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import * as bookingService from '@/services/bookingService';
 import { DataTable } from '@/components/common/DataTable/data-table';
 import { createSlotsColumns } from '@/components/common/DataTable/slots-columns';
+import { InvoiceGenerationDialog } from '@/components/core/Dashboard/FreelancerSide/Appointment/InvoiceGenerationDialog';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
-import { Button } from '@/components/ui/button';
 import { useDeleteSlot, useMySlots } from '@/hooks/queries/useSlots';
-import { type Slot } from '@/types/types';
+import { Appointment, type Slot } from '@/types/types';
 
 export const TabbedSlotsView = () => {
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedRows, setSelectedRows] = useState<Slot[]>([]);
+  const [invoiceSlot, setInvoiceSlot] = useState<Slot | null>(null);
+  const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const { mutate: deleteSlot } = useDeleteSlot();
 
   // Fetch all slots
@@ -28,6 +32,29 @@ export const TabbedSlotsView = () => {
   // Filter slots by status
   const filteredSlots = useMemo(() => {
     if (statusFilter === 'all') return allSlots;
+
+    // Special handling for COMPLETED filter - check booking status
+    if (statusFilter === 'COMPLETED') {
+      return allSlots.filter(
+        (slot) =>
+          slot.status === 'BOOKED' &&
+          slot.booking &&
+          (slot.booking.status === 'COMPLETED' || slot.booking.status === 'completed'),
+      );
+    }
+
+    // Special handling for BOOKED filter - exclude completed bookings
+    if (statusFilter === 'BOOKED') {
+      return allSlots.filter(
+        (slot) =>
+          slot.status === 'BOOKED' &&
+          slot.booking &&
+          slot.booking.status !== 'COMPLETED' &&
+          slot.booking.status !== 'completed',
+      );
+    }
+
+    // For other statuses, filter by slot status
     return allSlots.filter((slot) => slot.status === statusFilter);
   }, [allSlots, statusFilter]);
 
@@ -49,49 +76,90 @@ export const TabbedSlotsView = () => {
     [],
   );
 
+  const handleCompleteBooking = useMemo(
+    () => async (slot: Slot) => {
+      if (!slot.booking?.id) {
+        toast.error('Booking ID not found');
+        return;
+      }
+
+      try {
+        const response = await bookingService.completeBooking({
+          bookingId: slot.booking.id,
+        });
+
+        if (response?.success) {
+          toast.success(
+            'Appointment marked as completed! ✅ The client will receive a stamp for this booking.',
+          );
+
+          // Invalidate queries to refresh data
+          queryClient.invalidateQueries({ queryKey: ['bookings'] });
+          queryClient.invalidateQueries({ queryKey: ['slots'] });
+          queryClient.invalidateQueries({ queryKey: ['stamps'] });
+          queryClient.invalidateQueries({ queryKey: ['favorites'] });
+        } else {
+          const errorMessage = response?.message || 'Failed to complete booking';
+          toast.error(errorMessage);
+        }
+      } catch (error: unknown) {
+        const errorMessage =
+          (error as any)?.response?.data?.message ||
+          (error instanceof Error ? error.message : 'Failed to complete booking');
+        toast.error(errorMessage);
+      }
+    },
+    [queryClient],
+  );
+
+  const handleGenerateInvoice = useMemo(
+    () => (slot: Slot) => {
+      if (!slot.booking) {
+        toast.error('No booking found for this slot');
+        return;
+      }
+      setInvoiceSlot(slot);
+      setShowInvoiceDialog(true);
+    },
+    [],
+  );
+
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedSlot(null);
   };
 
-  // Bulk delete handler
-  const handleBulkDelete = () => {
-    if (selectedRows.length === 0) {
-      toast.warning('Please select at least one slot to delete');
-      return;
-    }
+  // Convert Slot to Appointment format for invoice dialog
+  const appointmentData = useMemo((): Appointment | null => {
+    if (!invoiceSlot?.booking) return null;
 
-    const availableSlots = selectedRows.filter((slot) => slot.status === 'AVAILABLE');
-    if (availableSlots.length === 0) {
-      toast.warning('Only available slots can be deleted');
-      return;
-    }
+    return {
+      id: invoiceSlot.booking.id,
+      title: 'Appointment',
+      start: invoiceSlot.startTime,
+      end: invoiceSlot.endTime,
+      status: invoiceSlot.booking.status as any,
+      clientName: invoiceSlot.booking.client.name,
+      clientId: invoiceSlot.booking.client.id,
+      freelancer: {
+        clinicAddress: null,
+      },
+      location: invoiceSlot.locationType || 'CLINIC',
+      notes: invoiceSlot.booking.notes || '',
+    };
+  }, [invoiceSlot]);
 
-    if (
-      confirm(
-        `Are you sure you want to delete ${availableSlots.length} slot${availableSlots.length !== 1 ? 's' : ''}?`,
-      )
-    ) {
-      availableSlots.forEach((slot) => {
-        deleteSlot(slot.id);
-      });
-      setSelectedRows([]);
-      toast.success(
-        `Deleted ${availableSlots.length} slot${availableSlots.length !== 1 ? 's' : ''}`,
-      );
-    }
-  };
-
-  // Create columns with delete and view handlers
+  // Create columns with delete, view, complete, and invoice handlers
   const columns = useMemo(
-    () => createSlotsColumns(handleDeleteSlot, handleViewSlot, true),
-    [handleDeleteSlot, handleViewSlot],
+    () => createSlotsColumns(handleDeleteSlot, handleViewSlot, false),
+    [handleDeleteSlot, handleViewSlot, handleCompleteBooking, handleGenerateInvoice],
   );
 
   // Status filter options
   const statusFilterOptions = [
     { label: 'All', value: 'all' },
     { label: 'Available', value: 'AVAILABLE' },
+    { label: 'Completed', value: 'COMPLETED' },
     { label: 'Booked', value: 'BOOKED' },
     { label: 'Reserved', value: 'RESERVED' },
     { label: 'Cancelled', value: 'CANCELLED' },
@@ -99,30 +167,6 @@ export const TabbedSlotsView = () => {
 
   return (
     <div className="space-y-4 pb-0">
-      {/* Bulk Actions Bar */}
-      {selectedRows.length > 0 && (
-        <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/20 rounded-lg">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-inter font-medium text-charcoal">
-              {selectedRows.length} slot{selectedRows.length !== 1 ? 's' : ''} selected
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleBulkDelete}
-              disabled={selectedRows.filter((s) => s.status === 'AVAILABLE').length === 0}
-            >
-              Delete Selected
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setSelectedRows([])}>
-              Clear Selection
-            </Button>
-          </div>
-        </div>
-      )}
-
       <DataTable
         columns={columns}
         data={filteredSlots}
@@ -137,8 +181,7 @@ export const TabbedSlotsView = () => {
         filterOptions={statusFilterOptions}
         selectedFilter={statusFilter}
         onFilterChange={setStatusFilter}
-        enableRowSelection={true}
-        onRowSelectionChange={setSelectedRows}
+        enableRowSelection={false}
       />
       {selectedSlot && (
         <SlotDetailsDialog
@@ -149,6 +192,16 @@ export const TabbedSlotsView = () => {
             deleteSlot(slotId);
             handleCloseDialog();
           }}
+        />
+      )}
+
+      {/* Invoice Generation Dialog */}
+      {appointmentData && invoiceSlot && (
+        <InvoiceGenerationDialog
+          appointment={appointmentData}
+          open={showInvoiceDialog}
+          onOpenChange={setShowInvoiceDialog}
+          initialPrice={invoiceSlot.booking?.totalAmount || invoiceSlot.basePrice}
         />
       )}
     </div>

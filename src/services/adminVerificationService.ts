@@ -67,6 +67,7 @@ export interface FreelancerFile {
   fileType: string;
   createdAt: string;
   updatedAt: string;
+  category?: 'VERIFICATION' | 'FIRST_AID_CERTIFICATE' | null;
 }
 
 export interface PendingVerificationResponse {

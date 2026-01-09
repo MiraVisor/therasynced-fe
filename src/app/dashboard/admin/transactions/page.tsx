@@ -48,8 +48,6 @@ function AdminTransactionsPageContent() {
   const [pendingFilters, setPendingFilters] = useState<TransactionFilters>(getFiltersFromUrl());
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '1', 10));
   const [pageSize, setPageSize] = useState(parseInt(searchParams.get('pageSize') || '20', 10));
-  const [searchQuery, setSearchQuery] = useState(filters.search || '');
-  const [debouncedSearch, setDebouncedSearch] = useState(filters.search || '');
 
   // Update URL when filters change
   const updateUrlParams = (
@@ -76,12 +74,6 @@ function AdminTransactionsPageContent() {
       : '/dashboard/admin/transactions';
     router.push(newUrl, { scroll: false });
   };
-
-  // Update debounced search when filters are applied (not on every keystroke)
-  // This ensures search only triggers API calls when Apply Filters is clicked
-  useEffect(() => {
-    setDebouncedSearch(filters.search || '');
-  }, [filters.search]);
 
   // Sync filters from URL on mount and when URL changes (e.g., browser back/forward)
   useEffect(() => {
@@ -111,13 +103,11 @@ function AdminTransactionsPageContent() {
         prev.status !== urlFilters.status ||
         prev.plan !== urlFilters.plan ||
         prev.paymentMethod !== urlFilters.paymentMethod ||
-        prev.search !== urlFilters.search ||
         prev.freelancerId !== urlFilters.freelancerId;
 
       return hasChanged ? urlFilters : prev;
     });
 
-    setSearchQuery(urlFilters.search || '');
     setPage((prev) => (prev !== urlPage ? urlPage : prev));
     setPageSize((prev) => (prev !== urlPageSize ? urlPageSize : prev));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,7 +121,6 @@ function AdminTransactionsPageContent() {
       pendingFilters.status !== filters.status ||
       pendingFilters.plan !== filters.plan ||
       pendingFilters.paymentMethod !== filters.paymentMethod ||
-      pendingFilters.search !== filters.search ||
       pendingFilters.freelancerId !== filters.freelancerId
     );
   };
@@ -144,8 +133,6 @@ function AdminTransactionsPageContent() {
   // Apply filters - triggers API calls
   const applyFilters = () => {
     setFilters(pendingFilters);
-    setSearchQuery(pendingFilters.search || '');
-    setDebouncedSearch(pendingFilters.search || '');
     setPage(1); // Reset to first page when filters are applied
     updateUrlParams(pendingFilters, 1, pageSize);
   };
@@ -163,15 +150,8 @@ function AdminTransactionsPageContent() {
     };
     setPendingFilters(emptyFilters);
     setFilters(emptyFilters);
-    setSearchQuery('');
     setPage(1);
     updateUrlParams(emptyFilters, 1, pageSize);
-  };
-
-  // Handle search change (updates pending filters)
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    handlePendingFiltersChange({ ...pendingFilters, search: value || undefined });
   };
 
   // Handle page changes
@@ -194,7 +174,6 @@ function AdminTransactionsPageContent() {
     error: transactionsError,
   } = useAdminTransactions({
     ...filters,
-    search: debouncedSearch || undefined,
     page,
     limit: pageSize,
   });
@@ -418,8 +397,7 @@ function AdminTransactionsPageContent() {
                 pendingFilters.dateTo ||
                 pendingFilters.status !== 'all' ||
                 pendingFilters.plan !== 'all' ||
-                pendingFilters.paymentMethod !== 'all' ||
-                pendingFilters.search) && (
+                pendingFilters.paymentMethod !== 'all') && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -443,9 +421,6 @@ function AdminTransactionsPageContent() {
               page={page}
               pageSize={pageSize}
               totalPages={pagination?.totalPages || 1}
-              searchValue={searchQuery}
-              onSearchChange={handleSearchChange}
-              searchPlaceholder="Search freelancer..."
             />
           </div>
         </div>
