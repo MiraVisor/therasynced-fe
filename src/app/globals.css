@@ -136,6 +136,12 @@ html {
   --sidebar-ring: oklch(0.708 0 0);
   --grey: #8b8b8b;
 
+  /* Warm Color Palette */
+  --cream: #fdfcf9;
+  --mint-light: #e8f5e9;
+  --sage: #8fbc8f;
+  --warm-green: #2d5a47;
+
   --card: #ffffff;
   --card-foreground: #1b1c37;
 
@@ -220,6 +226,17 @@ html {
     outline-opacity: 0.5;
   }
 
+  /* Text selection - neutral color instead of green */
+  ::selection {
+    background-color: #b4d5fe;
+    color: #1a1a1a;
+  }
+
+  .dark ::selection {
+    background-color: #3b82f6;
+    color: #ffffff;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
@@ -255,6 +272,11 @@ html {
   button,
   a {
     font-family: var(--font-inter), sans-serif;
+  }
+
+  /* Serif font for emotional/warm headlines */
+  .font-warm-headline {
+    font-family: var(--font-playfair), serif;
   }
 
   /* CardTitle and DialogTitle should use Poppins by default */

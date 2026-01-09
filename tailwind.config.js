@@ -55,6 +55,12 @@ module.exports = {
         'warm-gray': 'var(--warm-gray)',
         charcoal: 'var(--charcoal)',
 
+        // Warm Color Palette
+        cream: 'var(--cream)',
+        'mint-light': 'var(--mint-light)',
+        'sage-warm': 'var(--sage)',
+        'warm-green': 'var(--warm-green)',
+
         // Status Colors
         success: 'var(--success)',
         warning: 'var(--warning)',
@@ -90,7 +96,9 @@ module.exports = {
         'open-sans': ['var(--font-open-sans)', 'sans-serif'],
         inter: ['var(--font-inter)', 'sans-serif'],
         poppins: ['var(--font-poppins)', 'sans-serif'],
+        playfair: ['var(--font-playfair)', 'serif'],
         sans: ['var(--font-inter)', 'sans-serif'], // Inter as default for UI
+        serif: ['var(--font-playfair)', 'serif'], // Playfair Display for emotional headlines
       },
 
       fontSize: {

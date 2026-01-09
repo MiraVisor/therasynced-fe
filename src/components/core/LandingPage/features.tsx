@@ -1,16 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  Calendar,
-  Clock,
-  FileText,
-  MessageSquare,
-  Search,
-  ShieldCheck,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
+import { Bell, Calendar, Clock, FileText, MessageSquare, Search, Star } from 'lucide-react';
 import { useState } from 'react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,53 +13,66 @@ const Features = () => {
   const features = {
     client: [
       {
-        title: 'Global Exploration',
+        title: 'Find therapists',
         description:
-          'Search our directory of licensed professionals with advanced filters for price, rating, and expertise.',
+          'Search for therapists by service type, location, availability, and price. Profiles include clear information to help you decide before booking.',
         icon: Search,
       },
       {
-        title: 'Instant Booking',
+        title: 'Book appointments',
         description:
-          'See live slots and book appointments in seconds. Syncs directly with your therapist’s calendar.',
+          'View real-time availability and book a session immediately. Bookings are confirmed without phone calls or follow-up messages.',
         icon: Calendar,
       },
       {
-        title: 'Secure Messages',
+        title: 'Message securely',
         description:
-          'A private, encrypted channel to discuss treatments and goals with your therapist.',
+          'Send private messages to your therapist through the platform. Conversations are encrypted and kept confidential.',
         icon: MessageSquare,
       },
       {
-        title: 'Verified Profiles',
-        description: 'Every professional is background-checked and license-verified by our team.',
-        icon: ShieldCheck,
+        title: 'View ratings',
+        description:
+          'See ratings and feedback from other clients based on completed sessions. This helps you choose with more confidence.',
+        icon: Star,
+      },
+      {
+        title: 'Get reminders',
+        description:
+          "Receive email reminders before your appointment so you don't forget or miss a session.",
+        icon: Bell,
       },
     ],
     therapist: [
       {
-        title: 'Slot Management',
+        title: 'List your services',
         description:
-          'Complete control over your availability. Set recurring schedules or one-off sessions effortlessly.',
+          'Create a public profile that shows your services, pricing, and working hours. Clients can view this information before booking.',
+        icon: FileText,
+      },
+      {
+        title: 'Manage availability',
+        description:
+          'Set and update your available time slots at any time. Only open slots are visible to clients.',
         icon: Clock,
       },
       {
-        title: 'Finance Tracking',
+        title: 'Accept bookings',
         description:
-          'Comprehensive dashboard to track revenue, manage invoices, and monitor appointments.',
-        icon: TrendingUp,
+          'Clients book directly into your calendar based on your availability. This reduces calls, emails, and manual scheduling.',
+        icon: Calendar,
       },
       {
-        title: 'Patient Directory',
+        title: 'Message securely',
         description:
-          'Manage your client list, view booking history, and keep track of personalized care records.',
-        icon: Users,
+          'Communicate with clients through private messaging before or after sessions. Messages are encrypted and kept within the platform.',
+        icon: MessageSquare,
       },
       {
-        title: 'Digital Intake',
+        title: 'Get reminders',
         description:
-          'Digital intake forms and progress notes to manage your practice efficiently and paper-free.',
-        icon: FileText,
+          'Receive email notifications for upcoming bookings to help you stay organised.',
+        icon: Bell,
       },
     ],
   };
@@ -84,12 +88,11 @@ const Features = () => {
             transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4 max-w-2xl"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-              Professional tools for better care
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white font-playfair">
+              What we offer
             </h2>
-            <p className="text-lg text-gray-600 dark:text-neutral-400">
-              Built on real needs, TheraSynced provides a robust infrastructure for both clients
-              seeking wellness and therapists growing their practice.
+            <p className="text-lg text-gray-600 dark:text-neutral-400 font-open-sans">
+              TheraSynced is built to remove the usual friction from booking therapy sessions.
             </p>
           </motion.div>
 
@@ -123,6 +126,7 @@ const Features = () => {
           </motion.div>
         </div>
 
+        {/* Feature Cards Grid */}
         <div className="relative min-h-[400px] lg:min-h-0">
           <AnimatePresence mode="wait">
             <motion.div
@@ -131,26 +135,26 @@ const Features = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {features[activeTab].map((feature, index) => (
                 <motion.div
-                  key={index}
+                  key={feature.title}
                   initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
-                    delay: isMobile ? 0 : index * 0.05,
+                    delay: isMobile ? 0 : index * 0.1,
                     duration: isMobile ? 0.2 : 0.5,
                   }}
-                  className="p-8 rounded-2xl border border-gray-100 dark:border-neutral-900 bg-[#faf9f6] dark:bg-neutral-900/50 hover:border-primary/50 transition-all duration-300 group hover:shadow-xl hover:shadow-primary/10"
+                  className="p-6 rounded-2xl border border-gray-100 dark:border-neutral-900 bg-white dark:bg-neutral-900/50 hover:border-primary/50 transition-all duration-300 group hover:shadow-xl hover:shadow-primary/10"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors duration-300">
-                    <feature.icon className="w-6 h-6 text-primary transition-colors duration-300" />
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-5 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all duration-300">
+                    <feature.icon className="w-7 h-7 text-primary transition-colors duration-300" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-poppins">
                     {feature.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-neutral-400 leading-relaxed">
+                  <p className="text-sm text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans">
                     {feature.description}
                   </p>
                 </motion.div>

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Open_Sans, Poppins } from 'next/font/google';
+import { Inter, Open_Sans, Playfair_Display, Poppins } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 
 import Animation from '@/components/common/animation/animation';
@@ -26,6 +26,12 @@ const poppins = Poppins({
   variable: '--font-poppins',
   subsets: ['latin'],
   weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
 });
 
 export const metadata: Metadata = {
@@ -120,7 +126,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${openSans.variable} ${inter.variable} ${poppins.variable} antialiased`}
+        className={`${openSans.variable} ${inter.variable} ${poppins.variable} ${playfairDisplay.variable} antialiased`}
         suppressHydrationWarning
       >
         {/* Skip to main content link for accessibility */}

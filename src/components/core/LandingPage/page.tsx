@@ -20,10 +20,11 @@ const Features = dynamic(() => import('./features'), {
   loading: () => <div className="h-[600px] bg-[#faf9f6] dark:bg-black" />,
 });
 
-const WhyChooseUs = dynamic(() => import('./why-choose-us'), {
-  ssr: true,
-  loading: () => <div className="h-[600px] bg-[#f5f4f1] dark:bg-neutral-950/50" />,
-});
+// Temporarily hidden - uncomment when ready to show
+// const WhyChooseUs = dynamic(() => import('./why-choose-us'), {
+//   ssr: true,
+//   loading: () => <div className="h-[600px] bg-[#f5f4f1] dark:bg-neutral-950/50" />,
+// });
 
 const Pricing = dynamic(() => import('./pricing'), {
   ssr: true,
@@ -72,7 +73,7 @@ const LandingPage = () => {
         <Hero />
         <HowItWorks />
         <Features />
-        <WhyChooseUs />
+        {/* <WhyChooseUs /> - Temporarily hidden */}
         <Pricing />
       </main>
       <Footer />

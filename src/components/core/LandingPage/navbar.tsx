@@ -76,20 +76,21 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
           {navLinks.map((link) => (
             <button
               key={link.href}
               onClick={() => handleNavClick(link.href)}
-              className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors relative group"
+              className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors relative group font-inter"
             >
               {link.label}
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </button>
           ))}
+
           <div className="w-px h-4 bg-gray-200 dark:bg-neutral-800" />
           <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}>
-            <Button size="sm" className="bg-primary text-white font-semibold">
+            <Button size="sm" className="bg-primary text-white font-semibold font-inter">
               {hasValidToken ? 'Go to Dashboard' : 'Sign In'}
             </Button>
           </Link>
@@ -118,13 +119,13 @@ const Navbar = () => {
               <button
                 key={link.href}
                 onClick={() => handleNavClick(link.href)}
-                className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400"
+                className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400 font-inter"
               >
                 {link.label}
               </button>
             ))}
             <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'} className="block">
-              <Button className="w-full bg-primary text-white">
+              <Button className="w-full bg-primary text-white font-inter">
                 {hasValidToken ? 'Dashboard' : 'Sign In'}
               </Button>
             </Link>

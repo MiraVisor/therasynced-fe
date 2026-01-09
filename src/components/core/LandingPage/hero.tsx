@@ -6,12 +6,37 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { JOB_TITLE_INFO } from '@/config/serviceCategories';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isTokenValid } from '@/lib/utils';
+import { JobTitleEnum } from '@/types/types';
+
+const serviceTypes = [
+  {
+    id: JobTitleEnum.PHYSIOTHERAPY,
+    title: JOB_TITLE_INFO[JobTitleEnum.PHYSIOTHERAPY].displayName,
+    description: JOB_TITLE_INFO[JobTitleEnum.PHYSIOTHERAPY].description,
+    color: 'from-primary/20 to-sage-warm/20',
+    hoverColor: 'hover:from-primary/30 hover:to-sage-warm/30',
+  },
+  {
+    id: JobTitleEnum.MASSAGE_THERAPY,
+    title: JOB_TITLE_INFO[JobTitleEnum.MASSAGE_THERAPY].displayName,
+    description: JOB_TITLE_INFO[JobTitleEnum.MASSAGE_THERAPY].description,
+    color: 'from-sage-warm/20 to-mint-light/20',
+    hoverColor: 'hover:from-sage-warm/30 hover:to-mint-light/30',
+  },
+  {
+    id: JobTitleEnum.ATHLETIC_THERAPY,
+    title: JOB_TITLE_INFO[JobTitleEnum.ATHLETIC_THERAPY].displayName,
+    description: JOB_TITLE_INFO[JobTitleEnum.ATHLETIC_THERAPY].description,
+    color: 'from-mint-light/20 to-primary/20',
+    hoverColor: 'hover:from-mint-light/30 hover:to-primary/30',
+  },
+];
 
 const Hero = () => {
-  const [hasValidToken, setHasValidToken] = useState(false);
+  const [, setHasValidToken] = useState(false);
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -19,113 +44,136 @@ const Hero = () => {
     setHasValidToken(isTokenValid());
   }, []);
 
-  const handleCTAClick = () => {
-    if (hasValidToken) {
-      router.push('/dashboard');
-    } else {
-      router.push('/authentication/sign-in');
-    }
+  const handleServiceTypeClick = (_serviceType?: JobTitleEnum) => {
+    // Navigate to sign-in (could be enhanced to filter by service type in future)
+    router.push('/authentication/sign-in');
   };
 
   return (
     <section
       id="hero"
-      className="relative w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-40 bg-[#faf9f6] dark:bg-black overflow-hidden"
+      className="relative w-full min-h-screen flex items-center px-4 sm:px-6 lg:px-8 py-20 lg:py-24 overflow-hidden"
     >
-      {/* Reduced blur effects on mobile for better performance */}
+      {/* Background Image - Subtle */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/physio/clinic-rehabilitation.jpg"
+          alt="Professional rehabilitation clinic"
+          fill
+          className="object-cover object-center opacity-[0.08] dark:opacity-[0.05]"
+          priority
+          quality={75}
+          sizes="100vw"
+        />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/95 to-[#faf9f6] dark:from-black dark:via-black/95 dark:to-black" />
+      </div>
+
+      {/* Warm gradient background effects */}
       {!isMobile && (
         <>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.5, ease: 'easeOut' }}
-            className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"
+            className="absolute top-20 right-10 w-[500px] h-[500px] bg-gradient-to-br from-primary/10 via-sage-warm/10 to-mint-light/20 rounded-full blur-[100px] pointer-events-none z-[1]"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
-            className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"
+            className="absolute bottom-20 left-10 w-[400px] h-[400px] bg-gradient-to-tr from-sage-warm/10 via-primary/10 to-teal/10 rounded-full blur-[80px] pointer-events-none z-[1]"
           />
         </>
       )}
-      {/* Subtle geometric pattern overlay */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
-        <div className="absolute top-20 right-20 w-32 h-32 border border-primary rounded-full" />
-        <div className="absolute bottom-32 left-32 w-24 h-24 border border-primary rounded-full" />
-      </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+      <div className="max-w-5xl mx-auto relative z-10 w-full">
+        {/* Main Content - Centered */}
+        <div className="flex flex-col items-center text-center space-y-8">
           <motion.div
             initial={{ opacity: 0, y: isMobile ? 0 : 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: isMobile ? 0.3 : 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-1 text-left space-y-8"
+            className="space-y-4 max-w-3xl"
           >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-              Connecting you with <br />
-              <span className="text-primary">care that matters.</span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] font-playfair py-3">
+              Find & Book <br /> Your Next Session
             </h1>
 
-            <p className="text-lg sm:text-xl text-gray-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
-              Find licensed physiotherapists, massage therapists, and wellness experts near you.
-              Real availability, instant booking, and secure messaging—designed for your well-being.
+            <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed font-open-sans font-normal py-8">
+              TheraSynced connects you with independent professionals, letting you view availability
+              and book sessions more efficiently and securely.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-5 pt-4">
-              <Button
-                onClick={handleCTAClick}
-                size="lg"
-                className="group w-full sm:w-auto px-10 h-14 text-lg font-semibold bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                {hasValidToken ? 'Go to Dashboard' : 'Find a Therapist'}
-                <ArrowRight className="ml-2 w-5 h-5 transition-colors duration-300" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                onClick={() => {
-                  const el = document.getElementById('how-it-works');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="w-full sm:w-auto px-10 h-14 text-lg font-semibold text-gray-600 dark:text-neutral-400 hover:text-primary transition-all duration-300 hover:bg-[#f5f4f1] dark:hover:bg-neutral-900 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                Learn more
-              </Button>
-            </div>
           </motion.div>
 
+          {/* Service Type Selection Cards */}
           <motion.div
-            initial={{ opacity: 0, scale: isMobile ? 1 : 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              duration: isMobile ? 0.3 : 0.9,
-              delay: isMobile ? 0 : 0.2,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            className="flex-1 w-full max-w-[500px] lg:max-w-none"
+            initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-3xl"
           >
-            <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square flex items-center justify-center">
-              {/* Illustration using an existing SVG if possible, otherwise a clean abstract representation */}
-              <div className="relative w-full h-full">
-                <Image
-                  src="/svgs/header.svg"
-                  alt="Wellness and Therapy Illustration"
-                  fill
-                  className="object-contain"
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
-                />
-              </div>
-
-              {/* Subtle accent shadows/decorations - disabled on mobile */}
-              {!isMobile && (
-                <div className="absolute -z-10 w-4/5 h-4/5 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-              )}
+            <p className="text-sm font-medium text-gray-500 dark:text-neutral-500 mb-4 font-open-sans">
+              What type of service are you looking for?
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {serviceTypes.map((type, index) => (
+                <motion.button
+                  key={type.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
+                  onClick={() => handleServiceTypeClick(type.id)}
+                  className={`group relative p-5 rounded-xl bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border border-gray-100 dark:border-neutral-800 hover:border-primary/40 transition-all duration-300 text-left shadow-sm hover:shadow-lg hover:scale-[1.02]`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 font-poppins">
+                        {type.title}
+                      </h3>
+                      <p className="text-xs text-gray-600 dark:text-neutral-400 font-open-sans leading-snug line-clamp-2">
+                        {type.description}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0 mt-0.5" />
+                  </div>
+                </motion.button>
+              ))}
             </div>
           </motion.div>
         </div>
+      </div>
+
+      {/* Organic Wave Transition */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 overflow-hidden pointer-events-none">
+        <svg
+          className="absolute bottom-0 w-full h-full"
+          viewBox="0 0 1440 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,80 Q360,40 720,60 T1440,40 L1440,120 L0,120 Z"
+            fill="url(#waveGradient)"
+            className="opacity-60"
+          />
+          <path
+            d="M0,100 Q360,50 720,70 T1440,50 L1440,120 L0,120 Z"
+            fill="url(#waveGradient2)"
+            className="opacity-40"
+          />
+          <defs>
+            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="var(--mint-light)" />
+              <stop offset="100%" stopColor="var(--sage)" />
+            </linearGradient>
+            <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="var(--sage)" />
+              <stop offset="100%" stopColor="var(--primary)" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
     </section>
   );
