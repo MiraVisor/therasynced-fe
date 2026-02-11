@@ -4,6 +4,8 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { openCookieSettings } from '@/components/common/CookieConsent';
+
 const Footer = () => {
   const { resolvedTheme } = useTheme();
 
@@ -44,7 +46,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link href="#features" className="hover:text-primary transition-colors">
-                  Features
+                  Why Us
                 </Link>
               </li>
               <li>
@@ -80,9 +82,22 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/terms#billing" className="hover:text-primary transition-colors">
+                  Billing Terms
+                </Link>
+              </li>
+              <li>
                 <Link href="/cookies" className="hover:text-primary transition-colors">
                   Cookie Policy
                 </Link>
+              </li>
+              <li>
+                <button
+                  onClick={openCookieSettings}
+                  className="hover:text-primary transition-colors text-left"
+                >
+                  Cookie Settings
+                </button>
               </li>
             </ul>
           </div>
@@ -100,11 +115,6 @@ const Footer = () => {
                 >
                   Contact Us
                 </a>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-primary transition-colors">
-                  Help Center
-                </Link>
               </li>
             </ul>
           </div>

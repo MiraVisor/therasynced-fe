@@ -4,6 +4,7 @@ import type {
   FreelancerPricing,
   UpdateDurationPricingRequest,
   UpdateLocationPricingRequest,
+  UpdatePitchsidePricingRequest,
   UpdateServicePricingRequest,
 } from '@/types/pricing';
 
@@ -35,10 +36,24 @@ export const updateDurationPricing = async (
 
 export const deleteLocationPricing = async (
   serviceCategoryId: string,
-  locationType: 'HOME' | 'CLINIC',
+  locationType: string,
 ): Promise<ApiResponse<{ message: string }>> => {
   const response = await api.delete(
     `/freelancer/pricing/services/locations/${serviceCategoryId}/${locationType}`,
   );
+  return response.data;
+};
+
+export const updatePitchsidePricing = async (
+  data: UpdatePitchsidePricingRequest,
+): Promise<ApiResponse<{ pitchsidePricing: FreelancerPricing['pitchsidePricing'] }>> => {
+  const response = await api.post('/freelancer/pricing/pitchside', data);
+  return response.data;
+};
+
+export const deletePitchsidePricing = async (
+  sport: string,
+): Promise<ApiResponse<{ message: string }>> => {
+  const response = await api.delete(`/freelancer/pricing/pitchside/${sport}`);
   return response.data;
 };

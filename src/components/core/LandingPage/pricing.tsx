@@ -2,7 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Check, Users } from 'lucide-react';
+import { Check, Lock, Users } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -24,7 +25,10 @@ const Pricing = () => {
   const sortedPlans = [...subscriptionPlans].sort((a, b) => (a.price || 0) - (b.price || 0));
 
   return (
-    <section id="pricing" className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-[#faf9f6] dark:bg-black">
+    <section
+      id="pricing"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-white dark:bg-neutral-900"
+    >
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
@@ -243,6 +247,42 @@ const Pricing = () => {
                 );
               })}
         </div>
+
+        {/* Payment Security Notice */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-12 flex flex-col items-center gap-3 text-center"
+        >
+          <div className="flex items-center gap-2 text-gray-500 dark:text-neutral-400">
+            <Lock className="w-4 h-4" />
+            <span className="text-sm font-open-sans">
+              Payments securely processed by{' '}
+              <a
+                href="https://stripe.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-semibold"
+              >
+                Stripe
+              </a>
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 dark:text-neutral-500 font-open-sans max-w-md">
+            Your card details are handled directly by Stripe and never touch our servers. By
+            subscribing, you agree to our{' '}
+            <Link href="/terms#billing" className="text-primary hover:underline">
+              Billing Terms
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-primary hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </motion.div>
 
         {/* Team Plans Card */}
         <motion.div

@@ -18,7 +18,6 @@ export * from './enums';
 export * from './formTemplate';
 export * from './freelancer';
 export * from './location';
-export * from './loyalty';
 export * from './notification';
 export * from './pricing';
 export * from './rating';
@@ -40,6 +39,7 @@ export enum JobTitleEnum {
   ATHLETIC_THERAPY = 'ATHLETIC_THERAPY',
   MASSAGE_THERAPY = 'MASSAGE_THERAPY',
   STRENGTH_AND_CONDITIONING_COACHING = 'STRENGTH_AND_CONDITIONING_COACHING',
+  PERSONAL_TRAINING = 'PERSONAL_TRAINING',
 }
 
 export interface JobTitlesResponse {
@@ -162,7 +162,8 @@ export interface registerUserTypes {
   profilePicture?: string;
   gender?: string;
   dob?: string;
-  city?: string;
+  county?: string;
+  cityTown?: string;
   homeAddress?: string; // NEW: Home address for bookings
   // New optional fields for freelancers
   mainJobTitleId?: string;
@@ -185,7 +186,8 @@ export interface SignUpDto {
   profilePicture?: string;
   gender?: string;
   dob?: string;
-  city?: string;
+  county?: string;
+  cityTown?: string;
   homeAddress?: string; // NEW: Home address for bookings
   // New optional fields for freelancers
   mainJobTitleId?: string;
@@ -230,7 +232,8 @@ export interface ChangePasswordDto {
 
 export interface UpdateProfileDto {
   name?: string;
-  city?: string;
+  county?: string;
+  cityTown?: string;
   gender?: string;
   dob?: string;
   description?: string; // Bio/description field
@@ -271,7 +274,8 @@ export interface BackendProfileResponse {
       profilePicture?: string;
       role: string;
       dob: string;
-      city: string;
+      county?: string;
+      cityTown?: string;
       isEmailVerified: boolean;
       authProvider: string;
       createdAt: string;
@@ -360,7 +364,8 @@ export interface Expert {
   // Additional data from API
   email?: string;
   gender?: string;
-  city?: string;
+  county?: string;
+  cityTown?: string;
   isEmailVerified?: boolean;
   isActive?: boolean;
   authProvider?: string;
@@ -400,16 +405,6 @@ export interface Expert {
     canAcceptBookings: boolean; // true for active trial or subscribed freelancers
     message: string | null; // Status message or null
   };
-  // Stamp information (included in freelancer API responses when user is authenticated)
-  stampInfo?: {
-    currentStampCount: number;
-    stampTarget: number;
-    stampsRemaining: number;
-    rewardReady: boolean;
-    rewardReserved: boolean;
-    discountPercentage: number;
-    customConfigApplied: boolean;
-  } | null;
   // Pricing information
   durationPricing?: DurationPricing[];
   serviceCategoryPricing?: ServicePricing[];
@@ -437,6 +432,11 @@ export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELL
 export enum LocationType {
   HOME = 'HOME',
   CLINIC = 'CLINIC',
+  CORPORATE = 'CORPORATE',
+  GYM = 'GYM',
+  TRAINING = 'TRAINING',
+  PITCHSIDE = 'PITCHSIDE',
+  EVENT = 'EVENT',
 }
 
 export interface Appointment {
@@ -623,18 +623,34 @@ export interface Service {
   updatedAt: string;
 }
 
+/**
+ * Simplified slot creation DTO
+ * Designed for the streamlined availability management flow
+ */
+export interface CreateSlotsDto {
+  /** Array of specific dates in YYYY-MM-DD format */
+  days: string[];
+  /** Start time in HH:mm format (24-hour), e.g., "09:00" */
+  startTime: string;
+  /** End time in HH:mm format (24-hour), e.g., "17:00" */
+  endTime: string;
+  /** Session duration in minutes (30, 45, 60, 90, 120) */
+  duration: number;
+}
+
+/** @deprecated Use CreateSlotsDto instead */
 export interface CreateSlotDto {
-  locationType?: LocationType; // Optional - acts as default fallback for slots without explicit locationType
+  locationType?: LocationType;
   locationId?: string;
   basePrice: number;
   duration: number;
   slots: Array<{
     startTime: string;
     endTime: string;
-    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
-    serviceCategoryIds?: string[]; // Optional - per-slot service categories
+    locationType?: LocationType;
+    serviceCategoryIds?: string[];
   }>;
-  serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
+  serviceCategoryIds?: string[];
   notes?: string;
 }
 
@@ -652,27 +668,6 @@ export interface CreateBookingDto {
   serviceCategoryIds?: string[];
   locationType?: 'HOME' | 'CLINIC';
   clientAddress?: string;
-  notes?: string;
-}
-
-// Backend DTOs matching the controller structure
-export interface CreateSlotsDto {
-  locationType?: LocationType; // Optional - acts as default fallback for slots without explicit locationType
-  locationId?: string; // Added to support location selection
-  basePrice?: number; // Optional - default price used when slots don't specify their own
-  duration: number;
-  breakFrom?: string; // Optional: ISO 8601 datetime string for break start time
-  breakTill?: string; // Optional: ISO 8601 datetime string for break end time
-  slots: Array<{
-    startTime: string;
-    endTime: string;
-    basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
-    serviceCategoryIds?: string[]; // Optional - per-slot service categories
-    breakFrom?: string; // Optional: ISO 8601 datetime string for per-slot break start time
-    breakTill?: string; // Optional: ISO 8601 datetime string for per-slot break end time
-  }>;
-  serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
   notes?: string;
 }
 
@@ -1070,7 +1065,8 @@ export interface Freelancer {
   name: string;
   email: string;
   profilePicture?: string;
-  city: string;
+  county?: string;
+  cityTown?: string;
   isActive: boolean;
   isFavorite?: boolean;
   favoritedAt?: string;
@@ -1139,8 +1135,6 @@ export type NotificationType =
   | 'BOOKING_CANCELLED'
   | 'BOOKING_RESCHEDULED'
   | 'PAYMENT'
-  | 'LOYALTY_POINTS_AWARDED'
-  | 'LOYALTY_REWARD_REDEEMED'
   | 'SYSTEM'
   | 'MESSAGE'
   | 'REVIEW';
@@ -1192,163 +1186,6 @@ export interface Conversation {
   participant2Id: string;
   createdAt: string;
   updatedAt: string;
-}
-
-// Loyalty System Types
-export interface LoyaltyProfile {
-  id: string;
-  userId: string;
-  totalPoints: number;
-  availablePoints: number;
-  tier: LoyaltyTier;
-  tierBenefits: string[];
-  nextTier: LoyaltyTier;
-  pointsToNextTier: number;
-  pointTransactions: PointTransaction[];
-  redemptions: Redemption[];
-}
-
-export type LoyaltyTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
-
-export interface PointTransaction {
-  id: string;
-  loyaltyProfileId: string;
-  points: number;
-  type: 'EARNED' | 'SPENT' | 'EXPIRED';
-  description: string;
-  bookingId?: string;
-  createdAt: string;
-}
-
-export interface LoyaltyReward {
-  id: string;
-  name: string;
-  description: string;
-  pointsCost: number;
-  category: string;
-  isActive: boolean;
-  imageUrl?: string;
-  createdAt: string;
-}
-
-export interface Redemption {
-  id: string;
-  loyaltyProfileId: string;
-  rewardId: string;
-  reward: LoyaltyReward;
-  pointsSpent: number;
-  status: 'PENDING' | 'FULFILLED' | 'CANCELLED';
-  fulfilledAt?: string;
-  createdAt: string;
-}
-
-// Therapist Stamp System Types
-export interface TherapistStampSummary {
-  therapist: {
-    id: string;
-    name: string;
-    profilePicture: string | null;
-  };
-  currentStampCount: number;
-  stampTarget: number;
-  stampsRemaining: number;
-  rewardReady: boolean;
-  rewardReserved: boolean;
-  rewardCyclesCompleted: number;
-  lastStampIssuedAt: string | null;
-  rewardReadySince: string | null;
-  discountPercentage: number;
-  customConfigApplied: boolean;
-}
-
-export interface TherapistStampDetail {
-  therapist: {
-    id: string;
-    name: string;
-    profilePicture: string | null;
-  };
-  currentStampCount: number;
-  stampTarget: number;
-  stampsRemaining: number;
-  rewardReady: boolean;
-  rewardReserved: boolean;
-  rewardReadySince: string | null;
-  totalStampsEarned: number;
-  rewardCyclesCompleted: number;
-  lastStampIssuedAt: string | null;
-  lastResetAt: string | null;
-  histories: StampHistory[];
-  discountPercentage: number;
-  customConfigApplied: boolean;
-}
-
-export interface StampHistory {
-  id: string;
-  eventType:
-    | 'STAMP_AWARDED'
-    | 'REWARD_READY'
-    | 'REWARD_RESERVED'
-    | 'REWARD_CONSUMED'
-    | 'REWARD_RELEASED'
-    | 'STAMP_RESET';
-  notes: string | null;
-  bookingId: string | null;
-  stampNumber: number | null;
-  createdAt: string;
-}
-
-export interface TherapistStampConfigStatistics {
-  totalPatients: number;
-  totalRewardsRedeemed: number;
-  activeRewardsReady: number;
-  pendingRewards: number;
-  totalStampsIssued: number;
-  totalRewardCycles: number;
-  hasRedeemedRewards: boolean;
-  status:
-    | 'INACTIVE'
-    | 'ACTIVE_NO_PATIENTS'
-    | 'ACTIVE_WITH_PENDING_REWARDS'
-    | 'ACTIVE_WITH_REDEMPTIONS'
-    | 'ACTIVE_WITH_READY_REWARDS'
-    | 'ACTIVE_WITH_STAMPS'
-    | 'ACTIVE';
-}
-
-export interface TherapistStampConfig {
-  therapistId: string;
-  stampTarget: number | null;
-  discountPercentage: number | null;
-  isActive: boolean;
-  customConfigApplied: boolean;
-  createdAt: string;
-  updatedAt: string;
-  therapist?: {
-    id: string;
-    name: string;
-    email: string;
-    isActive: boolean;
-  };
-  statistics?: TherapistStampConfigStatistics;
-}
-
-export interface CreateTherapistStampConfigDto {
-  therapistId: string;
-  stampTarget?: number;
-  discountPercentage?: number;
-  isActive?: boolean;
-}
-
-export interface UpdateTherapistStampConfigDto {
-  stampTarget?: number;
-  discountPercentage?: number;
-  isActive?: boolean;
-}
-
-export interface BulkTherapistStampConfigDto {
-  stampTarget: number;
-  discountPercentage: number;
-  isActive?: boolean;
 }
 
 // Complaint System Types

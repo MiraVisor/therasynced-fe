@@ -45,7 +45,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   firstAidCertificateStatus,
   tier,
   planFeatures,
-  stampInfo,
   durationPricing = [],
   serviceCategoryPricing = [],
 }) => {
@@ -73,7 +72,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
         verificationStatus={verificationStatus}
         tier={tier}
         planFeatures={planFeatures}
-        stampInfo={stampInfo}
         onViewProfile={() => setShowProfileDialog(true)}
       />
       <ExpertProfileDialog
@@ -98,7 +96,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
           firstAidCertificateStatus,
           onBookNow: handleBookNow,
           hasAvailableSlots,
-          stampInfo: stampInfo || undefined,
           durationPricing,
           serviceCategoryPricing,
         }}

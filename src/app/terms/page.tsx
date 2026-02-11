@@ -128,7 +128,7 @@ export default function TermsOfServicePage() {
             </p>
           </section>
 
-          <section className="mb-8 mt-12">
+          <section id="billing" className="mb-8 mt-12 scroll-mt-8">
             <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-6">
               SUBSCRIPTION & BILLING TERMS (THERAPISTS)
             </h2>
@@ -137,21 +137,132 @@ export default function TermsOfServicePage() {
               5.1 Subscription Fees
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Therapists pay a recurring subscription fee billed in advance.
+              Therapists pay a recurring subscription fee billed in advance on a monthly or annual
+              basis. Subscription pricing is displayed on the Platform and may be updated from time
+              to time. Any price changes will be communicated in advance and will take effect at the
+              start of the next billing cycle.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              5.2 Refunds
+              5.2 Billing Authorization
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Except where required by applicable law, subscription fees are non-refundable.
+              By subscribing to a plan, you authorise TheraSynced and its payment processor, Stripe,
+              Inc. (&quot;Stripe&quot;), to charge your designated payment method on a recurring
+              basis at the applicable subscription rate. This authorisation remains in effect until
+              you cancel your subscription or your payment method is removed. You are responsible
+              for ensuring that your payment details are accurate and up to date.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
-              5.3 Non-Payment & Termination
+              5.3 Free Trials
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Failure to pay may result in suspension or termination of access to the Platform.
+              Certain subscription plans may include a free trial period. At the end of the trial,
+              your subscription will automatically convert to a paid plan and your payment method
+              will be charged unless you cancel before the trial period ends. Trial eligibility is
+              limited to one per therapist account.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5.4 Plan Changes
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              You may upgrade or downgrade your subscription plan at any time through the Platform.
+              Upgrades take effect immediately and are prorated for the remainder of the current
+              billing cycle. Downgrades take effect at the start of the next billing cycle. Annual
+              plans may not be downgraded mid-term; they will renew at the new plan rate at the end
+              of the annual period.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5.5 Cancellation
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              You may cancel your subscription at any time through your account settings.
+              Cancellation takes effect at the end of the current billing cycle, and you will retain
+              access to your plan features until that date. No partial refunds are issued for unused
+              portions of a billing period.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5.6 Refunds
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Except where required by applicable law (including EU consumer protection
+              regulations), subscription fees are non-refundable. If you believe you have been
+              charged in error, please contact us at{' '}
+              <a href="mailto:support@therasynced.com" className="text-primary hover:underline">
+                support@therasynced.com
+              </a>{' '}
+              within 14 days of the charge.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5.7 Non-Payment & Termination
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              If a scheduled payment fails, the Platform will attempt to collect the outstanding
+              amount over a reasonable retry period. Continued failure to pay may result in
+              suspension or termination of access to the Platform. Upon suspension, your profile
+              will no longer be visible to clients and you will be unable to accept new bookings
+              until payment is resolved.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5.8 Payment Processing via Stripe
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              All payments on the Platform are processed by Stripe, Inc. (&quot;Stripe&quot;), a PCI
+              DSS Level 1 certified third-party payment processor. When you make a payment, your
+              card details are collected directly by Stripe via their secure payment elements and
+              are never transmitted to or stored on our servers. TheraSynced does not have access to
+              your full card number, CVV, or other sensitive payment credentials.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Your use of Stripe&apos;s services is subject to Stripe&apos;s own agreements:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
+              <li>
+                Stripe Terms of Service:{' '}
+                <a
+                  href="https://stripe.com/legal"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://stripe.com/legal
+                </a>
+              </li>
+              <li>
+                Stripe Privacy Policy:{' '}
+                <a
+                  href="https://stripe.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://stripe.com/privacy
+                </a>
+              </li>
+            </ul>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              TheraSynced is not responsible for any errors, outages, or issues arising from
+              Stripe&apos;s payment processing services. In the event of a payment dispute, you
+              should contact us first at{' '}
+              <a href="mailto:support@therasynced.com" className="text-primary hover:underline">
+                support@therasynced.com
+              </a>
+              , and we will work with Stripe to resolve the matter.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              5.9 Currency & Taxes
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              All prices displayed on the Platform are in Euros (€). Prices are inclusive of
+              applicable VAT unless otherwise stated. You are responsible for any additional taxes,
+              duties, or charges imposed by your jurisdiction.
             </p>
           </section>
 

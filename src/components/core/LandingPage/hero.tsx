@@ -96,13 +96,13 @@ const Hero = () => {
             transition={{ duration: isMobile ? 0.3 : 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4 max-w-3xl"
           >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] font-playfair py-3">
-              Find & Book <br /> Your Next Session
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] font-playfair py-3">
+              CONNECT. WORK. THRIVE.
             </h1>
 
             <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed font-open-sans font-normal py-8">
-              TheraSynced connects you with independent professionals, letting you view availability
-              and book sessions more efficiently and securely.
+              TheraSynced connects you with qualified health and performance professionals, without
+              the calls, emails, or scheduling hassle.
             </p>
           </motion.div>
 

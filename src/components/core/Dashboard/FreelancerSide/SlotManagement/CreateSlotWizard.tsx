@@ -7,10 +7,10 @@ import { toast } from 'react-toastify';
 
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { useCreateSlot } from '@/hooks/queries/useSlots';
+import { useCreateSlotsLegacy } from '@/hooks/queries/useSlots';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
-import type { DaySlotConfiguration } from '@/types/slot';
-import { CreateSlotsDto, LocationType } from '@/types/types';
+import type { DaySlotConfiguration, LegacyCreateSlotsDto } from '@/types/slot';
+import { LocationType } from '@/types/types';
 import { filterPastSlots, generateSlotsFromDayConfigurations } from '@/utils/slotGenerationUtils';
 import { getTierFromSubscription } from '@/utils/tierUtils';
 
@@ -26,7 +26,7 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [configurations, setConfigurations] = useState<Record<string, DaySlotConfiguration>>({});
   const [locationType] = useState<LocationType | undefined>(undefined); // Optional - defaults to CLINIC
-  const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
+  const { mutate: createSlot, isPending: isCreating } = useCreateSlotsLegacy();
   const { data: currentSubscription } = useMySubscription();
   const tier = getTierFromSubscription(currentSubscription || null);
 
@@ -249,7 +249,7 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
       return slot;
     });
 
-    const submitData: CreateSlotsDto = {
+    const submitData: LegacyCreateSlotsDto = {
       ...(locationType && { locationType }), // Optional - only include if specified
       duration: defaultDuration,
       slots: slotsWithBreakTimes,

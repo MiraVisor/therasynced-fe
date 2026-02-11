@@ -16,9 +16,9 @@ export default function SubscriptionCancelPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900">
             <XCircle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
-          <CardTitle className="text-2xl">Payment Canceled</CardTitle>
+          <CardTitle className="text-2xl">Payment Cancelled</CardTitle>
           <CardDescription className="mt-2">
-            Your payment was canceled. No charges were made. You can continue using your current
+            Your payment was cancelled. No charges were made. You can continue using your current
             plan.
           </CardDescription>
         </CardHeader>

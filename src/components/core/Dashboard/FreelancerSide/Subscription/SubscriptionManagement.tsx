@@ -210,7 +210,7 @@ export default function SubscriptionManagement() {
         onSuccess: () => {
           if (isTrialing) {
             toast.success(
-              "Subscription canceled. You'll continue with trial access until your trial ends.",
+              "Subscription cancelled. You'll continue with trial access until your trial ends.",
             );
           } else {
             toast.success('Subscription will be cancelled at the end of the current period.');
@@ -503,7 +503,7 @@ export default function SubscriptionManagement() {
           <AlertDescription className="text-sm text-gray-700 dark:text-gray-300 mt-2">
             {currentSubscription.cancelAtPeriodEnd ? (
               <>
-                Your subscription has been canceled. You&apos;ll continue with trial access until
+                Your subscription has been cancelled. You&apos;ll continue with trial access until
                 your trial ends. No payment will be required.
               </>
             ) : (

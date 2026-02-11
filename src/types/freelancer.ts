@@ -76,7 +76,8 @@ export interface Freelancer {
   name: string;
   email: string;
   profilePicture?: string;
-  city: string;
+  county?: string;
+  cityTown?: string;
   isActive: boolean;
   isFavorite?: boolean;
   favoritedAt?: string;
@@ -231,7 +232,8 @@ export interface Expert {
   };
   email?: string;
   gender?: string;
-  city?: string;
+  county?: string;
+  cityTown?: string;
   isEmailVerified?: boolean;
   isActive?: boolean;
   authProvider?: string;
@@ -260,13 +262,4 @@ export interface Expert {
     canAcceptBookings: boolean;
     message: string | null;
   };
-  stampInfo?: {
-    currentStampCount: number;
-    stampTarget: number;
-    stampsRemaining: number;
-    rewardReady: boolean;
-    rewardReserved: boolean;
-    discountPercentage: number;
-    customConfigApplied: boolean;
-  } | null;
 }

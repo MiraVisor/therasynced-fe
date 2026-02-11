@@ -1,11 +1,4 @@
-import {
-  addMonths,
-  eachDayOfInterval,
-  eachWeekOfInterval,
-  endOfWeek,
-  isSameDay,
-  startOfWeek,
-} from 'date-fns';
+import { eachDayOfInterval, endOfWeek, isSameDay, startOfWeek } from 'date-fns';
 
 import type { BlockedPeriod, DaySlotConfiguration, WeeklyAvailabilityTemplate } from '@/types/slot';
 
@@ -240,48 +233,44 @@ function calculateSlotTimesWithBreakRange(
 }
 
 /**
- * Generate slots from day configurations for a date range (defaults to 1 month)
+ * Generate slots from day configurations for a date range (defaults to 1 week)
  */
 export function generateSlotsFromDayConfigurations(
   dayConfigurations: DaySlotConfiguration[],
   startDate: Date = startOfWeek(new Date(), { weekStartsOn: 1 }),
   endDate?: Date,
 ): GeneratedSlot[] {
-  // Default to 1 month ahead if endDate not provided
-  const finalEndDate = endDate || addMonths(startDate, 1);
+  // Default to end of current week if endDate not provided (changed from 1 month)
+  const finalEndDate = endDate || endOfWeek(startDate, { weekStartsOn: 1 });
 
-  // Get all weeks in the date range
-  const weeks = eachWeekOfInterval({ start: startDate, end: finalEndDate }, { weekStartsOn: 1 });
+  // Get all days in the date range directly (not by weeks)
+  const allDays = eachDayOfInterval({ start: startDate, end: finalEndDate });
 
   const allSlots: GeneratedSlot[] = [];
 
-  // Generate slots for each week
-  weeks.forEach((weekStart) => {
-    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  const dayNames = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ] as const;
 
-    weekDays.forEach((date) => {
-      const dayIndex = getDayOfWeekIndex(date);
-      const dayNames = [
-        'monday',
-        'tuesday',
-        'wednesday',
-        'thursday',
-        'friday',
-        'saturday',
-        'sunday',
-      ] as const;
-      const dayName = dayNames[dayIndex];
+  // Generate slots for each day in the range
+  allDays.forEach((date) => {
+    const dayIndex = getDayOfWeekIndex(date);
+    const dayName = dayNames[dayIndex];
 
-      // Find configuration for this day
-      const config = dayConfigurations.find((c) => c.day === dayName);
-      if (!config) {
-        return;
-      }
+    // Find configuration for this day
+    const config = dayConfigurations.find((c) => c.day === dayName);
+    if (!config) {
+      return;
+    }
 
-      const daySlots = calculateSlotTimesWithBreakRange(date, config);
-      allSlots.push(...daySlots);
-    });
+    const daySlots = calculateSlotTimesWithBreakRange(date, config);
+    allSlots.push(...daySlots);
   });
 
   return allSlots;
@@ -290,12 +279,30 @@ export function generateSlotsFromDayConfigurations(
 /**
  * Filter out slots that are in the past
  * @param slots Array of slots with startTime and endTime
- * @returns Array of slots that are in the future
+ * @returns Array of slots that are in the future (start time must be greater than now)
  */
 export function filterPastSlots<T extends { startTime: string; endTime: string }>(slots: T[]): T[] {
   const now = new Date();
   return slots.filter((slot) => {
     const slotStart = new Date(slot.startTime);
-    return slotStart > now;
+    // Allow slots that start at least 1 minute from now
+    return slotStart.getTime() > now.getTime();
+  });
+}
+
+/**
+ * Filter out slots where the entire day is in the past
+ * More lenient - allows future slots even if some today have passed
+ * @param slots Array of slots with startTime and endTime
+ * @returns Array of slots where the day is today or in the future
+ */
+export function filterPastDays<T extends { startTime: string; endTime: string }>(slots: T[]): T[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return slots.filter((slot) => {
+    const slotDate = new Date(slot.startTime);
+    slotDate.setHours(0, 0, 0, 0);
+    return slotDate >= today;
   });
 }

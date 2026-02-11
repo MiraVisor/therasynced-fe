@@ -23,9 +23,7 @@ import adminSubscriptionService, {
 import adminVerificationService, {
   PendingVerificationResponse,
 } from '@/services/adminVerificationService';
-import { stampConfigService } from '@/services/stampService';
 import { getApiErrorMessage } from '@/types/common';
-import type { BulkTherapistStampConfigDto, UpdateTherapistStampConfigDto } from '@/types/types';
 
 // Job Titles
 export const useJobTitles = (params?: {
@@ -121,62 +119,6 @@ export const useUpdateServiceCategory = () => {
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error) || 'Failed to update service category');
-    },
-  });
-};
-
-// Stamp Configurations
-export const useStampConfigs = () => {
-  return useQuery({
-    queryKey: ['stampConfigs'],
-    queryFn: () => stampConfigService.getAllConfigs(),
-  });
-};
-
-export const useBulkUpdateStampConfigs = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: BulkTherapistStampConfigDto) => stampConfigService.bulkUpdateConfigs(data),
-    onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['stampConfigs'] });
-      toast.success(`Successfully updated ${response.data.updatedCount} therapist configurations`);
-    },
-    onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error) || 'Failed to bulk update configurations');
-    },
-  });
-};
-
-export const useUpdateStampConfig = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      therapistId,
-      dto,
-    }: {
-      therapistId: string;
-      dto: UpdateTherapistStampConfigDto;
-    }) => stampConfigService.updateConfig(therapistId, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stampConfigs'] });
-      toast.success('Configuration updated successfully');
-    },
-    onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error) || 'Failed to update configuration');
-    },
-  });
-};
-
-export const useDeleteStampConfig = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (therapistId: string) => stampConfigService.deleteConfig(therapistId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stampConfigs'] });
-      toast.success('Configuration deleted successfully');
-    },
-    onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error) || 'Failed to delete configuration');
     },
   });
 };

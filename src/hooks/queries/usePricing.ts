@@ -7,6 +7,7 @@ import type {
   FreelancerPricing,
   UpdateDurationPricingDto,
   UpdateLocationPricingDto,
+  UpdatePitchsidePricingDto,
   UpdateServicePricingDto,
 } from '@/types/pricing';
 
@@ -129,7 +130,7 @@ export const useDeleteLocationPricing = () => {
       locationType,
     }: {
       serviceCategoryId: string;
-      locationType: 'HOME' | 'CLINIC';
+      locationType: string;
     }) => pricingApi.deleteLocationPricing(serviceCategoryId, locationType),
     onSuccess: () => {
       // Invalidate to refetch updated pricing
@@ -139,6 +140,44 @@ export const useDeleteLocationPricing = () => {
     onError: (error: unknown) => {
       const errorMessage = getApiErrorMessage(error);
       toast.error(errorMessage || 'Failed to delete location pricing');
+    },
+  });
+};
+
+/**
+ * Hook to update pitchside pricing
+ */
+export const useUpdatePitchsidePricing = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (pricing: UpdatePitchsidePricingDto[]) =>
+      pricingApi.updatePitchsidePricing({ pricing }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'freelancer'] });
+    },
+    onError: (error: unknown) => {
+      const errorMessage = getApiErrorMessage(error);
+      toast.error(errorMessage || 'Failed to update pitchside pricing');
+    },
+  });
+};
+
+/**
+ * Hook to delete pitchside pricing
+ */
+export const useDeletePitchsidePricing = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sport: string) => pricingApi.deletePitchsidePricing(sport),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'freelancer'] });
+      toast.success('Sport pricing deleted successfully');
+    },
+    onError: (error: unknown) => {
+      const errorMessage = getApiErrorMessage(error);
+      toast.error(errorMessage || 'Failed to delete sport pricing');
     },
   });
 };

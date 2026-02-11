@@ -23,8 +23,8 @@ const trustData = [
   },
   {
     id: 4,
-    title: 'Loyalty Rewards',
-    description: 'Earn points and stamps with every booking for future discounts.',
+    title: 'Flexible Booking',
+    description: 'Easy scheduling with free cancellation up to 24 hours before your appointment.',
     icon: Award,
   },
 ];

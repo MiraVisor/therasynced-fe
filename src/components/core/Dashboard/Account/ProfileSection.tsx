@@ -38,7 +38,8 @@ interface UserProfile {
   profilePicture?: string;
   gender: string;
   dob: string;
-  city: string;
+  county: string;
+  cityTown: string;
   description?: string; // Bio/description field
   isEmailVerified?: boolean;
   isActive?: boolean;
@@ -63,7 +64,8 @@ export function ProfileSection() {
   const [formData, setFormData] = useState<UserProfile>({
     name: '',
     email: '',
-    city: '',
+    county: '',
+    cityTown: '',
     gender: '',
     dob: '',
     description: '',
@@ -108,7 +110,8 @@ export function ProfileSection() {
         profilePicture: profileData.profilePicture || undefined, // Ensure it's undefined if empty, not empty string
         gender: profileData.gender || '',
         dob: normalizedDob,
-        city: profileData.city || '',
+        county: profileData.county || '',
+        cityTown: profileData.cityTown || '',
         description: profileData.description || '',
         isEmailVerified: profileData.isEmailVerified,
         isActive: true,
@@ -197,7 +200,8 @@ export function ProfileSection() {
 
       const updateData: {
         name: string;
-        city?: string;
+        county?: string;
+        cityTown?: string;
         gender?: string;
         dob?: string;
         description?: string;
@@ -206,8 +210,11 @@ export function ProfileSection() {
         name: formData.name.trim(),
       };
 
-      if (formData.city?.trim()) {
-        updateData.city = formData.city.trim();
+      if (formData.county?.trim()) {
+        updateData.county = formData.county.trim();
+      }
+      if (formData.cityTown?.trim()) {
+        updateData.cityTown = formData.cityTown.trim();
       }
       if (formData.gender) {
         updateData.gender = formData.gender;
@@ -442,7 +449,7 @@ export function ProfileSection() {
               placeholder="Role"
               value={
                 formData.role === ROLES.PATIENT
-                  ? 'User'
+                  ? 'Client'
                   : formData.role === ROLES.FREELANCER
                     ? 'Freelancer'
                     : formData.role === ROLES.ADMIN
@@ -456,21 +463,37 @@ export function ProfileSection() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-              City
+            <Label htmlFor="county" className="text-sm font-medium text-gray-700">
+              County
             </Label>
             <div className="h-11">
               <LocationDropdown
                 value={
-                  formData.city && formData.city.trim() !== '' ? formData.city : 'Select your city'
+                  formData.county && formData.county.trim() !== ''
+                    ? formData.county
+                    : 'Select your county'
                 }
-                onValueChange={(value: string) => handleInputChange('city', value)}
-                placeholder="Select your city"
-                searchPlaceholder="Search locations..."
-                emptyMessage="No location found."
+                onValueChange={(value: string) => handleInputChange('county', value)}
+                placeholder="Select your county"
+                searchPlaceholder="Search counties..."
+                emptyMessage="No county found."
                 className="h-full"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cityTown" className="text-sm font-medium text-gray-700">
+              City/Town
+            </Label>
+            <Input
+              id="cityTown"
+              placeholder="Enter your city or town"
+              value={formData.cityTown || ''}
+              onChange={(e) => handleInputChange('cityTown', e.target.value)}
+              className="h-11 text-sm font-inter border-gray-300 hover:border-gray-400 focus:border-primary focus:ring-primary/20 focus:ring-2 transition-colors text-charcoal"
+              disabled={((initialLoading || loading) && !profileData) || isPersonalInfoLoading}
+            />
           </div>
 
           {/* Home Address - Only for patients */}

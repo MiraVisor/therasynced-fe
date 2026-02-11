@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useFirstAidCertificateStatus } from '@/hooks/queries/useCertificate';
 import { useProfile } from '@/hooks/queries/useProfile';
 import { useVerificationStatus } from '@/hooks/queries/useVerification';
 import { cn } from '@/lib/utils';
@@ -23,7 +22,6 @@ export const ProfileCompletionWidget = () => {
   const router = useRouter();
   const { data: profile } = useProfile();
   const { data: verificationStatus } = useVerificationStatus();
-  const { data: certificateStatus } = useFirstAidCertificateStatus();
 
   const completionItems: CompletionItem[] = [
     {
@@ -49,18 +47,6 @@ export const ProfileCompletionWidget = () => {
       label: 'Add your clinic address',
       completed: !!profile?.clinicAddress,
       link: '/dashboard/account?tab=profile',
-    },
-    {
-      key: 'firstAidCertificate',
-      label: 'Upload first aid certificate',
-      completed: certificateStatus?.firstAidCertificateStatus === 'APPROVED',
-      status:
-        certificateStatus?.firstAidCertificateStatus === 'APPROVED'
-          ? 'approved'
-          : certificateStatus?.firstAidCertificateStatus === 'REJECTED'
-            ? 'rejected'
-            : 'pending',
-      link: '/dashboard/verification',
     },
     {
       key: 'verificationDocuments',

@@ -1,50 +1,26 @@
 'use client';
 
-import type { ColumnDef } from '@tanstack/react-table';
-import {
-  AlertCircle,
-  Award,
-  CheckCircle,
-  Clock,
-  Download,
-  FileText,
-  MapPin,
-  XCircle,
-} from 'lucide-react';
-import dynamic from 'next/dynamic';
+import { AlertCircle, ArrowLeft, CheckCircle2, Eye, FileText, XCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { ConfirmationDialog } from '@/components/core/Dashboard/AdminSide/Components/ConfirmationDialog';
-import { DocumentPreview } from '@/components/core/Dashboard/AdminSide/Components/DocumentPreview';
-import { ProfileCard } from '@/components/core/Dashboard/AdminSide/Components/ProfileCard';
 import { StatusBadge } from '@/components/core/Dashboard/AdminSide/Components/StatusBadge';
-import {
-  Timeline,
-  type TimelineEvent,
-} from '@/components/core/Dashboard/AdminSide/Components/Timeline';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { useAdminFilesList, useAdminGetFileSignedUrl } from '@/hooks/queries/useFreelancerFiles';
+import { useAdminFreelancerRequirementsStatus } from '@/hooks/queries/useDocumentRequirements';
+import { useAdminGetFileSignedUrl } from '@/hooks/queries/useFreelancerFiles';
 import adminVerificationService, {
   type VerificationDetailsResponse,
 } from '@/services/adminVerificationService';
-import { FileMetadata } from '@/services/freelancerFileService';
-import { formatFileSize } from '@/utils/fileUpload';
-
-// Dynamically import DataTable to ensure it's client-only
-const DataTable = dynamic(
-  () =>
-    import('@/components/common/DataTable/data-table').then((mod) => ({ default: mod.DataTable })),
-  { ssr: false },
-);
+import type { FreelancerRequirementStatus } from '@/services/documentRequirementService';
 
 const VerificationDetailPage = () => {
   const { id } = useParams();
@@ -64,18 +40,21 @@ const VerificationDetailPage = () => {
   const [isCertificateRejectDialogOpen, setIsCertificateRejectDialogOpen] = useState(false);
   const [certificateRejectionReason, setCertificateRejectionReason] = useState('');
   const [isCertificateSubmitting, setIsCertificateSubmitting] = useState(false);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Fetch files for this freelancer
-  const { data: files = [], isLoading: isLoadingFiles } = useAdminFilesList({
-    freelancerId,
-  });
+  // Track which documents the admin has reviewed (opened/viewed)
+  const [reviewedDocIds, setReviewedDocIds] = useState<Set<string>>(new Set());
+
   const signedUrlMutation = useAdminGetFileSignedUrl();
+
+  // Fetch document requirements status for this freelancer
+  const { data: requirementsStatus, isLoading: isLoadingRequirements } =
+    useAdminFreelancerRequirementsStatus(freelancerId ?? null);
 
   useEffect(() => {
     if (freelancerId) {
       fetchVerificationDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [freelancerId]);
 
   const fetchVerificationDetails = async () => {
@@ -88,9 +67,9 @@ const VerificationDetailPage = () => {
       } else {
         setError('Failed to load verification details');
       }
-    } catch (error: unknown) {
+    } catch (err: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to fetch verification details';
+        err instanceof Error ? err.message : 'Failed to fetch verification details';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -98,6 +77,42 @@ const VerificationDetailPage = () => {
     }
   };
 
+  // ── Derived requirement metrics ──
+  const mandatoryRequirements = useMemo(
+    () => requirementsStatus?.filter((r) => r.requirement.isMandatory) ?? [],
+    [requirementsStatus],
+  );
+  const mandatoryUploaded = useMemo(
+    () => mandatoryRequirements.filter((r) => r.uploaded),
+    [mandatoryRequirements],
+  );
+  const allMandatoryUploaded =
+    mandatoryRequirements.length === 0 || mandatoryUploaded.length === mandatoryRequirements.length;
+
+  const mandatoryReviewed = useMemo(
+    () => mandatoryUploaded.filter((r) => r.uploadedFile && reviewedDocIds.has(r.uploadedFile.id)),
+    [mandatoryUploaded, reviewedDocIds],
+  );
+  const allMandatoryReviewed =
+    mandatoryUploaded.length === 0 || mandatoryReviewed.length === mandatoryUploaded.length;
+
+  // Total uploaded docs (all categories)
+  const totalUploadedDocs = requirementsStatus?.filter((r) => r.uploaded).length ?? 0;
+
+  // Both buttons disabled if no docs uploaded or fewer than 5
+  const hasEnoughDocs = totalUploadedDocs >= 5;
+
+  // Approve: needs enough docs + all mandatory uploaded + all mandatory reviewed
+  const canApprove = hasEnoughDocs && allMandatoryUploaded && allMandatoryReviewed;
+
+  // Reject: only needs enough docs uploaded to evaluate
+  const canReject = hasEnoughDocs;
+
+  const totalMandatory = mandatoryRequirements.length;
+  const reviewProgress =
+    totalMandatory > 0 ? Math.round((mandatoryReviewed.length / totalMandatory) * 100) : 100;
+
+  // ── Handlers ──
   const handleApprove = async () => {
     if (!verification) return;
     try {
@@ -106,15 +121,12 @@ const VerificationDetailPage = () => {
         freelancerId: verification.id,
       });
       if (response.success) {
-        toast.success('Verification approved successfully');
+        toast.success('Verification approved');
         setIsApproveDialogOpen(false);
-        fetchVerificationDetails();
         router.push('/dashboard/admin/verifications');
       }
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to approve verification';
-      toast.error(errorMessage);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to approve verification');
     } finally {
       setIsSubmitting(false);
     }
@@ -132,15 +144,13 @@ const VerificationDetailPage = () => {
         rejectionReason: rejectionReason.trim(),
       });
       if (response.success) {
-        toast.success('Verification rejected successfully');
+        toast.success('Verification rejected');
         setIsRejectDialogOpen(false);
         setRejectionReason('');
-        fetchVerificationDetails();
         router.push('/dashboard/admin/verifications');
       }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to reject verification';
-      toast.error(errorMessage);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to reject verification');
     } finally {
       setIsSubmitting(false);
     }
@@ -154,13 +164,12 @@ const VerificationDetailPage = () => {
         freelancerId: verification.id,
       });
       if (response.success) {
-        toast.success('First Aid Certificate approved successfully');
+        toast.success('Certificate approved');
         setIsCertificateApproveDialogOpen(false);
         fetchVerificationDetails();
       }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to approve certificate';
-      toast.error(errorMessage);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to approve certificate');
     } finally {
       setIsCertificateSubmitting(false);
     }
@@ -178,24 +187,49 @@ const VerificationDetailPage = () => {
         rejectionReason: certificateRejectionReason.trim(),
       });
       if (response.success) {
-        toast.success('First Aid Certificate rejected successfully');
+        toast.success('Certificate rejected');
         setIsCertificateRejectDialogOpen(false);
         setCertificateRejectionReason('');
         fetchVerificationDetails();
       }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to reject certificate';
-      toast.error(errorMessage);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to reject certificate');
     } finally {
       setIsCertificateSubmitting(false);
     }
   };
 
+  const handleViewDocument = useCallback(
+    async (fileId: string) => {
+      try {
+        const data = await signedUrlMutation.mutateAsync(fileId);
+        const response = await fetch(data.signedUrl, { method: 'GET' });
+        if (!response.ok) throw new Error('Failed to fetch file');
+
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+        setReviewedDocIds((prev) => {
+          const next = new Set(Array.from(prev));
+          next.add(fileId);
+          return next;
+        });
+      } catch {
+        toast.error('Failed to load document. Please try again.');
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // ── Loading ──
   if (isLoading) {
     return (
       <DashboardPageWrapper
         header={
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Details</h1>
+          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Review</h1>
         }
       >
         <div className="flex items-center justify-center h-96">
@@ -205,500 +239,347 @@ const VerificationDetailPage = () => {
     );
   }
 
+  // ── Error ──
   if (error || !verification) {
     return (
       <DashboardPageWrapper
         header={
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Details</h1>
+          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Review</h1>
         }
       >
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <AlertCircle className="h-12 w-12 mx-auto text-error mb-4" />
-            <p className="font-open-sans text-lg text-foreground mb-4">
-              {error || 'Verification not found'}
-            </p>
-            <Button variant="outline" onClick={() => router.push('/dashboard/admin/verifications')}>
-              Back to Verifications
-            </Button>
-          </div>
+        <div className="flex flex-col items-center justify-center h-96 gap-4">
+          <AlertCircle className="h-10 w-10 text-error" />
+          <p className="text-sm text-muted-foreground">{error || 'Verification not found'}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/dashboard/admin/verifications')}
+          >
+            Back to Queue
+          </Button>
         </div>
       </DashboardPageWrapper>
     );
   }
 
-  const timelineEvents: TimelineEvent[] = [
-    {
-      id: 'verification-requested',
-      title: 'Verification Requested',
-      description: `Freelancer ${verification.name} submitted verification request`,
-      timestamp: verification.verificationRequestedAt || new Date().toISOString(),
-      status: 'completed' as const,
-      icon: <Clock className="h-5 w-5 text-info" />,
-    },
-    ...(verification.verificationApprovedAt
-      ? [
-          {
-            id: 'verification-approved',
-            title: 'Verification Approved',
-            description: 'Verification has been approved',
-            timestamp: verification.verificationApprovedAt,
-            status: 'completed' as const,
-            icon: <CheckCircle className="h-5 w-5 text-success" />,
-          },
-        ]
-      : []),
-    ...(verification.verificationRejectedAt
-      ? [
-          {
-            id: 'verification-rejected',
-            title: 'Verification Rejected',
-            description:
-              verification.verificationRejectionReason || 'Verification has been rejected',
-            timestamp: verification.verificationRejectedAt,
-            status: 'rejected' as const,
-            icon: <XCircle className="h-5 w-5 text-error" />,
-          },
-        ]
-      : []),
-  ];
-
-  const canApproveOrReject = verification.verificationStatus === 'PENDING';
-
-  // Handle file download - opens file in new tab using signed URL
-  const handleDownload = async (file: FileMetadata) => {
-    setDownloadingId(file.id);
-    try {
-      const data = await signedUrlMutation.mutateAsync(file.id);
-
-      // Fetch the PDF as a blob to avoid CORS issues
-      const response = await fetch(data.signedUrl, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/pdf',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch PDF');
-      }
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      // Open the blob URL in a new tab
-      window.open(blobUrl, '_blank');
-
-      // Clean up the blob URL after a delay (optional)
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-
-      setDownloadingId(null);
-    } catch (error) {
-      console.error('Error loading PDF:', error);
-      toast.error('Failed to load PDF. Please try again.');
-      setDownloadingId(null);
-    }
-  };
-
-  // Helper to get category badge
-  const getCategoryBadge = (category: string | null | undefined) => {
-    if (!category) return null;
-    const categoryLabels: Record<string, { label: string; className: string }> = {
-      VERIFICATION: { label: 'Verification', className: 'bg-blue-100 text-blue-800' },
-      FIRST_AID_CERTIFICATE: { label: 'First Aid', className: 'bg-green-100 text-green-800' },
-    };
-    const config = categoryLabels[category];
-    if (!config) return null;
-    return (
-      <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${config.className}`}>
-        {config.label}
-      </Badge>
-    );
-  };
-
-  // Table columns for files
-  const fileColumns: ColumnDef<FileMetadata>[] = [
-    {
-      accessorKey: 'title',
-      header: 'Title',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-muted-foreground" />
-          <a
-            href={row.original.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-primary hover:underline cursor-pointer"
-          >
-            {row.original.title}
-          </a>
-          {getCategoryBadge(row.original.category)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'fileName',
-      header: 'File Name',
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.original.fileName}</span>
-      ),
-    },
-    {
-      accessorKey: 'fileSize',
-      header: 'Size',
-      cell: ({ row }) => <span className="text-sm">{formatFileSize(row.original.fileSize)}</span>,
-    },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      cell: ({ row }) => (
-        <div className="flex items-center">
-          {getCategoryBadge(row.original.category) || (
-            <span className="text-sm text-muted-foreground">-</span>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'createdAt',
-      header: 'Uploaded',
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {row.original.createdAt && (
-            <>
-              {new Date(row.original.createdAt).toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-              })}
-            </>
-          )}
-        </span>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => {
-        const file = row.original;
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDownload(file)}
-              disabled={downloadingId === file.id}
-            >
-              {downloadingId === file.id ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        );
-      },
-    },
-  ];
+  const currentStatus = verification.verificationStatus || 'PENDING';
 
   return (
     <DashboardPageWrapper
       header={
-        <div className="flex items-center justify-between w-full">
-          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Details</h1>
-          <Button variant="outline" onClick={() => router.push('/dashboard/admin/verifications')}>
-            Back to Queue
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/dashboard/admin/verifications')}
+            className="gap-1.5"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
           </Button>
+          <div className="h-5 w-px bg-border" />
+          <h1 className="font-poppins font-bold text-2xl text-charcoal">Verification Review</h1>
         </div>
       }
     >
-      <div className="space-y-6 lg:space-y-8">
-        {/* Status Header */}
-        <EnhancedCard variant="default" className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <StatusBadge status={verification.verificationStatus} size="lg" />
-              <div>
-                <h2 className="font-poppins text-xl font-semibold text-foreground">
-                  {verification.name}
-                </h2>
-                <p className="font-open-sans text-sm text-muted-foreground">{verification.email}</p>
+      <div className="space-y-5">
+        {/* ── Freelancer Header + Actions ── */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-poppins text-lg font-semibold text-foreground">
+                      {verification.name}
+                    </h2>
+                    <StatusBadge status={currentStatus} size="sm" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">{verification.email}</p>
+                  {verification.mainJobTitle && (
+                    <Badge variant="secondary" className="mt-1.5 text-xs">
+                      {verification.mainJobTitle.name}
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
-            {canApproveOrReject && (
+
+              {/* Action buttons — disabled until freelancer has uploaded enough docs */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setIsRejectDialogOpen(true)}
-                  className="text-error border-error hover:bg-error/10"
+                  disabled={!canReject}
+                  className="text-error border-error/40 hover:bg-error/10 disabled:opacity-50"
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="h-4 w-4 mr-1.5" />
                   Reject
                 </Button>
-                <Button onClick={() => setIsApproveDialogOpen(true)}>
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                <Button
+                  size="sm"
+                  onClick={() => setIsApproveDialogOpen(true)}
+                  disabled={!canApprove}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-1.5" />
                   Approve
                 </Button>
               </div>
+            </div>
+
+            {/* Status info */}
+            {!hasEnoughDocs && (
+              <div className="mt-4 pt-3 border-t">
+                <p className="text-xs text-amber-600">
+                  Freelancer has uploaded {totalUploadedDocs} of 5 minimum documents. Actions
+                  disabled until at least 5 are uploaded.
+                </p>
+              </div>
             )}
-          </div>
-        </EnhancedCard>
+            {hasEnoughDocs && totalMandatory > 0 && !allMandatoryReviewed && (
+              <div className="mt-4 pt-3 border-t">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">Review Progress</span>
+                  <span className="text-xs text-muted-foreground">
+                    {mandatoryReviewed.length}/{totalMandatory}
+                  </span>
+                </div>
+                <Progress value={reviewProgress} className="h-1.5" />
+              </div>
+            )}
 
-        {/* Profile Information */}
-        <EnhancedCard variant="default" className="p-6">
-          <h3 className="font-poppins text-lg font-semibold text-foreground mb-4">
-            Profile Information
-          </h3>
-          <ProfileCard
-            id={verification.id}
-            name={verification.name}
-            email={verification.email}
-            profilePicture={verification.profilePicture}
-            showRole={false}
-          />
-        </EnhancedCard>
-
-        {/* Uploaded Files Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Uploaded Files</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              columns={fileColumns as any}
-              data={files}
-              title="All Files"
-              searchKey="title"
-              searchPlaceholder="Search by title or filename..."
-              enableSorting={true}
-              enableFiltering={true}
-              enableColumnVisibility={true}
-              enablePagination={true}
-              showSearch={true}
-              showSorting={false}
-              initialLoading={isLoadingFiles && files.length > 0}
-              loading={isLoadingFiles}
-            />
+            {/* Show previous rejection reason if exists */}
+            {verification.verificationRejectionReason && currentStatus === 'REJECTED' && (
+              <div className="mt-4 pt-3 border-t">
+                <p className="text-xs font-medium text-error">Previous rejection reason:</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {verification.verificationRejectionReason}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Verification Documents (Legacy - keeping for backward compatibility) */}
-        {verification.verificationDocuments && verification.verificationDocuments.length > 0 && (
-          <EnhancedCard variant="default" className="p-6">
-            <h3 className="font-poppins text-lg font-semibold text-foreground mb-4">
-              Legacy Verification Documents ({verification.verificationDocuments.length})
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {verification.verificationDocuments.map((doc, index) => (
-                <DocumentPreview
-                  key={doc.id || index}
-                  url={doc.url}
-                  fileName={`${doc.type || 'Document'} ${index + 1}`}
-                />
-              ))}
-            </div>
-          </EnhancedCard>
+        {/* ── Document Requirements Checklist ── */}
+        {isLoadingRequirements ? (
+          <Card>
+            <CardContent className="py-6">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <LoadingSpinner size="sm" />
+                <span className="text-sm">Loading requirements...</span>
+              </div>
+            </CardContent>
+          </Card>
+        ) : requirementsStatus && requirementsStatus.length > 0 ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Document Requirements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="divide-y">
+                {requirementsStatus.map((item: FreelancerRequirementStatus) => {
+                  const isReviewed = item.uploadedFile && reviewedDocIds.has(item.uploadedFile.id);
+                  return (
+                    <div
+                      key={item.requirement.id}
+                      className="flex items-center justify-between gap-3 py-3"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        {/* Status icon */}
+                        {item.uploaded ? (
+                          isReviewed ? (
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                          ) : (
+                            <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                          )
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                        )}
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium text-foreground truncate">
+                              {item.requirement.name}
+                            </span>
+                            {item.requirement.isMandatory && (
+                              <span className="text-[10px] font-medium text-red-600">*</span>
+                            )}
+                          </div>
+                          {item.uploadedFile && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {item.uploadedFile.fileName}
+                              {' · '}
+                              {new Date(item.uploadedFile.createdAt).toLocaleDateString('en-IE', {
+                                day: 'numeric',
+                                month: 'short',
+                              })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action */}
+                      <div className="flex-shrink-0">
+                        {item.uploaded && item.uploadedFile ? (
+                          <Button
+                            variant={isReviewed ? 'ghost' : 'outline'}
+                            size="sm"
+                            onClick={() => handleViewDocument(item.uploadedFile!.id)}
+                            className="h-7 text-xs gap-1"
+                          >
+                            <Eye className="h-3 w-3" />
+                            {isReviewed ? 'View' : 'Review'}
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-amber-500">Missing</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2">
+                <span className="text-red-600">*</span> Required documents must be reviewed before
+                approving.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="py-6">
+              <p className="text-sm text-muted-foreground text-center">
+                No document requirements defined for this role.
+              </p>
+            </CardContent>
+          </Card>
         )}
 
-        {/* First Aid Certificate */}
-        <EnhancedCard variant="default" className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-poppins text-lg font-semibold text-foreground">
-              First Aid Certificate
-            </h3>
-            {verification.firstAidCertificate ? (
-              <StatusBadge status={verification.firstAidCertificate.status} size="sm" />
-            ) : (
-              <Badge variant="outline" className="font-inter text-xs">
-                Not Uploaded
-              </Badge>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            {verification.firstAidCertificate ? (
-              <>
-                <DocumentPreview
-                  url={verification.firstAidCertificate.url}
-                  fileName="First Aid Certificate"
-                />
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span className="font-open-sans">
-                      Uploaded:{' '}
+        {/* ── First Aid Certificate ── */}
+        {(verification.firstAidCertificate ||
+          requirementsStatus?.some((r) =>
+            r.requirement.name.toLowerCase().includes('first aid'),
+          )) && (
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold">First Aid Certificate</CardTitle>
+                {verification.firstAidCertificate ? (
+                  <StatusBadge status={verification.firstAidCertificate.status} size="sm" />
+                ) : (
+                  <Badge variant="outline" className="text-xs">
+                    Not Uploaded
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {verification.firstAidCertificate ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Uploaded{' '}
                       {verification.firstAidCertificate.uploadedAt
                         ? new Date(verification.firstAidCertificate.uploadedAt).toLocaleDateString(
-                            undefined,
-                            {
-                              month: 'short',
-                              day: '2-digit',
-                              year: 'numeric',
-                            },
+                            'en-IE',
+                            { day: 'numeric', month: 'short', year: 'numeric' },
                           )
                         : 'N/A'}
                     </span>
                   </div>
 
-                  {verification.firstAidCertificate.approvedAt && (
-                    <div className="flex items-center gap-2 text-sm text-success">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="font-open-sans">
-                        Approved:{' '}
-                        {verification.firstAidCertificate.approvedAt
-                          ? new Date(verification.firstAidCertificate.approvedAt).toLocaleString(
-                              undefined,
-                              {
-                                month: 'short',
-                                day: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              },
-                            )
-                          : 'N/A'}
-                      </span>
-                    </div>
-                  )}
-
-                  {verification.firstAidCertificate.rejectedAt && (
-                    <div className="flex items-center gap-2 text-sm text-error">
-                      <XCircle className="h-4 w-4" />
-                      <span className="font-open-sans">
-                        Rejected:{' '}
-                        {verification.firstAidCertificate.rejectedAt
-                          ? new Date(verification.firstAidCertificate.rejectedAt).toLocaleString(
-                              undefined,
-                              {
-                                month: 'short',
-                                day: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              },
-                            )
-                          : 'N/A'}
-                      </span>
-                    </div>
-                  )}
-
                   {verification.firstAidCertificate.rejectionReason && (
-                    <div className="bg-error/10 border border-error/20 rounded-lg p-3">
-                      <p className="font-inter font-medium text-sm text-error mb-1">
-                        Rejection Reason:
-                      </p>
-                      <p className="font-open-sans text-sm text-foreground">
+                    <div className="bg-error/5 border border-error/20 rounded p-2.5">
+                      <p className="text-xs text-error">
+                        <span className="font-medium">Rejection reason: </span>
                         {verification.firstAidCertificate.rejectionReason}
                       </p>
                     </div>
                   )}
+
+                  {verification.firstAidCertificate.status === 'PENDING' && (
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsCertificateRejectDialogOpen(true)}
+                        className="text-error border-error/40 hover:bg-error/10 h-7 text-xs"
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setIsCertificateApproveDialogOpen(true)}
+                        className="h-7 text-xs"
+                      >
+                        Approve
+                      </Button>
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Not uploaded yet.</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-                {verification.firstAidCertificate.status === 'PENDING' && (
-                  <div className="flex gap-2 pt-4 border-t border-border">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsCertificateRejectDialogOpen(true)}
-                      className="text-error border-error hover:bg-error/10"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Reject Certificate
-                    </Button>
-                    <Button onClick={() => setIsCertificateApproveDialogOpen(true)}>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Approve Certificate
-                    </Button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-8 border border-border rounded-lg bg-muted/50">
-                <Award className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="font-open-sans text-base text-muted-foreground">
-                  First Aid Certificate has not been uploaded yet
-                </p>
-              </div>
-            )}
-          </div>
-        </EnhancedCard>
-
-        {/* Services */}
+        {/* ── Services ── */}
         {verification.services && verification.services.length > 0 && (
-          <EnhancedCard variant="default" className="p-6">
-            <h3 className="font-poppins text-lg font-semibold text-foreground mb-4">
-              Services ({verification.services.length})
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {verification.services.map((service) => (
-                <div
-                  key={service.id}
-                  className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-                >
-                  <div className="font-inter font-medium text-foreground">{service.name}</div>
-                  <div className="flex items-center gap-4 mt-2">
-                    <Badge variant="outline" className="font-inter text-xs">
-                      ${service.price}
-                    </Badge>
-                    <span className="font-open-sans text-xs text-muted-foreground">
-                      {service.duration} min
-                    </span>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">
+                Services ({verification.services.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="divide-y">
+                {verification.services.map((service) => (
+                  <div key={service.id} className="flex items-center justify-between py-2.5">
+                    <span className="text-sm font-medium text-foreground">{service.name}</span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>${service.price}</span>
+                      <span>·</span>
+                      <span>{service.duration} min</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </EnhancedCard>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Locations */}
+        {/* ── Locations ── */}
         {verification.locations && verification.locations.length > 0 && (
-          <EnhancedCard variant="default" className="p-6">
-            <h3 className="font-poppins text-lg font-semibold text-foreground mb-4">
-              Locations ({verification.locations.length})
-            </h3>
-            <div className="space-y-3">
-              {verification.locations.map((location) => (
-                <div
-                  key={location.id}
-                  className="flex items-start gap-3 p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <div className="font-inter font-medium text-sm text-foreground">
-                      {location.address}
-                    </div>
-                    <div className="font-open-sans text-xs text-muted-foreground">
-                      {location.city}
-                    </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">
+                Locations ({verification.locations.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="divide-y">
+                {verification.locations.map((location) => (
+                  <div key={location.id} className="py-2.5">
+                    <p className="text-sm font-medium text-foreground">{location.address}</p>
+                    <p className="text-xs text-muted-foreground">{location.city}</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          </EnhancedCard>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Verification Timeline */}
-        <EnhancedCard variant="default" className="p-6">
-          <h3 className="font-poppins text-lg font-semibold text-foreground mb-4">
-            Verification Timeline
-          </h3>
-          <Timeline events={timelineEvents} />
-        </EnhancedCard>
-
-        {/* Approve Verification Dialog */}
+        {/* ── Dialogs ── */}
         <ConfirmationDialog
           open={isApproveDialogOpen}
           onOpenChange={setIsApproveDialogOpen}
           onConfirm={handleApprove}
           title="Approve Verification"
-          description="Are you sure you want to approve this verification? The freelancer will be notified."
+          description="The freelancer will be notified and can begin creating appointment slots."
           confirmText={isSubmitting ? 'Approving...' : 'Approve'}
           isLoading={isSubmitting}
         />
 
-        {/* Reject Verification Dialog */}
         <ConfirmationDialog
           open={isRejectDialogOpen}
           onOpenChange={(open) => {
@@ -707,41 +588,37 @@ const VerificationDetailPage = () => {
           }}
           onConfirm={handleReject}
           title="Reject Verification"
-          description="Please provide a reason for rejection. The freelancer will be notified."
+          description="Provide a reason for rejection. The freelancer will be notified."
           confirmText={isSubmitting ? 'Rejecting...' : 'Reject'}
           isLoading={isSubmitting}
           variant="destructive"
         >
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="rejectionReason" className="font-inter font-medium">
-                Rejection Reason *
-              </Label>
-              <Textarea
-                id="rejectionReason"
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Explain why this verification is being rejected..."
-                className="mt-2 font-open-sans"
-                rows={4}
-                required
-              />
-            </div>
+          <div className="py-3">
+            <Label htmlFor="rejectionReason" className="text-sm font-medium">
+              Reason *
+            </Label>
+            <Textarea
+              id="rejectionReason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Explain why this verification is being rejected..."
+              className="mt-1.5"
+              rows={3}
+              required
+            />
           </div>
         </ConfirmationDialog>
 
-        {/* Approve Certificate Dialog */}
         <ConfirmationDialog
           open={isCertificateApproveDialogOpen}
           onOpenChange={setIsCertificateApproveDialogOpen}
           onConfirm={handleApproveCertificate}
           title="Approve First Aid Certificate"
-          description="Are you sure you want to approve this first aid certificate?"
+          description="Are you sure you want to approve this certificate?"
           confirmText={isCertificateSubmitting ? 'Approving...' : 'Approve'}
           isLoading={isCertificateSubmitting}
         />
 
-        {/* Reject Certificate Dialog */}
         <ConfirmationDialog
           open={isCertificateRejectDialogOpen}
           onOpenChange={(open) => {
@@ -750,26 +627,24 @@ const VerificationDetailPage = () => {
           }}
           onConfirm={handleRejectCertificate}
           title="Reject First Aid Certificate"
-          description="Please provide a reason for rejection."
+          description="Provide a reason for rejection."
           confirmText={isCertificateSubmitting ? 'Rejecting...' : 'Reject'}
           isLoading={isCertificateSubmitting}
           variant="destructive"
         >
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="certificateRejectionReason" className="font-inter font-medium">
-                Rejection Reason *
-              </Label>
-              <Textarea
-                id="certificateRejectionReason"
-                value={certificateRejectionReason}
-                onChange={(e) => setCertificateRejectionReason(e.target.value)}
-                placeholder="Explain why this certificate is being rejected..."
-                className="mt-2 font-open-sans"
-                rows={4}
-                required
-              />
-            </div>
+          <div className="py-3">
+            <Label htmlFor="certificateRejectionReason" className="text-sm font-medium">
+              Reason *
+            </Label>
+            <Textarea
+              id="certificateRejectionReason"
+              value={certificateRejectionReason}
+              onChange={(e) => setCertificateRejectionReason(e.target.value)}
+              placeholder="Explain why this certificate is being rejected..."
+              className="mt-1.5"
+              rows={3}
+              required
+            />
           </div>
         </ConfirmationDialog>
       </div>

@@ -54,7 +54,7 @@ export const createSlotsColumns = (
     : []),
   {
     accessorKey: 'patient',
-    header: () => <div className="font-semibold text-sm text-charcoal text-left">Patient</div>,
+    header: () => <div className="font-semibold text-sm text-charcoal text-left">Client</div>,
     cell: ({ row }) => {
       const patient = row.original.booking?.client;
       if (!patient) {

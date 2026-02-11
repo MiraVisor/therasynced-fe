@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
-import type { SlotPatternResponse } from '@/types/slot';
+import type { LegacyCreateSlotsDto, SlotPatternResponse } from '@/types/slot';
 import {
   ApiResponse,
   CreateSlotsDto,
@@ -11,8 +11,23 @@ import {
   UpdateSlotDto,
 } from '@/types/types';
 
+/**
+ * Create slots using the simplified format
+ * @param data - days (YYYY-MM-DD strings), startTime/endTime (HH:mm), duration (minutes)
+ */
 export const createSlot = async (data: CreateSlotsDto): Promise<ApiResponse<Slot[]>> => {
   const response = await api.post('/slot/create', data);
+  return response.data;
+};
+
+/**
+ * Create slots using the legacy format with individual slot times
+ * @deprecated Use createSlot with the simplified format instead
+ */
+export const createSlotLegacy = async (
+  data: LegacyCreateSlotsDto,
+): Promise<ApiResponse<Slot[]>> => {
+  const response = await api.post('/slot/create-legacy', data);
   return response.data;
 };
 

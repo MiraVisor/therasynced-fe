@@ -1,9 +1,8 @@
 'use client';
 
-import { CheckCircle, Gift } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
 import { useBookingStore } from '@/stores/bookingStore';
 import type { Slot } from '@/types/types';
 
@@ -56,29 +55,6 @@ export const ScheduleStep: React.FC<ScheduleStepProps> = ({
           Choose when you&apos;d like to meet with {therapistName}
         </p>
       </div>
-
-      {/* Compact Stamps Information Card */}
-      <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-purple-100 dark:bg-purple-900/40 rounded-full flex-shrink-0">
-              <Gift className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-purple-800 dark:text-purple-200">
-                <span className="font-semibold">Earn stamps with every booking</span> - Reach 5
-                stamps to unlock a 15% discount.
-                <a
-                  href="/dashboard/account"
-                  className="text-purple-600 dark:text-purple-400 hover:underline ml-1"
-                >
-                  View progress
-                </a>
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Date and Time Selection - Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

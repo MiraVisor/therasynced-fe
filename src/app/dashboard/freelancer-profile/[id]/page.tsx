@@ -263,10 +263,14 @@ export default function FreelancerProfilePage() {
                   )}
 
                   {/* Location - Below Ratings */}
-                  {profile.city && (
+                  {(profile.county || profile.cityTown) && (
                     <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
                       <MapPin className="h-4 w-4" />
-                      <span>{profile.city}</span>
+                      <span>
+                        {profile.cityTown && profile.county
+                          ? `${profile.cityTown}, ${profile.county}`
+                          : profile.county || profile.cityTown}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -488,10 +492,14 @@ export default function FreelancerProfilePage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {profile.city && (
+                      {(profile.county || profile.cityTown) && (
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-500">Location</span>
-                          <span className="font-medium">{profile.city}</span>
+                          <span className="font-medium">
+                            {profile.cityTown && profile.county
+                              ? `${profile.cityTown}, ${profile.county}`
+                              : profile.county || profile.cityTown}
+                          </span>
                         </div>
                       )}
                       <Separator />

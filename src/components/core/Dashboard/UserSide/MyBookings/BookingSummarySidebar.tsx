@@ -6,7 +6,6 @@ import { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import type { TherapistStampDetail } from '@/types/loyalty';
 import type { FreelancerPricing, LocationType } from '@/types/pricing';
 import type { Slot } from '@/types/types';
 
@@ -32,7 +31,6 @@ interface BookingSummarySidebarProps {
   selectedTime: string;
   slotsByDate: Record<string, Slot[]>;
   serviceForm: UseFormReturn<ServiceFormData>;
-  stampDetail?: TherapistStampDetail | null;
   isCreatingBooking: boolean;
   onCompleteBooking: () => void;
   pricing?: FreelancerPricing | null;
@@ -47,7 +45,6 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   selectedTime,
   slotsByDate,
   serviceForm,
-  stampDetail,
   isCreatingBooking,
   onCompleteBooking,
   pricing,
@@ -186,32 +183,20 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   const hasSlotDiscount = slotDiscount?.applicable === true && selectedCategoryIds.length === 0;
   const hasServiceCategoryDiscount = serviceCategoryDiscounts?.applicable === true;
 
-  // Fallback to manual calculation if no discounts available
-  const hasManualDiscount =
-    !hasSlotDiscount &&
-    !hasServiceCategoryDiscount &&
-    stampDetail?.rewardReady &&
-    !stampDetail?.rewardReserved &&
-    stampDetail?.therapist?.id === therapist?.id;
+  const hasDiscount = hasSlotDiscount || hasServiceCategoryDiscount;
 
-  const hasDiscount = hasSlotDiscount || hasServiceCategoryDiscount || hasManualDiscount;
-
-  // Use service category discount if available, then slot discount, then manual calculation
+  // Use service category discount if available, then slot discount
   const discountPercentage = hasServiceCategoryDiscount
     ? serviceCategoryDiscounts.discountPercentage
     : hasSlotDiscount
       ? slotDiscount.discountPercentage
-      : hasManualDiscount
-        ? stampDetail?.discountPercentage || 0
-        : 0;
+      : 0;
 
   const discountAmount = hasServiceCategoryDiscount
     ? serviceCategoryDiscounts.discountAmount
     : hasSlotDiscount
       ? slotDiscount.discountAmount
-      : hasManualDiscount
-        ? (basePrice * discountPercentage) / 100
-        : 0;
+      : 0;
 
   const finalPrice = hasServiceCategoryDiscount
     ? serviceCategoryDiscounts.finalAmount

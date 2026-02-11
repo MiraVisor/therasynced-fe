@@ -12,8 +12,7 @@ import { isTokenValid } from '@/lib/utils';
 
 const navLinks = [
   { href: '#how-it-works', label: 'Process' },
-  { href: '#features', label: 'Features' },
-  { href: '#why-choose-us', label: 'Trust' },
+  { href: '#features', label: 'Why Us' },
   { href: '#pricing', label: 'Pricing' },
 ];
 

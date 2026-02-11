@@ -20,11 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCreateSlot } from '@/hooks/queries/useSlots';
+import { useCreateSlotsLegacy } from '@/hooks/queries/useSlots';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
-import { CreateSlotDto, LocationType, ServiceCategory } from '@/types/types';
+import { CreateSlotDto } from '@/types/slot';
+import { LocationType, ServiceCategory } from '@/types/types';
 import { filterPastSlots } from '@/utils/slotGenerationUtils';
 
 interface CreateSlotFormProps {
@@ -118,7 +119,7 @@ const ServiceCategorySelector = ({
 };
 
 export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
-  const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
+  const { mutate: createSlot, isPending: isCreating } = useCreateSlotsLegacy();
   const { data: subscription } = useMySubscription();
 
   const [formData, setFormData] = useState<CreateSlotDto>({

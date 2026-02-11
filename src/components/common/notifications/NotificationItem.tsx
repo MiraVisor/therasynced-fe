@@ -27,9 +27,6 @@ const getNotificationIcon = (type: NotificationType) => {
       return CheckCircle;
     case 'PAYMENT':
       return CreditCard;
-    case 'LOYALTY_POINTS_AWARDED':
-    case 'LOYALTY_REWARD_REDEEMED':
-      return Star;
     case 'MESSAGE':
       return MessageCircle;
     case 'REVIEW':
@@ -55,9 +52,6 @@ const getTypeColor = (type: NotificationType) => {
       return 'text-orange-600';
     case 'PAYMENT':
       return 'text-purple-600';
-    case 'LOYALTY_POINTS_AWARDED':
-    case 'LOYALTY_REWARD_REDEEMED':
-      return 'text-yellow-600';
     case 'MESSAGE':
       return 'text-indigo-600';
     case 'REVIEW':

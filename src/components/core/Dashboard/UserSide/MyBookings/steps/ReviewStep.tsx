@@ -375,7 +375,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   <>
                     <div className="flex justify-between text-sm">
                       <span className="text-green-600 dark:text-green-400 font-medium">
-                        Stamp Discount ({discountPercentage.toFixed(0)}%):
+                        Discount ({discountPercentage.toFixed(0)}%):
                       </span>
                       <span className="text-green-600 dark:text-green-400 font-medium">
                         -€{discountAmount.toFixed(2)}

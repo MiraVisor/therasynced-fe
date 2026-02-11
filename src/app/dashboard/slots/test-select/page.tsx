@@ -175,7 +175,7 @@ export default function TestSelectPage() {
               etc.)
             </li>
             <li>Verify that scrolling works smoothly</li>
-            <li>Compare this behavior with the one inside the modal at /dashboard/slots</li>
+            <li>Compare this behaviour with the one inside the modal at /dashboard/slots</li>
           </ul>
         </div>
       </div>

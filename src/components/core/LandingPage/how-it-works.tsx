@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Award, Calendar, ChevronRight, MessageSquare, Search } from 'lucide-react';
+import { Calendar, ChevronRight, MessageSquare, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -9,32 +9,22 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const steps = [
   {
-    title: 'Search & Filter',
-    description:
-      'Browse therapists by location, specialty, and availability. Find the right professional for your specific health goals.',
+    title: 'Search',
+    description: 'Find qualified professionals by location, specialty, and availability.',
     icon: Search,
     color: 'from-primary/20 to-sage-warm/20',
   },
   {
-    title: 'Book a Session',
-    description:
-      'View real-time availability. Choose a time that fits your schedule and book instantly. No worrying about availability or callbacks.',
+    title: 'Book Instantly',
+    description: 'Choose a time, confirm your session, and skip the back-and-forth.',
     icon: Calendar,
     color: 'from-sage-warm/20 to-mint-light/20',
   },
   {
-    title: 'Message',
-    description:
-      'Message your therapist directly through our secure platform. Discuss your needs before or after your session.',
+    title: 'Connect',
+    description: 'Message securely and get the support you need before and after your session.',
     icon: MessageSquare,
     color: 'from-mint-light/20 to-primary/20',
-  },
-  {
-    title: 'Earn Rewards',
-    description:
-      'Get loyalty stamps for every session you attend. Redeem them for discounts on future sessions.',
-    icon: Award,
-    color: 'from-primary/20 to-warm-green/20',
   },
 ];
 
@@ -45,13 +35,12 @@ const HowItWorks = () => {
   return (
     <section
       id="how-it-works"
-      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-[#f5f4f1] dark:bg-neutral-950/50 relative overflow-hidden"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-white dark:bg-neutral-900 relative overflow-hidden"
     >
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
         <div className="absolute top-20 left-20 w-96 h-96 border border-primary rounded-full" />
         <div className="absolute bottom-20 right-20 w-72 h-72 border border-sage-warm rounded-full" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-mint-light rounded-full" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -70,8 +59,8 @@ const HowItWorks = () => {
           </p>
         </motion.div>
 
-        {/* Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+        {/* Steps Grid - 3 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
           {steps.map((step, index) => (
             <motion.div
               key={step.title}
@@ -79,13 +68,13 @@ const HowItWorks = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
               transition={{
-                delay: isMobile ? 0 : index * 0.1,
+                delay: isMobile ? 0 : index * 0.15,
                 duration: 0.5,
                 ease: [0.16, 1, 0.3, 1],
               }}
               className="relative group"
             >
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 h-full">
+              <div className="bg-[#faf9f6] dark:bg-neutral-800 rounded-2xl p-8 lg:p-10 border border-gray-100 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 h-full">
                 {/* Step Number */}
                 <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center shadow-lg">
                   {index + 1}
@@ -94,7 +83,7 @@ const HowItWorks = () => {
                 <div className="flex flex-col items-center text-center space-y-5">
                   {/* Icon */}
                   <div
-                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} border border-gray-100 dark:border-neutral-800 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:border-primary/30 transition-all duration-300 group-hover:scale-105`}
+                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} border border-gray-100 dark:border-neutral-700 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:border-primary/30 transition-all duration-300 group-hover:scale-105`}
                   >
                     <step.icon className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
                   </div>

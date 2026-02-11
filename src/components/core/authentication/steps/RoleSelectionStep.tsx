@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { SignupFormData } from '../MultiStepSignup';
 
 const roleOptions = [
-  { value: 'patient', label: 'Patient' },
+  { value: 'patient', label: 'Client' },
   { value: 'freelancer', label: 'Freelancer' },
 ];
 
@@ -47,7 +47,7 @@ export function RoleSelectionStep() {
               <div className="font-inter font-semibold text-charcoal text-sm">{option.label}</div>
               <div className="text-xs font-inter text-gray-600 mt-0.5">
                 {option.value === 'patient'
-                  ? 'Book appointments and manage your health records'
+                  ? 'Book appointments and access wellness services'
                   : 'Provide services and manage your practice'}
               </div>
             </div>

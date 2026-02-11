@@ -19,11 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCreateSlot } from '@/hooks/queries/useSlots';
+import { useCreateSlotsLegacy } from '@/hooks/queries/useSlots';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { cn } from '@/lib/utils';
-import type { BlockedPeriod, WeeklyAvailabilityTemplate } from '@/types/slot';
-import { CreateSlotsDto, LocationType } from '@/types/types';
+import type { BlockedPeriod, LegacyCreateSlotsDto, WeeklyAvailabilityTemplate } from '@/types/slot';
+import { LocationType } from '@/types/types';
 import { filterPastSlots, generateSlotsFromTemplate } from '@/utils/slotGenerationUtils';
 
 interface WeeklyAvailabilityFormProps {
@@ -41,7 +41,7 @@ const DAY_NAMES = [
 ] as const;
 
 export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProps) => {
-  const { mutate: createSlot, isPending: isCreating } = useCreateSlot();
+  const { mutate: createSlot, isPending: isCreating } = useCreateSlotsLegacy();
   const { data: subscription } = useMySubscription();
 
   const [template, setTemplate] = useState<WeeklyAvailabilityTemplate>({
@@ -219,7 +219,7 @@ export const WeeklyAvailabilityForm = ({ onSuccess }: WeeklyAvailabilityFormProp
       );
     }
 
-    const submitData: CreateSlotsDto = {
+    const submitData: LegacyCreateSlotsDto = {
       ...(formData.locationType && { locationType: formData.locationType }), // Optional
       basePrice: formData.basePrice,
       duration: template.slotDuration,

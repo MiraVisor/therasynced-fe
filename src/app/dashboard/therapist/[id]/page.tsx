@@ -12,7 +12,6 @@ import {
   MapPin,
   MessageCircle,
   Sparkles,
-  Stamp,
   Star,
   TrendingUp,
   Users,
@@ -29,7 +28,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -284,10 +282,14 @@ export default function FreelancerProfilePage() {
                         />
                       </div>
 
-                      {expert.city && (
+                      {(expert.county || expert.cityTown) && (
                         <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
                           <MapPin className="h-4 w-4" />
-                          <span>{expert.city}</span>
+                          <span>
+                            {expert.cityTown && expert.county
+                              ? `${expert.cityTown}, ${expert.county}`
+                              : expert.county || expert.cityTown}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -574,89 +576,6 @@ export default function FreelancerProfilePage() {
 
                 {/* Right Column - Sidebar */}
                 <div className="space-y-6">
-                  {/* Stamps Progress */}
-                  <Card className="bg-gradient-to-br from-primary/5 to-mint/5">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        <Stamp className="h-5 w-5 text-primary" />
-                        Loyalty Stamps
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {expert.stampInfo ? (
-                        <div className="space-y-4">
-                          {/* Stamp Visual */}
-                          <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                            {Array.from({ length: expert.stampInfo.stampTarget }, (_, index) => {
-                              const isFilled = index < expert.stampInfo!.currentStampCount;
-                              return (
-                                <div
-                                  key={index}
-                                  className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all ${
-                                    isFilled
-                                      ? 'bg-primary border-primary text-white shadow-md'
-                                      : 'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700 dark:border-gray-600'
-                                  }`}
-                                >
-                                  {isFilled ? (
-                                    <CheckCircle2 className="h-4 w-4" />
-                                  ) : (
-                                    <Stamp className="h-4 w-4" />
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Progress Info */}
-                          <div className="space-y-2">
-                            <Progress
-                              value={
-                                (expert.stampInfo.currentStampCount /
-                                  expert.stampInfo.stampTarget) *
-                                100
-                              }
-                              className="h-2"
-                            />
-                            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
-                              <span>
-                                {expert.stampInfo.currentStampCount} /{' '}
-                                {expert.stampInfo.stampTarget}
-                              </span>
-                              <span>{expert.stampInfo.stampsRemaining} to reward</span>
-                            </div>
-                          </div>
-
-                          {/* Reward Status */}
-                          {expert.stampInfo.rewardReady && !expert.stampInfo.rewardReserved && (
-                            <div className="pt-2">
-                              <Badge className="w-full justify-center bg-green-100 text-green-800 py-2">
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                {expert.stampInfo.discountPercentage}% Off Next Booking!
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4">
-                          <div className="flex items-center justify-center gap-1 mb-2">
-                            {Array.from({ length: 5 }, (_, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-center w-8 h-8 rounded-full border-2 bg-gray-100 border-gray-300 text-gray-400"
-                              >
-                                <Stamp className="h-3.5 w-3.5" />
-                              </div>
-                            ))}
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Book your first session to start earning stamps!
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
                   {/* Certifications */}
                   {(expert.verificationStatus === 'APPROVED' ||
                     expert.verificationStatus === 'verified' ||
@@ -705,10 +624,14 @@ export default function FreelancerProfilePage() {
                           <span className="font-medium">{expert.cardInfo.yearsOfExperience}</span>
                         </div>
                       )}
-                      {expert.city && (
+                      {(expert.county || expert.cityTown) && (
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-500">Location</span>
-                          <span className="font-medium">{expert.city}</span>
+                          <span className="font-medium">
+                            {expert.cityTown && expert.county
+                              ? `${expert.cityTown}, ${expert.county}`
+                              : expert.county || expert.cityTown}
+                          </span>
                         </div>
                       )}
                       {expert.tier && (

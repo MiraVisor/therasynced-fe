@@ -4,7 +4,8 @@
 
 export interface UpdateProfileDto {
   name?: string;
-  city?: string;
+  county?: string;
+  cityTown?: string;
   gender?: string;
   dob?: string;
   description?: string; // Bio/description field

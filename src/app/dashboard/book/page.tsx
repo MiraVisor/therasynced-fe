@@ -5,7 +5,6 @@ import {
   Building2,
   Calendar,
   CheckCircle,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -14,7 +13,6 @@ import {
   MapPin,
   Search,
   Sparkles,
-  Stamp,
   Star,
   User,
   X,
@@ -811,7 +809,6 @@ export default function BookingPage() {
                       {favoriteFreelancers.map((freelancer) => {
                         const expert = mapOneFreelancerToExpert(freelancer);
                         const isSelected = selectedFreelancer === expert.id;
-                        const { stampInfo } = expert;
                         return (
                           <div
                             key={expert.id}
@@ -856,45 +853,6 @@ export default function BookingPage() {
                                       size="sm"
                                       showCount={true}
                                     />
-                                    {stampInfo && (
-                                      <div className="flex items-center gap-1.5">
-                                        {(() => {
-                                          const target = stampInfo.stampTarget ?? 5;
-                                          const currentCount = Number(
-                                            stampInfo.currentStampCount ?? 0,
-                                          );
-                                          const maxCount = Math.min(currentCount, target);
-                                          return Array.from(
-                                            { length: Math.min(target, 5) },
-                                            (_, index) => {
-                                              const isFilled = index < maxCount;
-                                              return (
-                                                <div
-                                                  key={index}
-                                                  className={cn(
-                                                    'flex items-center justify-center w-4 h-4 rounded-full border',
-                                                    isFilled
-                                                      ? 'bg-primary border-primary text-white'
-                                                      : 'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700 dark:border-gray-600',
-                                                  )}
-                                                >
-                                                  {isFilled ? (
-                                                    <CheckCircle2 className="h-2.5 w-2.5" />
-                                                  ) : (
-                                                    <Stamp className="h-2.5 w-2.5" />
-                                                  )}
-                                                </div>
-                                              );
-                                            },
-                                          );
-                                        })()}
-                                        {stampInfo.currentStampCount > 0 && (
-                                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                                            {stampInfo.currentStampCount}/{stampInfo.stampTarget}
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -1095,7 +1053,6 @@ export default function BookingPage() {
                             <div className="space-y-4 md:space-y-3">
                               {freelancersWithSlots.map((freelancer) => {
                                 const expert = mapOneFreelancerToExpert(freelancer);
-                                const { stampInfo } = expert;
                                 return (
                                   <button
                                     key={freelancer.id}
@@ -1134,46 +1091,6 @@ export default function BookingPage() {
                                             size="sm"
                                             showCount={true}
                                           />
-                                          {stampInfo && (
-                                            <div className="flex items-center gap-1.5">
-                                              {(() => {
-                                                const target = stampInfo.stampTarget ?? 5;
-                                                const currentCount = Number(
-                                                  stampInfo.currentStampCount ?? 0,
-                                                );
-                                                const maxCount = Math.min(currentCount, target);
-                                                return Array.from(
-                                                  { length: Math.min(target, 5) },
-                                                  (_, index) => {
-                                                    const isFilled = index < maxCount;
-                                                    return (
-                                                      <div
-                                                        key={index}
-                                                        className={cn(
-                                                          'flex items-center justify-center w-4 h-4 rounded-full border',
-                                                          isFilled
-                                                            ? 'bg-primary border-primary text-white'
-                                                            : 'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700 dark:border-gray-600',
-                                                        )}
-                                                      >
-                                                        {isFilled ? (
-                                                          <CheckCircle2 className="h-2.5 w-2.5" />
-                                                        ) : (
-                                                          <Stamp className="h-2.5 w-2.5" />
-                                                        )}
-                                                      </div>
-                                                    );
-                                                  },
-                                                );
-                                              })()}
-                                              {stampInfo.currentStampCount > 0 && (
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                  {stampInfo.currentStampCount}/
-                                                  {stampInfo.stampTarget}
-                                                </span>
-                                              )}
-                                            </div>
-                                          )}
                                           <Badge
                                             variant="secondary"
                                             className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -1474,7 +1391,7 @@ export default function BookingPage() {
                                           <>
                                             <div className="flex justify-between text-sm">
                                               <span className="text-green-600 dark:text-green-400 font-medium">
-                                                Stamp Discount (
+                                                Discount (
                                                 {priceCalculation.discountPercentage.toFixed(0)}%):
                                               </span>
                                               <span className="text-green-600 dark:text-green-400 font-medium">
@@ -1666,7 +1583,6 @@ export default function BookingPage() {
                 handleSelectFreelancer(profileFreelancer);
               },
               hasAvailableSlots: true,
-              stampInfo: profileFreelancer.stampInfo || undefined,
               durationPricing: profileFreelancer.durationPricing,
               serviceCategoryPricing: profileFreelancer.serviceCategoryPricing,
             }}

@@ -32,7 +32,7 @@ const trustFactors = [
     icon: Star,
   },
   {
-    title: 'Patient-First',
+    title: 'Client-First',
     description: 'Every feature designed with your experience in mind.',
     icon: Heart,
   },

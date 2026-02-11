@@ -11,7 +11,8 @@ export interface SignUpDto {
   profilePicture?: string;
   gender?: string;
   dob?: string;
-  city?: string;
+  county?: string;
+  cityTown?: string;
   homeAddress?: string; // Home address for bookings (patients)
   // New optional fields for freelancers
   mainJobTitleId?: string;

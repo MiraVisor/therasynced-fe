@@ -168,16 +168,6 @@ export interface FreelancerDetailResponse {
     price: number;
     currency: string;
   }>;
-  stampInfo: {
-    currentStampCount: number;
-    stampTarget: number;
-    stampsRemaining: number;
-    rewardReady: boolean;
-    rewardReserved: boolean;
-    rewardReadySince: string | null; // ISO date string
-    discountPercentage: number;
-    customConfigApplied: boolean;
-  } | null;
 }
 
 export const getFreelancerById = async (

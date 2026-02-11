@@ -63,7 +63,7 @@ export function HelpSection() {
           {/* Contact Admin Button */}
           <div className="text-center py-8">
             <h4 className="text-lg font-medium text-gray-900 mb-3">Need Help?</h4>
-            <p className="text-gray-600 mb-6">Contact our admin team for personalized assistance</p>
+            <p className="text-gray-600 mb-6">Contact our admin team for personalised assistance</p>
             <Button
               className="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white h-12 px-8"
               onClick={handleContactAdmin}

@@ -18,59 +18,51 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-// Define Irish locations locally since onboarding config is removed
-const irishLocations = [
-  'Dublin',
-  'Cork',
-  'Limerick',
-  'Galway',
-  'Waterford',
-  'Drogheda',
-  'Swords',
-  'Dundalk',
-  'Bray',
-  'Navan',
-  'Ennis',
-  'Kilkenny',
+// 32 Irish counties (alphabetical order)
+const irishCounties = [
+  'Antrim',
+  'Armagh',
   'Carlow',
-  'Tralee',
-  'Newbridge',
-  'Naas',
-  'Athlone',
-  'Portlaoise',
-  'Mullingar',
-  'Wexford',
-  'Sligo',
-  'Clonmel',
-  'Navan',
-  'Celbridge',
-  'Leixlip',
-  'Tullamore',
-  'Killarney',
-  'Arklow',
-  'Cobh',
-  'Castlebar',
-  'Midleton',
-  'Mallow',
-  'Ballina',
-  'Enniscorthy',
-  'Wicklow',
   'Cavan',
-  'Shannon',
-  'Kilcock',
+  'Clare',
+  'Cork',
+  'Derry',
+  'Donegal',
+  'Down',
+  'Dublin',
+  'Fermanagh',
+  'Galway',
+  'Kerry',
+  'Kildare',
+  'Kilkenny',
+  'Laois',
+  'Leitrim',
+  'Limerick',
+  'Longford',
+  'Louth',
+  'Mayo',
+  'Meath',
+  'Monaghan',
+  'Offaly',
   'Roscommon',
-  'Dungarvan',
+  'Sligo',
+  'Tipperary',
+  'Tyrone',
+  'Waterford',
+  'Westmeath',
+  'Wexford',
+  'Wicklow',
 ];
 
-// Convert irishLocations to the format expected by the dropdown
-const locationOptions = irishLocations.map((location) => ({
-  label: location,
-  value: location,
+// Convert irishCounties to the format expected by the dropdown
+const locationOptions = irishCounties.map((county) => ({
+  label: county,
+  value: county,
 }));
 
 const FormSchema = z.object({
   location: z.string({
-    required_error: 'Please select a location.',
+    required_error: 'Please select a county.',
   }),
 });
 
@@ -86,9 +78,9 @@ interface LocationDropdownProps {
 export function LocationDropdown({
   value,
   onValueChange,
-  placeholder = 'Select location...',
-  searchPlaceholder = 'Search locations...',
-  emptyMessage = 'No location found.',
+  placeholder = 'Select county...',
+  searchPlaceholder = 'Search counties...',
+  emptyMessage = 'No county found.',
   className,
 }: LocationDropdownProps) {
   const form = useForm<z.infer<typeof FormSchema>>({

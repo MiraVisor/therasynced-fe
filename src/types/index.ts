@@ -20,7 +20,6 @@ export * from './enums';
 export * from './formTemplate';
 export * from './freelancer';
 export * from './location';
-export * from './loyalty';
 export * from './notification';
 export * from './rating';
 export * from './service';

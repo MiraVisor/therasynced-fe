@@ -1,7 +1,26 @@
 'use client';
 
-import { Clock, Heart, Lock, Shield, Star, Users, Zap } from 'lucide-react';
+import { Briefcase, Clock, Heart, Lock, Shield, Star, UserCheck, Users, Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+
+const infoBlocks = [
+  {
+    id: 'freelancer',
+    icon: UserCheck,
+    title: 'For Freelancers',
+    description:
+      'Find flexible, paid work that fits your schedule. Therasynced connects you with freelance and locum job opportunities across clinics, sports teams, gyms, and organisations. Create a profile, showcase your qualifications, availability, and pricing and book roles that match your skills—no long-term commitments, just clear opportunities and straightforward payments.',
+    highlight: 'Flexible opportunities',
+  },
+  {
+    id: 'employer',
+    icon: Briefcase,
+    title: 'For Employers',
+    description:
+      "Hire qualified therapists, coaches and trainers quickly and confidently. Book the right person for your needs—whether it's in clinic short-term cover, event support, or match day cover. Our platform streamlines sourcing, communication, and scheduling, so you can focus on delivering high-quality care and performance support without staffing headaches.",
+    highlight: 'Quality talent',
+  },
+];
 
 const benefits = [
   {
@@ -9,8 +28,8 @@ const benefits = [
     icon: Shield,
     title: 'Verified Professionals',
     description:
-      "Every therapist on our platform is thoroughly vetted. We verify licenses, check credentials, and ensure you're working with qualified experts who know their craft.",
-    highlight: 'License verified',
+      "Every therapist on our platform is thoroughly vetted. We verify licences, check credentials, and ensure you're working with qualified experts who know their craft.",
+    highlight: 'Licence verified',
   },
   {
     id: 2,
@@ -47,7 +66,7 @@ const benefits = [
   {
     id: 6,
     icon: Heart,
-    title: 'Personalized Matching',
+    title: 'Personalised Matching',
     description:
       "Tell us what you're looking for and we'll help find the right fit. Whether it's sports recovery, chronic pain, or relaxation—we match you with specialists.",
     highlight: 'AI-powered matching',
@@ -71,7 +90,7 @@ const testimonials = [
   },
   {
     id: 3,
-    text: 'I love the flexibility—I can book late evening sessions after work. The rewards program is a nice bonus too!',
+    text: 'I love the flexibility—I can book late evening sessions after work. The platform makes scheduling so easy!',
     author: 'Emily R.',
     role: 'Nurse',
     rating: 5,
@@ -133,6 +152,36 @@ const Benefits = () => {
             We're not just another booking platform. We're your partner in wellness, designed to
             make finding and connecting with the right therapist effortless.
           </p>
+        </div>
+
+        {/* Info Blocks - Freelancer & Employer */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-16">
+          {infoBlocks.map((block) => (
+            <div
+              key={block.id}
+              className="group relative p-8 lg:p-10 rounded-2xl border border-primary/20 dark:border-primary/30 bg-gradient-to-br from-primary/5 to-emerald-500/5 dark:from-primary/10 dark:to-emerald-500/10 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-default overflow-hidden"
+            >
+              {/* Highlight badge */}
+              <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                {block.highlight}
+              </div>
+
+              {/* Icon */}
+              <div className="mb-6 w-16 h-16 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                <block.icon className="w-8 h-8 text-primary group-hover:text-white transition-colors" />
+              </div>
+
+              {/* Content */}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                  {block.title}
+                </h3>
+                <p className="text-base text-gray-600 dark:text-neutral-400 leading-relaxed">
+                  {block.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Benefits Grid */}

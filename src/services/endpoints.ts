@@ -153,20 +153,6 @@ export const ENDPOINTS = {
     uploadFirstAidCertificate: '/image/upload/first-aid-certificate',
     deleteSingle: (publicId: string) => `/image/delete/single/${publicId}`,
   },
-  // Loyalty system endpoints
-  loyalty: {
-    profile: '/loyalty/profile',
-    rewards: '/loyalty/rewards',
-    redeem: '/loyalty/redeem',
-    redemptions: '/loyalty/redemptions',
-    // Therapist stamp endpoints
-    stamps: '/loyalty/stamps',
-    stampDetail: (therapistId: string) => `/loyalty/stamps/${therapistId}`,
-    // Admin stamp config endpoints
-    stampConfig: '/loyalty/stamp-config',
-    stampConfigByTherapist: (therapistId: string) => `/loyalty/stamp-config/${therapistId}`,
-    stampConfigBulk: '/loyalty/stamp-config/bulk',
-  },
   // Complaint system endpoints
   complaint: {
     create: '/complaint/create',
@@ -336,6 +322,22 @@ export const ENDPOINTS = {
     healthData: '/consent/health-data',
     cookies: '/consent/cookies',
     all: '/consent/all', // Unified consent endpoint
+  },
+  // Document Requirements endpoints
+  documentRequirements: {
+    // Admin endpoints
+    create: '/document-requirements',
+    getAll: '/document-requirements',
+    getByJobTitle: (jobTitleId: string) => `/document-requirements/job-title/${jobTitleId}`,
+    getById: (id: string) => `/document-requirements/${id}`,
+    update: (id: string) => `/document-requirements/${id}`,
+    delete: (id: string) => `/document-requirements/${id}`,
+    // Admin: get a specific freelancer's requirements status
+    adminFreelancerStatus: (freelancerId: string) =>
+      `/document-requirements/admin/freelancer/${freelancerId}/status`,
+    // Freelancer endpoints
+    myStatus: '/document-requirements/my/status',
+    canCreateSlots: '/document-requirements/my/can-create-slots',
   },
 };
 

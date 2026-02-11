@@ -256,7 +256,7 @@ export default function AdminExportsPage() {
                       Export All Users
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Export data for all active, non-anonymized users. Use with caution.
+                      Export data for all active, non-anonymised users. Use with caution.
                     </p>
                   </div>
                 </div>
@@ -489,7 +489,7 @@ export default function AdminExportsPage() {
                     export
                   </li>
                   <li>
-                    The key should be kept secure and only shared with authorized personnel (e.g.,
+                    The key should be kept secure and only shared with authorised personnel (e.g.,
                     DPC)
                   </li>
                 </ul>

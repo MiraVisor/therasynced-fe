@@ -6,10 +6,7 @@ import { UseFormReturn } from 'react-hook-form';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { useBookingStore } from '@/stores/bookingStore';
-import type { TherapistStampDetail } from '@/types/loyalty';
 import type { Slot } from '@/types/types';
-
-import { StampDiscountBadge } from '../StampDiscountBadge';
 
 interface ServiceFormData {
   serviceCategoryIds?: string[];
@@ -35,7 +32,6 @@ interface ConfirmStepProps {
   slotsByDate: Record<string, Slot[]>;
   serviceForm: UseFormReturn<ServiceFormData>;
   detailsForm: UseFormReturn<DetailsFormData>;
-  stampDetail?: TherapistStampDetail | null;
 }
 
 export const ConfirmStep: React.FC<ConfirmStepProps> = ({
@@ -43,18 +39,10 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
   slotsByDate,
   serviceForm,
   detailsForm,
-  stampDetail,
 }) => {
   const { selectedDate, selectedTime } = useBookingStore();
   const selectedSlot = slotsByDate[selectedDate]?.find((s) => s.id === selectedTime);
   const basePrice = selectedSlot?.basePrice || 0;
-  const hasDiscount =
-    stampDetail?.rewardReady &&
-    !stampDetail?.rewardReserved &&
-    stampDetail?.therapist?.id === therapist?.id;
-  const discountPercentage = hasDiscount ? stampDetail?.discountPercentage || 0 : 0;
-  const discountAmount = hasDiscount ? (basePrice * discountPercentage) / 100 : 0;
-  const finalPrice = basePrice - discountAmount;
 
   return (
     <div className="space-y-8">
@@ -187,72 +175,18 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
               </div>
             )}
 
-            {/* Stamp Discount Badge */}
-            {therapist?.id && (
-              <div className="mt-6">
-                <StampDiscountBadge therapistId={therapist.id} />
-              </div>
-            )}
-
-            {/* Price Breakdown */}
+            {/* Price */}
             <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400 font-inter">Base Price:</span>
-                  <span className="font-poppins font-semibold text-primary">
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-lg font-poppins font-semibold text-charcoal">
+                    Total Price:
+                  </span>
+                  <span className="text-2xl font-poppins font-bold text-primary">
                     EUR {basePrice.toFixed(2)}
                   </span>
                 </div>
-                {hasDiscount && (
-                  <>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-green-600 dark:text-green-400 font-medium">
-                        Stamp Discount ({discountPercentage}%):
-                      </span>
-                      <span className="text-green-600 dark:text-green-400 font-medium">
-                        -EUR {discountAmount.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-poppins font-semibold text-charcoal">
-                          Total Price:
-                        </span>
-                        <div className="flex flex-col items-end">
-                          <span className="text-2xl font-poppins font-bold text-green-600 dark:text-green-400">
-                            EUR {finalPrice.toFixed(2)}
-                          </span>
-                          <span className="text-xs font-inter text-gray-500 line-through">
-                            EUR {basePrice.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-                {!hasDiscount && (
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-lg font-poppins font-semibold text-charcoal">
-                      Total Price:
-                    </span>
-                    <span className="text-2xl font-poppins font-bold text-primary">
-                      EUR {basePrice.toFixed(2)}
-                    </span>
-                  </div>
-                )}
               </div>
-              {hasDiscount && (
-                <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <p className="text-xs text-green-700 dark:text-green-300 font-medium">
-                    ✓ Your {discountPercentage}% stamp discount has been applied automatically!
-                  </p>
-                </div>
-              )}
-              {!hasDiscount && (
-                <p className="text-xs text-gray-500 mt-2">
-                  *Any available stamp discounts will be applied automatically
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>

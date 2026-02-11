@@ -1,4 +1,4 @@
-import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { memo, useCallback } from 'react';
 
@@ -39,15 +39,6 @@ interface ExpertCardContentProps extends Partial<Expert> {
     | 'UNVERIFIED';
   tier?: SubscriptionPlanType | null;
   planFeatures?: PlanFeatures | null;
-  stampInfo?: {
-    currentStampCount: number;
-    stampTarget: number;
-    stampsRemaining: number;
-    rewardReady: boolean;
-    rewardReserved: boolean;
-    discountPercentage: number;
-    customConfigApplied: boolean;
-  } | null;
   onViewProfile: () => void;
   showBookNow?: boolean;
 }
@@ -67,7 +58,6 @@ export const ExpertCardContent = memo(
     verificationStatus = 'unverified',
     tier,
     planFeatures,
-    stampInfo,
     onViewProfile,
     showBookNow = false,
   }: ExpertCardContentProps) => {
@@ -200,35 +190,6 @@ export const ExpertCardContent = memo(
                   </span>
                 </div>
               )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-inter text-muted-foreground">Stamps:</span>
-                <div className="flex items-center gap-1.5">
-                  {(() => {
-                    const target = stampInfo?.stampTarget ?? 5;
-                    const currentCount = Number(stampInfo?.currentStampCount ?? 0);
-                    const maxCount = Math.min(currentCount, target);
-                    return Array.from({ length: target }, (_, index) => {
-                      const isFilled = stampInfo && index < maxCount;
-                      return (
-                        <div
-                          key={index}
-                          className={`flex items-center justify-center w-5 h-5 rounded-full border ${
-                            isFilled
-                              ? 'bg-primary border-primary text-white'
-                              : 'bg-gray-100 border-gray-300 text-gray-400'
-                          }`}
-                        >
-                          {isFilled ? (
-                            <CheckCircle2 className="h-3 w-3" />
-                          ) : (
-                            <Stamp className="h-3 w-3" />
-                          )}
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              </div>
               {(availableSlots || 0) > 0 && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-inter text-muted-foreground">Availability:</span>

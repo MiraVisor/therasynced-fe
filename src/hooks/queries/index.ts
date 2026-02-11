@@ -36,19 +36,6 @@ export { useRecentFavoriteFreelancer, useExplorePatientBookings } from './useExp
 // Rating hooks
 export * from './useRatings';
 
-// Loyalty hooks - exclude conflicting exports (exported from useAdmin instead)
-export {
-  useLoyaltyProfile,
-  useLoyaltyRewards,
-  useRedemptionHistory,
-  useRedeemReward,
-  usePatientStamps,
-  useStampDetail,
-  useAllStampConfigs,
-  useStampConfigByTherapist,
-  useCreateOrUpdateStampConfig,
-} from './useLoyalty';
-
 // Verification hooks
 export * from './useVerification';
 

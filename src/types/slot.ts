@@ -114,44 +114,47 @@ export interface SlotStats {
   subscriptionInfo: SubscriptionInfo;
 }
 
-export interface CreateSlotDto {
-  locationType?: LocationType; // Optional - acts as default fallback for slots without explicit locationType
-  locationId?: string;
-  basePrice?: number; // Optional - default price used when slots don't specify their own
+/**
+ * Simplified slot creation DTO
+ * Designed for the streamlined availability management flow
+ */
+export interface CreateSlotsDto {
+  /** Array of specific dates in YYYY-MM-DD format */
+  days: string[];
+  /** Start time in HH:mm format (24-hour), e.g., "09:00" */
+  startTime: string;
+  /** End time in HH:mm format (24-hour), e.g., "17:00" */
+  endTime: string;
+  /** Session duration in minutes (30, 45, 60, 90, 120) */
   duration: number;
+}
+
+/**
+ * Legacy slot creation DTO for backward compatibility
+ * @deprecated Use the simplified CreateSlotsDto instead
+ */
+export interface LegacyCreateSlotsDto {
+  locationType?: LocationType;
+  locationId?: string;
+  basePrice?: number;
+  duration: number;
+  breakFrom?: string;
+  breakTill?: string;
   slots: Array<{
     startTime: string;
     endTime: string;
-    basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
-    serviceCategoryIds?: string[]; // Optional - per-slot service categories
-    breakFrom?: string; // Optional: ISO 8601 datetime string for per-slot break start time
-    breakTill?: string; // Optional: ISO 8601 datetime string for per-slot break end time
+    basePrice?: number;
+    locationType?: LocationType;
+    serviceCategoryIds?: string[];
+    breakFrom?: string;
+    breakTill?: string;
   }>;
-  serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
+  serviceCategoryIds?: string[];
   notes?: string;
 }
 
-// Backend DTOs matching the controller structure
-export interface CreateSlotsDto {
-  locationType?: LocationType; // Optional - acts as default fallback for slots without explicit locationType
-  locationId?: string; // Added to support location selection
-  basePrice?: number; // Optional - default price used when slots don't specify their own
-  duration: number;
-  breakFrom?: string; // Optional: ISO 8601 datetime string for break start time
-  breakTill?: string; // Optional: ISO 8601 datetime string for break end time
-  slots: Array<{
-    startTime: string;
-    endTime: string;
-    basePrice?: number; // Optional - per-slot price, falls back to parent basePrice if not specified
-    locationType?: LocationType; // Optional - defaults to CLINIC if not provided
-    serviceCategoryIds?: string[]; // Optional - per-slot service categories
-    breakFrom?: string; // Optional: ISO 8601 datetime string for per-slot break start time
-    breakTill?: string; // Optional: ISO 8601 datetime string for per-slot break end time
-  }>;
-  serviceCategoryIds?: string[]; // Default fallback - Array of service category IDs
-  notes?: string;
-}
+/** @deprecated Use CreateSlotsDto instead */
+export type CreateSlotDto = LegacyCreateSlotsDto;
 
 export interface UpdateSlotDto {
   id: string;

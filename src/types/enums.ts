@@ -19,6 +19,11 @@ export enum JobTitleEnum {
 export enum LocationType {
   HOME = 'HOME',
   CLINIC = 'CLINIC',
+  CORPORATE = 'CORPORATE',
+  GYM = 'GYM',
+  TRAINING = 'TRAINING',
+  PITCHSIDE = 'PITCHSIDE',
+  EVENT = 'EVENT',
 }
 
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
@@ -78,7 +83,5 @@ export type NotificationType =
   | 'OTHER';
 
 export type NotificationPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-
-export type LoyaltyTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
 
 export type TierType = 'gold' | 'silver' | 'bronze';

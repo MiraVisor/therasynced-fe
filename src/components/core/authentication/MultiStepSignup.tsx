@@ -40,7 +40,8 @@ const signupSchema = z
       ),
     gender: z.string().optional(),
     genderOther: z.string().optional(), // Free text for "Other" gender
-    city: z.string().optional(),
+    county: z.string().optional(),
+    cityTown: z.string().optional(),
     homeAddress: z.string().optional(), // Home address for bookings
     role: z.string().min(1, 'Role is required'),
     clinicAddress: z.string().optional(),
@@ -138,7 +139,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       dob: undefined,
       gender: '',
       genderOther: '',
-      city: '',
+      county: '',
+      cityTown: '',
       homeAddress: '',
       role: '',
       clinicAddress: '',
@@ -214,8 +216,11 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
             setValue('dob', dobDate, { shouldValidate: false });
           }
         }
-        if (oauthData.city) {
-          setValue('city', oauthData.city, { shouldValidate: false });
+        if (oauthData.county) {
+          setValue('county', oauthData.county, { shouldValidate: false });
+        }
+        if (oauthData.cityTown) {
+          setValue('cityTown', oauthData.cityTown, { shouldValidate: false });
         }
         if (oauthData.homeAddress) {
           setValue('homeAddress', oauthData.homeAddress, { shouldValidate: false });
@@ -362,7 +367,8 @@ export default function MultiStepSignup({ onBack, onSubmit, isLoading }: MultiSt
       role: formValues.role.toUpperCase(),
       dob: formValues.dob ? format(formValues.dob, 'yyyy-MM-dd') : undefined,
       gender: finalGender,
-      city: formValues.city || undefined,
+      county: formValues.county || undefined,
+      cityTown: formValues.cityTown || undefined,
       homeAddress: selectedRole === 'patient' ? formValues.homeAddress || undefined : undefined,
       clinicAddress:
         selectedRole === 'freelancer' ? formValues.clinicAddress || undefined : undefined,

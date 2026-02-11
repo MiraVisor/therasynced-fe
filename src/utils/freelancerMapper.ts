@@ -105,10 +105,6 @@ export function mapOneFreelancerToExpert(freelancer: Freelancer | Expert): Exper
       ? freelancerData.slotSummary
       : undefined;
 
-  // Preserve stampInfo if it exists in the freelancer data (from API response)
-  // The API may include stampInfo in the response for authenticated users
-  const { stampInfo } = freelancerData as unknown as { stampInfo?: Expert['stampInfo'] };
-
   // Map API freelancer to Expert type for UI
   return {
     id: freelancerData.id,
@@ -133,7 +129,8 @@ export function mapOneFreelancerToExpert(freelancer: Freelancer | Expert): Exper
     sessionTypes: sessionTypes.length > 0 ? sessionTypes : undefined,
     email: freelancerData.email,
     gender: undefined, // Not in Freelancer type
-    city: freelancerData.city,
+    county: freelancerData.county,
+    cityTown: freelancerData.cityTown,
     isEmailVerified: undefined, // Not in Freelancer type
     isActive: freelancerData.isActive,
     authProvider: undefined, // Not in Freelancer type
@@ -148,7 +145,6 @@ export function mapOneFreelancerToExpert(freelancer: Freelancer | Expert): Exper
     planFeatures: freelancerData.planFeatures ?? null,
     tier: freelancerData.planFeatures?.planType ?? null,
     subscriptionStatus: undefined, // Not in Freelancer type, will be populated from Expert if already an Expert
-    stampInfo: stampInfo || null, // Preserve stampInfo from API response if available
     durationPricing: freelancerData.durationPricing,
     serviceCategoryPricing: freelancerData.serviceCategoryPricing,
   };

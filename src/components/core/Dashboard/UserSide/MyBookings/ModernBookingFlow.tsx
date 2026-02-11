@@ -12,7 +12,6 @@ import SocketDebugger from '@/components/debug/SocketDebugger';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
-import { useStampDetail } from '@/hooks/queries/useLoyalty';
 import { useFreelancerPricing } from '@/hooks/queries/usePricing';
 import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
@@ -56,7 +55,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   const { data: slots = [] } = useAvailableSlots(freelancerId ?? null);
   const { mutate: createBooking, isPending: isCreatingBooking } = useCreateBooking();
   const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(null);
-  const { data: stampDetail } = useStampDetail(selectedTherapistId);
   // Note: useFreelancerPricing fetches pricing for logged-in freelancer
   // In booking flow, we're booking with a different freelancer
   // For now, pricing will be optional and we'll use slot's basePrice as fallback
@@ -484,7 +482,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
         // Get the message from the response if available
         const responseMessage = (response as { message?: string })?.message;
         toast.success(responseMessage, {
-          autoClose: 5000, // Show for 5 seconds to read the stamp message
+          autoClose: 5000,
         });
         router.push('/dashboard/my-bookings');
       },
@@ -501,7 +499,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
         ) {
           const finalMessage =
             errorMessage ||
-            "This freelancer's trial has expired. They cannot accept new bookings. Please subscribe to continue.";
+            'This freelancer is currently unable to accept new bookings. Please try another freelancer.';
           toast.error(finalMessage, {
             autoClose: 7000, // Show longer for important messages
           });
@@ -552,7 +550,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
             slotsByDate={slotsByDate}
             serviceForm={serviceForm}
             detailsForm={detailsForm}
-            stampDetail={stampDetail}
           />
         );
 
@@ -662,7 +659,6 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
               selectedTime={selectedTime}
               slotsByDate={slotsByDate}
               serviceForm={serviceForm}
-              stampDetail={stampDetail}
               isCreatingBooking={isCreatingBooking}
               onCompleteBooking={handleCompleteBooking}
               pricing={pricing}

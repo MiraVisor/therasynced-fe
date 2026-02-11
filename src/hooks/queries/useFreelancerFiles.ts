@@ -72,6 +72,7 @@ export const useUploadFiles = () => {
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
       void queryClient.invalidateQueries({ queryKey: ['verification'] });
+      void queryClient.invalidateQueries({ queryKey: ['documentRequirements'] });
       const fileCount = data.data?.files?.length || data.data?.total || 0;
       toast.success(`Successfully uploaded ${fileCount} file(s)`);
     },
@@ -134,6 +135,7 @@ export const useDeleteFile = () => {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['freelancerFiles'] });
       void queryClient.invalidateQueries({ queryKey: ['verification'] });
+      void queryClient.invalidateQueries({ queryKey: ['documentRequirements'] });
       toast.success('File deleted successfully');
     },
     onError: (error: unknown) => {

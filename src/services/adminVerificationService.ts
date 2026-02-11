@@ -27,6 +27,10 @@ export interface VerificationDetailsResponse {
   email: string;
   profilePicture?: string;
   verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  mainJobTitle?: {
+    id: string;
+    name: string;
+  };
   verificationDocuments: Array<{
     id: string;
     url: string;

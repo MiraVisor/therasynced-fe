@@ -95,6 +95,17 @@ export default function CookieConsent() {
         setShowBanner(true);
       }
     }
+
+    // Listen for custom event to open cookie settings
+    const handleOpenSettings = () => {
+      setShowSettings(true);
+      setShowBanner(true);
+    };
+
+    window.addEventListener('open-cookie-settings', handleOpenSettings);
+    return () => {
+      window.removeEventListener('open-cookie-settings', handleOpenSettings);
+    };
   }, []);
 
   const handleAcceptAll = async () => {
@@ -180,7 +191,7 @@ export default function CookieConsent() {
                 Cookie Consent
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                We use cookies to enhance your experience, analyze site usage, and assist in our
+                We use cookies to enhance your experience, analyse site usage, and assist in our
                 marketing efforts. Essential cookies are required for the site to function properly.
                 You can manage your preferences at any time.{' '}
                 <a
@@ -201,7 +212,7 @@ export default function CookieConsent() {
                 className="w-full sm:w-auto"
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Customize
+                Customise
               </Button>
               <Button
                 variant="outline"
@@ -288,7 +299,7 @@ export default function CookieConsent() {
                     Marketing Cookies
                   </Label>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Used to deliver personalized advertisements and track campaign performance.
+                    Used to deliver personalised advertisements and track campaign performance.
                     These cookies may be set by third-party advertising partners.
                   </p>
                 </div>
@@ -364,4 +375,11 @@ export function getCookiePreferences(): CookiePreferences {
 export function isCookieCategoryAllowed(category: CookieCategory): boolean {
   const preferences = getCookiePreferences();
   return preferences[category] === true;
+}
+
+// Helper function to open cookie settings dialog
+export function openCookieSettings(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('open-cookie-settings'));
+  }
 }

@@ -77,8 +77,52 @@ export default function PrivacyPolicyPage() {
               Subscription & Billing Data
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Subscription plan, invoices, payment status. Payments are processed by third-party
-              providers; no card details are stored by us.
+              We process the following billing-related data: subscription plan selection, billing
+              interval (monthly or annual), subscription status, invoice history, payment status,
+              and plan change records (upgrades, downgrades, and cancellations).
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              All payment transactions are processed by Stripe, Inc. (&quot;Stripe&quot;), a PCI DSS
+              Level 1 certified, GDPR-compliant third-party payment processor. When you enter
+              payment details, they are collected directly by Stripe via their secure payment
+              elements. Your full card number, CVV, and sensitive payment credentials are never
+              transmitted to or stored on our servers. We only receive from Stripe a tokenised
+              reference, the last four digits of your card, card brand, expiry date, and transaction
+              status.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Stripe acts as an independent data controller for payment information it collects and
+              processes. Stripe may use this data in accordance with its own privacy policy. For
+              more information, see:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
+              <li>
+                Stripe Privacy Policy:{' '}
+                <a
+                  href="https://stripe.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://stripe.com/privacy
+                </a>
+              </li>
+              <li>
+                Stripe Data Processing Agreement:{' '}
+                <a
+                  href="https://stripe.com/legal/dpa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://stripe.com/legal/dpa
+                </a>
+              </li>
+            </ul>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              <strong>Legal basis:</strong> Article 6(1)(b) GDPR – Processing necessary for the
+              performance of a contract (subscription services). Article 6(1)(c) GDPR – Legal
+              obligation (tax and accounting records).
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
@@ -162,16 +206,34 @@ export default function PrivacyPolicyPage() {
               Data Sharing
             </h2>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Personal data may be shared with:
+              Personal data may be shared with the following categories of recipients:
             </p>
             <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 mb-4">
-              <li>Therapists (as independent data controllers)</li>
-              <li>GDPR-compliant service providers (hosting, security, analytics, payments)</li>
-              <li>Regulators or authorities where legally required</li>
+              <li>
+                <strong>Therapists</strong> – as independent data controllers for health and
+                therapeutic data exchanged during bookings and in-platform communications
+              </li>
+              <li>
+                <strong>Stripe, Inc.</strong> – for payment processing, subscription management,
+                fraud prevention, and billing operations. Stripe acts as an independent data
+                controller for the payment data it collects (card details, billing address,
+                transaction records). Stripe is PCI DSS Level 1 certified and GDPR-compliant. Data
+                shared with Stripe includes: name, email address, subscription plan, and payment
+                method details entered directly into Stripe&apos;s secure payment elements
+              </li>
+              <li>
+                <strong>Infrastructure providers</strong> – GDPR-compliant service providers for
+                hosting, security, email delivery, and file storage
+              </li>
+              <li>
+                <strong>Regulators or authorities</strong> – where legally required by Irish or EU
+                law
+              </li>
             </ul>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
               Personal data is not sold, shared for advertising purposes, or used for behavioural
-              profiling.
+              profiling. We do not share your data with any third parties for their own marketing
+              purposes.
             </p>
           </section>
 

@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, ExternalLink, Heart, Stamp } from 'lucide-react';
+import { Clock, ExternalLink, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useFavoriteFreelancer } from '@/hooks/queries/useFreelancers';
@@ -58,15 +57,6 @@ interface ExpertProfileDialogProps {
     firstAidCertificateStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
     onBookNow: () => void;
     hasAvailableSlots: boolean;
-    stampInfo?: {
-      currentStampCount: number;
-      stampTarget: number;
-      stampsRemaining: number;
-      rewardReady: boolean;
-      rewardReserved: boolean;
-      discountPercentage: number;
-      customConfigApplied: boolean;
-    };
     durationPricing?: DurationPricing[];
     serviceCategoryPricing?: ServicePricing[];
   };
@@ -92,7 +82,6 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
     onBookNow,
     hasAvailableSlots,
     description,
-    stampInfo,
     durationPricing = [],
     serviceCategoryPricing = [],
   } = expert;
@@ -196,81 +185,6 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   </div>
                 </div>
               </div>
-
-              {/* Stamps Section */}
-              {stampInfo && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full" />
-                    Your Stamps Progress
-                  </h4>
-
-                  {/* Stamp Visual Display */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      {(() => {
-                        const target = stampInfo.stampTarget ?? 5;
-                        const currentCount = Number(stampInfo.currentStampCount ?? 0);
-                        const maxCount = Math.min(currentCount, target);
-                        return Array.from({ length: target }, (_, index) => {
-                          const isFilled = index < maxCount;
-                          return (
-                            <div
-                              key={index}
-                              className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                                isFilled
-                                  ? 'bg-primary border-primary text-white'
-                                  : 'bg-gray-100 border-gray-300 text-gray-400 dark:bg-gray-700 dark:border-gray-600'
-                              }`}
-                            >
-                              {isFilled ? (
-                                <CheckCircle2 className="h-5 w-5" />
-                              ) : (
-                                <Stamp className="h-5 w-5" />
-                              )}
-                            </div>
-                          );
-                        });
-                      })()}
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="space-y-2">
-                      <Progress
-                        value={(stampInfo.currentStampCount / stampInfo.stampTarget) * 100}
-                        className="h-3"
-                      />
-                      <div className="flex justify-between text-sm font-inter text-gray-600 dark:text-gray-400">
-                        <span>
-                          {stampInfo.currentStampCount} of {stampInfo.stampTarget} stamps
-                        </span>
-                        <span>{stampInfo.stampsRemaining} stamps to reward</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Reward Status */}
-                  {stampInfo.rewardReady && !stampInfo.rewardReserved && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <Badge
-                        variant="default"
-                        className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 px-3 py-2 text-sm font-medium"
-                      >
-                        <CheckCircle2 className="h-4 w-4 mr-2 inline" />
-                        {stampInfo.discountPercentage}% Discount Available!
-                      </Badge>
-                    </div>
-                  )}
-
-                  {stampInfo.customConfigApplied && (
-                    <div className="mt-2">
-                      <Badge variant="outline" className="text-xs">
-                        Custom Configuration Applied
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Duration Pricing */}
               {durationPricing && durationPricing.length > 0 && (

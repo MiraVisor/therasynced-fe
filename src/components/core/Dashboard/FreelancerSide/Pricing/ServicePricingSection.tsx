@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   useDeleteLocationPricing,
   useFreelancerPricing,
   useUpdateLocationPricing,
@@ -18,17 +25,26 @@ import { useProfile } from '@/hooks/queries/useProfile';
 import { useServiceCategoriesByJobTitle } from '@/hooks/queries/useServiceCategories';
 import type { LocationType, UpdateLocationPricingDto } from '@/types/pricing';
 
+// All location types with display labels in the requested order
+const LOCATION_TYPES: { value: LocationType; label: string }[] = [
+  { value: 'CLINIC', label: 'Clinic-Based Session' },
+  { value: 'HOME', label: 'Home Visit (Client Location)' },
+  { value: 'CORPORATE', label: 'Corporate Wellness Session' },
+  { value: 'GYM', label: 'Gym-Based Session' },
+  { value: 'TRAINING', label: 'Training Session (Team or Individual)' },
+  { value: 'PITCHSIDE', label: 'Pitch-Side / Game-Day Cover' },
+  { value: 'EVENT', label: 'Sporting Event Coverage' },
+];
+
 type CategoryPricing = {
   [categoryId: string]: {
-    HOME?: number;
-    CLINIC?: number;
+    [key in LocationType]?: number;
   };
 };
 
 export const ServicePricingSection = () => {
   const { data: profile } = useProfile();
 
-  // Use freelancer ID instead of job title enum
   const { data: categories = [], isLoading: isLoadingCategories } = useServiceCategoriesByJobTitle(
     profile?.id ?? null,
   );
@@ -36,22 +52,17 @@ export const ServicePricingSection = () => {
   const { mutate: updatePricing, isPending: isSaving } = useUpdateLocationPricing();
   const { mutate: deletePricing, isPending: isDeleting } = useDeleteLocationPricing();
 
-  // Local state for location-based prices
   const [locationPrices, setLocationPrices] = useState<CategoryPricing>({});
-
-  // State for expanded/collapsed categories
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
-  // Initialize prices from API - serviceId in response is actually categoryId
+  // Initialize prices from API
   useEffect(() => {
     if (pricing?.servicePricing) {
       const prices: CategoryPricing = {};
       pricing.servicePricing.forEach((sp) => {
-        // serviceId in response is actually the categoryId
         const categoryId = sp.serviceId;
         prices[categoryId] = {};
 
-        // Use new location-based structure if available
         if (sp.locations && sp.locations.length > 0) {
           sp.locations.forEach((location) => {
             if (location?.locationType && location.price !== undefined) {
@@ -60,7 +71,6 @@ export const ServicePricingSection = () => {
             }
           });
         } else if (sp.price > 0) {
-          // Fallback to legacy single price - default to CLINIC
           prices[categoryId].CLINIC = sp.price;
         }
       });
@@ -80,12 +90,10 @@ export const ServicePricingSection = () => {
   };
 
   const handleRemoveLocation = (categoryId: string, locationType: LocationType) => {
-    // Call the delete API endpoint
     deletePricing(
-      { serviceCategoryId: categoryId, locationType },
+      { serviceCategoryId: categoryId, locationType: locationType as 'HOME' | 'CLINIC' },
       {
         onSuccess: () => {
-          // Update local state after successful deletion
           setLocationPrices((prev) => {
             const updated = { ...prev };
             if (updated[categoryId]) {
@@ -151,41 +159,36 @@ export const ServicePricingSection = () => {
       return Object.keys(locationPrices).length > 0;
     }
 
-    // Check if any prices have changed
     for (const sp of pricing.servicePricing) {
       const categoryId = sp.serviceId;
       const currentPrices = locationPrices[categoryId] || {};
 
-      // Check new location-based structure
       if (sp.locations && sp.locations.length > 0) {
         for (const location of sp.locations) {
           if (currentPrices[location.locationType] !== location.price) {
             return true;
           }
         }
-        // Check if any locations were removed
         const apiLocationTypes = new Set(sp.locations.map((l) => l.locationType));
         const currentLocationTypes = new Set(Object.keys(currentPrices));
         if (apiLocationTypes.size !== currentLocationTypes.size) {
           return true;
         }
         for (const locType of Array.from(currentLocationTypes)) {
-          if (!apiLocationTypes.has(locType as LocationType)) {
+          if (!apiLocationTypes.has(locType)) {
             return true;
           }
         }
       } else if (sp.price > 0) {
-        // Legacy single price - check if CLINIC price changed or new locations added
         if (currentPrices.CLINIC !== sp.price) {
           return true;
         }
-        if (currentPrices.HOME !== undefined) {
-          return true; // New location added
+        if (Object.keys(currentPrices).length > 1) {
+          return true;
         }
       }
     }
 
-    // Check for new categories with prices
     for (const [categoryId, prices] of Object.entries(locationPrices)) {
       const hasPrice = Object.values(prices).some((p) => p && p > 0);
       if (hasPrice && !pricing.servicePricing.find((sp) => sp.serviceId === categoryId)) {
@@ -195,6 +198,24 @@ export const ServicePricingSection = () => {
 
     return false;
   }, [locationPrices, pricing]);
+
+  const getAvailableLocations = (categoryId: string) => {
+    const usedLocations = new Set(Object.keys(locationPrices[categoryId] || {}));
+    return LOCATION_TYPES.filter((lt) => !usedLocations.has(lt.value));
+  };
+
+  const getPricingSummary = (categoryId: string) => {
+    const catPricing = locationPrices[categoryId] || {};
+    const pricedLocations = Object.entries(catPricing)
+      .filter(([_, price]) => price !== undefined && price > 0)
+      .map(([loc, price]) => {
+        const label = LOCATION_TYPES.find((lt) => lt.value === loc)?.label || loc;
+        return `€${price} (${label.split(' ')[0]})`;
+      });
+    return pricedLocations.length > 0
+      ? pricedLocations.slice(0, 2).join(', ') + (pricedLocations.length > 2 ? '...' : '')
+      : '';
+  };
 
   if (isLoadingCategories || isLoadingPricing || !profile) {
     return (
@@ -277,7 +298,6 @@ export const ServicePricingSection = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Job Title Label */}
         {categories.length > 0 && categories[0]?.jobTitle && (
           <div className="mb-4 pb-3 border-b border-gray-200">
             <div className="flex items-center gap-2">
@@ -292,13 +312,14 @@ export const ServicePricingSection = () => {
         <div className="space-y-3">
           {categories.map((category) => {
             const categoryPricing = locationPrices[category.id] || {};
-            const hasHome = categoryPricing.HOME !== undefined;
-            const hasClinic = categoryPricing.CLINIC !== undefined;
+            const configuredLocations = Object.entries(categoryPricing).filter(
+              ([_, price]) => price !== undefined,
+            );
             const isExpanded = expandedCategories.has(category.id);
+            const availableLocations = getAvailableLocations(category.id);
 
             return (
               <div key={category.id} className="border rounded-lg bg-white overflow-hidden">
-                {/* Collapsible Header */}
                 <button
                   className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                   onClick={() => toggleCategory(category.id)}
@@ -310,14 +331,9 @@ export const ServicePricingSection = () => {
                     )}
                   </div>
                   <div className="ml-4 flex items-center gap-2">
-                    {/* Show pricing summary if any prices are set */}
-                    {(hasHome || hasClinic) && (
-                      <div className="text-xs text-muted-foreground">
-                        {hasHome && hasClinic
-                          ? `€${categoryPricing.HOME || 0} / €${categoryPricing.CLINIC || 0}`
-                          : hasHome
-                            ? `€${categoryPricing.HOME || 0} (Home)`
-                            : `€${categoryPricing.CLINIC || 0} (Clinic)`}
+                    {configuredLocations.length > 0 && (
+                      <div className="text-xs text-muted-foreground max-w-[200px] truncate">
+                        {getPricingSummary(category.id)}
                       </div>
                     )}
                     {isExpanded ? (
@@ -328,15 +344,16 @@ export const ServicePricingSection = () => {
                   </div>
                 </button>
 
-                {/* Collapsible Content */}
                 {isExpanded && (
                   <div className="px-4 pb-4 space-y-3 pt-2 border-t border-gray-200">
-                    {/* Location-based pricing */}
-                    <div className="space-y-2">
-                      {/* HOME Location */}
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground w-20">Home Visit:</Label>
-                        {hasHome ? (
+                    {/* Configured Locations */}
+                    {configuredLocations.map(([locationType, price]) => {
+                      const locationInfo = LOCATION_TYPES.find((lt) => lt.value === locationType);
+                      return (
+                        <div key={locationType} className="flex items-center gap-2">
+                          <Label className="text-xs text-muted-foreground min-w-[180px]">
+                            {locationInfo?.label || locationType}:
+                          </Label>
                           <div className="flex items-center gap-2 flex-1">
                             <span className="text-sm text-muted-foreground">EUR</span>
                             <Input
@@ -344,9 +361,13 @@ export const ServicePricingSection = () => {
                               step="0.01"
                               min="0"
                               placeholder="0.00"
-                              value={categoryPricing.HOME || ''}
+                              value={price || ''}
                               onChange={(e) =>
-                                handlePriceChange(category.id, 'HOME', e.target.value)
+                                handlePriceChange(
+                                  category.id,
+                                  locationType as LocationType,
+                                  e.target.value,
+                                )
                               }
                               className="w-32"
                             />
@@ -354,63 +375,39 @@ export const ServicePricingSection = () => {
                               variant="ghost"
                               size="sm"
                               className="h-8 w-8 p-0"
-                              onClick={() => handleRemoveLocation(category.id, 'HOME')}
+                              onClick={() =>
+                                handleRemoveLocation(category.id, locationType as LocationType)
+                              }
                               disabled={isDeleting}
                             >
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAddLocation(category.id, 'HOME')}
-                            className="text-xs"
-                          >
-                            Add Home Visit Price
-                          </Button>
-                        )}
-                      </div>
+                        </div>
+                      );
+                    })}
 
-                      {/* CLINIC Location */}
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground w-20">Clinic:</Label>
-                        {hasClinic ? (
-                          <div className="flex items-center gap-2 flex-1">
-                            <span className="text-sm text-muted-foreground">EUR</span>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="0.00"
-                              value={categoryPricing.CLINIC || ''}
-                              onChange={(e) =>
-                                handlePriceChange(category.id, 'CLINIC', e.target.value)
-                              }
-                              className="w-32"
-                            />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => handleRemoveLocation(category.id, 'CLINIC')}
-                              disabled={isDeleting}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAddLocation(category.id, 'CLINIC')}
-                            className="text-xs"
-                          >
-                            Add Clinic Price
-                          </Button>
-                        )}
+                    {/* Add New Location */}
+                    {availableLocations.length > 0 && (
+                      <div className="flex items-center gap-2 pt-2">
+                        <Select
+                          onValueChange={(value) =>
+                            handleAddLocation(category.id, value as LocationType)
+                          }
+                        >
+                          <SelectTrigger className="w-[250px]">
+                            <SelectValue placeholder="Add location type..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableLocations.map((lt) => (
+                              <SelectItem key={lt.value} value={lt.value}>
+                                {lt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -420,9 +417,8 @@ export const ServicePricingSection = () => {
         {categories.length > 0 && (
           <div className="mt-4 p-3 bg-muted/50 rounded-lg">
             <p className="text-xs text-muted-foreground">
-              Set location-based prices for each service category. You can set prices for Home Visit
-              and/or Clinic locations. Prices are in EUR. Remove a location by clicking the X
-              button.
+              Set location-based prices for each service category. Choose from clinic, home visit,
+              corporate, gym, training, pitch-side, or event locations. Prices are in EUR.
             </p>
           </div>
         )}

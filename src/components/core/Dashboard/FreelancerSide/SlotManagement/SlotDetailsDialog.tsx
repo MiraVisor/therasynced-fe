@@ -129,14 +129,11 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
       // Check if response is successful
       if (response?.success) {
         successShown = true;
-        toast.success(
-          'Appointment marked as completed! ✅ The client will receive a stamp for this booking.',
-        );
+        toast.success('Appointment marked as completed! ✅');
 
-        // Invalidate queries to refresh stamps and favorites data
+        // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ['bookings'] });
         queryClient.invalidateQueries({ queryKey: ['slots'] });
-        queryClient.invalidateQueries({ queryKey: ['stamps'] });
         queryClient.invalidateQueries({ queryKey: ['favorites'] });
 
         // Call callbacks safely - don't let errors in callbacks trigger error toast

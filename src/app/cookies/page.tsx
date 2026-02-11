@@ -40,6 +40,27 @@ export default function CookiePolicyPage() {
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
+              Payment & Fraud Prevention Cookies (Stripe)
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Our payment processor, Stripe, Inc., sets cookies that are necessary to process
+              payments securely, detect and prevent fraud, and comply with financial regulations.
+              These cookies are classified as strictly necessary for payment functionality and
+              cannot be disabled when using payment features. Stripe may also use cookies for its
+              own fraud detection and analytics purposes as an independent data controller. For
+              details, see{' '}
+              <a
+                href="https://stripe.com/cookies-policy/legal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Stripe&apos;s Cookie Policy
+              </a>
+              .
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">
               Functional Cookies
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">

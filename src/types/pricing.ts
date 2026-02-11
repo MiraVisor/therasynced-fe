@@ -2,7 +2,14 @@
  * Pricing-related types
  */
 
-export type LocationType = 'HOME' | 'CLINIC';
+export type LocationType =
+  | 'HOME'
+  | 'CLINIC'
+  | 'CORPORATE'
+  | 'GYM'
+  | 'TRAINING'
+  | 'PITCHSIDE'
+  | 'EVENT';
 
 export interface LocationPricing {
   locationType: LocationType;
@@ -25,9 +32,20 @@ export interface DurationPricing {
   currency?: string; // Default: EUR
 }
 
+export type PitchsideSport = 'GAA' | 'Soccer' | 'Rugby' | 'Other';
+
+export interface PitchsidePricing {
+  id?: string;
+  sport: PitchsideSport;
+  sportOther?: string; // Required when sport = 'Other'
+  price: number;
+  currency?: string;
+}
+
 export interface FreelancerPricing {
   servicePricing: ServicePricing[];
   durationPricing: DurationPricing[];
+  pitchsidePricing?: PitchsidePricing[];
 }
 
 export interface UpdateServicePricingDto {
@@ -56,4 +74,14 @@ export interface UpdateLocationPricingRequest {
 
 export interface UpdateDurationPricingRequest {
   pricing: UpdateDurationPricingDto[];
+}
+
+export interface UpdatePitchsidePricingDto {
+  sport: PitchsideSport;
+  sportOther?: string;
+  price: number;
+}
+
+export interface UpdatePitchsidePricingRequest {
+  pricing: UpdatePitchsidePricingDto[];
 }

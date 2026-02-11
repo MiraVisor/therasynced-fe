@@ -359,7 +359,7 @@ const AnalyticsPage = () => {
                   Peak Booking Times
                 </h3>
                 <p className="text-sm font-inter text-muted-foreground">
-                  Identify your busiest times to optimize scheduling
+                  Identify your busiest times to optimise scheduling
                 </p>
               </div>
               <PeakTimesChart data={peakTimesData} isLoading={isLoadingBookings && !bookingData} />

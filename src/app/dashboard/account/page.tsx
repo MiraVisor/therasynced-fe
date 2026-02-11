@@ -1,6 +1,6 @@
 'use client';
 
-import { Award, CreditCard, HelpCircle, Shield, User } from 'lucide-react';
+import { CreditCard, HelpCircle, Shield, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -59,13 +59,6 @@ function AccountPageContent() {
 
   // Determine active section from query params
   useEffect(() => {
-    // Redirect stamps tab to loyalty page
-    const stampsParam = searchParams.get('tab') === 'stamps' || searchParams.get('stamps');
-    if (stampsParam) {
-      router.replace('/dashboard/loyalty?tab=stamps');
-      return;
-    }
-
     // Check for tab or section query param, or direct param like ?profile
     const tabParam = searchParams.get('tab') || searchParams.get('section');
     const directParam = searchParams.get('profile')
@@ -141,8 +134,6 @@ function AccountPageContent() {
 
   // Show billing only for freelancers and admins
   const showBilling = role === ROLES.FREELANCER;
-  const showLoyaltyLink = role === 'PATIENT';
-
   const navigationTabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Shield },
@@ -250,24 +241,6 @@ function AccountPageContent() {
 
       {/* Content Section */}
       <div className="bg-white border border-gray-200/80 rounded-xl p-6 shadow-soft">
-        {showLoyaltyLink && activeSection === 'profile' && (
-          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Loyalty & Rewards</h3>
-                <p className="text-sm text-gray-600">View your stamps and points, redeem rewards</p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => router.push('/dashboard/loyalty')}
-                className="flex items-center gap-2"
-              >
-                <Award className="h-4 w-4" />
-                View Rewards
-              </Button>
-            </div>
-          </div>
-        )}
         {activeSection === 'profile' && renderProfileSection()}
         {activeSection === 'account' && renderAccountSection()}
         {activeSection === 'notifications' && renderNotificationsSection()}

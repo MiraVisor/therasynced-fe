@@ -16,7 +16,7 @@ const expertsData = [
       'Specialist in cardiac rehabilitation and preventive cardiology. Focused on personalised treatment plans.',
     image: '/images/doctor1.jpg',
     rating: 5,
-    patients: '10k+ Patients',
+    patients: '10k+ Clients',
     experience: '15+ Years',
   },
   {
@@ -27,7 +27,7 @@ const expertsData = [
       'Experienced neurologist offering comprehensive diagnostic and treatment services.',
     image: '/images/doctor2.jpg',
     rating: 5,
-    patients: '8k+ Patients',
+    patients: '8k+ Clients',
     experience: '12+ Years',
   },
   {
@@ -38,7 +38,7 @@ const expertsData = [
       'Focused on sports injury recovery and mobility improvement using evidence-based methods.',
     image: '/images/doctor4.jpg',
     rating: 5,
-    patients: '7k+ Patients',
+    patients: '7k+ Clients',
     experience: '10+ Years',
   },
   {
@@ -49,7 +49,7 @@ const expertsData = [
       'Manual therapy expert combining gentle adjustments with long-term wellness plans.',
     image: '/images/doctor3.jpg',
     rating: 5,
-    patients: '9k+ Patients',
+    patients: '9k+ Clients',
     experience: '18+ Years',
   },
 ];
@@ -111,7 +111,7 @@ const Freelancers = () => {
           </h2>
           <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed">
             Our board-certified specialists combine years of experience with cutting-edge treatment
-            approaches to provide personalized care for your healing journey.
+            approaches to provide personalised care for your healing journey.
           </p>
         </div>
 

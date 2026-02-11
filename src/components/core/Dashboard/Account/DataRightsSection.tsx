@@ -622,7 +622,7 @@ export function DataRightsSection() {
                     Each export has its own unique key - this key only works for this specific
                     export
                   </li>
-                  <li>The key should be kept secure and not shared with unauthorized parties</li>
+                  <li>The key should be kept secure and not shared with unauthorised parties</li>
                 </ul>
               </AlertDescription>
             </Alert>

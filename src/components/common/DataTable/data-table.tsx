@@ -266,7 +266,7 @@ export function DataTable<TData, TValue>({
       <div
         className={`bg-[#ffffff] flex flex-col ${
           table.getRowModel().rows?.length && !initialLoading
-            ? 'overflow-hidden min-h-[calc(48px*5)] max-h-[calc(48px*9)]'
+            ? 'overflow-hidden max-h-[calc(48px*11)]'
             : ''
         }`}
       >

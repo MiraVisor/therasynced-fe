@@ -61,9 +61,8 @@ export const StatusUpdate = ({ appointment }: StatusUpdateProps) => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['slots'] });
 
-      // If status is changed to COMPLETED, invalidate stamps and favorites to refresh stamp data
+      // If status is changed to COMPLETED, invalidate favorites to refresh data
       if (newStatus === 'COMPLETED') {
-        queryClient.invalidateQueries({ queryKey: ['stamps'] });
         queryClient.invalidateQueries({ queryKey: ['favorites'] });
       }
 

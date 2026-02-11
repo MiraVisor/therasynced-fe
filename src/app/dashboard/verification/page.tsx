@@ -5,10 +5,13 @@ import {
   AlertCircle,
   Award,
   CheckCircle,
+  Circle,
   Clock,
   ExternalLink,
+  FileCheck,
   Shield,
   Trash2,
+  Upload,
   XCircle,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -29,6 +32,7 @@ import {
 } from '@/components/ui/dialog';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useFirstAidCertificateStatus } from '@/hooks/queries/useCertificate';
+import { useMyDocumentRequirementsStatus } from '@/hooks/queries/useDocumentRequirements';
 import {
   useDeleteFile,
   useFreelancerFilesList,
@@ -37,6 +41,7 @@ import {
 } from '@/hooks/queries/useFreelancerFiles';
 import { useRequestVerification, useVerificationStatus } from '@/hooks/queries/useVerification';
 import { useAuth } from '@/hooks/useAuthZustand';
+import { FreelancerRequirementStatus } from '@/services/documentRequirementService';
 import { FileMetadata } from '@/services/freelancerFileService';
 import { ROLES } from '@/types/types';
 import { formatFileSize } from '@/utils/fileUpload';
@@ -51,9 +56,11 @@ const DataTable = dynamic(
 export default function VerificationPage() {
   const { role } = useAuth();
 
-  // State for verification documents upload
-  const [selectedVerificationFiles, setSelectedVerificationFiles] = useState<File[]>([]);
-  const [verificationFileTitles, setVerificationFileTitles] = useState<string[]>([]);
+  // State for requirement upload modal
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedRequirement, setSelectedRequirement] =
+    useState<FreelancerRequirementStatus | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
   // State for first aid certificate upload
   const [selectedCertificateFiles, setSelectedCertificateFiles] = useState<File[]>([]);
@@ -70,16 +77,27 @@ export default function VerificationPage() {
   const { data: filesData, isLoading: isLoadingFiles } = useFreelancerFilesList();
   const { data: certificateStatusData, isLoading: isLoadingCertificate } =
     useFirstAidCertificateStatus();
+  const { data: requirementsStatus, isLoading: isLoadingRequirements } =
+    useMyDocumentRequirementsStatus();
 
   // Ensure files is always an array
   const files: FileMetadata[] = Array.isArray(filesData) ? filesData : [];
+
+  // Calculate requirements completion stats
+  const totalRequirements = requirementsStatus?.length || 0;
+  const completedRequirements = requirementsStatus?.filter((r) => r.uploaded).length || 0;
+  const mandatoryRequirements = requirementsStatus?.filter((r) => r.requirement.isMandatory) || [];
+  const mandatoryCompleted = mandatoryRequirements.filter((r) => r.uploaded).length;
+  const allMandatoryComplete =
+    mandatoryRequirements.length === 0 || mandatoryCompleted === mandatoryRequirements.length;
 
   const uploadMutation = useUploadFiles();
   const deleteMutation = useDeleteFile();
   const signedUrlMutation = useGetFileSignedUrl();
   const { mutate: requestVerificationMutation } = useRequestVerification();
 
-  const isLoading = isLoadingVerificationStatus || isLoadingFiles || isLoadingCertificate;
+  const isLoading =
+    isLoadingVerificationStatus || isLoadingFiles || isLoadingCertificate || isLoadingRequirements;
 
   // Redirect if not freelancer
   useEffect(() => {
@@ -92,11 +110,21 @@ export default function VerificationPage() {
     return null;
   }
 
-  // Get verification status
-  const verificationStatus =
+  // Derive effective verification status:
+  // – REJECTED always surfaces (freelancer must re-upload)
+  // – APPROVED only when the admin approved AND every mandatory doc is uploaded
+  // – PENDING when docs are submitted but awaiting admin review
+  // – UNVERIFIED otherwise
+  const backendStatus =
     verificationStatusData?.verificationStatus === 'NOT_SUBMITTED'
       ? 'UNVERIFIED'
       : verificationStatusData?.verificationStatus || 'UNVERIFIED';
+
+  let verificationStatus = backendStatus;
+  if (backendStatus === 'APPROVED' && !allMandatoryComplete) {
+    // Admin approved previously but mandatory docs are now missing — downgrade
+    verificationStatus = 'PENDING';
+  }
 
   // Get certificate status
   const certificateStatus = certificateStatusData?.firstAidCertificateStatus || 'PENDING';
@@ -104,36 +132,22 @@ export default function VerificationPage() {
   // Filter files by category
   const verificationFiles = files.filter((f) => f.category === 'VERIFICATION');
 
-  // Handle verification documents upload
-  const handleVerificationUpload = () => {
-    if (selectedVerificationFiles.length === 0) {
-      toast.error('Please select at least one file');
-      return;
-    }
-
-    if (selectedVerificationFiles.length !== verificationFileTitles.length) {
-      toast.error('Please provide a title for each file');
-      return;
-    }
-
-    // Validate all titles are filled
-    for (let i = 0; i < verificationFileTitles.length; i++) {
-      if (!verificationFileTitles[i]?.trim()) {
-        toast.error(`Please provide a title for file ${i + 1}`);
-        return;
-      }
-    }
+  // Handle requirement document upload (from modal)
+  const handleRequirementUpload = () => {
+    if (!uploadFile || !selectedRequirement) return;
 
     uploadMutation.mutate(
       {
-        files: selectedVerificationFiles,
-        titles: verificationFileTitles.map((t) => t.trim()),
+        files: [uploadFile],
+        titles: [selectedRequirement.requirement.name], // Auto-fill title from requirement name
         category: 'VERIFICATION',
+        requirementId: selectedRequirement.requirement.id,
       },
       {
         onSuccess: () => {
-          setSelectedVerificationFiles([]);
-          setVerificationFileTitles([]);
+          setUploadModalOpen(false);
+          setUploadFile(null);
+          setSelectedRequirement(null);
         },
       },
     );
@@ -260,7 +274,7 @@ export default function VerificationPage() {
                 : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300'
             }
           >
-            {category === 'FIRST_AID_CERTIFICATE' ? 'First Aid Certificate' : 'Verification'}
+            {category === 'FIRST_AID_CERTIFICATE' ? 'EFR Certificate' : 'Verification'}
           </Badge>
         );
       },
@@ -385,23 +399,32 @@ export default function VerificationPage() {
                 <span className="text-sm text-muted-foreground">Status</span>
                 {getStatusBadge(verificationStatus)}
               </div>
-              {verificationStatus === 'UNVERIFIED' && verificationFiles.length > 0 && (
-                <Button
-                  onClick={handleRequestVerification}
-                  size="sm"
-                  className="mt-4 w-full"
-                  disabled={uploadMutation.isPending}
-                >
-                  Request Verification
-                </Button>
-              )}
+              {verificationStatus === 'UNVERIFIED' &&
+                allMandatoryComplete &&
+                verificationFiles.length > 0 && (
+                  <Button
+                    onClick={handleRequestVerification}
+                    size="sm"
+                    className="mt-4 w-full"
+                    disabled={uploadMutation.isPending}
+                  >
+                    Request Verification
+                  </Button>
+                )}
+              {verificationStatus === 'UNVERIFIED' &&
+                !allMandatoryComplete &&
+                mandatoryRequirements.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Upload all mandatory documents before requesting verification.
+                  </p>
+                )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Award className="h-4 w-4" />
-                First Aid Certificate Status
+                EFR Certificate Status
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -413,57 +436,125 @@ export default function VerificationPage() {
           </Card>
         </div>
 
-        {/* Verification Documents Upload Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Upload Verification Documents
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Upload licenses, qualifications, certifications, and other professional verification
-              documents
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* File Upload Component */}
-            <FileUpload
-              maxFiles={5}
-              maxSize={10 * 1024 * 1024} // 10MB
-              value={selectedVerificationFiles}
-              onValueChange={setSelectedVerificationFiles}
-              fileTitles={verificationFileTitles}
-              onTitlesChange={setVerificationFileTitles}
-              showTitles={true}
-              accept=".jpg,.jpeg,.png,.pdf"
-              disabled={uploadMutation.isPending}
-            />
+        {/* Document Requirements Checklist */}
+        {requirementsStatus && requirementsStatus.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileCheck className="h-5 w-5" />
+                Document Requirements Checklist
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Complete the required documents for your job title.{' '}
+                {mandatoryRequirements.length > 0 && (
+                  <span className="font-medium text-destructive">
+                    Mandatory documents must be uploaded before you can create slots.
+                  </span>
+                )}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Progress Summary */}
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <span className="text-sm font-medium">Progress</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">
+                    {completedRequirements} of {totalRequirements} uploaded
+                  </span>
+                  {allMandatoryComplete ? (
+                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Ready to Create Slots
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      {mandatoryRequirements.length - mandatoryCompleted} Mandatory Missing
+                    </Badge>
+                  )}
+                </div>
+              </div>
 
-            {/* Upload Button */}
-            <Button
-              onClick={handleVerificationUpload}
-              disabled={
-                uploadMutation.isPending ||
-                selectedVerificationFiles.length === 0 ||
-                selectedVerificationFiles.length !== verificationFileTitles.length ||
-                verificationFileTitles.some((t) => !t?.trim())
-              }
-              className="w-full"
-            >
-              {uploadMutation.isPending ? 'Uploading...' : 'Upload Verification Documents'}
-            </Button>
-          </CardContent>
-        </Card>
+              {/* Requirements List */}
+              <div className="space-y-2">
+                {requirementsStatus.map((item) => (
+                  <div
+                    key={item.requirement.id}
+                    className={`flex items-center justify-between p-3 rounded-lg border ${
+                      item.uploaded
+                        ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10'
+                        : item.requirement.isMandatory
+                          ? 'bg-amber-50/50 border-amber-200 dark:bg-amber-900/10'
+                          : 'bg-muted/30 border-border'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {item.uploaded ? (
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Circle className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{item.requirement.name}</span>
+                          {item.requirement.isMandatory && (
+                            <Badge variant="destructive" className="text-xs py-0 h-5">
+                              Required
+                            </Badge>
+                          )}
+                        </div>
+                        {item.requirement.description && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {item.requirement.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {item.uploaded && item.uploadedFile ? (
+                        <div className="flex items-center gap-3">
+                          <div className="text-xs text-muted-foreground text-right">
+                            <span className="font-medium text-foreground">
+                              {item.uploadedFile.fileName}
+                            </span>
+                            <br />
+                            {new Date(item.uploadedFile.createdAt).toLocaleDateString()}
+                          </div>
+                          <Badge variant="outline" className="text-green-600 border-green-300">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Uploaded
+                          </Badge>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedRequirement(item);
+                            setUploadModalOpen(true);
+                          }}
+                        >
+                          <Upload className="h-4 w-4 mr-1" />
+                          Upload
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* First Aid Certificate Upload Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Award className="h-5 w-5" />
-              Upload First Aid Certificate
+              Upload EFR Certificate
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Upload your first aid certificate for professional verification
+              Upload your Emergency First Responder (EFR) certificate for professional verification
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -491,7 +582,7 @@ export default function VerificationPage() {
               }
               className="w-full"
             >
-              {uploadMutation.isPending ? 'Uploading...' : 'Upload First Aid Certificate'}
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload EFR Certificate'}
             </Button>
           </CardContent>
         </Card>
@@ -513,6 +604,48 @@ export default function VerificationPage() {
           initialLoading={isLoading && files.length > 0}
           loading={isLoading}
         />
+
+        {/* Requirement Upload Modal */}
+        <Dialog
+          open={uploadModalOpen}
+          onOpenChange={(open) => {
+            setUploadModalOpen(open);
+            if (!open) {
+              setUploadFile(null);
+              setSelectedRequirement(null);
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Upload: {selectedRequirement?.requirement.name}</DialogTitle>
+              {selectedRequirement?.requirement.description && (
+                <DialogDescription>{selectedRequirement.requirement.description}</DialogDescription>
+              )}
+            </DialogHeader>
+
+            <FileUpload
+              maxFiles={1}
+              maxSize={10 * 1024 * 1024}
+              value={uploadFile ? [uploadFile] : []}
+              onValueChange={(files) => setUploadFile(files[0] || null)}
+              accept=".jpg,.jpeg,.png,.pdf"
+              disabled={uploadMutation.isPending}
+            />
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setUploadModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRequirementUpload}
+                disabled={!uploadFile || uploadMutation.isPending}
+              >
+                {uploadMutation.isPending ? 'Uploading...' : 'Upload'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

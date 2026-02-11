@@ -63,24 +63,32 @@ export function PersonalDetailsStep() {
         });
       });
 
-      // Reverse geocode to get city
+      // Reverse geocode to get county and city/town
       try {
         const response = await fetch(
           `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
         );
         const data = await response.json();
-        if (data.city) {
-          setValue('city', data.city);
+        // Try to get county from principalSubdivision or locality
+        const countyName = data.principalSubdivision || data.locality;
+        const cityTownName = data.city || data.locality;
+        if (countyName) {
+          setValue('county', countyName);
           setLocationPermissionGranted(true);
-          toast.success(`Location found: ${data.city}`);
+          if (cityTownName && cityTownName !== countyName) {
+            setValue('cityTown', cityTownName);
+            toast.success(`Location found: ${cityTownName}, ${countyName}`);
+          } else {
+            toast.success(`Location found: ${countyName}`);
+          }
         } else {
-          toast.error('Could not determine your city from location');
+          toast.error('Could not determine your county from location');
         }
       } catch (error) {
-        toast.error('Failed to get city name from location');
+        toast.error('Failed to get location details');
       }
     } catch (error) {
-      toast.error('Location access denied or unavailable. Please select your city manually.');
+      toast.error('Location access denied or unavailable. Please select your county manually.');
     } finally {
       setIsRequestingLocation(false);
     }
@@ -212,17 +220,17 @@ export function PersonalDetailsStep() {
           )}
         </div>
 
-        {/* City Field */}
+        {/* County Field */}
         <div className="space-y-1">
-          <label className="text-xs font-inter font-medium text-gray-700">City</label>
+          <label className="text-xs font-inter font-medium text-gray-700">County</label>
           <div className="flex gap-2">
             <div className="flex-1">
               <LocationDropdown
-                value={watch('city') || ''}
-                onValueChange={(value) => setValue('city', value)}
-                placeholder="Select your city"
-                searchPlaceholder="Search locations..."
-                emptyMessage="No location found."
+                value={watch('county') || ''}
+                onValueChange={(value) => setValue('county', value)}
+                placeholder="Select your county"
+                searchPlaceholder="Search counties..."
+                emptyMessage="No county found."
               />
             </div>
             <Button
@@ -236,9 +244,25 @@ export function PersonalDetailsStep() {
               <MapPin className="h-4 w-4" />
             </Button>
           </div>
-          {errors.city && (
-            <p className="text-red-500 text-xs font-inter mt-0.5">{errors.city.message}</p>
+          {errors.county && (
+            <p className="text-red-500 text-xs font-inter mt-0.5">{errors.county.message}</p>
           )}
+        </div>
+
+        {/* City/Town Field */}
+        <div className="space-y-1">
+          <label htmlFor="cityTown" className="text-xs font-inter font-medium text-gray-700">
+            City/Town
+            <span className="text-gray-500 ml-1">(Optional)</span>
+          </label>
+          <Input
+            id="cityTown"
+            type="text"
+            placeholder="Enter your city or town"
+            value={watch('cityTown') || ''}
+            onChange={(e) => setValue('cityTown', e.target.value)}
+            className="h-10 text-sm font-inter"
+          />
         </div>
 
         {/* Home Address Field - Only for patients */}

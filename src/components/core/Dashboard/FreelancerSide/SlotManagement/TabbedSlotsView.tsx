@@ -89,14 +89,11 @@ export const TabbedSlotsView = () => {
         });
 
         if (response?.success) {
-          toast.success(
-            'Appointment marked as completed! ✅ The client will receive a stamp for this booking.',
-          );
+          toast.success('Appointment marked as completed! ✅');
 
           // Invalidate queries to refresh data
           queryClient.invalidateQueries({ queryKey: ['bookings'] });
           queryClient.invalidateQueries({ queryKey: ['slots'] });
-          queryClient.invalidateQueries({ queryKey: ['stamps'] });
           queryClient.invalidateQueries({ queryKey: ['favorites'] });
         } else {
           const errorMessage = response?.message || 'Failed to complete booking';

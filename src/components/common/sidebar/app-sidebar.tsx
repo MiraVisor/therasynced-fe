@@ -4,13 +4,13 @@ import * as React from 'react';
 import {
   Activity,
   AlertTriangle,
-  Award,
   BarChart,
   Briefcase,
   Calendar,
   CalendarCheck,
   ChevronDown,
   ChevronRight,
+  ClipboardCheck,
   CreditCard,
   Database,
   FileDown,
@@ -89,11 +89,6 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       icon: MessageSquare,
     },
     {
-      name: 'Loyalty',
-      url: '/dashboard/loyalty',
-      icon: Award,
-    },
-    {
       name: 'Account',
       url: '/dashboard/account',
       icon: Settings,
@@ -105,20 +100,15 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       url: '/dashboard',
       icon: Home,
     },
-    // {
-    //   name: 'Appointments',
-    //   url: '/dashboard/appointments',
-    //   icon: Calendar,
-    // },
-    {
-      name: 'Bookings',
-      url: '/dashboard/slots',
-      icon: Calendar,
-    },
     {
       name: 'Availability',
       url: '/dashboard/availability',
       icon: CalendarCheck,
+    },
+    {
+      name: 'My Slots',
+      url: '/dashboard/slots',
+      icon: Calendar,
     },
     {
       name: 'Messages',
@@ -212,14 +202,14 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
           icon: Tag,
         },
         {
+          name: 'Document Requirements',
+          url: '/dashboard/admin/document-requirements',
+          icon: ClipboardCheck,
+        },
+        {
           name: 'Form Templates',
           url: '/dashboard/admin/forms',
           icon: FileText,
-        },
-        {
-          name: 'Stamp Config',
-          url: '/dashboard/admin/stamp-config',
-          icon: Award,
         },
       ],
     },

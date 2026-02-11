@@ -4,7 +4,6 @@ import { UserProfileData } from '@/hooks/queries';
 import type { Booking } from './booking';
 import type { Conversation } from './chat';
 import type { Complaint } from './complaint';
-import type { LoyaltyProfile } from './loyalty';
 import type { Notification } from './notification';
 import type { RatingWithFreelancer, RatingWithPatient } from './rating';
 import type { Subscription } from './subscription';
@@ -193,7 +192,6 @@ export interface DataExportResponse {
     };
     preferences: {
       favorites: Expert[];
-      loyaltyProfile: LoyaltyProfile | null;
     };
     ratings: {
       given: RatingWithFreelancer[];

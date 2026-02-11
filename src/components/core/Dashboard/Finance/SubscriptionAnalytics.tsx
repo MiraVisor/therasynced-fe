@@ -84,7 +84,7 @@ export function SubscriptionAnalytics({ subscriptionData, isLoading }: Subscript
             <div className="font-poppins text-2xl font-bold text-charcoal">
               {subscriptionData ? formatNumber(subscriptionData.totalCanceled) : '0'}
             </div>
-            <div className="text-xs font-inter font-medium text-gray-600 mt-1">Canceled</div>
+            <div className="text-xs font-inter font-medium text-gray-600 mt-1">Cancelled</div>
           </div>
           <div className="group flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg border border-orange-200 cursor-pointer">
             <div className="p-2 bg-orange-100 rounded-full mb-2">
@@ -141,7 +141,7 @@ export function SubscriptionAnalytics({ subscriptionData, isLoading }: Subscript
             </div>
           </div>
 
-          {/* New & Canceled */}
+          {/* New & Cancelled */}
           <div className="grid grid-cols-1 gap-3">
             <div className="bg-white/90 backdrop-blur rounded-lg p-4 border border-gray-100">
               <div className="flex items-center justify-between">
@@ -167,7 +167,7 @@ export function SubscriptionAnalytics({ subscriptionData, isLoading }: Subscript
                     <ArrowDownRight className="h-4 w-4 text-error" />
                   </div>
                   <div>
-                    <div className="text-xs font-inter text-gray-500">Canceled this month</div>
+                    <div className="text-xs font-inter text-gray-500">Cancelled this month</div>
                     <div className="font-poppins text-2xl font-bold text-charcoal">
                       {subscriptionData
                         ? formatNumber(subscriptionData.canceledSubscriptionsThisMonth)

@@ -10,14 +10,19 @@ import Hero from './hero';
 import Navbar from './navbar';
 
 // Lazy load below-the-fold components to improve initial load time
-const HowItWorks = dynamic(() => import('./how-it-works'), {
+const ForWho = dynamic(() => import('./for-who'), {
   ssr: true,
   loading: () => <div className="h-[600px] bg-[#f5f4f1] dark:bg-neutral-950/50" />,
 });
 
+const HowItWorks = dynamic(() => import('./how-it-works'), {
+  ssr: true,
+  loading: () => <div className="h-[600px] bg-white dark:bg-neutral-900" />,
+});
+
 const Features = dynamic(() => import('./features'), {
   ssr: true,
-  loading: () => <div className="h-[600px] bg-[#faf9f6] dark:bg-black" />,
+  loading: () => <div className="h-[600px] bg-[#f5f4f1] dark:bg-neutral-950/50" />,
 });
 
 // Temporarily hidden - uncomment when ready to show
@@ -28,7 +33,7 @@ const Features = dynamic(() => import('./features'), {
 
 const Pricing = dynamic(() => import('./pricing'), {
   ssr: true,
-  loading: () => <div className="h-[600px] bg-[#faf9f6] dark:bg-black" />,
+  loading: () => <div className="h-[600px] bg-white dark:bg-neutral-900" />,
 });
 
 const LandingPage = () => {
@@ -71,6 +76,7 @@ const LandingPage = () => {
       <Navbar />
       <main className="relative">
         <Hero />
+        <ForWho />
         <HowItWorks />
         <Features />
         {/* <WhyChooseUs /> - Temporarily hidden */}

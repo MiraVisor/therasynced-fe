@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, Heart, Loader2, Stamp } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -25,9 +25,6 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
   const router = useRouter();
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const { mutate: toggleFavorite, isPending: isFavoriteLoading } = useFavoriteFreelancer();
-
-  // Get stamp information from freelancer object (stampInfo is included in API response)
-  const stampInfo = freelancer.stampInfo || null;
 
   const handleViewProfile = () => {
     setShowProfileDialog(true);
@@ -147,42 +144,6 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
                 </span>
               </div>
             )}
-            <div className="flex items-center justify-between">
-              <span className="font-inter text-sm font-medium text-gray-700 dark:text-gray-300">
-                Stamps:
-              </span>
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const target = stampInfo?.stampTarget ?? 5;
-                  const currentCount = Number(stampInfo?.currentStampCount ?? 0);
-                  const maxCount = Math.min(currentCount, target);
-                  return Array.from({ length: target }, (_, index) => {
-                    const isFilled = stampInfo && index < maxCount;
-                    return (
-                      <div
-                        key={index}
-                        className={`flex items-center justify-center w-6 h-6 rounded-full border-2 transition-all duration-200 ${
-                          isFilled
-                            ? 'bg-gradient-to-br from-primary to-primary/80 border-primary shadow-md scale-110'
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                        }`}
-                      >
-                        {isFilled ? (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-white" />
-                        ) : (
-                          <Stamp className="h-3.5 w-3.5 text-gray-400" />
-                        )}
-                      </div>
-                    );
-                  });
-                })()}
-                {stampInfo && (
-                  <span className="ml-2 text-xs font-poppins font-semibold text-gray-600 dark:text-gray-400">
-                    {stampInfo.currentStampCount}/{stampInfo.stampTarget}
-                  </span>
-                )}
-              </div>
-            </div>
             {(freelancer.availableSlots || 0) > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-gray-600 dark:text-gray-400">Availability:</span>
@@ -228,7 +189,6 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
           firstAidCertificateStatus: freelancer.firstAidCertificateStatus,
           onBookNow: handleBookNow,
           hasAvailableSlots: hasAvailableSlots ?? false,
-          stampInfo: stampInfo || undefined,
           durationPricing: freelancer.durationPricing,
           serviceCategoryPricing: freelancer.serviceCategoryPricing,
         }}

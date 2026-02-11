@@ -68,11 +68,11 @@ export default function VerificationStatusWidget({ className }: VerificationStat
     }
 
     if (documents.length === 0 && certificateStatus !== 'APPROVED') {
-      return 'Complete your verification by uploading your first aid certificate and professional documents.';
+      return 'Complete your verification by uploading your Emergency First Responder (EFR) certificate and professional documents.';
     }
 
     if (documents.length > 0 && certificateStatus !== 'APPROVED') {
-      return 'Upload your first aid certificate to complete the verification process.';
+      return 'Upload your Emergency First Responder (EFR) certificate to complete the verification process.';
     }
 
     if (certificateStatus === 'APPROVED' && documents.length === 0) {

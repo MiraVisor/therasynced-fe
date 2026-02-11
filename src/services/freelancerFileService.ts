@@ -21,6 +21,8 @@ export interface UploadFilesRequest {
   // Category can be a single value (applied to all files) or an array (one per file)
   // If not provided, files are uploaded without category (backward compatible)
   category?: FileCategory | FileCategory[];
+  // Link file to a specific document requirement
+  requirementId?: string;
 }
 
 export interface UploadFilesResponse {
@@ -62,6 +64,11 @@ const freelancerFileService = {
         // Single value: applied to all files
         formData.append('categories', data.category);
       }
+    }
+
+    // Append requirementId if provided (links file to a document requirement)
+    if (data.requirementId) {
+      formData.append('requirementId', data.requirementId);
     }
 
     const response = await api.post(ENDPOINTS.freelancer.filesUpload, formData, {

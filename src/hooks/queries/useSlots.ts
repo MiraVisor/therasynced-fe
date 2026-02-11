@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import * as slotApi from '@/services/slotService';
 import { useProfile } from '@/hooks/queries/useProfile';
 import { getApiErrorMessage } from '@/types/common';
+import type { LegacyCreateSlotsDto } from '@/types/slot';
 import { CreateSlotsDto, PaginationDto, ReserveSlotDto, UpdateSlotDto } from '@/types/types';
 
 /**
@@ -156,6 +157,21 @@ export const useCreateSlots = () => {
  * Alias for useCreateSlots (for backward compatibility)
  */
 export const useCreateSlot = useCreateSlots;
+
+/**
+ * Hook to create slots using the legacy format
+ * @deprecated Use useCreateSlots with the simplified format instead
+ */
+export const useCreateSlotsLegacy = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: LegacyCreateSlotsDto) => slotApi.createSlotLegacy(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
+    },
+  });
+};
 
 /**
  * Hook to update a slot
