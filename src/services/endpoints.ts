@@ -335,6 +335,8 @@ export const ENDPOINTS = {
     // Admin: get a specific freelancer's requirements status
     adminFreelancerStatus: (freelancerId: string) =>
       `/document-requirements/admin/freelancer/${freelancerId}/status`,
+    // Admin: set expiry date on a file
+    setFileExpiry: (fileId: string) => `/document-requirements/admin/file/${fileId}/expiry`,
     // Freelancer endpoints
     myStatus: '/document-requirements/my/status',
     canCreateSlots: '/document-requirements/my/can-create-slots',

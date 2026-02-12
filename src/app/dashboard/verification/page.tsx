@@ -53,6 +53,26 @@ const DataTable = dynamic(
   { ssr: false },
 );
 
+function getExpiryBadge(expiryDate: string) {
+  const now = new Date();
+  const expiry = new Date(expiryDate);
+  const diffMs = expiry.getTime() - now.getTime();
+  const diffMonths = diffMs / (1000 * 60 * 60 * 24 * 30);
+  const formatted = expiry.toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  if (diffMs < 0) {
+    return { text: `Expired ${formatted}`, className: 'text-red-600 font-medium' };
+  }
+  if (diffMonths <= 6) {
+    return { text: `Expires ${formatted}`, className: 'text-amber-600 font-medium' };
+  }
+  return { text: `Expires ${formatted}`, className: 'text-muted-foreground' };
+}
+
 export default function VerificationPage() {
   const { role } = useAuth();
 
@@ -519,11 +539,67 @@ export default function VerificationPage() {
                             </span>
                             <br />
                             {new Date(item.uploadedFile.createdAt).toLocaleDateString()}
+                            {item.uploadedFile.expiryDate && (
+                              <>
+                                <br />
+                                <span
+                                  className={getExpiryBadge(item.uploadedFile.expiryDate).className}
+                                >
+                                  {getExpiryBadge(item.uploadedFile.expiryDate).text}
+                                </span>
+                              </>
+                            )}
                           </div>
-                          <Badge variant="outline" className="text-green-600 border-green-300">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Uploaded
-                          </Badge>
+                          {item.uploadedFile.expiryDate &&
+                          new Date(item.uploadedFile.expiryDate) < new Date() ? (
+                            <>
+                              <Badge variant="outline" className="text-red-600 border-red-300">
+                                <AlertCircle className="w-3 h-3 mr-1" />
+                                Expired
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-red-600 border-red-300 hover:bg-red-50"
+                                onClick={() => {
+                                  setSelectedRequirement(item);
+                                  setUploadModalOpen(true);
+                                }}
+                              >
+                                <Upload className="h-4 w-4 mr-1" />
+                                Re-upload
+                              </Button>
+                            </>
+                          ) : item.uploadedFile.expiryDate &&
+                            (() => {
+                              const diffMs =
+                                new Date(item.uploadedFile.expiryDate).getTime() - Date.now();
+                              return diffMs / (1000 * 60 * 60 * 24 * 30) <= 6;
+                            })() ? (
+                            <>
+                              <Badge variant="outline" className="text-amber-600 border-amber-300">
+                                <Clock className="w-3 h-3 mr-1" />
+                                Expiring
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-amber-600 border-amber-300 hover:bg-amber-50"
+                                onClick={() => {
+                                  setSelectedRequirement(item);
+                                  setUploadModalOpen(true);
+                                }}
+                              >
+                                <Upload className="h-4 w-4 mr-1" />
+                                Re-upload
+                              </Button>
+                            </>
+                          ) : (
+                            <Badge variant="outline" className="text-green-600 border-green-300">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Uploaded
+                            </Badge>
+                          )}
                         </div>
                       ) : (
                         <Button
@@ -618,10 +694,15 @@ export default function VerificationPage() {
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Upload: {selectedRequirement?.requirement.name}</DialogTitle>
-              {selectedRequirement?.requirement.description && (
-                <DialogDescription>{selectedRequirement.requirement.description}</DialogDescription>
-              )}
+              <DialogTitle>
+                {selectedRequirement?.uploaded ? 'Re-upload' : 'Upload'}:{' '}
+                {selectedRequirement?.requirement.name}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedRequirement?.uploaded
+                  ? 'Upload a new version to replace the existing document. The old file will be removed automatically.'
+                  : selectedRequirement?.requirement.description || 'Select a file to upload.'}
+              </DialogDescription>
             </DialogHeader>
 
             <FileUpload

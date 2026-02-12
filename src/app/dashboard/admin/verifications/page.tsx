@@ -120,6 +120,43 @@ const VerificationsPage = () => {
       },
     },
     {
+      id: 'expiry',
+      header: 'Expiry',
+      cell: ({ row }) => {
+        const files = row.original.freelancerFiles || [];
+        const now = new Date();
+        const sixMonths = new Date(now);
+        sixMonths.setMonth(now.getMonth() + 6);
+
+        const expiredCount = files.filter(
+          (f) => f.expiryDate && new Date(f.expiryDate) < now,
+        ).length;
+        const expiringSoonCount = files.filter(
+          (f) =>
+            f.expiryDate && new Date(f.expiryDate) >= now && new Date(f.expiryDate) <= sixMonths,
+        ).length;
+
+        if (expiredCount > 0) {
+          return (
+            <Badge variant="outline" className="text-[10px] bg-red-50 text-red-700 border-red-200">
+              {expiredCount} expired
+            </Badge>
+          );
+        }
+        if (expiringSoonCount > 0) {
+          return (
+            <Badge
+              variant="outline"
+              className="text-[10px] bg-amber-50 text-amber-700 border-amber-200"
+            >
+              {expiringSoonCount} expiring
+            </Badge>
+          );
+        }
+        return <span className="text-xs text-muted-foreground">–</span>;
+      },
+    },
+    {
       id: 'status',
       header: 'Status',
       cell: ({ row }) => {

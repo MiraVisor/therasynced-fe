@@ -1,6 +1,14 @@
 'use client';
 
-import { AlertCircle, ArrowLeft, CheckCircle2, Eye, FileText, XCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  Eye,
+  FileText,
+  XCircle,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -11,6 +19,7 @@ import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageW
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Progress } from '@/components/ui/progress';
@@ -20,7 +29,21 @@ import { useAdminGetFileSignedUrl } from '@/hooks/queries/useFreelancerFiles';
 import adminVerificationService, {
   type VerificationDetailsResponse,
 } from '@/services/adminVerificationService';
-import type { FreelancerRequirementStatus } from '@/services/documentRequirementService';
+import documentRequirementService, {
+  type FreelancerRequirementStatus,
+} from '@/services/documentRequirementService';
+
+function getExpiryStatus(expiryDate: string): { label: string; className: string } {
+  const now = new Date();
+  const expiry = new Date(expiryDate);
+  const diffMs = expiry.getTime() - now.getTime();
+  const diffMonths = diffMs / (1000 * 60 * 60 * 24 * 30);
+
+  if (diffMs < 0) return { label: 'Expired', className: 'bg-red-100 text-red-700 border-red-200' };
+  if (diffMonths <= 6)
+    return { label: 'Expiring Soon', className: 'bg-amber-100 text-amber-700 border-amber-200' };
+  return { label: 'Valid', className: 'bg-emerald-100 text-emerald-700 border-emerald-200' };
+}
 
 const VerificationDetailPage = () => {
   const { id } = useParams();
@@ -43,6 +66,8 @@ const VerificationDetailPage = () => {
 
   // Track which documents the admin has reviewed (opened/viewed)
   const [reviewedDocIds, setReviewedDocIds] = useState<Set<string>>(new Set());
+  // Track saving state for expiry dates
+  const [savingExpiryFileId, setSavingExpiryFileId] = useState<string | null>(null);
 
   const signedUrlMutation = useAdminGetFileSignedUrl();
 
@@ -224,6 +249,19 @@ const VerificationDetailPage = () => {
     [],
   );
 
+  const handleSetExpiry = useCallback(async (fileId: string, dateStr: string) => {
+    if (!dateStr) return;
+    try {
+      setSavingExpiryFileId(fileId);
+      await documentRequirementService.setFileExpiry(fileId, new Date(dateStr).toISOString());
+      toast.success('Expiry date saved');
+    } catch {
+      toast.error('Failed to save expiry date');
+    } finally {
+      setSavingExpiryFileId(null);
+    }
+  }, []);
+
   // ── Loading ──
   if (isLoading) {
     return (
@@ -379,61 +417,105 @@ const VerificationDetailPage = () => {
               <div className="divide-y">
                 {requirementsStatus.map((item: FreelancerRequirementStatus) => {
                   const isReviewed = item.uploadedFile && reviewedDocIds.has(item.uploadedFile.id);
+                  const expiry = item.uploadedFile?.expiryDate
+                    ? getExpiryStatus(item.uploadedFile.expiryDate)
+                    : null;
                   return (
-                    <div
-                      key={item.requirement.id}
-                      className="flex items-center justify-between gap-3 py-3"
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        {/* Status icon */}
-                        {item.uploaded ? (
-                          isReviewed ? (
-                            <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                    <div key={item.requirement.id} className="py-3 space-y-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {/* Status icon */}
+                          {item.uploaded ? (
+                            isReviewed ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                            ) : (
+                              <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                            )
                           ) : (
-                            <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                          )
-                        ) : (
-                          <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                        )}
+                            <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                          )}
 
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-medium text-foreground truncate">
-                              {item.requirement.name}
-                            </span>
-                            {item.requirement.isMandatory && (
-                              <span className="text-[10px] font-medium text-red-600">*</span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-medium text-foreground truncate">
+                                {item.requirement.name}
+                              </span>
+                              {item.requirement.isMandatory && (
+                                <span className="text-[10px] font-medium text-red-600">*</span>
+                              )}
+                              {expiry && (
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[10px] px-1.5 py-0 h-4 ${expiry.className}`}
+                                >
+                                  {expiry.label}
+                                </Badge>
+                              )}
+                            </div>
+                            {item.uploadedFile && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {item.uploadedFile.fileName}
+                                {' · '}
+                                {new Date(item.uploadedFile.createdAt).toLocaleDateString('en-IE', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                })}
+                                {item.uploadedFile.expiryDate && (
+                                  <>
+                                    {' · Expires '}
+                                    {new Date(item.uploadedFile.expiryDate).toLocaleDateString(
+                                      'en-IE',
+                                      { day: 'numeric', month: 'short', year: 'numeric' },
+                                    )}
+                                  </>
+                                )}
+                              </p>
                             )}
                           </div>
-                          {item.uploadedFile && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {item.uploadedFile.fileName}
-                              {' · '}
-                              {new Date(item.uploadedFile.createdAt).toLocaleDateString('en-IE', {
-                                day: 'numeric',
-                                month: 'short',
-                              })}
-                            </p>
+                        </div>
+
+                        {/* Action */}
+                        <div className="flex-shrink-0">
+                          {item.uploaded && item.uploadedFile ? (
+                            <Button
+                              variant={isReviewed ? 'ghost' : 'outline'}
+                              size="sm"
+                              onClick={() => handleViewDocument(item.uploadedFile!.id)}
+                              className="h-7 text-xs gap-1"
+                            >
+                              <Eye className="h-3 w-3" />
+                              {isReviewed ? 'View' : 'Review'}
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-amber-500">Missing</span>
                           )}
                         </div>
                       </div>
 
-                      {/* Action */}
-                      <div className="flex-shrink-0">
-                        {item.uploaded && item.uploadedFile ? (
-                          <Button
-                            variant={isReviewed ? 'ghost' : 'outline'}
-                            size="sm"
-                            onClick={() => handleViewDocument(item.uploadedFile!.id)}
-                            className="h-7 text-xs gap-1"
-                          >
-                            <Eye className="h-3 w-3" />
-                            {isReviewed ? 'View' : 'Review'}
-                          </Button>
-                        ) : (
-                          <span className="text-xs text-amber-500">Missing</span>
-                        )}
-                      </div>
+                      {/* Expiry date input for documents that have hasExpiry */}
+                      {item.uploaded && item.uploadedFile && item.requirement.hasExpiry && (
+                        <div className="flex items-center gap-2 ml-7">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <Input
+                            type="date"
+                            className="h-7 text-xs w-40"
+                            defaultValue={
+                              item.uploadedFile.expiryDate
+                                ? new Date(item.uploadedFile.expiryDate).toISOString().split('T')[0]
+                                : ''
+                            }
+                            onChange={(e) => {
+                              if (e.target.value && item.uploadedFile) {
+                                handleSetExpiry(item.uploadedFile.id, e.target.value);
+                              }
+                            }}
+                            disabled={savingExpiryFileId === item.uploadedFile.id}
+                          />
+                          {savingExpiryFileId === item.uploadedFile.id && (
+                            <LoadingSpinner size="sm" />
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -485,6 +567,35 @@ const VerificationDetailPage = () => {
                           )
                         : 'N/A'}
                     </span>
+                    {/* View button — find file ID from freelancerFiles */}
+                    {(() => {
+                      const certFile = verification.freelancerFiles?.find(
+                        (f) => f.category === 'FIRST_AID_CERTIFICATE',
+                      );
+                      return certFile ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewDocument(certFile.id)}
+                          className="h-7 text-xs gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          View
+                        </Button>
+                      ) : verification.firstAidCertificate?.url ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            window.open(verification.firstAidCertificate!.url, '_blank')
+                          }
+                          className="h-7 text-xs gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          View
+                        </Button>
+                      ) : null;
+                    })()}
                   </div>
 
                   {verification.firstAidCertificate.rejectionReason && (

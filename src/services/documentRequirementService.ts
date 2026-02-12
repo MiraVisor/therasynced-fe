@@ -8,6 +8,7 @@ export interface DocumentRequirement {
   name: string;
   description?: string;
   isMandatory: boolean;
+  hasExpiry: boolean;
   sortOrder: number;
   isActive: boolean;
   createdAt: string;
@@ -63,6 +64,7 @@ export interface FreelancerRequirementStatus {
     fileSize: number;
     fileType: string;
     category: string | null;
+    expiryDate?: string;
     createdAt: string;
   };
 }
@@ -134,6 +136,17 @@ const documentRequirementService = {
   // Freelancer: Get requirements status for authenticated user
   getMyStatus: async (): Promise<FreelancerRequirementsStatusResponse> => {
     const response = await api.get(ENDPOINTS.documentRequirements.myStatus);
+    return response.data;
+  },
+
+  // Admin: Set expiry date on a freelancer file
+  setFileExpiry: async (
+    fileId: string,
+    expiryDate: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    const response = await api.patch(ENDPOINTS.documentRequirements.setFileExpiry(fileId), {
+      expiryDate,
+    });
     return response.data;
   },
 

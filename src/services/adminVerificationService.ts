@@ -37,6 +37,7 @@ export interface VerificationDetailsResponse {
     type: string;
     uploadedAt: string;
   }>;
+  freelancerFiles?: FreelancerFile[];
   firstAidCertificate?: {
     url: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -69,6 +70,7 @@ export interface FreelancerFile {
   fileName: string;
   fileSize: number;
   fileType: string;
+  expiryDate?: string;
   createdAt: string;
   updatedAt: string;
   category?: 'VERIFICATION' | 'FIRST_AID_CERTIFICATE' | null;

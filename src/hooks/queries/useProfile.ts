@@ -105,6 +105,7 @@ export const useUpdateProfile = () => {
     mutationFn: (data: UpdateProfileDto) => profileApi.updateProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['documentRequirements'] });
       toast.success('Profile updated successfully!');
     },
     onError: (error: unknown) => {
