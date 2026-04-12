@@ -9,6 +9,7 @@ import { DataTable } from '@/components/common/DataTable/data-table';
 import { createSlotsColumns } from '@/components/common/DataTable/slots-columns';
 import { InvoiceGenerationDialog } from '@/components/core/Dashboard/FreelancerSide/Appointment/InvoiceGenerationDialog';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
+import { invalidateBookingStatsQueries } from '@/hooks/queries/useBookings';
 import { useDeleteSlot, useMySlots } from '@/hooks/queries/useSlots';
 import { Appointment, type Slot } from '@/types/types';
 
@@ -91,9 +92,9 @@ export const TabbedSlotsView = () => {
         if (response?.success) {
           toast.success('Appointment marked as completed! ✅');
 
-          // Invalidate queries to refresh data
-          queryClient.invalidateQueries({ queryKey: ['bookings'] });
-          queryClient.invalidateQueries({ queryKey: ['slots'] });
+          // Refresh every cache that depends on booking state so revenue,
+          // appointment counts, and admin surfaces update immediately.
+          invalidateBookingStatsQueries(queryClient);
           queryClient.invalidateQueries({ queryKey: ['favorites'] });
         } else {
           const errorMessage = response?.message || 'Failed to complete booking';

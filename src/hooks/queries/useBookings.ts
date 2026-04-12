@@ -1,7 +1,40 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import * as bookingApi from '@/services/bookingService';
-import { Booking, CancelBookingDto, CreateBookingDto, RescheduleBookingDto } from '@/types/types';
+import {
+  Booking,
+  CancelBookingDto,
+  CompleteBookingDto,
+  CreateBookingDto,
+  RescheduleBookingDto,
+} from '@/types/types';
+
+/**
+ * Invalidate every cache entry that depends on booking state.
+ *
+ * Called by every booking mutation (create / cancel / reschedule / complete)
+ * so that counters, revenue, appointment graphs, and admin views refresh
+ * in lock-step with the action the user just took. Previously each mutation
+ * only invalidated a subset of these keys, which left stats stale until a
+ * hard refresh. Keep this list aligned with the query keys declared in
+ * useAdmin.ts, useFreelancers.ts, useAdminTransactions.ts and useSlots.ts.
+ */
+export const invalidateBookingStatsQueries = (queryClient: QueryClient) => {
+  // Booking and slot queries (prefix-matched, covers patient + freelancer).
+  queryClient.invalidateQueries({ queryKey: ['bookings'] });
+  queryClient.invalidateQueries({ queryKey: ['slots'] });
+
+  // Freelancer dashboard / stats / analytics.
+  queryClient.invalidateQueries({ queryKey: ['freelancerDashboard'] });
+  queryClient.invalidateQueries({ queryKey: ['freelancerStats'] });
+  queryClient.invalidateQueries({ queryKey: ['freelancerAnalytics'] });
+
+  // Admin dashboard surfaces.
+  queryClient.invalidateQueries({ queryKey: ['adminBookings'] });
+  queryClient.invalidateQueries({ queryKey: ['adminFinance'] });
+  queryClient.invalidateQueries({ queryKey: ['adminTransactions'] });
+  queryClient.invalidateQueries({ queryKey: ['adminTransactionStats'] });
+};
 
 /**
  * Hook to fetch patient bookings
@@ -68,8 +101,7 @@ export const useCreateBooking = () => {
   return useMutation({
     mutationFn: (data: CreateBookingDto) => bookingApi.createBooking(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      invalidateBookingStatsQueries(queryClient);
     },
   });
 };
@@ -83,8 +115,7 @@ export const useCancelBooking = () => {
   return useMutation({
     mutationFn: (data: CancelBookingDto) => bookingApi.cancelBooking(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      invalidateBookingStatsQueries(queryClient);
     },
   });
 };
@@ -98,10 +129,28 @@ export const useRescheduleBooking = () => {
   return useMutation({
     mutationFn: (data: RescheduleBookingDto) => bookingApi.rescheduleBooking(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
-      queryClient.invalidateQueries({ queryKey: ['bookings', 'patient'] });
-      queryClient.invalidateQueries({ queryKey: ['bookings', 'freelancer'] });
+      invalidateBookingStatsQueries(queryClient);
+    },
+  });
+};
+
+/**
+ * Hook to mark a booking as completed.
+ *
+ * IMPORTANT: marking a booking complete is the single event that should
+ * flip revenue, appointment counts, and analytics forward across both the
+ * freelancer and admin surfaces. It must therefore invalidate the full
+ * booking-stats query set — not just ['bookings'] and ['slots']. Prior
+ * direct call sites in SlotDetailsDialog and TabbedSlotsView were missing
+ * admin/analytics invalidations, so counters stayed stale until reload.
+ */
+export const useCompleteBooking = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CompleteBookingDto) => bookingApi.completeBooking(data),
+    onSuccess: () => {
+      invalidateBookingStatsQueries(queryClient);
     },
   });
 };

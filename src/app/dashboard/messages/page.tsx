@@ -134,22 +134,18 @@ const MessagesPageContent = () => {
           }, 500);
         }
       } else {
-        // Contact doesn't exist, send a message to create conversation
-        // The sendMessage will create the conversation automatically
-        const createConversation = async () => {
-          try {
-            await sendMessage(targetUserId, 'Hello!');
-            // The contact will appear via socket updates, handled in the next useEffect
-          } catch (error: unknown) {
-            const errorMessage =
-              error instanceof Error ? error.message : 'Failed to start conversation';
-            console.error('Failed to start conversation:', error);
-            toast.error(errorMessage);
-            hasHandledUserIdRef.current = false; // Allow retry
-          }
-        };
-
-        createConversation();
+        // Contact doesn't exist yet. We intentionally do NOT auto-send a
+        // "Hello!" bootstrap message here — that logic previously fired on
+        // every page reload with ?userId=... in the URL and silently
+        // spammed the target user with automated greetings. Instead, the
+        // conversation should be created when the user explicitly types
+        // their first real message. Until then, surface a gentle toast
+        // letting the user know the person hasn't been messaged yet.
+        console.log(
+          '[messages] No existing conversation with target user; waiting for first user-typed message.',
+          targetUserId,
+        );
+        toast.info('No messages yet — type your first message to start this conversation.');
       }
     }
   }, [
@@ -157,7 +153,6 @@ const MessagesPageContent = () => {
     contacts,
     loading.contacts,
     selectConversation,
-    sendMessage,
     isMobile,
     markConversationAsRead,
   ]);

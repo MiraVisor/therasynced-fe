@@ -48,47 +48,81 @@ export function PersonalDetailsStep() {
 
   const onRequestLocation = async () => {
     setIsRequestingLocation(true);
-    try {
-      if (!('geolocation' in navigator)) {
-        toast.error('Geolocation is not supported by your browser');
-        setIsRequestingLocation(false);
-        return;
-      }
 
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+    if (!('geolocation' in navigator)) {
+      toast.error(
+        'Geolocation is not supported by your browser. Please enter your county and town manually.',
+      );
+      setIsRequestingLocation(false);
+      return;
+    }
+
+    // Step 1: ask the browser for the user's coordinates. Handle each
+    // GeolocationPositionError code separately so the user sees a
+    // specific, actionable message instead of a generic "failed."
+    let position: GeolocationPosition;
+    try {
+      position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: false,
-          timeout: 10000,
+          timeout: 15000,
           maximumAge: 60000,
         });
       });
-
-      // Reverse geocode to get county and city/town
-      try {
-        const response = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
+    } catch (geoError) {
+      const code = (geoError as GeolocationPositionError)?.code;
+      if (code === 1 /* PERMISSION_DENIED */) {
+        toast.error(
+          'Location access was blocked. Please allow location in your browser settings, or enter your county and town manually below.',
         );
-        const data = await response.json();
-        // Try to get county from principalSubdivision or locality
-        const countyName = data.principalSubdivision || data.locality;
-        const cityTownName = data.city || data.locality;
-        if (countyName) {
-          setValue('county', countyName);
-          setLocationPermissionGranted(true);
-          if (cityTownName && cityTownName !== countyName) {
-            setValue('cityTown', cityTownName);
-            toast.success(`Location found: ${cityTownName}, ${countyName}`);
-          } else {
-            toast.success(`Location found: ${countyName}`);
-          }
-        } else {
-          toast.error('Could not determine your county from location');
-        }
-      } catch (error) {
-        toast.error('Failed to get location details');
+      } else if (code === 2 /* POSITION_UNAVAILABLE */) {
+        toast.error(
+          "We couldn't determine your location right now. Please try again or enter your county and town manually.",
+        );
+      } else if (code === 3 /* TIMEOUT */) {
+        toast.error(
+          'Location request timed out. Please try again or enter your county and town manually.',
+        );
+      } else {
+        toast.error('Location lookup failed. Please enter your county and town manually.');
       }
-    } catch (error) {
-      toast.error('Location access denied or unavailable. Please select your county manually.');
+      setIsRequestingLocation(false);
+      return;
+    }
+
+    // Step 2: reverse-geocode the coordinates into a county/city via the
+    // third-party BigDataCloud endpoint. Keep this try/catch separate
+    // from the geolocation one so we can tell which phase failed.
+    try {
+      const response = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
+      );
+      if (!response.ok) {
+        throw new Error(`Reverse geocode returned HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      // Try to get county from principalSubdivision or locality
+      const countyName = data.principalSubdivision || data.locality;
+      const cityTownName = data.city || data.locality;
+      if (countyName) {
+        setValue('county', countyName);
+        setLocationPermissionGranted(true);
+        if (cityTownName && cityTownName !== countyName) {
+          setValue('cityTown', cityTownName);
+          toast.success(`Location found: ${cityTownName}, ${countyName}`);
+        } else {
+          toast.success(`Location found: ${countyName}`);
+        }
+      } else {
+        toast.info(
+          "We couldn't match your coordinates to a county. Please enter your county and town manually.",
+        );
+      }
+    } catch (geocodeError) {
+      console.error('[PersonalDetailsStep] Reverse geocode failed', geocodeError);
+      toast.error(
+        "We couldn't look up your town right now. Please enter your county and town manually.",
+      );
     } finally {
       setIsRequestingLocation(false);
     }

@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { invalidateBookingStatsQueries } from '@/hooks/queries/useBookings';
 import { Appointment, LocationType, Slot } from '@/types/types';
 
 interface SlotDetailsDialogProps {
@@ -131,9 +132,9 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
         successShown = true;
         toast.success('Appointment marked as completed! ✅');
 
-        // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['bookings'] });
-        queryClient.invalidateQueries({ queryKey: ['slots'] });
+        // Refresh every cache that depends on booking state so revenue,
+        // appointment counts, and admin surfaces update immediately.
+        invalidateBookingStatsQueries(queryClient);
         queryClient.invalidateQueries({ queryKey: ['favorites'] });
 
         // Call callbacks safely - don't let errors in callbacks trigger error toast

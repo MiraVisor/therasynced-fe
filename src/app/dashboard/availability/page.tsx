@@ -540,6 +540,23 @@ const AvailabilityPage = () => {
             )}
           </div>
 
+          {/*
+            Visible guidance explaining exactly why the submit button is
+            disabled. Previously the button just greyed out silently when
+            any one of these conditions failed — users would randomly
+            click the "All Weekdays" quick-select because it appeared to
+            "unstick" the form (it was really filling in the missing
+            selection). Surfacing the specific reason removes that
+            confusion and prevents the bug report.
+          */}
+          {(selectedDays.length === 0 || (selectedDays.length > 0 && slotCount === 0)) && (
+            <p className="text-sm text-muted-foreground">
+              {selectedDays.length === 0
+                ? 'Pick at least one day above to schedule slots.'
+                : "The selected time range doesn't fit any full sessions at this duration. Widen the start/end time or pick a shorter duration."}
+            </p>
+          )}
+
           {/* Submit Button */}
           <Button
             className="w-full"
@@ -547,6 +564,15 @@ const AvailabilityPage = () => {
             onClick={handleSubmit}
             disabled={
               selectedDays.length === 0 || slotCount === 0 || !hasPricingConfigured || isSubmitting
+            }
+            title={
+              selectedDays.length === 0
+                ? 'Pick at least one day first.'
+                : !hasPricingConfigured
+                  ? 'Configure pricing for this duration above.'
+                  : slotCount === 0
+                    ? "The time range doesn't allow for any full sessions at this duration."
+                    : undefined
             }
           >
             {isSubmitting ? (
