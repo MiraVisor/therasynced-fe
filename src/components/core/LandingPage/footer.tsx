@@ -102,18 +102,36 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Contact */}
           <div>
             <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 font-inter">
-              Support
+              Contact
             </h3>
             <ul className="space-y-2.5 text-sm text-gray-500 font-open-sans">
               <li>
+                <Link href="/contact" className="hover:text-primary transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
                 <a
                   href="mailto:support@therasynced.com"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-colors break-all"
                 >
-                  Contact Us
+                  support@therasynced.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:sales@therasynced.com"
+                  className="hover:text-primary transition-colors break-all"
+                >
+                  sales@therasynced.com
+                </a>
+              </li>
+              <li>
+                <a href="tel:+353894958346" className="hover:text-primary transition-colors">
+                  089 495 8346
                 </a>
               </li>
             </ul>
