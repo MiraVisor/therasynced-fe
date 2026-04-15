@@ -1,16 +1,25 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
+import { ChevronDown, ChevronUp, MoreVertical, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import * as bookingService from '@/services/bookingService';
-import { DataTable } from '@/components/common/DataTable/data-table';
-import { createSlotsColumns } from '@/components/common/DataTable/slots-columns';
 import { InvoiceGenerationDialog } from '@/components/core/Dashboard/FreelancerSide/Appointment/InvoiceGenerationDialog';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { invalidateBookingStatsQueries } from '@/hooks/queries/useBookings';
 import { useDeleteSlot, useMySlots } from '@/hooks/queries/useSlots';
+import { cn } from '@/lib/utils';
 import { Appointment, type Slot } from '@/types/types';
 
 export const TabbedSlotsView = () => {
@@ -20,12 +29,14 @@ export const TabbedSlotsView = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [invoiceSlot, setInvoiceSlot] = useState<Slot | null>(null);
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+
   const { mutate: deleteSlot } = useDeleteSlot();
 
   // Fetch all slots
   const { data: allSlots = [], isLoading } = useMySlots({
     page: 1,
-    limit: 1000, // Fetch all for filtering
+    limit: 1000,
     sortBy: 'startTime',
     sortOrder: 'asc',
   });
@@ -34,7 +45,6 @@ export const TabbedSlotsView = () => {
   const filteredSlots = useMemo(() => {
     if (statusFilter === 'all') return allSlots;
 
-    // Special handling for COMPLETED filter - check booking status
     if (statusFilter === 'COMPLETED') {
       return allSlots.filter(
         (slot) =>
@@ -44,7 +54,6 @@ export const TabbedSlotsView = () => {
       );
     }
 
-    // Special handling for BOOKED filter - exclude completed bookings
     if (statusFilter === 'BOOKED') {
       return allSlots.filter(
         (slot) =>
@@ -55,9 +64,32 @@ export const TabbedSlotsView = () => {
       );
     }
 
-    // For other statuses, filter by slot status
     return allSlots.filter((slot) => slot.status === statusFilter);
   }, [allSlots, statusFilter]);
+
+  // Group slots by date
+  const groupedSlots = useMemo(() => {
+    const grouped: Record<string, Slot[]> = {};
+
+    filteredSlots.forEach((slot) => {
+      const dateKey = format(parseISO(slot.startTime), 'yyyy-MM-dd');
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(slot);
+    });
+
+    // Sort dates
+    return Object.entries(grouped)
+      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .map(([dateKey, slots]) => ({
+        dateKey,
+        date: parseISO(dateKey),
+        slots: slots.sort(
+          (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+        ),
+      }));
+  }, [filteredSlots]);
 
   const handleDeleteSlot = useMemo(
     () => (slot: Slot) => {
@@ -91,9 +123,6 @@ export const TabbedSlotsView = () => {
 
         if (response?.success) {
           toast.success('Appointment marked as completed! ✅');
-
-          // Refresh every cache that depends on booking state so revenue,
-          // appointment counts, and admin surfaces update immediately.
           invalidateBookingStatsQueries(queryClient);
           queryClient.invalidateQueries({ queryKey: ['favorites'] });
         } else {
@@ -127,7 +156,6 @@ export const TabbedSlotsView = () => {
     setSelectedSlot(null);
   };
 
-  // Convert Slot to Appointment format for invoice dialog
   const appointmentData = useMemo((): Appointment | null => {
     if (!invoiceSlot?.booking) return null;
 
@@ -147,40 +175,114 @@ export const TabbedSlotsView = () => {
     };
   }, [invoiceSlot]);
 
-  // Create columns with delete, view, complete, and invoice handlers
-  const columns = useMemo(
-    () => createSlotsColumns(handleDeleteSlot, handleViewSlot, false),
-    [handleDeleteSlot, handleViewSlot, handleCompleteBooking, handleGenerateInvoice],
-  );
-
-  // Status filter options
   const statusFilterOptions = [
     { label: 'All', value: 'all' },
     { label: 'Available', value: 'AVAILABLE' },
-    { label: 'Completed', value: 'COMPLETED' },
     { label: 'Booked', value: 'BOOKED' },
+    { label: 'Completed', value: 'COMPLETED' },
     { label: 'Reserved', value: 'RESERVED' },
     { label: 'Cancelled', value: 'CANCELLED' },
   ];
 
+  const toggleDateExpanded = (dateKey: string) => {
+    setExpandedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateKey)) {
+        next.delete(dateKey);
+      } else {
+        next.add(dateKey);
+      }
+      return next;
+    });
+  };
+
+  if (isLoading) {
+    return <div className="text-center py-8 text-gray-500">Loading slots...</div>;
+  }
+
+  if (filteredSlots.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No slots found</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 pb-0">
-      <DataTable
-        columns={columns}
-        data={filteredSlots}
-        title="All Slots"
-        enableSorting={false}
-        enableFiltering={true}
-        enablePagination={true}
-        pageSize={10}
-        showSearch={false}
-        showSorting={false}
-        loading={isLoading}
-        filterOptions={statusFilterOptions}
-        selectedFilter={statusFilter}
-        onFilterChange={setStatusFilter}
-        enableRowSelection={false}
-      />
+    <div className="space-y-4">
+      {/* Filter pills */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs font-inter font-medium text-gray-600">Filter:</span>
+        {statusFilterOptions.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => setStatusFilter(option.value)}
+            className={cn(
+              'px-3 py-1.5 rounded-full text-xs font-inter font-medium transition',
+              statusFilter === option.value
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Grouped slots by date */}
+      <div className="space-y-3">
+        {groupedSlots.map(({ dateKey, date, slots }) => {
+          const isExpanded = expandedDates.has(dateKey);
+          const bookedCount = slots.filter(
+            (s) => s.status === 'BOOKED' || s.status === 'RESERVED',
+          ).length;
+          const availableCount = slots.filter((s) => s.status === 'AVAILABLE').length;
+
+          return (
+            <div key={dateKey} className="border border-gray-200 rounded-lg overflow-hidden">
+              {/* Date header */}
+              <button
+                onClick={() => toggleDateExpanded(dateKey)}
+                className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between text-left"
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-charcoal font-poppins">
+                    {format(date, 'EEE, MMM d, yyyy')}
+                  </h3>
+                  <p className="text-xs text-gray-600 font-inter mt-1">
+                    {slots.length} slots
+                    {bookedCount > 0 && ` • ${bookedCount} booked`}
+                    {availableCount > 0 && ` • ${availableCount} available`}
+                  </p>
+                </div>
+                {isExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-600" />
+                )}
+              </button>
+
+              {/* Slots list */}
+              {isExpanded && (
+                <div className="divide-y border-t">
+                  {slots.map((slot) => (
+                    <SlotRow
+                      key={slot.id}
+                      slot={slot}
+                      onView={() => handleViewSlot(slot)}
+                      onDelete={() => handleDeleteSlot(slot)}
+                      onComplete={() => handleCompleteBooking(slot)}
+                      onInvoice={() => handleGenerateInvoice(slot)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Dialogs */}
       {selectedSlot && (
         <SlotDetailsDialog
           slot={selectedSlot}
@@ -193,7 +295,6 @@ export const TabbedSlotsView = () => {
         />
       )}
 
-      {/* Invoice Generation Dialog */}
       {appointmentData && invoiceSlot && (
         <InvoiceGenerationDialog
           appointment={appointmentData}
@@ -202,6 +303,104 @@ export const TabbedSlotsView = () => {
           initialPrice={invoiceSlot.booking?.totalAmount || invoiceSlot.basePrice}
         />
       )}
+    </div>
+  );
+};
+
+// Compact slot row component
+const SlotRow = ({
+  slot,
+  onView,
+  onDelete,
+  onComplete,
+  onInvoice,
+}: {
+  slot: Slot;
+  onView: () => void;
+  onDelete: () => void;
+  onComplete: () => void;
+  onInvoice: () => void;
+}) => {
+  const startTime = format(parseISO(slot.startTime), 'h:mm a');
+  const endTime = format(parseISO(slot.endTime), 'h:mm a');
+  const isBooked = slot.status === 'BOOKED' || slot.status === 'RESERVED';
+  const isCompleted = slot.booking?.status === 'COMPLETED' || slot.booking?.status === 'completed';
+  const isCancelled = slot.status === 'CANCELLED';
+
+  return (
+    <div className="p-3 flex items-center justify-between hover:bg-gray-50 transition">
+      {/* Slot info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3">
+          {/* Time */}
+          <span className="text-sm font-inter font-medium text-charcoal whitespace-nowrap">
+            {startTime} – {endTime}
+          </span>
+
+          {/* Status badge */}
+          <span
+            className={cn(
+              'inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap',
+              isCompleted
+                ? 'bg-purple-100 text-purple-700'
+                : isBooked
+                  ? 'bg-blue-100 text-blue-700'
+                  : isCancelled
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-green-100 text-green-700',
+            )}
+          >
+            {isCompleted ? 'Completed' : slot.status}
+          </span>
+
+          {/* Client name if booked */}
+          {isBooked && slot.booking?.client && (
+            <span className="text-xs text-gray-600 truncate font-inter">
+              {slot.booking.client.name}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Price & location */}
+      <div className="hidden sm:flex items-center gap-4 text-xs text-gray-600 font-inter mr-4">
+        <span>€{slot.basePrice.toFixed(2)}</span>
+        <span className="text-gray-400">•</span>
+        <span>{slot.location?.name || 'Clinic'}</span>
+      </div>
+
+      {/* Action menu */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <MoreVertical className="w-4 h-4 text-gray-500" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem onClick={onView} className="text-xs cursor-pointer">
+            View Details
+          </DropdownMenuItem>
+          {isBooked && !isCompleted && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onComplete} className="text-xs cursor-pointer">
+                Mark Completed
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onInvoice} className="text-xs cursor-pointer">
+                Generate Invoice
+              </DropdownMenuItem>
+            </>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={onDelete}
+            className="text-xs cursor-pointer text-red-600 flex items-center gap-2"
+          >
+            <Trash2 className="w-3 h-3" />
+            Delete Slot
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
