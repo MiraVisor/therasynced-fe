@@ -136,7 +136,7 @@ export const WeeklyCalendarGrid = ({
               ) : (
                 <div className="flex flex-col gap-2.5 flex-1">
                   {/* Total as supporting meta */}
-                  <p className="text-[11px] font-medium text-muted-foreground font-inter uppercase tracking-wide">
+                  <p className="text-[10px] font-normal text-gray-400 font-inter uppercase tracking-wide">
                     {totalCount} {totalCount === 1 ? 'slot' : 'slots'}
                   </p>
 
