@@ -1,6 +1,7 @@
 'use client';
 
 import { addDays, format, isSameDay } from 'date-fns';
+import { Clock } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -44,12 +45,14 @@ export const WeeklyCalendarGrid = ({
         {weekDays.map((day) => (
           <div
             key={day.toISOString()}
-            className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 min-h-[168px]"
+            className="rounded-xl border border-gray-200 bg-white p-4 space-y-4 min-h-[200px]"
           >
-            <div className="h-3 w-10 bg-gray-200 rounded animate-pulse" />
-            <div className="h-7 w-8 bg-gray-200 rounded animate-pulse" />
-            <div className="h-6 w-16 bg-gray-200 rounded animate-pulse" />
-            <div className="h-1.5 w-full bg-gray-100 rounded-full animate-pulse" />
+            <div className="space-y-2">
+              <div className="h-3 w-10 bg-gray-200 rounded animate-pulse" />
+              <div className="h-10 w-12 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="h-3 w-14 bg-gray-200 rounded animate-pulse" />
+            <div className="h-2.5 w-full bg-gray-100 rounded-full animate-pulse" />
             <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
           </div>
         ))}
@@ -58,7 +61,7 @@ export const WeeklyCalendarGrid = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Legend */}
       <div className="flex items-center gap-4 text-[11px] text-muted-foreground font-inter">
         <div className="flex items-center gap-1.5">
@@ -97,21 +100,21 @@ export const WeeklyCalendarGrid = ({
             <div
               key={dayKey}
               className={cn(
-                'rounded-xl border p-4 flex flex-col gap-3 min-h-[168px] transition',
+                'rounded-xl border p-4 flex flex-col min-h-[200px] transition-all duration-200',
                 isToday
-                  ? 'border-primary/60 bg-primary/5 ring-1 ring-primary/20 shadow-sm'
-                  : 'border-gray-200 bg-white hover:border-gray-300',
+                  ? 'border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20 shadow-sm'
+                  : 'border-gray-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-gray-300 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-0.5',
               )}
             >
-              {/* Day header */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground font-inter">
+              {/* Date cluster */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-0.5">
+                  <p className="text-[10px] uppercase font-bold tracking-[0.14em] text-muted-foreground font-inter">
                     {format(day, 'EEE')}
                   </p>
                   <p
                     className={cn(
-                      'text-2xl font-bold font-poppins leading-tight',
+                      'text-4xl font-bold font-poppins leading-none',
                       isToday ? 'text-primary' : 'text-charcoal',
                     )}
                   >
@@ -119,7 +122,7 @@ export const WeeklyCalendarGrid = ({
                   </p>
                 </div>
                 {isToday && (
-                  <span className="text-[9px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
                     Today
                   </span>
                 )}
@@ -127,51 +130,60 @@ export const WeeklyCalendarGrid = ({
 
               {/* Body */}
               {totalCount === 0 ? (
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center border-t border-dashed border-gray-200 -mx-4 px-4 pt-4">
                   <p className="text-xs text-gray-400 italic font-inter">No slots</p>
                 </div>
               ) : (
-                <>
-                  {/* Slot count */}
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold text-charcoal font-poppins leading-none">
-                      {totalCount}
-                    </span>
-                    <span className="text-xs text-muted-foreground font-inter">
-                      {totalCount === 1 ? 'slot' : 'slots'}
-                    </span>
-                  </div>
+                <div className="flex flex-col gap-2.5 flex-1">
+                  {/* Total as supporting meta */}
+                  <p className="text-[11px] font-medium text-muted-foreground font-inter uppercase tracking-wide">
+                    {totalCount} {totalCount === 1 ? 'slot' : 'slots'}
+                  </p>
 
                   {/* Capacity bar */}
-                  <div className="space-y-1.5">
-                    <div
-                      className="h-1.5 rounded-full bg-gray-100 overflow-hidden flex"
-                      role="img"
-                      aria-label={`${bookedCount} booked, ${availableCount} available`}
-                    >
-                      {bookedPct > 0 && (
-                        <div className="bg-blue-500 h-full" style={{ width: `${bookedPct}%` }} />
-                      )}
-                      {availablePct > 0 && (
-                        <div
-                          className="bg-green-500 h-full"
-                          style={{ width: `${availablePct}%` }}
-                        />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] font-inter">
-                      <span className="text-blue-600 font-semibold">{bookedCount} booked</span>
-                      <span className="text-green-600 font-semibold">{availableCount} free</span>
-                    </div>
+                  <div
+                    className="h-2.5 rounded-full bg-gray-100 overflow-hidden flex"
+                    role="img"
+                    aria-label={`${bookedCount} booked, ${availableCount} available`}
+                  >
+                    {bookedPct > 0 && (
+                      <div
+                        className="bg-blue-500 h-full transition-all"
+                        style={{ width: `${bookedPct}%` }}
+                      />
+                    )}
+                    {availablePct > 0 && (
+                      <div
+                        className="bg-green-500 h-full transition-all"
+                        style={{ width: `${availablePct}%` }}
+                      />
+                    )}
                   </div>
 
-                  {/* Time range */}
+                  {/* Booked / Free counts — promoted */}
+                  <div className="flex items-center justify-between text-xs font-inter">
+                    <span className="flex items-baseline gap-1">
+                      <span className="font-bold text-blue-600 text-sm tabular-nums">
+                        {bookedCount}
+                      </span>
+                      <span className="text-blue-600/80">booked</span>
+                    </span>
+                    <span className="flex items-baseline gap-1">
+                      <span className="font-bold text-green-600 text-sm tabular-nums">
+                        {availableCount}
+                      </span>
+                      <span className="text-green-600/80">free</span>
+                    </span>
+                  </div>
+
+                  {/* Time range footer */}
                   {timeRange && (
-                    <p className="text-[10px] text-muted-foreground font-inter mt-auto">
-                      {timeRange}
-                    </p>
+                    <div className="mt-auto pt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground font-inter border-t border-gray-100 -mx-4 px-4">
+                      <Clock className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{timeRange}</span>
+                    </div>
                   )}
-                </>
+                </div>
               )}
             </div>
           );
