@@ -2,8 +2,8 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { ChevronDown, ChevronUp, MoreVertical, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Check, ChevronDown, ChevronUp, FileText, MoreVertical, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import * as bookingService from '@/services/bookingService';
@@ -66,6 +66,19 @@ export const TabbedSlotsView = () => {
 
     return allSlots.filter((slot) => slot.status === statusFilter);
   }, [allSlots, statusFilter]);
+
+  // Auto-expand all date groups when filtering to a curated subset
+  // (Booked, Completed, Reserved, Cancelled) — those are small result sets
+  // where the user's immediate goal is to see/act on everything.
+  useEffect(() => {
+    if (statusFilter === 'all' || statusFilter === 'AVAILABLE') return;
+
+    const keysToExpand = new Set<string>();
+    filteredSlots.forEach((slot) => {
+      keysToExpand.add(format(parseISO(slot.startTime), 'yyyy-MM-dd'));
+    });
+    setExpandedDates(keysToExpand);
+  }, [statusFilter, filteredSlots]);
 
   // Group slots by date
   const groupedSlots = useMemo(() => {
@@ -200,17 +213,9 @@ export const TabbedSlotsView = () => {
     return <div className="text-center py-8 text-gray-500">Loading slots...</div>;
   }
 
-  if (filteredSlots.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">No slots found</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      {/* Filter pills */}
+      {/* Filter pills — always visible */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs font-inter font-medium text-gray-600">Filter:</span>
         {statusFilterOptions.map((option) => (
@@ -229,58 +234,70 @@ export const TabbedSlotsView = () => {
         ))}
       </div>
 
-      {/* Grouped slots by date */}
-      <div className="space-y-3">
-        {groupedSlots.map(({ dateKey, date, slots }) => {
-          const isExpanded = expandedDates.has(dateKey);
-          const bookedCount = slots.filter(
-            (s) => s.status === 'BOOKED' || s.status === 'RESERVED',
-          ).length;
-          const availableCount = slots.filter((s) => s.status === 'AVAILABLE').length;
+      {/* Empty state — stays inside the return so filters remain clickable */}
+      {filteredSlots.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-gray-200 rounded-lg">
+          <p className="text-gray-500 font-inter text-sm">
+            No {statusFilter === 'all' ? '' : statusFilter.toLowerCase()} slots found
+          </p>
+          <p className="text-xs text-gray-400 font-inter mt-1">
+            Try switching to a different filter above
+          </p>
+        </div>
+      ) : (
+        /* Grouped slots by date */
+        <div className="space-y-3">
+          {groupedSlots.map(({ dateKey, date, slots }) => {
+            const isExpanded = expandedDates.has(dateKey);
+            const bookedCount = slots.filter(
+              (s) => s.status === 'BOOKED' || s.status === 'RESERVED',
+            ).length;
+            const availableCount = slots.filter((s) => s.status === 'AVAILABLE').length;
 
-          return (
-            <div key={dateKey} className="border border-gray-200 rounded-lg overflow-hidden">
-              {/* Date header */}
-              <button
-                onClick={() => toggleDateExpanded(dateKey)}
-                className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between text-left"
-              >
-                <div className="flex-1">
-                  <h3 className="font-semibold text-charcoal font-poppins">
-                    {format(date, 'EEE, MMM d, yyyy')}
-                  </h3>
-                  <p className="text-xs text-gray-600 font-inter mt-1">
-                    {slots.length} slots
-                    {bookedCount > 0 && ` • ${bookedCount} booked`}
-                    {availableCount > 0 && ` • ${availableCount} available`}
-                  </p>
-                </div>
-                {isExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-gray-600" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-600" />
+            return (
+              <div key={dateKey} className="border border-gray-200 rounded-lg overflow-hidden">
+                {/* Date header */}
+                <button
+                  onClick={() => toggleDateExpanded(dateKey)}
+                  className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between text-left"
+                >
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-charcoal font-poppins">
+                      {format(date, 'EEE, MMM d, yyyy')}
+                    </h3>
+                    <p className="text-xs text-gray-600 font-inter mt-1">
+                      {slots.length} {slots.length === 1 ? 'slot' : 'slots'}
+                      {bookedCount > 0 && ` • ${bookedCount} booked`}
+                      {availableCount > 0 && ` • ${availableCount} available`}
+                    </p>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronUp className="w-5 h-5 text-gray-600" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-600" />
+                  )}
+                </button>
+
+                {/* Slots list */}
+                {isExpanded && (
+                  <div className="divide-y border-t">
+                    {slots.map((slot) => (
+                      <SlotRow
+                        key={slot.id}
+                        slot={slot}
+                        onView={() => handleViewSlot(slot)}
+                        onDelete={() => handleDeleteSlot(slot)}
+                        onComplete={() => handleCompleteBooking(slot)}
+                        onInvoice={() => handleGenerateInvoice(slot)}
+                      />
+                    ))}
+                  </div>
                 )}
-              </button>
-
-              {/* Slots list */}
-              {isExpanded && (
-                <div className="divide-y border-t">
-                  {slots.map((slot) => (
-                    <SlotRow
-                      key={slot.id}
-                      slot={slot}
-                      onView={() => handleViewSlot(slot)}
-                      onDelete={() => handleDeleteSlot(slot)}
-                      onComplete={() => handleCompleteBooking(slot)}
-                      onInvoice={() => handleGenerateInvoice(slot)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Dialogs */}
       {selectedSlot && (
@@ -327,11 +344,13 @@ const SlotRow = ({
   const isCompleted = slot.booking?.status === 'COMPLETED' || slot.booking?.status === 'completed';
   const isCancelled = slot.status === 'CANCELLED';
 
+  const showBookedActions = isBooked && !isCompleted;
+
   return (
-    <div className="p-3 flex items-center justify-between hover:bg-gray-50 transition">
+    <div className="p-3 flex items-center justify-between gap-3 hover:bg-gray-50 transition">
       {/* Slot info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {/* Time */}
           <span className="text-sm font-inter font-medium text-charcoal whitespace-nowrap">
             {startTime} – {endTime}
@@ -362,45 +381,65 @@ const SlotRow = ({
         </div>
       </div>
 
-      {/* Price & location */}
-      <div className="hidden sm:flex items-center gap-4 text-xs text-gray-600 font-inter mr-4">
-        <span>€{slot.basePrice.toFixed(2)}</span>
-        <span className="text-gray-400">•</span>
-        <span>{slot.location?.name || 'Clinic'}</span>
-      </div>
+      {/* Price & location (hidden when booked actions are inline to save space) */}
+      {!showBookedActions && (
+        <div className="hidden sm:flex items-center gap-4 text-xs text-gray-600 font-inter">
+          <span>€{slot.basePrice.toFixed(2)}</span>
+          <span className="text-gray-400">•</span>
+          <span>{slot.location?.name || 'Clinic'}</span>
+        </div>
+      )}
 
-      {/* Action menu */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="w-4 h-4 text-gray-500" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem onClick={onView} className="text-xs cursor-pointer">
-            View Details
-          </DropdownMenuItem>
-          {isBooked && !isCompleted && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onComplete} className="text-xs cursor-pointer">
-                Mark Completed
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onInvoice} className="text-xs cursor-pointer">
-                Generate Invoice
-              </DropdownMenuItem>
-            </>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={onDelete}
-            className="text-xs cursor-pointer text-red-600 flex items-center gap-2"
-          >
-            <Trash2 className="w-3 h-3" />
-            Delete Slot
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {/* Actions */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        {/* Inline booked-slot actions — one click instead of menu → click */}
+        {showBookedActions && (
+          <>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onComplete}
+              className="h-8 px-2.5 gap-1.5 text-xs"
+              title="Mark as completed"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Complete</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onInvoice}
+              className="h-8 px-2.5 gap-1.5 text-xs"
+              title="Generate invoice"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Invoice</span>
+            </Button>
+          </>
+        )}
+
+        {/* Secondary actions menu (kept small for less-common actions) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreVertical className="w-4 h-4 text-gray-500" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={onView} className="text-xs cursor-pointer">
+              View Details
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onDelete}
+              className="text-xs cursor-pointer text-red-600 flex items-center gap-2"
+            >
+              <Trash2 className="w-3 h-3" />
+              Delete Slot
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };
