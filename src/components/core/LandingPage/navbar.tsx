@@ -10,10 +10,11 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { isTokenValid } from '@/lib/utils';
 
-const navLinks = [
+const navLinks: Array<{ href: string; label: string; isPage?: boolean }> = [
   { href: '#how-it-works', label: 'Process' },
   { href: '#features', label: 'Why Us' },
   { href: '#pricing', label: 'Pricing' },
+  { href: '/contact', label: 'Contact', isPage: true },
 ];
 
 const Navbar = () => {
@@ -76,16 +77,28 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
-          {navLinks.map((link) => (
-            <button
-              key={link.href}
-              onClick={() => handleNavClick(link.href)}
-              className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors relative group font-inter"
-            >
-              {link.label}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
-            </button>
-          ))}
+          {navLinks.map((link) =>
+            link.isPage ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors relative group font-inter"
+              >
+                {link.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+              </Link>
+            ) : (
+              <button
+                key={link.href}
+                onClick={() => handleNavClick(link.href)}
+                className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors relative group font-inter"
+              >
+                {link.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+              </button>
+            ),
+          )}
 
           <div className="w-px h-4 bg-gray-200 dark:bg-neutral-800" />
           <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}>
@@ -114,15 +127,26 @@ const Navbar = () => {
             transition={{ duration: 0.2 }}
             className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 p-6 space-y-4 shadow-xl"
           >
-            {navLinks.map((link) => (
-              <button
-                key={link.href}
-                onClick={() => handleNavClick(link.href)}
-                className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400 font-inter"
-              >
-                {link.label}
-              </button>
-            ))}
+            {navLinks.map((link) =>
+              link.isPage ? (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400 font-inter"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <button
+                  key={link.href}
+                  onClick={() => handleNavClick(link.href)}
+                  className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400 font-inter"
+                >
+                  {link.label}
+                </button>
+              ),
+            )}
             <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'} className="block">
               <Button className="w-full bg-primary text-white font-inter">
                 {hasValidToken ? 'Dashboard' : 'Sign In'}
