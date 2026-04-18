@@ -1,32 +1,42 @@
 'use client';
 
-import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Linkedin } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { openCookieSettings } from '@/components/common/CookieConsent';
 
+const XIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
 const socialLinks = [
   {
     href: 'https://www.facebook.com/share/14Wed3qHeke/',
     label: 'Facebook',
     icon: Facebook,
+    hoverClass: 'hover:text-[#1877F2]',
   },
   {
     href: 'https://x.com/therasynced',
     label: 'X (Twitter)',
-    icon: Twitter,
+    icon: XIcon,
+    hoverClass: 'hover:text-black dark:hover:text-white',
   },
   {
     href: 'https://www.instagram.com/therasynced',
     label: 'Instagram',
     icon: Instagram,
+    hoverClass: 'hover:text-[#E1306C]',
   },
   {
     href: 'https://www.linkedin.com/in/lee-o-grady-9a517518b',
     label: 'LinkedIn',
     icon: Linkedin,
+    hoverClass: 'hover:text-[#0A66C2]',
   },
 ];
 
@@ -63,7 +73,7 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="text-gray-400 hover:text-primary transition-colors"
+                  className={`text-gray-400 transition-colors ${social.hoverClass}`}
                 >
                   <social.icon className="w-5 h-5" />
                 </a>
