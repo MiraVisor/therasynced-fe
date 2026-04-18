@@ -1,4 +1,14 @@
-import { ArrowLeft, Briefcase, LifeBuoy, Mail, Phone } from 'lucide-react';
+import {
+  ArrowLeft,
+  Briefcase,
+  Facebook,
+  Instagram,
+  LifeBuoy,
+  Linkedin,
+  Mail,
+  Phone,
+  Twitter,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -128,7 +138,45 @@ export default function ContactPage() {
           </ul>
         </div>
 
-        <p className="text-xs text-gray-400 mt-8 text-center font-open-sans">
+        {/* Follow us */}
+        <div className="mt-10 text-center">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white font-poppins mb-4">
+            Follow us
+          </h3>
+          <div className="flex items-center justify-center gap-4">
+            {[
+              {
+                href: 'https://www.facebook.com/share/14Wed3qHeke/',
+                label: 'Facebook',
+                icon: Facebook,
+              },
+              { href: 'https://x.com/therasynced', label: 'X (Twitter)', icon: Twitter },
+              {
+                href: 'https://www.instagram.com/therasynced',
+                label: 'Instagram',
+                icon: Instagram,
+              },
+              {
+                href: 'https://www.linkedin.com/in/lee-o-grady-9a517518b',
+                label: 'LinkedIn',
+                icon: Linkedin,
+              },
+            ].map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                className="w-10 h-10 rounded-full border border-gray-200 dark:border-neutral-800 flex items-center justify-center text-gray-500 hover:text-primary hover:border-primary/40 transition-colors"
+              >
+                <social.icon className="w-4 h-4" />
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-400 mt-6 text-center font-open-sans">
           We aim to respond to support and sales enquiries within 1–2 business days.
         </p>
       </div>

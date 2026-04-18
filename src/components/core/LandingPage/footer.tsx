@@ -1,10 +1,34 @@
 'use client';
 
+import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { openCookieSettings } from '@/components/common/CookieConsent';
+
+const socialLinks = [
+  {
+    href: 'https://www.facebook.com/share/14Wed3qHeke/',
+    label: 'Facebook',
+    icon: Facebook,
+  },
+  {
+    href: 'https://x.com/therasynced',
+    label: 'X (Twitter)',
+    icon: Twitter,
+  },
+  {
+    href: 'https://www.instagram.com/therasynced',
+    label: 'Instagram',
+    icon: Instagram,
+  },
+  {
+    href: 'https://www.linkedin.com/in/lee-o-grady-9a517518b',
+    label: 'LinkedIn',
+    icon: Linkedin,
+  },
+];
 
 const Footer = () => {
   const { resolvedTheme } = useTheme();
@@ -30,7 +54,21 @@ const Footer = () => {
               Find and book sessions with independent therapists.
             </p>
 
-            {/* Newsletter */}
+            {/* Social Links */}
+            <div className="flex items-center gap-3 pt-1">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="text-gray-400 hover:text-primary transition-colors"
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* Platform Links */}
