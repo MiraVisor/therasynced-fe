@@ -14,6 +14,7 @@ const navLinks: Array<{ href: string; label: string; isPage?: boolean }> = [
   { href: '#how-it-works', label: 'Process' },
   { href: '#features', label: 'Why Us' },
   { href: '#pricing', label: 'Pricing' },
+  { href: '/guide', label: 'Guide', isPage: true },
   { href: '/contact', label: 'Contact', isPage: true },
 ];
 
