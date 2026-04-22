@@ -1,18 +1,34 @@
 'use client';
 
 import { Crown, Mail } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { useMySubscription } from '@/hooks/queries/useSubscription';
+import { isTokenValid } from '@/lib/utils';
 
 /**
  * Surfaces the priority-support email to Gold-tier freelancers on the
  * public /contact page. Hidden for non-Gold users and non-freelancers —
  * they still see the standard support@ email in the page body.
  *
- * Intentionally a client-only component so the rest of the contact page
- * can stay server-rendered for SEO.
+ * Important: /contact is publicly accessible (no auth required). The
+ * underlying useMySubscription hook hits an authenticated endpoint, and
+ * the API interceptor force-redirects to `/` on any 401. If we fire that
+ * query as a logged-out visitor, the whole contact page bounces back to
+ * the landing page. Guard with a token check so the query only runs for
+ * authenticated users.
  */
 export function PrioritySupportNotice() {
+  const [hasToken, setHasToken] = useState(false);
+
+  useEffect(() => {
+    setHasToken(isTokenValid());
+  }, []);
+
+  return hasToken ? <PrioritySupportNoticeAuthed /> : null;
+}
+
+function PrioritySupportNoticeAuthed() {
   const { data: subscription, isLoading } = useMySubscription();
 
   if (isLoading) return null;
