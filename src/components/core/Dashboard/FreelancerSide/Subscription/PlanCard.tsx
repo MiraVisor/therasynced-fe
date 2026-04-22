@@ -155,65 +155,15 @@ export const PlanCard = ({
       <CardContent className="flex-grow space-y-4 pb-6">
         <div>
           <h4 className="mb-4 text-sm font-poppins font-semibold text-charcoal uppercase tracking-wide">
-            Features Included
+            What&apos;s Included
           </h4>
           <ul className="space-y-3">
-            {/* Tier Limits - Always shown */}
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? '3 slots per week'
-                  : plan.name === 'SILVER'
-                    ? '5 slots per week'
-                    : 'Unlimited slots'}
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? '3 days per week'
-                  : plan.name === 'SILVER'
-                    ? '5 days per week'
-                    : 'Unlimited days'}
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? '50 messages per billing cycle'
-                  : plan.name === 'SILVER'
-                    ? '100 messages per billing cycle'
-                    : 'Unlimited messages'}
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? 'Rating visibility: Always visible'
-                  : 'Rating visibility: Can toggle on/off'}
-              </span>
-            </li>
-            {/* Backend-provided features */}
+            {/*
+              Feature list is driven entirely by the backend plan.features
+              array so this card stays in sync with the landing page
+              pricing section. Do not add hardcoded feature lines here —
+              update the seed (scripts/seed-subscription-plans.ts) instead.
+            */}
             {plan.features.map((feature, index) => (
               <li
                 key={index}

@@ -191,112 +191,12 @@ export function FeatureComparison({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* Tier Limits - Always shown first */}
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Slots per week
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">3</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">5</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <span className="text-sm font-medium">Unlimited</span>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Days per week
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">3</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">5</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <span className="text-sm font-medium">Unlimited</span>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Messages per billing cycle
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">50</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">100</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <span className="text-sm font-medium">Unlimited</span>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Rating visibility toggle
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <X className="h-5 w-5 text-gray-400 mx-auto" />
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />
-                </TableCell>
-              </TableRow>
-              {/* Backend-provided features */}
+              {/*
+                Comparison rows come entirely from the backend plan.features
+                array so this table stays in sync with the landing page
+                pricing section. Don't reintroduce hardcoded rows — update
+                the seed (scripts/seed-subscription-plans.ts) instead.
+              */}
               {features.length > 0 ? (
                 features.map((feature, idx) => {
                   return (
