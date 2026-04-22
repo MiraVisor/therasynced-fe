@@ -127,7 +127,7 @@ export function TrialExpiredModal() {
             </DialogTitle>
           </div>
           <DialogDescription className="text-base text-gray-700 dark:text-gray-300 pt-2">
-            Your 14-day free trial has expired. To continue using TheraSynced and access all
+            Your 30-day free trial has expired. To continue using TheraSynced and access all
             features, please subscribe to a plan.
           </DialogDescription>
         </DialogHeader>

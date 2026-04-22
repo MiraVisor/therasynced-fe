@@ -23,14 +23,16 @@ import {
 } from '@/hooks/queries/useFreelancers';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { useAuthStore } from '@/stores/authStore';
+import { isInTrial } from '@/utils/subscriptionHelpers';
 
 const AnalyticsPage = () => {
   const { role } = useAuthStore();
   const { data: subscription, isLoading: isLoadingSubscription } = useMySubscription();
 
-  // Check if user has GOLD tier subscription (only GOLD has access)
+  // Allow access for GOLD tier OR active trial users
   const planName = subscription?.plan?.name;
-  const hasAccess = planName === 'GOLD';
+  const hasActiveTrial = isInTrial(subscription ?? null);
+  const hasAccess = planName === 'GOLD' || hasActiveTrial;
   const isCheckingTier = isLoadingSubscription;
 
   // Fetch all analytics data using separate endpoints - only if user has Silver/Gold tier
