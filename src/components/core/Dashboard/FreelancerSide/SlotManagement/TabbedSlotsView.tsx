@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { invalidateBookingStatsQueries } from '@/hooks/queries/useBookings';
-import { useDeleteSlot, useMySlots } from '@/hooks/queries/useSlots';
+import { useDeleteDaySlots, useDeleteSlot, useMySlots } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
 import { Appointment, type Slot } from '@/types/types';
 
@@ -32,6 +32,7 @@ export const TabbedSlotsView = () => {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
 
   const { mutate: deleteSlot } = useDeleteSlot();
+  const { mutate: deleteDaySlots } = useDeleteDaySlots();
 
   // Fetch all slots
   const { data: allSlots = [], isLoading } = useMySlots({
@@ -112,6 +113,37 @@ export const TabbedSlotsView = () => {
       }
     },
     [deleteSlot],
+  );
+
+  // Bulk-clear all AVAILABLE slots for a given day. Booked slots stay put
+  // — those need to go through the booking cancellation flow separately.
+  const handleClearDay = useMemo(
+    () => (dateKey: string, availableOnDay: number) => {
+      if (availableOnDay === 0) return;
+      if (
+        !confirm(
+          `Delete ${availableOnDay} available ${availableOnDay === 1 ? 'slot' : 'slots'} on ${format(
+            parseISO(dateKey),
+            'EEE, MMM d',
+          )}? Booked slots are not affected.`,
+        )
+      ) {
+        return;
+      }
+      deleteDaySlots(
+        { date: dateKey },
+        {
+          onSuccess: (res) => {
+            toast.success(res?.message || 'Day cleared');
+          },
+          onError: (e: unknown) => {
+            const msg = (e as { message?: string })?.message || 'Failed to clear day';
+            toast.error(msg);
+          },
+        },
+      );
+    },
+    [deleteDaySlots],
   );
 
   const handleViewSlot = useMemo(
@@ -256,27 +288,47 @@ export const TabbedSlotsView = () => {
 
             return (
               <div key={dateKey} className="border border-gray-200 rounded-lg overflow-hidden">
-                {/* Date header */}
-                <button
-                  onClick={() => toggleDateExpanded(dateKey)}
-                  className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between text-left"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-charcoal font-poppins">
-                      {format(date, 'EEE, MMM d, yyyy')}
-                    </h3>
-                    <p className="text-xs text-gray-600 font-inter mt-1">
-                      {slots.length} {slots.length === 1 ? 'slot' : 'slots'}
-                      {bookedCount > 0 && ` • ${bookedCount} booked`}
-                      {availableCount > 0 && ` • ${availableCount} available`}
-                    </p>
-                  </div>
-                  {isExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-gray-600" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-600" />
+                {/* Date header with bulk-clear action */}
+                <div className="w-full p-4 bg-gray-50 flex items-center justify-between gap-3 text-left">
+                  <button
+                    onClick={() => toggleDateExpanded(dateKey)}
+                    className="flex-1 flex items-center gap-3 min-w-0 hover:opacity-80 transition"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-charcoal font-poppins">
+                        {format(date, 'EEE, MMM d, yyyy')}
+                      </h3>
+                      <p className="text-xs text-gray-600 font-inter mt-1">
+                        {slots.length} {slots.length === 1 ? 'slot' : 'slots'}
+                        {bookedCount > 0 && ` • ${bookedCount} booked`}
+                        {availableCount > 0 && ` • ${availableCount} available`}
+                      </p>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                    )}
+                  </button>
+
+                  {/* Clear day — only visible when there are AVAILABLE slots
+                      to clear. Booked slots stay regardless. */}
+                  {availableCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearDay(dateKey, availableCount);
+                      }}
+                      className="h-8 px-2.5 gap-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-100 shrink-0"
+                      title={`Delete all ${availableCount} available slots on this day`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Clear day</span>
+                    </Button>
                   )}
-                </button>
+                </div>
 
                 {/* Slots list */}
                 {isExpanded && (
@@ -416,6 +468,23 @@ const SlotRow = ({
               <span className="hidden md:inline">Invoice</span>
             </Button>
           </>
+        )}
+
+        {/* Inline delete button for AVAILABLE slots — main CRUD affordance
+            so users don't need to open the menu to delete a slot. Booked
+            slots keep the menu-only delete since deleting them needs
+            confirmation and cancels the client booking. */}
+        {!showBookedActions && !isCompleted && !isCancelled && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDelete}
+            className="h-8 px-2.5 gap-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+            title="Delete this slot"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Delete</span>
+          </Button>
         )}
 
         {/* Secondary actions menu (kept small for less-common actions) */}
