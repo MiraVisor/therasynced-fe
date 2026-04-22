@@ -85,13 +85,13 @@ export default function TrialBanner() {
               )}
             </AlertTitle>
             {/* Progress bar */}
-            {daysRemaining !== null && daysRemaining <= 14 && (
+            {daysRemaining !== null && daysRemaining <= 30 && (
               <div className="mb-3">
                 <div className="h-1.5 bg-orange-200 dark:bg-orange-900/50 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-orange-500 dark:bg-orange-400 transition-all duration-500 ease-out"
                     style={{
-                      width: `${Math.max(0, Math.min(100, (daysRemaining / 14) * 100))}%`,
+                      width: `${Math.max(0, Math.min(100, (daysRemaining / 30) * 100))}%`,
                     }}
                   />
                 </div>
@@ -131,7 +131,12 @@ export default function TrialBanner() {
                   . You won&apos;t be charged until then.
                 </p>
               ) : (
-                <p>Your 14-day free trial is active. Full platform access, no restrictions!</p>
+                <p>
+                  Your 30-day free trial is active &mdash; you have full access to explore all
+                  features, including analytics and unlimited slots. After your trial, the features
+                  available to you will depend on the plan you choose. Not all plans include
+                  everything you see today.
+                </p>
               )}
               {subscription && (
                 <div className="text-sm">

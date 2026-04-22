@@ -11,6 +11,7 @@ import PeakTimesChart from '@/components/core/Dashboard/FreelancerSide/Analytics
 import RatingDistributionChart from '@/components/core/Dashboard/FreelancerSide/Analytics/RatingDistributionChart';
 import RevenueTrendChart from '@/components/core/Dashboard/FreelancerSide/Analytics/RevenueTrendChart';
 import { UpgradeOverlay } from '@/components/core/Dashboard/FreelancerSide/Analytics/UpgradeOverlay';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import {
@@ -168,7 +169,23 @@ const AnalyticsPage = () => {
       }
     >
       <div className="space-y-8 relative">
-        {/* Upgrade Overlay for non-Gold users */}
+        {/* Trial notice — visible when trial grants access but user has no Gold plan */}
+        {!isCheckingTier && hasActiveTrial && planName !== 'GOLD' && (
+          <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
+            <AlertDescription className="text-sm text-amber-800 dark:text-amber-200 font-inter">
+              Analytics is included during your free trial so you can explore everything. After your
+              trial ends, this feature requires the <strong>Gold plan</strong>.{' '}
+              <a
+                href="/dashboard/account?tab=subscription&view=plans"
+                className="font-semibold underline hover:no-underline"
+              >
+                Compare plans
+              </a>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Upgrade Overlay for non-Gold users (only after trial) */}
         {!isCheckingTier && !hasAccess && (
           <UpgradeOverlay isBlocked={true} requiredTier="GOLD" featureName="Analytics & Insights" />
         )}
