@@ -349,91 +349,118 @@ const AvailabilityPage = () => {
           )}
         </div>
 
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-1.5">
-          {DAYS.map(({ key, label }, i) => {
-            const date = addDays(currentWeekStart, i);
-            const isSelected = selectedDays.includes(key);
-            const isToday = isSameDay(date, new Date());
-            const dayPast = isPast(date) && !isToday;
-            const slots = slotsByDay[key] || [];
-            const available = slots.filter((s) => s.status === 'AVAILABLE').length;
-            const booked = slots.filter((s) => s.status === 'BOOKED').length;
+        {/* Step 1: Pick Days */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-5 h-5 inline-flex items-center justify-center shrink-0">
+                1
+              </span>
+              <h3 className="font-medium text-foreground">Pick your days</h3>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button type="button" variant="outline" size="sm" onClick={selectAllWeekdays}>
+                Weekdays
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={selectAllDays}>
+                All Days
+              </Button>
+              {selectedDays.length > 0 && (
+                <Button type="button" variant="ghost" size="sm" onClick={clearSelection}>
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
 
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => !dayPast && toggleDay(key)}
-                disabled={dayPast}
-                className={cn(
-                  'relative flex flex-col items-center p-3 rounded-lg border transition-all text-left',
-                  'hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20',
-                  isSelected && 'bg-primary/5 border-primary ring-1 ring-primary/30',
-                  !isSelected && 'border-border bg-card',
-                  dayPast && 'opacity-40 cursor-not-allowed hover:border-border',
-                  isToday && !isSelected && 'border-primary/40',
-                )}
-              >
-                <span
+          <div className="grid grid-cols-7 gap-1.5">
+            {DAYS.map(({ key, label }, i) => {
+              const date = addDays(currentWeekStart, i);
+              const isSelected = selectedDays.includes(key);
+              const isToday = isSameDay(date, new Date());
+              const dayPast = isPast(date) && !isToday;
+              const slots = slotsByDay[key] || [];
+              const available = slots.filter((s) => s.status === 'AVAILABLE').length;
+              const booked = slots.filter((s) => s.status === 'BOOKED').length;
+
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => !dayPast && toggleDay(key)}
+                  disabled={dayPast}
                   className={cn(
-                    'text-[11px] uppercase tracking-wide',
-                    isSelected ? 'text-primary font-medium' : 'text-muted-foreground',
+                    'relative flex flex-col items-center p-3 rounded-lg border transition-all text-left',
+                    'hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20',
+                    isSelected && 'bg-primary/5 border-primary ring-1 ring-primary/30',
+                    !isSelected && 'border-border bg-card',
+                    dayPast && 'opacity-40 cursor-not-allowed hover:border-border',
+                    isToday && !isSelected && 'border-primary/40',
                   )}
                 >
-                  {label}
-                </span>
-                <span
-                  className={cn(
-                    'text-lg font-semibold mt-0.5',
-                    isSelected ? 'text-primary' : 'text-foreground',
-                    isToday && 'underline underline-offset-2',
+                  <span
+                    className={cn(
+                      'text-[11px] uppercase tracking-wide',
+                      isSelected ? 'text-primary font-medium' : 'text-muted-foreground',
+                    )}
+                  >
+                    {label}
+                  </span>
+                  <span
+                    className={cn(
+                      'text-lg font-semibold mt-0.5',
+                      isSelected ? 'text-primary' : 'text-foreground',
+                      isToday && 'underline underline-offset-2',
+                    )}
+                  >
+                    {format(date, 'd')}
+                  </span>
+
+                  {slots.length > 0 && (
+                    <div className="mt-2 text-[10px] space-y-0.5 w-full text-center">
+                      {available > 0 && (
+                        <div className="text-emerald-600 font-medium">{available} open</div>
+                      )}
+                      {booked > 0 && (
+                        <div className="text-amber-600 font-medium">{booked} booked</div>
+                      )}
+                    </div>
                   )}
-                >
-                  {format(date, 'd')}
-                </span>
 
-                {slots.length > 0 && (
-                  <div className="mt-2 text-[10px] space-y-0.5 w-full text-center">
-                    {available > 0 && (
-                      <div className="text-emerald-600 font-medium">{available} open</div>
-                    )}
-                    {booked > 0 && (
-                      <div className="text-amber-600 font-medium">{booked} booked</div>
-                    )}
-                  </div>
-                )}
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-                {isSelected && (
-                  <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
-                )}
-              </button>
-            );
-          })}
+          {selectedDays.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center">
+              Click the days you want to be available, or use the quick-select buttons above
+            </p>
+          )}
+          {selectedDays.length > 0 && (
+            <p className="text-xs text-muted-foreground text-center">
+              {selectedDays.length} {selectedDays.length === 1 ? 'day' : 'days'} selected:{' '}
+              {selectedDays.map((d) => DAYS.find((day) => day.key === d)?.full).join(', ')}
+            </p>
+          )}
         </div>
 
-        {/* Quick Select Buttons */}
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={selectAllWeekdays}>
-            All Weekdays
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={selectAllDays}>
-            All Days
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={clearSelection}
-            disabled={selectedDays.length === 0}
-          >
-            Clear
-          </Button>
-        </div>
-
-        {/* Create Slots Form */}
-        <div className="border rounded-lg p-5 space-y-5 bg-card">
-          <h3 className="font-medium text-foreground">Create Slots</h3>
+        {/* Step 2: Set Hours & Duration */}
+        <div
+          className={cn(
+            'border rounded-lg p-5 space-y-5 bg-card transition-opacity',
+            selectedDays.length === 0 && 'opacity-50 pointer-events-none',
+          )}
+        >
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-5 h-5 inline-flex items-center justify-center shrink-0">
+              2
+            </span>
+            <h3 className="font-medium text-foreground">Set your hours</h3>
+          </div>
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Time Range */}
@@ -511,49 +538,47 @@ const AvailabilityPage = () => {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Step 3: Review & Create */}
+        <div
+          className={cn(
+            'border rounded-lg p-5 space-y-4 bg-card transition-opacity',
+            (selectedDays.length === 0 || slotCount === 0 || !hasPricingConfigured) &&
+              'opacity-50 pointer-events-none',
+          )}
+        >
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-5 h-5 inline-flex items-center justify-center shrink-0">
+              3
+            </span>
+            <h3 className="font-medium text-foreground">Review & create</h3>
+          </div>
 
           {/* Preview */}
-          <div className="pt-3 border-t">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <span className="text-2xl font-semibold">{slotCount}</span>
-                <span className="text-muted-foreground ml-1.5">
-                  slot{slotCount !== 1 ? 's' : ''} will be created
-                  {hasPricingConfigured &&
-                    ` (${Math.floor(slotCount / Math.max(1, selectedDays.length))} per day)`}
-                </span>
-              </div>
-              {hasPricingConfigured && slotCount > 0 && (
-                <div className="text-right">
-                  <div className="text-sm text-muted-foreground">Potential revenue</div>
-                  <div className="text-xl font-semibold">€{revenue.toFixed(0)}</div>
-                </div>
-              )}
+          <div className="flex items-baseline justify-between">
+            <div>
+              <span className="text-2xl font-semibold">{slotCount}</span>
+              <span className="text-muted-foreground ml-1.5">
+                slot{slotCount !== 1 ? 's' : ''} will be created
+                {hasPricingConfigured &&
+                  selectedDays.length > 0 &&
+                  ` (${Math.floor(slotCount / Math.max(1, selectedDays.length))} per day)`}
+              </span>
             </div>
-
-            {selectedDays.length > 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                {selectedDays.map((d) => DAYS.find((day) => day.key === d)?.full).join(', ')}
-                {' · '}
-                {startTime}–{endTime}
-              </p>
+            {hasPricingConfigured && slotCount > 0 && (
+              <div className="text-right">
+                <div className="text-sm text-muted-foreground">Potential revenue</div>
+                <div className="text-xl font-semibold">€{revenue.toFixed(0)}</div>
+              </div>
             )}
           </div>
 
-          {/*
-            Visible guidance explaining exactly why the submit button is
-            disabled. Previously the button just greyed out silently when
-            any one of these conditions failed — users would randomly
-            click the "All Weekdays" quick-select because it appeared to
-            "unstick" the form (it was really filling in the missing
-            selection). Surfacing the specific reason removes that
-            confusion and prevents the bug report.
-          */}
-          {(selectedDays.length === 0 || (selectedDays.length > 0 && slotCount === 0)) && (
+          {selectedDays.length > 0 && (
             <p className="text-sm text-muted-foreground">
-              {selectedDays.length === 0
-                ? 'Pick at least one day above to schedule slots.'
-                : "The selected time range doesn't fit any full sessions at this duration. Widen the start/end time or pick a shorter duration."}
+              {selectedDays.map((d) => DAYS.find((day) => day.key === d)?.full).join(', ')}
+              {' · '}
+              {startTime}–{endTime} · {slotDuration}min sessions
             </p>
           )}
 
@@ -564,15 +589,6 @@ const AvailabilityPage = () => {
             onClick={handleSubmit}
             disabled={
               selectedDays.length === 0 || slotCount === 0 || !hasPricingConfigured || isSubmitting
-            }
-            title={
-              selectedDays.length === 0
-                ? 'Pick at least one day first.'
-                : !hasPricingConfigured
-                  ? 'Configure pricing for this duration above.'
-                  : slotCount === 0
-                    ? "The time range doesn't allow for any full sessions at this duration."
-                    : undefined
             }
           >
             {isSubmitting ? (
