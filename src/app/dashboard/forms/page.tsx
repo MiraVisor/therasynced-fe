@@ -1,6 +1,7 @@
 'use client';
 
-import { ExternalLink, FileText, Search } from 'lucide-react';
+import { ExternalLink, FileText, Lock, Search } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -13,14 +14,25 @@ import {
   useGetFreelancerFormTemplateSignedUrl,
   useVisibleFormTemplates,
 } from '@/hooks/queries/useFormTemplates';
+import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { formatFileSize } from '@/services/formTemplateService';
 import type { FormTemplate } from '@/types/formTemplate';
+import { isInTrial } from '@/utils/subscriptionHelpers';
 
 const FreelancerFormsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const { data: templates, isLoading } = useVisibleFormTemplates();
+  // Tier gate — Bronze users are blocked from accessing form templates.
+  // Backend also enforces this (403 on the list endpoint) but we want a
+  // friendly upgrade prompt instead of just an error state.
+  const { data: subscription, isLoading: isLoadingSubscription } = useMySubscription();
+  const canAccessForms =
+    subscription?.canAccessCustomForms === true || isInTrial(subscription ?? null);
+
+  const { data: templates, isLoading } = useVisibleFormTemplates({
+    enabled: canAccessForms && !isLoadingSubscription,
+  });
   const signedUrlMutation = useGetFreelancerFormTemplateSignedUrl();
 
   // Filter templates based on search query
@@ -77,8 +89,29 @@ const FreelancerFormsPage = () => {
       }
     >
       <div className="space-y-6 lg:space-y-8">
+        {/* Tier gate: Bronze sees upgrade prompt instead of the page */}
+        {!isLoadingSubscription && !canAccessForms ? (
+          <div className="border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-2xl py-16 px-6 text-center bg-white dark:bg-neutral-900/50">
+            <div className="w-14 h-14 rounded-full bg-primary/10 mx-auto flex items-center justify-center mb-4">
+              <Lock className="w-7 h-7 text-primary" />
+            </div>
+            <h2 className="text-xl font-poppins font-bold text-charcoal dark:text-white mb-2">
+              Custom intake forms require Silver or Gold
+            </h2>
+            <p className="text-sm font-inter text-muted-foreground max-w-md mx-auto mb-6">
+              Use professionally designed form templates to collect client information before
+              sessions. This feature is available on the Silver and Gold plans.
+            </p>
+            <Link href="/dashboard/account?tab=subscription&view=plans">
+              <Button size="lg" className="bg-primary">
+                Compare Plans
+              </Button>
+            </Link>
+          </div>
+        ) : null}
+
         {/* Search Bar */}
-        {templates && templates.length > 0 && (
+        {canAccessForms && templates && templates.length > 0 && (
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -92,7 +125,7 @@ const FreelancerFormsPage = () => {
         )}
 
         {/* Stats */}
-        {!isLoading && templates && templates.length > 0 && (
+        {canAccessForms && !isLoading && templates && templates.length > 0 && (
           <div className="flex items-center gap-4 text-sm font-inter text-muted-foreground">
             <span>
               {filteredTemplates.length} {filteredTemplates.length === 1 ? 'form' : 'forms'}
@@ -101,8 +134,8 @@ const FreelancerFormsPage = () => {
           </div>
         )}
 
-        {/* Templates List */}
-        {isLoading && !templates ? (
+        {/* Templates List — only shown to users with access */}
+        {canAccessForms && isLoading && !templates ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="border rounded-lg p-4 animate-pulse">
@@ -111,7 +144,7 @@ const FreelancerFormsPage = () => {
               </div>
             ))}
           </div>
-        ) : filteredTemplates.length === 0 ? (
+        ) : canAccessForms && filteredTemplates.length === 0 ? (
           <GuidedEmptyState
             icon={FileText}
             title={searchQuery ? 'No templates found' : 'No form templates available'}
@@ -121,7 +154,7 @@ const FreelancerFormsPage = () => {
                 : "Forms help you collect information before sessions. Templates will appear here once they're available."
             }
           />
-        ) : (
+        ) : canAccessForms ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTemplates.map((template) => (
               <EnhancedCard
@@ -185,7 +218,7 @@ const FreelancerFormsPage = () => {
               </EnhancedCard>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     </DashboardPageWrapper>
   );

@@ -30,10 +30,21 @@ const AnalyticsPage = () => {
   const { role } = useAuthStore();
   const { data: subscription, isLoading: isLoadingSubscription } = useMySubscription();
 
-  // Allow access for GOLD tier OR active trial users
+  // Three-way access level for analytics:
+  //   'none'  - Bronze (no analytics)
+  //   'basic' - Silver (revenue/bookings/clients/overview charts)
+  //   'full'  - Gold + trial (everything, including advanced charts)
   const planName = subscription?.plan?.name;
   const hasActiveTrial = isInTrial(subscription ?? null);
-  const hasAccess = planName === 'GOLD' || hasActiveTrial;
+  const accessLevel: 'none' | 'basic' | 'full' = hasActiveTrial
+    ? 'full'
+    : planName === 'GOLD'
+      ? 'full'
+      : planName === 'SILVER'
+        ? 'basic'
+        : 'none';
+  const hasAccess = accessLevel !== 'none';
+  const hasFullAccess = accessLevel === 'full';
   const isCheckingTier = isLoadingSubscription;
 
   // Fetch all analytics data using separate endpoints - only if user has Silver/Gold tier
@@ -64,13 +75,15 @@ const AnalyticsPage = () => {
     error: bookingError,
   } = useFreelancerBookingAnalytics(undefined, { enabled: hasAccess && !isLoadingSubscription });
 
+  // Advanced analytics (services, ratings) — only Gold + trial can fetch;
+  // Silver calls would 403 from the backend split.
   const { data: serviceData, isLoading: isLoadingServices } = useFreelancerServiceAnalytics(
     undefined,
-    { enabled: hasAccess && !isLoadingSubscription },
+    { enabled: hasFullAccess && !isLoadingSubscription },
   );
 
   const { data: ratingData, isLoading: isLoadingRatings } = useFreelancerRatingAnalytics({
-    enabled: hasAccess && !isLoadingSubscription,
+    enabled: hasFullAccess && !isLoadingSubscription,
   });
 
   // Show error toasts - only if user has access (to avoid showing errors for tier restrictions)
@@ -174,7 +187,8 @@ const AnalyticsPage = () => {
           <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
             <AlertDescription className="text-sm text-amber-800 dark:text-amber-200 font-inter">
               Analytics is included during your free trial so you can explore everything. After your
-              trial ends, this feature requires the <strong>Gold plan</strong>.{' '}
+              trial ends, basic charts require <strong>Silver</strong> and advanced charts (peak
+              times, rating distribution, service breakdown) require <strong>Gold</strong>.{' '}
               <a
                 href="/dashboard/account?tab=subscription&view=plans"
                 className="font-semibold underline hover:no-underline"
@@ -185,12 +199,33 @@ const AnalyticsPage = () => {
           </Alert>
         )}
 
-        {/* Upgrade Overlay for non-Gold users (only after trial) */}
-        {!isCheckingTier && !hasAccess && (
-          <UpgradeOverlay isBlocked={true} requiredTier="GOLD" featureName="Analytics & Insights" />
+        {/* Silver-tier notice — basic access but advanced charts locked */}
+        {!isCheckingTier && !hasActiveTrial && planName === 'SILVER' && (
+          <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
+            <AlertDescription className="text-sm text-blue-800 dark:text-blue-200 font-inter">
+              You're on the Silver plan — basic analytics unlocked. Advanced charts (peak times,
+              rating distribution, service breakdown) are available on the{' '}
+              <strong>Gold plan</strong>.{' '}
+              <a
+                href="/dashboard/account?tab=subscription&view=plans"
+                className="font-semibold underline hover:no-underline"
+              >
+                Upgrade to Gold
+              </a>
+            </AlertDescription>
+          </Alert>
         )}
 
-        {/* Blur effect for non-Gold users - content is blurred and non-interactive */}
+        {/* Upgrade Overlay for Bronze (no analytics access at all) */}
+        {!isCheckingTier && !hasAccess && (
+          <UpgradeOverlay
+            isBlocked={true}
+            requiredTier="SILVER"
+            featureName="Analytics & Insights"
+          />
+        )}
+
+        {/* Blur effect for users without any analytics access */}
         <div
           className={!isCheckingTier && !hasAccess ? 'pointer-events-none opacity-50 blur-sm' : ''}
         >
@@ -295,11 +330,28 @@ const AnalyticsPage = () => {
               </CardContent>
             </Card>
 
-            {/* Service Category Analytics */}
-            <CategoryBreakdownChart
-              data={serviceData?.serviceCategoryAnalytics || []}
-              isLoading={isLoadingServices && !serviceData}
-            />
+            {/* Service Category Analytics — Gold-only advanced chart */}
+            <div className="relative">
+              <CategoryBreakdownChart
+                data={serviceData?.serviceCategoryAnalytics || []}
+                isLoading={isLoadingServices && !serviceData}
+              />
+              {!hasFullAccess && (
+                <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 dark:bg-black/40 rounded-lg flex items-center justify-center p-6">
+                  <div className="bg-white dark:bg-gray-900 rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
+                    <p className="text-xs text-gray-600 dark:text-gray-300 font-inter">
+                      <strong>Service breakdown</strong> is a Gold-only advanced chart.{' '}
+                      <a
+                        href="/dashboard/account?tab=subscription&view=plans"
+                        className="text-primary underline font-medium"
+                      >
+                        Upgrade
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Booking Performance Section */}
@@ -364,10 +416,27 @@ const AnalyticsPage = () => {
                 </CardContent>
               </Card>
             )}
-            <RatingDistributionChart
-              data={ratingData?.ratingDistribution}
-              isLoading={isLoadingRatings && !ratingData}
-            />
+            <div className="relative">
+              <RatingDistributionChart
+                data={ratingData?.ratingDistribution}
+                isLoading={isLoadingRatings && !ratingData}
+              />
+              {!hasFullAccess && (
+                <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 dark:bg-black/40 rounded-lg flex items-center justify-center p-6">
+                  <div className="bg-white dark:bg-gray-900 rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
+                    <p className="text-xs text-gray-600 dark:text-gray-300 font-inter">
+                      <strong>Rating distribution</strong> is a Gold-only advanced chart.{' '}
+                      <a
+                        href="/dashboard/account?tab=subscription&view=plans"
+                        className="text-primary underline font-medium"
+                      >
+                        Upgrade
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Peak Times Section */}
@@ -381,7 +450,27 @@ const AnalyticsPage = () => {
                   Identify your busiest times to optimise scheduling
                 </p>
               </div>
-              <PeakTimesChart data={peakTimesData} isLoading={isLoadingBookings && !bookingData} />
+              <div className="relative">
+                <PeakTimesChart
+                  data={peakTimesData}
+                  isLoading={isLoadingBookings && !bookingData}
+                />
+                {!hasFullAccess && (
+                  <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 dark:bg-black/40 rounded-lg flex items-center justify-center p-6">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
+                      <p className="text-xs text-gray-600 dark:text-gray-300 font-inter">
+                        <strong>Peak times</strong> is a Gold-only advanced chart.{' '}
+                        <a
+                          href="/dashboard/account?tab=subscription&view=plans"
+                          className="text-primary underline font-medium"
+                        >
+                          Upgrade
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

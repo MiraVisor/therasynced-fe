@@ -11,6 +11,8 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { PrioritySupportNotice } from '@/components/core/Dashboard/FreelancerSide/Subscription/PrioritySupportNotice';
+
 const XIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -38,11 +40,14 @@ export default function ContactPage() {
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 font-poppins">
           Get in touch
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl font-open-sans">
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-6 max-w-2xl font-open-sans">
           We&apos;d love to hear from you. Whether you need help with your account, want to learn
           more about TheraSynced for your practice, or just have a question — here&apos;s how to
           reach us.
         </p>
+
+        {/* Gold-only priority support banner — client component, renders only if logged-in user is Gold */}
+        <PrioritySupportNotice />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Support Card */}
