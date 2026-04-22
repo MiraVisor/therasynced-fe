@@ -57,8 +57,8 @@ const Hero = () => {
       {/* Background Image - Subtle */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/physio/clinic-rehabilitation.jpg"
-          alt="Professional rehabilitation clinic"
+          src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
+          alt="A therapist taping an athlete for sports recovery"
           fill
           className="object-cover object-center opacity-[0.08] dark:opacity-[0.05]"
           priority

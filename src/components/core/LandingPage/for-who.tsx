@@ -51,8 +51,8 @@ const ForWho = () => {
             {/* Hero photo for this card */}
             <div className="relative w-full aspect-[16/9] bg-gray-100 dark:bg-neutral-800">
               <Image
-                src="/images/physio/physiotherapist-helping-female-patient-her-clinic.jpg"
-                alt="A physiotherapist working with a client in a clinic"
+                src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
+                alt="A therapist providing sports recovery support"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"

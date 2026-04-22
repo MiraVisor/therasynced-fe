@@ -35,8 +35,8 @@ const CtaSection = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 opacity-20 dark:opacity-10">
           <Image
-            src="/images/physio/patient-doing-physical-rehabilitation-helped-by-therapists.jpg"
-            alt="Patient receiving physical rehabilitation"
+            src="/images/physio/close-up-man-training-with-elastic-band.jpg"
+            alt="An active session using a resistance band"
             fill
             className="object-cover"
             sizes="100vw"
