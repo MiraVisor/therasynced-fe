@@ -153,16 +153,15 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200">
             {canRate && (
               <Button
-                variant="outline"
                 size="sm"
-                className="flex-1 text-xs font-medium border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                className="flex-1 text-xs font-semibold gap-1.5 bg-amber-500 hover:bg-amber-600 text-white"
                 onClick={(e) => {
                   e.stopPropagation();
                   onRate(booking);
                 }}
               >
-                <Star className="h-3 w-3 mr-1" />
-                Rate Booking
+                <Star className="h-3.5 w-3.5 fill-white" />
+                Rate this session
               </Button>
             )}
             {canMessage && (

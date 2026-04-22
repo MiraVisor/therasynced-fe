@@ -173,47 +173,65 @@ export const createBookingColumns = ({
         const isUpcoming = booking.status === 'CONFIRMED' && !isPast;
         const isCancelled = booking.status === 'CANCELLED';
         const isCancelling = cancellingBookingId === booking.id;
+        const canRate = isPast && !isCancelled && booking.canBeRated && !booking.hasRating;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0" disabled={isCancelling}>
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+          <div className="flex items-center gap-2 justify-end">
+            {/* Inline "Rate" action — surfaces the rating flow instead of
+                burying it three clicks deep in the dropdown menu. Only
+                shows once the session's start time has passed and the
+                client hasn't already rated. */}
+            {canRate && (
+              <Button
+                size="sm"
+                onClick={() => onRate(booking)}
+                className="h-8 gap-1.5 px-2.5 text-xs bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                <Star className="h-3.5 w-3.5 fill-white" />
+                Rate
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onBookingClick(booking)}>
-                <Calendar className="mr-2 h-4 w-4" />
-                View Details
-              </DropdownMenuItem>
-              {isUpcoming && (
-                <>
-                  <DropdownMenuItem onClick={() => onMessage(booking)}>
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Message Freelancer
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onReschedule(booking)}>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Reschedule
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onCancel(booking)}
-                    className="text-red-600 focus:text-red-600"
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel
-                  </DropdownMenuItem>
-                </>
-              )}
-              {isPast && !isCancelled && booking.canBeRated && !booking.hasRating && (
-                <DropdownMenuItem onClick={() => onRate(booking)}>
-                  <Star className="mr-2 h-4 w-4" />
-                  Rate & Review
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isCancelling}>
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onBookingClick(booking)}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  View Details
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {isUpcoming && (
+                  <>
+                    <DropdownMenuItem onClick={() => onMessage(booking)}>
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Message Freelancer
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onReschedule(booking)}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Reschedule
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onCancel(booking)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canRate && (
+                  <DropdownMenuItem onClick={() => onRate(booking)}>
+                    <Star className="mr-2 h-4 w-4" />
+                    Rate & Review
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },

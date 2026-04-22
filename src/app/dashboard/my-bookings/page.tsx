@@ -368,14 +368,32 @@ export default function MyBookingsPage() {
     { label: 'Clinic', value: 'CLINIC' },
   ];
 
+  // Count past bookings the client can still rate (nudge shown in header)
+  const unratedCount = bookings.filter(
+    (b: Booking) => b.canBeRated === true && b.hasRating === false && b.status !== 'CANCELLED',
+  ).length;
+
   return (
     <DashboardPageWrapper
       header={
-        <div className="space-y-1">
-          <h1 className="text-2xl font-poppins font-bold text-charcoal">My Bookings</h1>
-          <p className="font-inter text-muted-foreground">
-            Manage and track all your therapy sessions
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-poppins font-bold text-charcoal">My Bookings</h1>
+            <p className="font-inter text-muted-foreground">
+              Manage and track all your therapy sessions
+            </p>
+          </div>
+          {unratedCount > 0 && (
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm font-inter">
+              <span className="text-amber-600">⭐</span>
+              <span>
+                <strong>
+                  {unratedCount} {unratedCount === 1 ? 'session' : 'sessions'}
+                </strong>{' '}
+                waiting for your review
+              </span>
+            </div>
+          )}
         </div>
       }
     >

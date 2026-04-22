@@ -21,6 +21,7 @@ import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import TrialBanner from '../Subscription/TrialBanner';
 import Charts from './Charts';
 import { ProfileCompletionWidget } from './ProfileCompletionWidget';
+import { RecentReviewsCard } from './RecentReviewsCard';
 
 // ============================================================================
 // Helper Functions
@@ -399,6 +400,10 @@ const FreelancerHome = () => {
 
         {/* Weekly Chart */}
         <Charts dashboardData={dashboardData ?? null} isLoading={isLoading} />
+
+        {/* Recent client ratings — available to all tiers so every
+            freelancer sees incoming feedback regardless of plan */}
+        <RecentReviewsCard />
       </div>
     </DashboardPageWrapper>
   );
