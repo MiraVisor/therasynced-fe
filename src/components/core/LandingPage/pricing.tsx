@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Check, CreditCard, Lock, Sparkles, Users, XCircle } from 'lucide-react';
+import { Check, CheckCircle, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -25,29 +25,29 @@ const Pricing = () => {
   return (
     <section
       id="pricing"
-      className="w-full px-4 sm:px-6 lg:px-8 py-24 bg-white dark:bg-neutral-900"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-white dark:bg-neutral-900 relative overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto">
+      {/* Subtle background pattern, matches how-it-works / features sections */}
+      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
+        <div className="absolute top-20 left-20 w-96 h-96 border border-primary rounded-full" />
+        <div className="absolute bottom-20 right-20 w-72 h-72 border border-sage-warm rounded-full" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: isMobile ? '0px' : '-100px' }}
           transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-16 space-y-4"
+          className="text-center mb-16 lg:mb-20 space-y-4"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider font-open-sans">
-              Simple pricing
-            </span>
-          </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white font-playfair">
-            Choose the plan that fits
+            Simple, honest pricing
           </h2>
           <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto font-open-sans">
-            Transparent monthly pricing with no hidden fees. Start free, upgrade as you grow, cancel
-            whenever you want.
+            Free for clients, always. Therapists pay a flat monthly fee with a full 30 day free
+            trial to start.
           </p>
         </motion.div>
 
@@ -55,25 +55,19 @@ const Pricing = () => {
         <motion.div
           initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="mb-20"
+          viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+          transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-20 lg:mb-24"
         >
-          <div className="bg-gradient-to-br from-primary/5 via-gray-50/50 to-primary/5 dark:from-primary/10 dark:via-neutral-950/50 dark:to-primary/10 border border-primary/10 dark:border-primary/20 rounded-2xl p-8 max-w-4xl mx-auto">
+          <div className="bg-[#faf9f6] dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 rounded-2xl p-8 lg:p-10 max-w-4xl mx-auto shadow-sm">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="text-center sm:text-left">
-                <div className="inline-flex items-center gap-2 mb-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-open-sans">
-                    Free forever
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 font-playfair">
-                  Always free for clients
+              <div className="text-center sm:text-left flex-1">
+                <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2 font-poppins">
+                  Free for clients, always
                 </h3>
-                <p className="text-base text-gray-600 dark:text-neutral-400 font-open-sans">
-                  Search, browse, book, and message therapists — all free, forever. No hidden fees,
-                  no commissions.
+                <p className="text-sm lg:text-base text-gray-600 dark:text-neutral-400 font-open-sans leading-relaxed">
+                  Search, browse, book, and message therapists. No hidden fees, no commissions, no
+                  subscription required.
                 </p>
               </div>
               <Button
@@ -86,40 +80,20 @@ const Pricing = () => {
           </div>
         </motion.div>
 
-        {/* For Therapists Header */}
+        {/* Therapist Plans Header */}
         <motion.div
           initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="mb-10"
+          viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+          transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-12 space-y-3"
         >
-          <div className="text-center space-y-3">
-            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white font-playfair">
-              Plans for therapists
-            </h3>
-            <p className="text-base text-gray-600 dark:text-neutral-400 font-open-sans max-w-2xl mx-auto">
-              Every plan starts with a{' '}
-              <span className="font-semibold text-gray-900 dark:text-white">30-day free trial</span>
-              . Explore everything risk-free before you commit.
-            </p>
-
-            {/* Trust signals */}
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-3 text-sm font-open-sans">
-              <div className="flex items-center gap-1.5 text-gray-600 dark:text-neutral-400">
-                <Check className="w-4 h-4 text-emerald-500 stroke-[2.5]" />
-                30-day free trial
-              </div>
-              <div className="flex items-center gap-1.5 text-gray-600 dark:text-neutral-400">
-                <Check className="w-4 h-4 text-emerald-500 stroke-[2.5]" />
-                No credit card to start
-              </div>
-              <div className="flex items-center gap-1.5 text-gray-600 dark:text-neutral-400">
-                <Check className="w-4 h-4 text-emerald-500 stroke-[2.5]" />
-                Cancel anytime
-              </div>
-            </div>
-          </div>
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white font-playfair">
+            Plans for therapists
+          </h3>
+          <p className="text-base text-gray-600 dark:text-neutral-400 font-open-sans max-w-2xl mx-auto">
+            Every plan starts with a full 30 day free trial. No card required to try it.
+          </p>
         </motion.div>
 
         {/* Plan Cards */}
@@ -128,165 +102,145 @@ const Pricing = () => {
             ? [1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-[560px] rounded-2xl bg-[#f5f4f1] dark:bg-neutral-900 animate-pulse border border-gray-100 dark:border-neutral-800"
+                  className="h-[560px] rounded-2xl bg-[#faf9f6] dark:bg-neutral-800 animate-pulse border border-gray-100 dark:border-neutral-700"
                 />
               ))
             : sortedPlans.map((plan, index) => {
                 const isGold = plan.name === 'GOLD';
-                const isSilver = plan.name === 'SILVER';
 
                 return (
                   <motion.div
                     key={plan.id}
-                    initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
+                    initial={{ opacity: 0, y: isMobile ? 0 : 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
                     transition={{
                       delay: isMobile ? 0 : index * 0.1,
-                      duration: isMobile ? 0.2 : 0.5,
+                      duration: 0.5,
                       ease: [0.16, 1, 0.3, 1],
                     }}
-                    className={`relative flex flex-col rounded-2xl p-8 transition-all duration-300 ${
-                      isGold
-                        ? 'bg-gradient-to-b from-primary/[0.04] to-white dark:from-primary/10 dark:to-neutral-900 border-2 border-primary/40 shadow-xl shadow-primary/5 hover:shadow-primary/10 hover:-translate-y-1'
-                        : 'bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-gray-300 dark:hover:border-neutral-700 hover:-translate-y-0.5'
-                    }`}
+                    className="relative group"
                   >
-                    {/* Popular badge */}
-                    {isGold && (
-                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-primary text-white text-[11px] font-bold rounded-full uppercase tracking-widest shadow-md">
-                        Most popular
-                      </div>
-                    )}
-
-                    {/* Plan Header */}
-                    <div className="mb-6">
-                      <div className="flex items-center gap-2 mb-3">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white font-playfair">
-                          {plan.displayName}
-                        </h3>
-                        {isSilver && (
-                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                            Best value
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans leading-relaxed">
-                        {plan.description}
-                      </p>
-                    </div>
-
-                    {/* Price */}
-                    <div className="mb-6 pb-6 border-b border-gray-100 dark:border-neutral-800">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white font-playfair">
-                          €
-                        </span>
-                        <span className="text-5xl font-bold text-gray-900 dark:text-white font-playfair leading-none">
-                          {Math.floor(plan.price)}
-                        </span>
-                        {plan.price % 1 !== 0 && (
-                          <span className="text-2xl font-bold text-gray-900 dark:text-white font-playfair">
-                            .{String(plan.price).split('.')[1]?.padEnd(2, '0').slice(0, 2)}
-                          </span>
-                        )}
-                        <span className="text-sm text-gray-500 dark:text-neutral-400 font-open-sans ml-2">
-                          /month
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-neutral-500 font-open-sans mt-2">
-                        Billed monthly after your 30-day free trial
-                      </p>
-                    </div>
-
-                    {/* Features List */}
-                    <div className="mb-8 flex-1">
-                      <h4 className="text-[11px] font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-widest mb-4 font-open-sans">
-                        What&apos;s Included
-                      </h4>
-                      <ul className="space-y-3">
-                        {plan.features?.map((f, idx) => {
-                          const formattedFeature =
-                            f.charAt(0).toUpperCase() + f.slice(1).replace(/\.$/, '');
-                          return (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans leading-relaxed"
-                            >
-                              <div
-                                className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center ${
-                                  isGold ? 'bg-primary/15' : 'bg-gray-100 dark:bg-neutral-800'
-                                }`}
-                              >
-                                <Check
-                                  className={`w-3 h-3 stroke-[3] ${
-                                    isGold ? 'text-primary' : 'text-gray-700 dark:text-neutral-300'
-                                  }`}
-                                />
-                              </div>
-                              <span className="flex-1 pt-0.5">{formattedFeature}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-
-                    {/* CTA Button */}
-                    <Button
-                      onClick={() => router.push('/authentication/sign-in')}
-                      className={`w-full h-12 font-semibold rounded-lg transition-all duration-300 ${
+                    <div
+                      className={`relative flex flex-col h-full rounded-2xl p-8 lg:p-10 transition-all duration-300 ${
                         isGold
-                          ? 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30'
-                          : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100'
+                          ? 'bg-[#faf9f6] dark:bg-neutral-800 border-2 border-primary/30 shadow-lg hover:shadow-xl hover:border-primary/50'
+                          : 'bg-[#faf9f6] dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:border-primary/20'
                       }`}
                     >
-                      Start free trial
-                    </Button>
-                    <p className="text-center text-[11px] text-gray-500 dark:text-neutral-500 font-open-sans mt-3">
-                      No credit card required
-                    </p>
+                      {isGold && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-xs font-bold rounded-full uppercase tracking-wider shadow-md">
+                          Most Popular
+                        </div>
+                      )}
+
+                      {/* Plan Header */}
+                      <div className="mb-6">
+                        <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2 font-poppins">
+                          {plan.displayName}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans leading-relaxed">
+                          {plan.description}
+                        </p>
+                      </div>
+
+                      {/* Price */}
+                      <div className="mb-6 pb-6 border-b border-gray-200 dark:border-neutral-700">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-gray-900 dark:text-white font-playfair">
+                            €
+                          </span>
+                          <span className="text-5xl font-bold text-gray-900 dark:text-white font-playfair leading-none">
+                            {Math.floor(plan.price)}
+                          </span>
+                          {plan.price % 1 !== 0 && (
+                            <span className="text-xl font-bold text-gray-900 dark:text-white font-playfair">
+                              .{String(plan.price).split('.')[1]?.padEnd(2, '0').slice(0, 2)}
+                            </span>
+                          )}
+                          <span className="text-sm text-gray-500 dark:text-neutral-400 font-open-sans ml-2">
+                            /month
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-neutral-500 font-open-sans mt-2">
+                          Billed monthly after your free trial
+                        </p>
+                      </div>
+
+                      {/* Features */}
+                      <div className="mb-8 flex-1">
+                        <h4 className="text-xs font-semibold text-gray-500 dark:text-neutral-500 uppercase tracking-wider mb-4 font-open-sans">
+                          What&apos;s included
+                        </h4>
+                        <ul className="space-y-3">
+                          {plan.features?.map((f, idx) => {
+                            const formatted =
+                              f.charAt(0).toUpperCase() + f.slice(1).replace(/\.$/, '');
+                            return (
+                              <li
+                                key={idx}
+                                className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans leading-relaxed"
+                              >
+                                <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 stroke-[2.5]" />
+                                <span className="flex-1 pt-px">{formatted}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+
+                      {/* CTA */}
+                      <Button
+                        onClick={() => router.push('/authentication/sign-in')}
+                        className={`w-full h-12 font-semibold rounded-lg transition-all duration-300 ${
+                          isGold
+                            ? 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20'
+                            : 'bg-white dark:bg-neutral-900 text-gray-900 dark:text-white border border-gray-200 dark:border-neutral-700 hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-neutral-900/80'
+                        }`}
+                      >
+                        Start free trial
+                      </Button>
+                    </div>
                   </motion.div>
                 );
               })}
         </div>
 
-        {/* Payment Security Notice */}
+        {/* Trust Line - matches features.tsx style */}
+        <motion.div
+          initial={{ opacity: 0, y: isMobile ? 0 : 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
+          transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-12 lg:mt-16 flex justify-center"
+        >
+          <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-[#faf9f6] dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 shadow-sm">
+            <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+            <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
+              30 day free trial · No card required · Cancel anytime
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Payment / Legal notice */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-14 flex flex-col items-center gap-3 text-center"
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="mt-6 text-center"
         >
-          <div className="flex items-center gap-6 text-gray-500 dark:text-neutral-400 text-sm font-open-sans">
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4" />
-              <span>
-                Secured by{' '}
-                <a
-                  href="https://stripe.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline font-semibold"
-                >
-                  Stripe
-                </a>
-              </span>
-            </div>
-            <span className="hidden sm:inline text-gray-300 dark:text-neutral-700">·</span>
-            <div className="hidden sm:flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
-              <span>All major cards accepted</span>
-            </div>
-            <span className="hidden sm:inline text-gray-300 dark:text-neutral-700">·</span>
-            <div className="hidden sm:flex items-center gap-2">
-              <XCircle className="w-4 h-4" />
-              <span>Cancel anytime</span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-400 dark:text-neutral-500 font-open-sans max-w-lg">
-            Your card details are handled directly by Stripe and never touch our servers. By
-            subscribing, you agree to our{' '}
+          <p className="text-xs text-gray-400 dark:text-neutral-500 font-open-sans max-w-xl mx-auto">
+            Payments are processed securely by{' '}
+            <a
+              href="https://stripe.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-semibold"
+            >
+              Stripe
+            </a>
+            . By subscribing you agree to our{' '}
             <Link href="/terms#billing" className="text-primary hover:underline">
               Billing Terms
             </Link>{' '}
@@ -298,37 +252,32 @@ const Pricing = () => {
           </p>
         </motion.div>
 
-        {/* Team Plans Card */}
+        {/* Team Plans */}
         <motion.div
           initial={{ opacity: 0, y: isMobile ? 0 : 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
-          transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-20 p-8 rounded-2xl bg-gray-50/50 dark:bg-neutral-950/50 border border-gray-100 dark:border-neutral-800"
+          transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-20 lg:mt-24 p-8 lg:p-10 rounded-2xl bg-[#faf9f6] dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 shadow-sm"
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center flex-shrink-0">
                 <Users className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white font-playfair">
-                    Team plans
-                  </h3>
-                  <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Coming soon
-                  </span>
-                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 font-poppins">
+                  Team plans coming soon
+                </h3>
                 <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
-                  Custom pricing for clinics and practices with multiple therapists
+                  Custom pricing for clinics and practices with multiple therapists.
                 </p>
               </div>
             </div>
             <Button
               variant="outline"
               onClick={() => router.push('/contact')}
-              className="border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 font-semibold rounded-lg px-8 h-12 transition-all duration-300 whitespace-nowrap"
+              className="border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-900 hover:border-primary/50 font-semibold rounded-lg px-8 h-12 transition-all duration-300 whitespace-nowrap"
             >
               Talk to sales
             </Button>
