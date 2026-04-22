@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { ArrowRight, Briefcase, UserCheck } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -45,40 +46,54 @@ const ForWho = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
             transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-white dark:bg-neutral-900 rounded-2xl p-8 lg:p-10 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+            className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
           >
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-6">
-              <UserCheck className="w-7 h-7 text-primary" />
+            {/* Hero photo for this card */}
+            <div className="relative w-full aspect-[16/9] bg-gray-100 dark:bg-neutral-800">
+              <Image
+                src="/images/physio/physiotherapist-helping-female-patient-her-clinic.jpg"
+                alt="A physiotherapist working with a client in a clinic"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent pointer-events-none" />
+              <div className="absolute top-4 left-4 w-11 h-11 rounded-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm flex items-center justify-center shadow-md">
+                <UserCheck className="w-5 h-5 text-primary" />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 font-playfair">
-              Freelancers
-            </h3>
-            <p className="text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans mb-6">
-              Create your profile, set your availability and rates, and let clients book you for
-              freelance and locum work across clinics, sports teams, gyms, and organisations.
-            </p>
-            <ul className="space-y-3 mb-8">
-              {[
-                'Showcase your qualifications and experience',
-                'Control your schedule with flexible availability and pricing',
-                'Get booked and paid without long-term commitments',
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Button
-              onClick={() => router.push('/authentication/sign-in')}
-              className="group bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg px-6 h-11 transition-all duration-300"
-            >
-              Join as a Freelancer
-              <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Button>
+
+            <div className="p-8 lg:p-10">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 font-playfair">
+                Freelancers
+              </h3>
+              <p className="text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans mb-6">
+                Create your profile, set your availability and rates, and let clients book you for
+                freelance and locum work across clinics, sports teams, gyms, and organisations.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Showcase your qualifications and experience',
+                  'Control your schedule with flexible availability and pricing',
+                  'Get booked and paid without long-term commitments',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={() => router.push('/authentication/sign-in')}
+                className="group bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg px-6 h-11 transition-all duration-300"
+              >
+                Join as a Freelancer
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
           </motion.div>
 
           {/* Employers Card */}
@@ -91,42 +106,56 @@ const ForWho = () => {
               duration: isMobile ? 0.3 : 0.6,
               ease: [0.16, 1, 0.3, 1],
             }}
-            className="bg-white dark:bg-neutral-900 rounded-2xl p-8 lg:p-10 border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+            className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
           >
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-sage-warm/10 to-mint-light/10 flex items-center justify-center mb-6">
-              <Briefcase className="w-7 h-7 text-primary" />
+            {/* Hero photo for this card */}
+            <div className="relative w-full aspect-[16/9] bg-gray-100 dark:bg-neutral-800">
+              <Image
+                src="/images/physio/woman-working-with-personal-trainer.jpg"
+                alt="A client training with a personal trainer"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent pointer-events-none" />
+              <div className="absolute top-4 left-4 w-11 h-11 rounded-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm flex items-center justify-center shadow-md">
+                <Briefcase className="w-5 h-5 text-primary" />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 font-playfair">
-              Clients
-            </h3>
-            <p className="text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans mb-6">
-              Find and book qualified therapists, coaches, and trainers with ease. Whether you need
-              clinic cover, event support, or a private session, discover trusted professionals and
-              secure your booking in minutes.
-            </p>
-            <ul className="space-y-3 mb-8">
-              {[
-                'Browse verified professionals',
-                'View real-time availability and transparent pricing',
-                'Ideal for businesses and individuals',
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Button
-              onClick={() => router.push('/authentication/sign-in')}
-              variant="outline"
-              className="group border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:border-primary/40 font-semibold rounded-lg px-6 h-11 transition-all duration-300"
-            >
-              Hire Professionals
-              <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Button>
+
+            <div className="p-8 lg:p-10">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 font-playfair">
+                Clients
+              </h3>
+              <p className="text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans mb-6">
+                Find and book qualified therapists, coaches, and trainers with ease. Whether you
+                need clinic cover, event support, or a private session, discover trusted
+                professionals and secure your booking in minutes.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Browse verified professionals',
+                  'View real-time availability and transparent pricing',
+                  'Ideal for businesses and individuals',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={() => router.push('/authentication/sign-in')}
+                variant="outline"
+                className="group border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:border-primary/40 font-semibold rounded-lg px-6 h-11 transition-all duration-300"
+              >
+                Hire Professionals
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
           </motion.div>
         </div>
       </div>

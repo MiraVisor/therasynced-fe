@@ -158,17 +158,12 @@ export function GuideTabs() {
                   delay: isMobile ? 0 : index * 0.08,
                   duration: isMobile ? 0.2 : 0.5,
                 }}
-                className="p-6 lg:p-8 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-primary/50 transition-all duration-300 group hover:shadow-xl hover:shadow-primary/10 relative"
+                className="p-6 lg:p-7 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-primary/50 transition-all duration-300 group hover:shadow-xl hover:shadow-primary/10"
               >
-                {/* Step number in the corner — consistent with how-it-works */}
-                <div className="absolute top-5 right-5 w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary font-poppins">{index + 1}</span>
-                </div>
-
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-5 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all duration-300">
                   <step.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-poppins pr-10">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-poppins">
                   {step.title}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans">
