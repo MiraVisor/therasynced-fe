@@ -94,7 +94,7 @@ const AdminHome = () => {
       },
     },
     {
-      title: 'Revenue',
+      title: 'Booking Revenue',
       value: formatCurrency(overview?.revenue?.value || 0),
       trend: {
         value: Math.abs(overview?.revenue?.percentageChange || 0),

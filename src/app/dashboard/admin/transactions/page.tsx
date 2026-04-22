@@ -231,7 +231,7 @@ function AdminTransactionsPageContent() {
   const statsCards = stats
     ? [
         {
-          title: 'Total Revenue',
+          title: 'Subscription Revenue',
           value: formatCurrency(stats.totalRevenue),
         },
         {
