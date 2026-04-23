@@ -1,6 +1,6 @@
 'use client';
 
-import { addDays, format, isPast, isSameDay } from 'date-fns';
+import { addDays, addMinutes, format, isPast, isSameDay } from 'date-fns';
 import { AlertTriangle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -20,7 +20,12 @@ import {
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useFreelancerPricing } from '@/hooks/queries/usePricing';
-import { useCreateSlots, useLastWeekPattern, useMySlots } from '@/hooks/queries/useSlots';
+import {
+  useCreateSlots,
+  useLastWeekPattern,
+  useMySlots,
+  useSlotStats,
+} from '@/hooks/queries/useSlots';
 import { useMySubscription } from '@/hooks/queries/useSubscription';
 import { cn } from '@/lib/utils';
 import { CreateSlotsDto } from '@/types/types';
@@ -78,10 +83,17 @@ export const BulkCreateSlotsModal = ({
   }, [open]);
 
   const { data: pricingData, isLoading: isPricingLoading } = useFreelancerPricing();
+  const { data: slotStats } = useSlotStats();
   const { mutate: createSlots, isPending: isCreating } = useCreateSlots();
   const { data: lastWeekPattern } = useLastWeekPattern({
     weekStart: format(addDays(weekStart, -7), 'yyyy-MM-dd'),
   });
+
+  const subInfo = slotStats?.subscriptionInfo;
+  const capUsed = subInfo?.activeSlotsCount ?? 0;
+  const capLimit = subInfo?.maxSlots ?? null;
+  const capRemaining = subInfo?.remainingSlots ?? null;
+  const capIsUnlimited = subInfo?.isUnlimited ?? capLimit === null;
 
   const { data: existingSlots = [] } = useMySlots({
     page: 1,
@@ -175,7 +187,41 @@ export const BulkCreateSlotsModal = ({
     return Math.max(0, Math.floor(mins / slotDuration) * selectedDays.length);
   }, [selectedDays, startTime, endTime, slotDuration]);
 
-  const revenue = slotCount * (currentDurationPrice || 0);
+  const overlapCount = useMemo(() => {
+    if (selectedDays.length === 0) return 0;
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    if (Number.isNaN(sh) || Number.isNaN(sm) || Number.isNaN(eh) || Number.isNaN(em)) {
+      return 0;
+    }
+    const slotMins = slotDuration;
+    let overlaps = 0;
+    for (const dayKey of selectedDays) {
+      const daySlotList = slotsByDay[dayKey] ?? [];
+      const activeDaySlots = daySlotList.filter((s) => s.status !== 'CANCELLED');
+      const dayIndex = DAYS.findIndex((d) => d.key === dayKey);
+      if (dayIndex === -1) continue;
+      const base = addDays(weekStart, dayIndex);
+      base.setHours(0, 0, 0, 0);
+      const rangeStart = new Date(base);
+      rangeStart.setHours(sh ?? 0, sm ?? 0, 0, 0);
+      const rangeEnd = new Date(base);
+      rangeEnd.setHours(eh ?? 0, em ?? 0, 0, 0);
+      let cursor = rangeStart;
+      while (addMinutes(cursor, slotMins) <= rangeEnd) {
+        const end = addMinutes(cursor, slotMins);
+        const overlaps_here = activeDaySlots.some(
+          (s) => new Date(s.startTime) < end && new Date(s.endTime) > cursor,
+        );
+        if (overlaps_here) overlaps += 1;
+        cursor = end;
+      }
+    }
+    return overlaps;
+  }, [selectedDays, slotsByDay, startTime, endTime, slotDuration, weekStart]);
+
+  const netNewCount = Math.max(0, slotCount - overlapCount);
+  const revenue = netNewCount * (currentDurationPrice || 0);
 
   const getSelectedDates = (): string[] => {
     return selectedDays
@@ -238,10 +284,34 @@ export const BulkCreateSlotsModal = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Slots</DialogTitle>
-            <DialogDescription>
-              Pick days, set your hours, and publish your availability.
-            </DialogDescription>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <DialogTitle>Create Slots</DialogTitle>
+                <DialogDescription>
+                  Pick days, set your hours, and publish your availability.
+                </DialogDescription>
+              </div>
+              {!capIsUnlimited && capLimit !== null && (
+                <div
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border shrink-0',
+                    capRemaining !== null && capRemaining <= 0
+                      ? 'bg-destructive/10 text-destructive border-destructive/30'
+                      : capRemaining !== null && capRemaining <= 2
+                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        : 'bg-muted text-muted-foreground border-border',
+                  )}
+                >
+                  <span className="tabular-nums">
+                    {capUsed} / {capLimit}
+                  </span>
+                  <span>
+                    used
+                    {capRemaining !== null && capRemaining > 0 && ` · ${capRemaining} left`}
+                  </span>
+                </div>
+              )}
+            </div>
           </DialogHeader>
 
           <div className="space-y-5 pt-2">
@@ -446,18 +516,31 @@ export const BulkCreateSlotsModal = ({
 
               <div className="flex items-baseline justify-between">
                 <div>
-                  <span className="text-xl font-semibold">{slotCount}</span>
+                  <span className="text-xl font-semibold">{netNewCount}</span>
                   <span className="text-muted-foreground ml-1.5 text-sm">
-                    slot{slotCount !== 1 ? 's' : ''} will be created
+                    slot{netNewCount !== 1 ? 's' : ''} will be created
                   </span>
                 </div>
-                {hasPricingConfigured && slotCount > 0 && (
+                {hasPricingConfigured && netNewCount > 0 && (
                   <div className="text-right">
                     <div className="text-xs text-muted-foreground">Potential revenue</div>
                     <div className="text-lg font-semibold">€{revenue.toFixed(0)}</div>
                   </div>
                 )}
               </div>
+
+              {overlapCount > 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-500">
+                  {overlapCount} slot{overlapCount !== 1 ? 's' : ''} will be skipped (overlap with
+                  existing)
+                </p>
+              )}
+              {!capIsUnlimited && capRemaining !== null && netNewCount > capRemaining && (
+                <p className="text-xs text-destructive">
+                  Only {capRemaining} slot{capRemaining !== 1 ? 's' : ''} left on your plan —
+                  creation will be rejected.
+                </p>
+              )}
 
               {selectedDays.length > 0 && (
                 <p className="text-xs text-muted-foreground">
@@ -473,9 +556,10 @@ export const BulkCreateSlotsModal = ({
                 onClick={handleSubmit}
                 disabled={
                   selectedDays.length === 0 ||
-                  slotCount === 0 ||
+                  netNewCount === 0 ||
                   !hasPricingConfigured ||
-                  isCreating
+                  isCreating ||
+                  (!capIsUnlimited && capRemaining !== null && netNewCount > capRemaining)
                 }
               >
                 {isCreating ? (
@@ -484,12 +568,12 @@ export const BulkCreateSlotsModal = ({
                     Creating...
                   </>
                 ) : (
-                  `Create ${slotCount} Slot${slotCount !== 1 ? 's' : ''}`
+                  `Create ${netNewCount} Slot${netNewCount !== 1 ? 's' : ''}`
                 )}
               </Button>
 
               <p className="text-[11px] text-muted-foreground text-center">
-                Replaces existing available slots on selected days. Booked slots are never affected.
+                New slots are added alongside existing ones. Overlapping times are skipped.
               </p>
             </div>
           </div>
