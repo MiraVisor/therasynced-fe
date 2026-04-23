@@ -71,6 +71,8 @@ export const BulkCreateSlotsModal = ({
   }, [currentSubscription, tier, isTrialing]);
 
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [createKind, setCreateKind] = useState<'single' | 'range'>('range');
+  const [singleStartTime, setSingleStartTime] = useState('09:00');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
   const [slotDuration, setSlotDuration] = useState(60);
@@ -181,20 +183,20 @@ export const BulkCreateSlotsModal = ({
 
   const slotCount = useMemo(() => {
     if (selectedDays.length === 0) return 0;
+    if (createKind === 'single') return selectedDays.length;
     const [sh, sm] = startTime.split(':').map(Number);
     const [eh, em] = endTime.split(':').map(Number);
     const mins = (eh ?? 0) * 60 + (em ?? 0) - ((sh ?? 0) * 60 + (sm ?? 0));
     return Math.max(0, Math.floor(mins / slotDuration) * selectedDays.length);
-  }, [selectedDays, startTime, endTime, slotDuration]);
+  }, [selectedDays, startTime, endTime, slotDuration, createKind]);
 
   const overlapCount = useMemo(() => {
     if (selectedDays.length === 0) return 0;
-    const [sh, sm] = startTime.split(':').map(Number);
-    const [eh, em] = endTime.split(':').map(Number);
-    if (Number.isNaN(sh) || Number.isNaN(sm) || Number.isNaN(eh) || Number.isNaN(em)) {
-      return 0;
-    }
-    const slotMins = slotDuration;
+
+    const effectiveStart = createKind === 'single' ? singleStartTime : startTime;
+    const [sh, sm] = effectiveStart.split(':').map(Number);
+    if (sh === undefined || sm === undefined) return 0;
+
     let overlaps = 0;
     for (const dayKey of selectedDays) {
       const daySlotList = slotsByDay[dayKey] ?? [];
@@ -203,22 +205,44 @@ export const BulkCreateSlotsModal = ({
       if (dayIndex === -1) continue;
       const base = addDays(weekStart, dayIndex);
       base.setHours(0, 0, 0, 0);
-      const rangeStart = new Date(base);
-      rangeStart.setHours(sh ?? 0, sm ?? 0, 0, 0);
-      const rangeEnd = new Date(base);
-      rangeEnd.setHours(eh ?? 0, em ?? 0, 0, 0);
-      let cursor = rangeStart;
-      while (addMinutes(cursor, slotMins) <= rangeEnd) {
-        const end = addMinutes(cursor, slotMins);
-        const overlaps_here = activeDaySlots.some(
-          (s) => new Date(s.startTime) < end && new Date(s.endTime) > cursor,
+
+      if (createKind === 'single') {
+        const slotStart = new Date(base);
+        slotStart.setHours(sh, sm, 0, 0);
+        const slotEnd = addMinutes(slotStart, slotDuration);
+        const hasOverlap = activeDaySlots.some(
+          (s) => new Date(s.startTime) < slotEnd && new Date(s.endTime) > slotStart,
         );
-        if (overlaps_here) overlaps += 1;
-        cursor = end;
+        if (hasOverlap) overlaps += 1;
+      } else {
+        const [eh, em] = endTime.split(':').map(Number);
+        if (eh === undefined || em === undefined) continue;
+        const rangeStart = new Date(base);
+        rangeStart.setHours(sh, sm, 0, 0);
+        const rangeEnd = new Date(base);
+        rangeEnd.setHours(eh, em, 0, 0);
+        let cursor = rangeStart;
+        while (addMinutes(cursor, slotDuration) <= rangeEnd) {
+          const end = addMinutes(cursor, slotDuration);
+          const hasOverlap = activeDaySlots.some(
+            (s) => new Date(s.startTime) < end && new Date(s.endTime) > cursor,
+          );
+          if (hasOverlap) overlaps += 1;
+          cursor = end;
+        }
       }
     }
     return overlaps;
-  }, [selectedDays, slotsByDay, startTime, endTime, slotDuration, weekStart]);
+  }, [
+    selectedDays,
+    slotsByDay,
+    createKind,
+    singleStartTime,
+    startTime,
+    endTime,
+    slotDuration,
+    weekStart,
+  ]);
 
   const netNewCount = Math.max(0, slotCount - overlapCount);
   const revenue = netNewCount * (currentDurationPrice || 0);
@@ -241,10 +265,6 @@ export const BulkCreateSlotsModal = ({
       toast.error('Select at least one day');
       return;
     }
-    if (startTime >= endTime) {
-      toast.error('End time must be after start time');
-      return;
-    }
 
     const dates = getSelectedDates();
     if (dates.length === 0) {
@@ -252,10 +272,29 @@ export const BulkCreateSlotsModal = ({
       return;
     }
 
+    let effectiveStart: string;
+    let effectiveEnd: string;
+
+    if (createKind === 'single') {
+      const [sh, sm] = singleStartTime.split(':').map(Number);
+      effectiveStart = `${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}`;
+      const totalMin = (sh ?? 0) * 60 + (sm ?? 0) + slotDuration;
+      const eh = Math.floor(totalMin / 60);
+      const em = totalMin % 60;
+      effectiveEnd = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
+    } else {
+      if (startTime >= endTime) {
+        toast.error('End time must be after start time');
+        return;
+      }
+      effectiveStart = startTime;
+      effectiveEnd = endTime;
+    }
+
     const dto: CreateSlotsDto = {
       days: dates,
-      startTime,
-      endTime,
+      startTime: effectiveStart,
+      endTime: effectiveEnd,
       duration: slotDuration,
     };
 
@@ -418,32 +457,72 @@ export const BulkCreateSlotsModal = ({
                 selectedDays.length === 0 && 'opacity-50 pointer-events-none',
               )}
             >
-              <div className="flex items-baseline gap-2">
-                <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-5 h-5 inline-flex items-center justify-center shrink-0">
-                  2
-                </span>
-                <h3 className="font-medium text-foreground">Set your hours</h3>
+              <div className="flex items-center justify-between">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-5 h-5 inline-flex items-center justify-center shrink-0">
+                    2
+                  </span>
+                  <h3 className="font-medium text-foreground">Set your hours</h3>
+                </div>
+                <div className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-muted">
+                  <button
+                    type="button"
+                    onClick={() => setCreateKind('single')}
+                    className={cn(
+                      'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                      createKind === 'single'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    Single slot
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCreateKind('range')}
+                    className={cn(
+                      'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                      createKind === 'range'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    Time range
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-foreground">Time Range</label>
-                  <div className="flex items-center gap-2">
+                {createKind === 'single' ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-foreground">Start time</label>
                     <Input
                       type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full"
-                    />
-                    <span className="text-muted-foreground text-xs shrink-0">to</span>
-                    <Input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
+                      value={singleStartTime}
+                      onChange={(e) => setSingleStartTime(e.target.value)}
                       className="w-full"
                     />
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-foreground">Time range</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="w-full"
+                      />
+                      <span className="text-muted-foreground text-xs shrink-0">to</span>
+                      <Input
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-foreground">Session Duration</label>
