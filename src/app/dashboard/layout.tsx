@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { AdminPageSkeleton } from '@/components/common/PageSkeleton';
 import { AppSidebar } from '@/components/common/sidebar/app-sidebar';
 import { SidebarSkeleton } from '@/components/common/sidebar/SidebarSkeleton';
+import { ProfileCompletionWidget } from '@/components/core/Dashboard/FreelancerSide/Home/ProfileCompletionWidget';
 import { TrialExpiredModal } from '@/components/core/Dashboard/FreelancerSide/Subscription/TrialExpiredModal';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuthZustand';
@@ -71,6 +72,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
       {/* Trial Expired Modal - Shows on all pages for freelancers with expired trials */}
       <TrialExpiredModal />
+      {/* Floating profile-completion widget — only for freelancers, auto-hides at 100% */}
+      {userRole === 'FREELANCER' && <ProfileCompletionWidget />}
     </SidebarProvider>
   );
 }

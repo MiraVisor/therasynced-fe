@@ -20,7 +20,6 @@ import { Booking, Slot } from '@/types/types';
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
 import TrialBanner from '../Subscription/TrialBanner';
 import Charts from './Charts';
-import { ProfileCompletionWidget } from './ProfileCompletionWidget';
 import { RecentReviewsCard } from './RecentReviewsCard';
 
 // ============================================================================
@@ -394,9 +393,6 @@ const FreelancerHome = () => {
 
         {/* Today's Bookings - Prominent at top */}
         <TodayAppointments />
-
-        {/* Profile Completion Widget - Only shows if incomplete */}
-        <ProfileCompletionWidget />
 
         {/* Weekly Chart */}
         <Charts dashboardData={dashboardData ?? null} isLoading={isLoading} />
