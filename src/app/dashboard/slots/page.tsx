@@ -127,6 +127,30 @@ const SlotsPage = () => {
       }
     >
       <div className="space-y-6 pb-6">
+        {/* Create Slots CTA — prominent primary card as the single entry
+            point for adding new availability. Routes to the dedicated
+            creation page; after successful creation the form auto-returns
+            here so the round-trip feels like one workflow. */}
+        <Link
+          href="/dashboard/availability"
+          className="flex items-center justify-between gap-4 p-5 lg:p-6 rounded-2xl bg-primary text-white shadow-sm hover:shadow-lg hover:bg-primary/95 transition-all group"
+        >
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+              <Plus className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-base lg:text-lg font-poppins font-bold">Create new slots</h3>
+              <p className="text-xs lg:text-sm text-white/85 font-inter mt-0.5">
+                Pick days, set hours, and publish your availability in a couple of clicks.
+              </p>
+            </div>
+          </div>
+          <span className="hidden sm:inline text-sm font-semibold whitespace-nowrap opacity-90 group-hover:opacity-100 transition">
+            Open →
+          </span>
+        </Link>
+
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard

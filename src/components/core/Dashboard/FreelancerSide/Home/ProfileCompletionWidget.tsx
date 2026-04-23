@@ -6,74 +6,40 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useProfile } from '@/hooks/queries/useProfile';
-import { useVerificationStatus } from '@/hooks/queries/useVerification';
+import { useProfileCompletion } from '@/hooks/queries/useFreelancers';
 import { cn } from '@/lib/utils';
 
-interface CompletionItem {
-  key: string;
-  label: string;
-  completed: boolean;
-  link?: string;
-  status?: 'pending' | 'approved' | 'rejected';
-}
-
+/**
+ * Frontend used to calculate completion itself by checking `profile.city`
+ * and similar fields — those names never matched the actual User model
+ * (which has `county` and `cityTown`), so items like "basic info" could
+ * never tick off. Now we use the backend's `/freelancer/profile-completion`
+ * endpoint as the single source of truth. It reads the real columns and
+ * returns per-item completion state already computed.
+ */
 export const ProfileCompletionWidget = () => {
   const router = useRouter();
-  const { data: profile } = useProfile();
-  const { data: verificationStatus } = useVerificationStatus();
+  const { data: completion } = useProfileCompletion();
 
-  const completionItems: CompletionItem[] = [
-    {
-      key: 'basicInfo',
-      label: 'Complete your basic information',
-      completed: !!(profile?.name && profile?.email && profile?.city),
-      link: '/dashboard/account?tab=profile',
-    },
-    {
-      key: 'profilePhoto',
-      label: 'Add a profile photo',
-      completed: !!profile?.profilePicture,
-      link: '/dashboard/account?tab=profile',
-    },
-    {
-      key: 'mainJobTitle',
-      label: 'Select your job title',
-      completed: !!profile?.mainJobTitleId,
-      link: '/dashboard/account?tab=profile',
-    },
-    {
-      key: 'clinicAddress',
-      label: 'Add your clinic address',
-      completed: !!profile?.clinicAddress,
-      link: '/dashboard/account?tab=profile',
-    },
-    {
-      key: 'verificationDocuments',
-      label: 'Submit verification documents',
-      completed: verificationStatus?.verificationStatus === 'APPROVED',
-      status:
-        verificationStatus?.verificationStatus === 'APPROVED'
-          ? 'approved'
-          : verificationStatus?.verificationStatus === 'REJECTED'
-            ? 'rejected'
-            : 'pending',
-      link: '/dashboard/verification',
-    },
-  ];
+  if (!completion) return null;
 
-  const completedCount = completionItems.filter((item) => item.completed).length;
-  const totalCount = completionItems.length;
-  const completionPercentage = Math.round((completedCount / totalCount) * 100);
-  const isComplete = completionPercentage === 100;
+  const { completionPercentage, isComplete, completedItems, incompleteItems, nextAction } =
+    completion;
 
-  // Don't show if profile is complete
+  // Don't show if profile is already complete
   if (isComplete) {
     return null;
   }
 
-  const incompleteItems = completionItems.filter((item) => !item.completed);
-  const nextItem = incompleteItems[0];
+  // Merge completed + incomplete into one display list, preserving the
+  // order the backend returns. Completed items render with a strikethrough,
+  // incomplete items are clickable and route to the relevant page.
+  const allItems = [
+    ...completedItems.map((item) => ({ ...item, completed: true as const })),
+    ...incompleteItems.map((item) => ({ ...item, completed: false as const })),
+  ];
+  const total = allItems.length;
+  const completedCount = completedItems.length;
 
   return (
     <Card>
@@ -84,7 +50,7 @@ export const ProfileCompletionWidget = () => {
               Complete Your Profile
             </CardTitle>
             <CardDescription className="font-inter">
-              {completedCount} of {totalCount} items completed
+              {completedCount} of {total} items completed
             </CardDescription>
           </div>
           <span className="text-2xl font-poppins font-bold text-primary">
@@ -93,12 +59,10 @@ export const ProfileCompletionWidget = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Progress Bar */}
         <Progress value={completionPercentage} className="h-2 mb-6" />
 
-        {/* Checklist */}
         <div className="space-y-3">
-          {completionItems.map((item) => (
+          {allItems.map((item) => (
             <div
               key={item.key}
               className={cn(
@@ -106,8 +70,8 @@ export const ProfileCompletionWidget = () => {
                 !item.completed && 'hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer',
               )}
               onClick={() => {
-                if (!item.completed && item.link) {
-                  router.push(item.link);
+                if (!item.completed && item.actionUrl) {
+                  router.push(item.actionUrl);
                 }
               }}
             >
@@ -131,22 +95,16 @@ export const ProfileCompletionWidget = () => {
                   Pending Review
                 </span>
               )}
-              {item.status === 'rejected' && (
-                <span className="text-xs font-inter text-red-600 bg-red-100 dark:bg-red-900/20 dark:text-red-400 px-2 py-1 rounded">
-                  Rejected
-                </span>
-              )}
             </div>
           ))}
         </div>
 
-        {/* CTA Button */}
-        {nextItem && (
+        {nextAction && (
           <Button
             className="w-full mt-6"
             onClick={() => {
-              if (nextItem.link) {
-                router.push(nextItem.link);
+              if (nextAction.url) {
+                router.push(nextAction.url);
               }
             }}
           >

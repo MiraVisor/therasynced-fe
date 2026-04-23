@@ -10,8 +10,16 @@ import {
   startOfWeek,
   subWeeks,
 } from 'date-fns';
-import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+} from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -57,6 +65,7 @@ const DURATIONS = [30, 45, 60, 90, 120];
 
 const AvailabilityPage = () => {
   const { role } = useAuth();
+  const router = useRouter();
 
   // Week navigation
   const [currentWeekStart, setCurrentWeekStart] = useState(() =>
@@ -255,6 +264,12 @@ const AvailabilityPage = () => {
           toast.success(msg || `Created slots successfully`);
         }
         setSelectedDays([]); // Clear selection after success
+        // Round-trip back to the slots hub so the freelancer sees the
+        // newly created slots in context. Short delay so the toast is
+        // still visible through the route change.
+        setTimeout(() => {
+          router.push('/dashboard/slots');
+        }, 800);
       },
       onError: (e: unknown) => {
         const msg =
@@ -303,17 +318,29 @@ const AvailabilityPage = () => {
     <DashboardPageWrapper
       userRole={role}
       header={
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <h2 className="text-2xl font-poppins font-bold text-charcoal">Availability</h2>
-            <p className="text-muted-foreground text-sm">Create and manage your schedule</p>
+        <div className="flex flex-col gap-3 w-full">
+          <Link
+            href="/dashboard/slots"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors font-inter w-fit"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to My Slots
+          </Link>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <h2 className="text-2xl font-poppins font-bold text-charcoal">Create Slots</h2>
+              <p className="text-muted-foreground text-sm">
+                Pick days, set your hours, and publish your availability. You will return to My
+                Slots once created.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard/slots">
+                <Calendar className="h-4 w-4 mr-1.5" />
+                View Slots
+              </Link>
+            </Button>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/slots">
-              <Calendar className="h-4 w-4 mr-1.5" />
-              View All Slots
-            </Link>
-          </Button>
         </div>
       }
     >
