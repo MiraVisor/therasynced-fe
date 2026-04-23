@@ -82,6 +82,76 @@ export default function GuidePage() {
         </div>
       </section>
 
+      {/* FAQ section */}
+      <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-white dark:bg-neutral-900">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12 space-y-3">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white font-playfair">
+              Frequently asked
+            </h2>
+            <p className="text-base text-gray-600 dark:text-neutral-400 font-open-sans max-w-2xl mx-auto">
+              Quick answers to the things people ask most often.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: 'Is my data safe?',
+                a: 'Your data is encrypted at rest and in transit. Messages are encrypted between you and the therapist. Payments are processed by Stripe — we never see or store card details.',
+              },
+              {
+                q: 'Does TheraSynced work on mobile?',
+                a: 'Yes, the platform runs on any modern browser and is fully responsive on phones and tablets. Native apps are on the roadmap.',
+              },
+              {
+                q: 'What happens if I need to cancel?',
+                a: 'Cancellations made 24 hours or more before the session are always free. Shorter-notice cancellations may be subject to the therapist’s individual policy. You can cancel anytime from My Bookings.',
+              },
+              {
+                q: 'How does payment work?',
+                a: 'You enter your card when you book. Payment is held securely by Stripe and only captured when the therapist marks the session complete. If the session does not happen, the hold is released.',
+              },
+              {
+                q: 'Can I change my subscription tier?',
+                a: 'Therapists can switch between Bronze, Silver and Gold anytime from Account → Subscription. Upgrades apply immediately; downgrades take effect at the next billing cycle.',
+              },
+              {
+                q: 'I forgot to mark a session complete — what now?',
+                a: 'You can mark any past session complete at any time from My Slots or My Bookings. The session only counts toward your revenue once you complete it, so tick them off the same day to keep your numbers accurate.',
+              },
+              {
+                q: 'Why can’t I leave a rating yet?',
+                a: 'Ratings unlock once the session’s scheduled time has passed. If the session has just finished and the button is not showing, give it a few minutes and refresh.',
+              },
+              {
+                q: 'How do I get verified as a therapist?',
+                a: 'Upload your qualification documents from the Verification section of your account. Approval usually takes 1-2 business days. Your profile only appears in client search once you are verified.',
+              },
+              {
+                q: 'I am in crisis, can I use TheraSynced?',
+                a: 'No — TheraSynced is not monitored for emergencies. If you are in crisis or experiencing a medical emergency, please call local emergency services. In Ireland, dial 112 or 999.',
+              },
+            ].map((item, idx) => (
+              <details
+                key={idx}
+                className="group p-5 lg:p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#faf9f6] dark:bg-neutral-800 shadow-sm open:shadow-md transition-all"
+              >
+                <summary className="flex items-start justify-between gap-4 cursor-pointer list-none font-poppins font-semibold text-gray-900 dark:text-white">
+                  <span className="text-base">{item.q}</span>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg leading-none transition-transform group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-4 text-sm text-gray-600 dark:text-neutral-400 font-open-sans leading-relaxed pr-10">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Good to know */}
       <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="max-w-6xl mx-auto">
