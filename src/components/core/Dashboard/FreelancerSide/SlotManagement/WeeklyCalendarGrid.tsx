@@ -1,7 +1,7 @@
 'use client';
 
 import { addDays, format, isSameDay } from 'date-fns';
-import { Clock } from 'lucide-react';
+import { Clock, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -11,6 +11,7 @@ interface WeeklyCalendarGridProps {
   weekStart: Date;
   slots: Slot[];
   isLoading?: boolean;
+  onDayClick?: (date: Date) => void;
 }
 
 const formatTime = (iso: string) => format(new Date(iso), 'h:mma').toLowerCase();
@@ -19,6 +20,7 @@ export const WeeklyCalendarGrid = ({
   weekStart,
   slots,
   isLoading = false,
+  onDayClick,
 }: WeeklyCalendarGridProps) => {
   const weekDays = useMemo(() => {
     const days: Date[] = [];
@@ -96,14 +98,28 @@ export const WeeklyCalendarGrid = ({
               ? `${formatTime(firstSlot.startTime)} – ${formatTime(lastSlot.endTime)}`
               : null;
 
+          const clickable = !!onDayClick;
           return (
             <div
               key={dayKey}
+              {...(clickable && {
+                role: 'button',
+                tabIndex: 0,
+                onClick: () => onDayClick?.(day),
+                onKeyDown: (e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onDayClick?.(day);
+                  }
+                },
+              })}
               className={cn(
                 'rounded-xl border p-4 flex flex-col min-h-[200px] transition-all duration-200',
                 isToday
                   ? 'border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20 shadow-sm'
                   : 'border-gray-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-gray-300 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-0.5',
+                clickable &&
+                  'cursor-pointer hover:border-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
               )}
             >
               {/* Date cluster */}
@@ -130,8 +146,14 @@ export const WeeklyCalendarGrid = ({
 
               {/* Body */}
               {totalCount === 0 ? (
-                <div className="flex-1 flex items-center justify-center border-t border-dashed border-gray-200 -mx-4 px-4 pt-4">
+                <div className="flex-1 flex flex-col items-center justify-center gap-1 border-t border-dashed border-gray-200 -mx-4 px-4 pt-4">
                   <p className="text-xs text-gray-400 italic font-inter">No slots</p>
+                  {clickable && (
+                    <span className="text-[10px] font-medium text-primary/70 inline-flex items-center gap-0.5">
+                      <Plus className="w-3 h-3" />
+                      Add
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col gap-2.5 flex-1">

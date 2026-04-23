@@ -246,7 +246,7 @@ const TodayAppointments = () => {
             <Button
               variant="outline"
               className="mt-4"
-              onClick={() => router.push('/dashboard/availability')}
+              onClick={() => router.push('/dashboard/slots')}
             >
               Add Availability
             </Button>

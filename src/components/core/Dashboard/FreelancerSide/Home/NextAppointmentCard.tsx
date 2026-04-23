@@ -127,7 +127,7 @@ export const NextAppointmentCard = () => {
               variant="outline"
               size="sm"
               onClick={() => {
-                window.location.href = '/dashboard/availability';
+                window.location.href = '/dashboard/slots';
               }}
             >
               Create Availability

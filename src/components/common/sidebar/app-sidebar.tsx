@@ -7,7 +7,6 @@ import {
   BarChart,
   Briefcase,
   Calendar,
-  CalendarCheck,
   ChevronDown,
   ChevronRight,
   ClipboardCheck,
@@ -99,11 +98,6 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
       name: 'Overview',
       url: '/dashboard',
       icon: Home,
-    },
-    {
-      name: 'Availability',
-      url: '/dashboard/availability',
-      icon: CalendarCheck,
     },
     {
       name: 'My Slots',

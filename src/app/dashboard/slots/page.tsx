@@ -2,24 +2,17 @@
 
 import { addWeeks, endOfWeek, format, startOfWeek, subWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
+import { BulkCreateSlotsModal } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/BulkCreateSlotsModal';
+import { DaySlotModal } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/DaySlotModal';
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
 import { TabbedSlotsView } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/TabbedSlotsView';
 import { WeeklyCalendarGrid } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/WeeklyCalendarGrid';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
 import { useDeleteSlot, useMySlots, useSlotStats } from '@/hooks/queries/useSlots';
 import { useAuth } from '@/hooks/useAuthZustand';
@@ -28,21 +21,19 @@ import { Slot } from '@/types/types';
 const SlotsPage = () => {
   const { role } = useAuth();
 
-  // Week navigation state
   const [currentWeekStart, setCurrentWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
 
-  // UI state
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDayModal, setShowDayModal] = useState(false);
+  const [showBulkCreate, setShowBulkCreate] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSlotDetails, setShowSlotDetails] = useState(false);
 
-  // Data hooks
   const { data: slotStats, isLoading: isLoadingStats, error: statsError } = useSlotStats();
   const { mutate: deleteSlotMutation } = useDeleteSlot();
 
-  // Get slots for the current week view
   const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
   const { data: weekSlots = [], isLoading: isLoadingSlots } = useMySlots({
     page: 1,
@@ -53,7 +44,6 @@ const SlotsPage = () => {
     sortOrder: 'asc',
   });
 
-  // Show error toast only when no cached data exists
   useEffect(() => {
     if (statsError && !slotStats) {
       const errorMessage =
@@ -62,20 +52,15 @@ const SlotsPage = () => {
     }
   }, [statsError, slotStats]);
 
-  const handleDeleteFromDialog = (slotId: string) => {
-    setShowDetailsDialog(false);
-    setSelectedSlot(null);
-    deleteSlotMutation(slotId);
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    setShowDayModal(true);
   };
 
-  const handleDeleteSlot = () => {
-    if (!selectedSlot) return;
-    setShowDeleteDialog(false);
-    deleteSlotMutation(selectedSlot.id, {
-      onSuccess: () => {
-        setSelectedSlot(null);
-      },
-    });
+  const handleViewSlotFromDay = (slot: Slot) => {
+    setShowDayModal(false);
+    setSelectedSlot(slot);
+    setShowSlotDetails(true);
   };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
@@ -91,7 +76,6 @@ const SlotsPage = () => {
     return currentWeekStart.getTime() === thisWeekStart.getTime();
   }, [currentWeekStart]);
 
-  // Use API stats
   const displayStats = useMemo(() => {
     if (slotStats) {
       return {
@@ -113,45 +97,18 @@ const SlotsPage = () => {
             <div>
               <h2 className="text-2xl font-poppins font-bold text-charcoal">My Slots</h2>
               <p className="font-inter text-muted-foreground mt-1">
-                View and manage your time slots
+                Click a day to create, view, or manage your slots
               </p>
             </div>
-            <Button asChild>
-              <Link href="/dashboard/availability">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Slots
-              </Link>
+            <Button onClick={() => setShowBulkCreate(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Slots
             </Button>
           </div>
         </div>
       }
     >
       <div className="space-y-6 pb-6">
-        {/* Create Slots CTA — prominent primary card as the single entry
-            point for adding new availability. Routes to the dedicated
-            creation page; after successful creation the form auto-returns
-            here so the round-trip feels like one workflow. */}
-        <Link
-          href="/dashboard/availability"
-          className="flex items-center justify-between gap-4 p-5 lg:p-6 rounded-2xl bg-primary text-white shadow-sm hover:shadow-lg hover:bg-primary/95 transition-all group"
-        >
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <Plus className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-base lg:text-lg font-poppins font-bold">Create new slots</h3>
-              <p className="text-xs lg:text-sm text-white/85 font-inter mt-0.5">
-                Pick days, set hours, and publish your availability in a couple of clicks.
-              </p>
-            </div>
-          </div>
-          <span className="hidden sm:inline text-sm font-semibold whitespace-nowrap opacity-90 group-hover:opacity-100 transition">
-            Open →
-          </span>
-        </Link>
-
-        {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard
             title="Total Slots"
@@ -179,11 +136,15 @@ const SlotsPage = () => {
           />
         </div>
 
-        {/* Week Navigation and Calendar Grid */}
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-poppins">Weekly Overview</CardTitle>
+              <div>
+                <CardTitle className="text-lg font-poppins">Weekly Overview</CardTitle>
+                <CardDescription className="mt-1">
+                  Click any day to create, view, or manage slots
+                </CardDescription>
+              </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" onClick={() => navigateWeek('prev')}>
                   <ChevronLeft className="h-4 w-4" />
@@ -209,15 +170,15 @@ const SlotsPage = () => {
               weekStart={currentWeekStart}
               slots={weekSlots}
               isLoading={isLoadingSlots}
+              onDayClick={handleDayClick}
             />
           </CardContent>
         </Card>
 
-        {/* Slots List */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-poppins">All Slots</CardTitle>
-            <CardDescription>View and manage all your time slots</CardDescription>
+            <CardDescription>Browse and manage all your time slots</CardDescription>
           </CardHeader>
           <CardContent>
             <TabbedSlotsView />
@@ -225,41 +186,38 @@ const SlotsPage = () => {
         </Card>
       </div>
 
-      {/* Slot Details Dialog */}
+      <DaySlotModal
+        open={showDayModal}
+        onOpenChange={setShowDayModal}
+        date={selectedDate}
+        slots={weekSlots}
+        onViewSlot={handleViewSlotFromDay}
+      />
+
+      <BulkCreateSlotsModal
+        open={showBulkCreate}
+        onOpenChange={setShowBulkCreate}
+        weekStart={currentWeekStart}
+      />
+
       {selectedSlot && (
         <SlotDetailsDialog
           slot={selectedSlot}
-          isOpen={showDetailsDialog}
+          isOpen={showSlotDetails}
           onClose={() => {
-            setShowDetailsDialog(false);
+            setShowSlotDetails(false);
             setSelectedSlot(null);
           }}
-          onDelete={handleDeleteFromDialog}
+          onDelete={(slotId: string) => {
+            setShowSlotDetails(false);
+            setSelectedSlot(null);
+            deleteSlotMutation(slotId);
+          }}
           onComplete={() => {
-            // React Query will automatically refetch
+            // React Query handles refetching
           }}
         />
       )}
-
-      {/* Delete Slot Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cancel Slot</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to cancel this slot? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              Keep Slot
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteSlot}>
-              Cancel Slot
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardPageWrapper>
   );
 };
