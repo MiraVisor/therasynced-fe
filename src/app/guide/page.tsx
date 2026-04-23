@@ -16,7 +16,7 @@ export default function GuidePage() {
     <div className="w-full bg-white dark:bg-neutral-900 min-h-screen">
       {/* Top / Hero area */}
       <section className="relative w-full px-4 sm:px-6 lg:px-8 pt-10 pb-16 lg:pt-14 lg:pb-20 overflow-hidden">
-        {/* Subtle background pattern — same circles used across the landing sections */}
+        {/* Subtle background pattern (same circles used across landing sections) */}
         <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
           <div className="absolute top-20 left-20 w-96 h-96 border border-primary rounded-full" />
           <div className="absolute bottom-20 right-20 w-72 h-72 border border-sage-warm rounded-full" />
@@ -98,7 +98,7 @@ export default function GuidePage() {
             {[
               {
                 q: 'Is my data safe?',
-                a: 'Your data is encrypted at rest and in transit. Messages are encrypted between you and the therapist. Payments are processed by Stripe — we never see or store card details.',
+                a: 'Your data is encrypted at rest and in transit. Messages are encrypted between you and the therapist. Payments are processed by Stripe. We never see or store card details.',
               },
               {
                 q: 'Does TheraSynced work on mobile?',
@@ -117,7 +117,7 @@ export default function GuidePage() {
                 a: 'Therapists can switch between Bronze, Silver and Gold anytime from Account → Subscription. Upgrades apply immediately; downgrades take effect at the next billing cycle.',
               },
               {
-                q: 'I forgot to mark a session complete — what now?',
+                q: 'I forgot to mark a session complete. What now?',
                 a: 'You can mark any past session complete at any time from My Slots or My Bookings. The session only counts toward your revenue once you complete it, so tick them off the same day to keep your numbers accurate.',
               },
               {
@@ -130,7 +130,7 @@ export default function GuidePage() {
               },
               {
                 q: 'I am in crisis, can I use TheraSynced?',
-                a: 'No — TheraSynced is not monitored for emergencies. If you are in crisis or experiencing a medical emergency, please call local emergency services. In Ireland, dial 112 or 999.',
+                a: 'No. TheraSynced is not monitored for emergencies. If you are in crisis or experiencing a medical emergency, please call local emergency services. In Ireland, dial 112 or 999.',
               },
             ].map((item, idx) => (
               <details

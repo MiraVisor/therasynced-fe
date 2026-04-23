@@ -46,7 +46,7 @@ function PrioritySupportNoticeAuthed() {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-poppins font-semibold text-gray-900 dark:text-white mb-1">
-            Priority Support — Gold members
+            Priority Support - Gold members
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 font-inter mb-3">
             As a Gold member, your requests are routed to our priority queue with a 24-hour response

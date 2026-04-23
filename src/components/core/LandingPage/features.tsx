@@ -21,7 +21,7 @@ const features = {
     {
       title: 'Book in Minutes',
       description:
-        'View availability and schedule sessions directly with professionals — no calls or back-and-forth.',
+        'View availability and schedule sessions directly with professionals - no calls or back-and-forth.',
       icon: Clock,
     },
     {
@@ -64,7 +64,7 @@ const features = {
     {
       title: 'Flexible Work',
       description:
-        'Take on as many or as few bookings as you want — no long-term commitments required.',
+        'Take on as many or as few bookings as you want - no long-term commitments required.',
       icon: Clock,
     },
     {

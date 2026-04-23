@@ -36,7 +36,7 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
       steps: [
         'Open Explore from the dashboard sidebar',
         'Filter by county, city or home-visit availability',
-        'Narrow by specialty — physio, sports massage, counselling, strength coach, and more',
+        'Narrow by specialty - physio, sports massage, counselling, strength coach, and more',
         'Sort by rating, price or availability',
         'Open a profile to read their bio, qualifications and recent ratings',
       ],
@@ -55,7 +55,7 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
         'On a therapist profile, click Book a session',
         'Pick the date and time from their available slots',
         'Choose the service and duration (30, 45, 60, 90 or 120 minutes)',
-        'Select location type — clinic, home visit, pitchside, corporate',
+        'Select location type - clinic, home visit, pitchside, corporate',
         'Review the price, enter your card details, and confirm',
       ],
       tips: [
@@ -77,7 +77,7 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
       ],
       tips: [
         'All messages are encrypted and private between you and the therapist',
-        'For emergencies always call 112 or 999 — messages are not monitored for urgency',
+        'For emergencies always call 112 or 999 - messages are not monitored for urgency',
         'Keep a concise summary of your goals in the first message',
       ],
     },
@@ -107,7 +107,7 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
         'Open My Bookings once the session date has passed',
         'Click the prominent Rate button on the session row',
         'Pick your star rating (1 = poor, 5 = excellent)',
-        'Submit — it is instantly added to the therapist’s profile score',
+        'Submit - it is instantly added to the therapist’s profile score',
       ],
       tips: [
         'You can rate any session where the scheduled time has passed',
@@ -118,7 +118,7 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
     {
       title: 'Your dashboard',
       description:
-        'The dashboard keeps every session, message, receipt and favourite therapist in one place — no spreadsheets, no hunting through emails.',
+        'The dashboard keeps every session, message, receipt and favourite therapist in one place - no spreadsheets, no hunting through emails.',
       icon: LayoutDashboard,
       steps: [
         'Next appointment hero shows your upcoming session at the top',
@@ -138,7 +138,7 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
     {
       title: 'Setting up your profile',
       description:
-        'Your profile decides whether clients trust you enough to book. Spend 15 minutes filling it properly before going live — it pays back many times over.',
+        'Your profile decides whether clients trust you enough to book. Spend 15 minutes filling it properly before going live - it pays back many times over.',
       icon: UserCheck,
       steps: [
         'Upload a clear, professional profile photo (headshot works best)',
@@ -164,10 +164,10 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
         'Set a base rate for each session duration (30, 45, 60, 90, 120 minutes)',
         'Optionally override per service category (e.g., massage €60, cupping €75)',
         'Optionally add location surcharges (e.g., home visit +€15 for travel)',
-        'Save — the new pricing applies to all future slots',
+        'Save - the new pricing applies to all future slots',
       ],
       tips: [
-        'Clients associate higher prices with quality — do not undercut yourself',
+        'Clients associate higher prices with quality - do not undercut yourself',
         'Offering 30, 60 and 90 minute options captures different needs',
         'Review your pricing every 6 months as you gain experience and ratings',
       ],
@@ -178,9 +178,9 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
         'Create a full week of slots in under two minutes using the 3-step guided flow on the Availability page. Slots appear in client search immediately.',
       icon: Calendar,
       steps: [
-        'Pick your days — click individual days or use the Weekdays / All Days quick buttons',
-        'Set your hours — start time, end time, and slot duration',
-        'Review & create — the form shows the slot count and potential revenue before you commit',
+        'Pick your days - click individual days or use the Weekdays / All Days quick buttons',
+        'Set your hours - start time, end time, and slot duration',
+        'Review & create - the form shows the slot count and potential revenue before you commit',
       ],
       tips: [
         'Add buffer time between slots (end at 16:30 for a 30 minute break before 17:00)',
@@ -198,12 +198,12 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
         'See upcoming, completed and cancelled sessions filtered by status',
         'Click any booking to see client name, notes and payment status',
         'Use Reschedule if the client agrees to a new time',
-        'Use Cancel only if unavoidable — clients are auto-notified',
+        'Use Cancel only if unavoidable - clients are auto-notified',
         'Open Messages directly from a booking if you need to reach the client',
       ],
       tips: [
-        'Check your dashboard daily — responding to messages within 12 hours keeps clients engaged',
-        'Avoid cancelling on short notice — it affects your rating and search placement',
+        'Check your dashboard daily - responding to messages within 12 hours keeps clients engaged',
+        'Avoid cancelling on short notice - it affects your rating and search placement',
         'Accept / decline happens automatically on the booking itself; no manual accept step needed',
       ],
     },
@@ -215,12 +215,12 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
       steps: [
         'After the session ends, open My Slots or My Bookings',
         'Find the session in the list (booked / past-time sessions show a Complete button inline)',
-        'Click Complete — confirmation happens instantly',
+        'Click Complete - confirmation happens instantly',
         'The session moves to Completed status, revenue updates, and the client is prompted to rate',
       ],
       tips: [
         'Set a 5-minute reminder at the end of your workday to tick off everything',
-        'There is no automatic completion — it must be a conscious action',
+        'There is no automatic completion - it must be a conscious action',
         'Silver and Gold also unlock the Generate Invoice button once a session is complete',
       ],
     },
@@ -232,7 +232,7 @@ const guides: Record<'client' | 'therapist', Topic[]> = {
       steps: [
         'Review the revenue chart on the home dashboard weekly',
         'Check Completed Sessions monthly for trend',
-        'Watch your average rating — aim to stay above 4.5 for best search placement',
+        'Watch your average rating - aim to stay above 4.5 for best search placement',
         'On Silver/Gold, open Analytics for deeper breakdowns',
         'Update pricing, availability, or services based on what you learn',
       ],

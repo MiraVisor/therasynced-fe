@@ -135,7 +135,7 @@ const MessagesPageContent = () => {
         }
       } else {
         // Contact doesn't exist yet. We intentionally do NOT auto-send a
-        // "Hello!" bootstrap message here — that logic previously fired on
+        // "Hello!" bootstrap message here - that logic previously fired on
         // every page reload with ?userId=... in the URL and silently
         // spammed the target user with automated greetings. Instead, the
         // conversation should be created when the user explicitly types
@@ -145,7 +145,7 @@ const MessagesPageContent = () => {
           '[messages] No existing conversation with target user; waiting for first user-typed message.',
           targetUserId,
         );
-        toast.info('No messages yet — type your first message to start this conversation.');
+        toast.info('No messages yet - type your first message to start this conversation.');
       }
     }
   }, [

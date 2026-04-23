@@ -177,7 +177,7 @@ export const createBookingColumns = ({
 
         return (
           <div className="flex items-center gap-2 justify-end">
-            {/* Inline "Rate" action — surfaces the rating flow instead of
+            {/* Inline "Rate" action - surfaces the rating flow instead of
                 burying it three clicks deep in the dropdown menu. Only
                 shows once the session's start time has passed and the
                 client hasn't already rated. */}

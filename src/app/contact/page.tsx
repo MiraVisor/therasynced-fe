@@ -56,7 +56,7 @@ const socials = [
 export default function ContactPage() {
   return (
     <div className="w-full bg-white dark:bg-neutral-900 min-h-screen">
-      {/* Top / Hero area — matches guide page layout */}
+      {/* Top / Hero area - matches guide page layout */}
       <section className="relative w-full px-4 sm:px-6 lg:px-8 pt-10 pb-16 lg:pt-14 lg:pb-20 overflow-hidden">
         {/* Subtle background pattern, same as guide and other landing sections */}
         <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
@@ -139,7 +139,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Phone card — full width */}
+          {/* Phone card - full width */}
           <div className="p-7 lg:p-8 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
               <div>

@@ -69,7 +69,7 @@ export const TabbedSlotsView = () => {
   }, [allSlots, statusFilter]);
 
   // Auto-expand all date groups when filtering to a curated subset
-  // (Booked, Completed, Reserved, Cancelled) — those are small result sets
+  // (Booked, Completed, Reserved, Cancelled) - those are small result sets
   // where the user's immediate goal is to see/act on everything.
   useEffect(() => {
     if (statusFilter === 'all' || statusFilter === 'AVAILABLE') return;
@@ -116,7 +116,7 @@ export const TabbedSlotsView = () => {
   );
 
   // Bulk-clear all AVAILABLE slots for a given day. Booked slots stay put
-  // — those need to go through the booking cancellation flow separately.
+  // - those need to go through the booking cancellation flow separately.
   const handleClearDay = useMemo(
     () => (dateKey: string, availableOnDay: number) => {
       if (availableOnDay === 0) return;
@@ -247,7 +247,7 @@ export const TabbedSlotsView = () => {
 
   return (
     <div className="space-y-4">
-      {/* Filter pills — always visible */}
+      {/* Filter pills - always visible */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs font-inter font-medium text-gray-600">Filter:</span>
         {statusFilterOptions.map((option) => (
@@ -266,7 +266,7 @@ export const TabbedSlotsView = () => {
         ))}
       </div>
 
-      {/* Empty state — stays inside the return so filters remain clickable */}
+      {/* Empty state - stays inside the return so filters remain clickable */}
       {filteredSlots.length === 0 ? (
         <div className="text-center py-12 border border-dashed border-gray-200 rounded-lg">
           <p className="text-gray-500 font-inter text-sm">
@@ -311,7 +311,7 @@ export const TabbedSlotsView = () => {
                     )}
                   </button>
 
-                  {/* Clear day — only visible when there are AVAILABLE slots
+                  {/* Clear day - only visible when there are AVAILABLE slots
                       to clear. Booked slots stay regardless. */}
                   {availableCount > 0 && (
                     <Button
@@ -444,7 +444,7 @@ const SlotRow = ({
 
       {/* Actions */}
       <div className="flex items-center gap-1.5 shrink-0">
-        {/* Inline booked-slot actions — one click instead of menu → click */}
+        {/* Inline booked-slot actions - one click instead of menu → click */}
         {showBookedActions && (
           <>
             <Button
@@ -470,7 +470,7 @@ const SlotRow = ({
           </>
         )}
 
-        {/* Inline delete button for AVAILABLE slots — main CRUD affordance
+        {/* Inline delete button for AVAILABLE slots - main CRUD affordance
             so users don't need to open the menu to delete a slot. Booked
             slots keep the menu-only delete since deleting them needs
             confirmation and cancels the client booking. */}

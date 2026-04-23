@@ -397,7 +397,7 @@ const FreelancerHome = () => {
         {/* Weekly Chart */}
         <Charts dashboardData={dashboardData ?? null} isLoading={isLoading} />
 
-        {/* Recent client ratings — available to all tiers so every
+        {/* Recent client ratings - available to all tiers so every
             freelancer sees incoming feedback regardless of plan */}
         <RecentReviewsCard />
       </div>

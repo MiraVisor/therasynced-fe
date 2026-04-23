@@ -182,7 +182,7 @@ export const WeeklyCalendarGrid = ({
                     )}
                   </div>
 
-                  {/* Booked / Free counts — promoted */}
+                  {/* Booked / Free counts - promoted */}
                   <div className="flex items-center justify-between text-xs font-inter">
                     <span className="flex items-baseline gap-1">
                       <span className="font-bold text-blue-600 text-sm tabular-nums">

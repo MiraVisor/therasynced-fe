@@ -75,7 +75,7 @@ const AnalyticsPage = () => {
     error: bookingError,
   } = useFreelancerBookingAnalytics(undefined, { enabled: hasAccess && !isLoadingSubscription });
 
-  // Advanced analytics (services, ratings) — only Gold + trial can fetch;
+  // Advanced analytics (services, ratings) - only Gold + trial can fetch;
   // Silver calls would 403 from the backend split.
   const { data: serviceData, isLoading: isLoadingServices } = useFreelancerServiceAnalytics(
     undefined,
@@ -182,7 +182,7 @@ const AnalyticsPage = () => {
       }
     >
       <div className="space-y-8 relative">
-        {/* Trial notice — visible when trial grants access but user has no Gold plan */}
+        {/* Trial notice - visible when trial grants access but user has no Gold plan */}
         {!isCheckingTier && hasActiveTrial && planName !== 'GOLD' && (
           <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
             <AlertDescription className="text-sm text-amber-800 dark:text-amber-200 font-inter">
@@ -199,11 +199,11 @@ const AnalyticsPage = () => {
           </Alert>
         )}
 
-        {/* Silver-tier notice — basic access but advanced charts locked */}
+        {/* Silver-tier notice - basic access but advanced charts locked */}
         {!isCheckingTier && !hasActiveTrial && planName === 'SILVER' && (
           <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
             <AlertDescription className="text-sm text-blue-800 dark:text-blue-200 font-inter">
-              You're on the Silver plan — basic analytics unlocked. Advanced charts (peak times,
+              You're on the Silver plan - basic analytics unlocked. Advanced charts (peak times,
               rating distribution, service breakdown) are available on the{' '}
               <strong>Gold plan</strong>.{' '}
               <a
@@ -330,7 +330,7 @@ const AnalyticsPage = () => {
               </CardContent>
             </Card>
 
-            {/* Service Category Analytics — Gold-only advanced chart */}
+            {/* Service Category Analytics - Gold-only advanced chart */}
             <div className="relative">
               <CategoryBreakdownChart
                 data={serviceData?.serviceCategoryAnalytics || []}

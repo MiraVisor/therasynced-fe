@@ -72,7 +72,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
       {/* Trial Expired Modal - Shows on all pages for freelancers with expired trials */}
       <TrialExpiredModal />
-      {/* Floating profile-completion widget — only for freelancers, auto-hides at 100% */}
+      {/* Floating profile-completion widget - only for freelancers, auto-hides at 100% */}
       {userRole === 'FREELANCER' && <ProfileCompletionWidget />}
     </SidebarProvider>
   );

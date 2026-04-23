@@ -194,7 +194,7 @@ export function FeatureComparison({
               {/*
                 Comparison rows come entirely from the backend plan.features
                 array so this table stays in sync with the landing page
-                pricing section. Don't reintroduce hardcoded rows — update
+                pricing section. Don't reintroduce hardcoded rows - update
                 the seed (scripts/seed-subscription-plans.ts) instead.
               */}
               {features.length > 0 ? (

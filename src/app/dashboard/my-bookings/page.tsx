@@ -404,7 +404,7 @@ export default function MyBookingsPage() {
       {/* Main Content - Always show stats and navigation, even during loading */}
       {!error && (
         <div className="space-y-6">
-          {/* Unrated Bookings Banner — only shows when there are rate-eligible
+          {/* Unrated Bookings Banner - only shows when there are rate-eligible
               past sessions still needing review. Reuses the bookings query
               cache so no extra fetch. */}
           <UnratedBookingsBanner />

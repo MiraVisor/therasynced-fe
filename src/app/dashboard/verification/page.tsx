@@ -142,7 +142,7 @@ export default function VerificationPage() {
 
   let verificationStatus = backendStatus;
   if (backendStatus === 'APPROVED' && !allMandatoryComplete) {
-    // Admin approved previously but mandatory docs are now missing — downgrade
+    // Admin approved previously but mandatory docs are now missing - downgrade
     verificationStatus = 'PENDING';
   }
 

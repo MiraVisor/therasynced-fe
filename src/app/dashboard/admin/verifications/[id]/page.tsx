@@ -342,7 +342,7 @@ const VerificationDetailPage = () => {
                 </div>
               </div>
 
-              {/* Action buttons — disabled until freelancer has uploaded enough docs */}
+              {/* Action buttons - disabled until freelancer has uploaded enough docs */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -567,7 +567,7 @@ const VerificationDetailPage = () => {
                           )
                         : 'N/A'}
                     </span>
-                    {/* View button — find file ID from freelancerFiles */}
+                    {/* View button - find file ID from freelancerFiles */}
                     {(() => {
                       const certFile = verification.freelancerFiles?.find(
                         (f) => f.category === 'FIRST_AID_CERTIFICATE',

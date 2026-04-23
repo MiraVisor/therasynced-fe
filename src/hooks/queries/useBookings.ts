@@ -140,7 +140,7 @@ export const useRescheduleBooking = () => {
  * IMPORTANT: marking a booking complete is the single event that should
  * flip revenue, appointment counts, and analytics forward across both the
  * freelancer and admin surfaces. It must therefore invalidate the full
- * booking-stats query set — not just ['bookings'] and ['slots']. Prior
+ * booking-stats query set - not just ['bookings'] and ['slots']. Prior
  * direct call sites in SlotDetailsDialog and TabbedSlotsView were missing
  * admin/analytics invalidations, so counters stayed stale until reload.
  */

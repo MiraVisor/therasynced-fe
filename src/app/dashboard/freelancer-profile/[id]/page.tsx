@@ -244,16 +244,23 @@ export default function FreelancerProfilePage() {
                   {totalRatings > 0 && (
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-5 w-5 ${
-                              star <= Math.round(displayRating)
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'fill-gray-200 text-gray-300'
-                            }`}
-                          />
-                        ))}
+                        {[1, 2, 3, 4, 5].map((star) => {
+                          const isFilled = star <= Math.floor(displayRating);
+                          const isHalf =
+                            star === Math.ceil(displayRating) && displayRating % 1 !== 0;
+                          return (
+                            <div key={star} className="relative h-5 w-5">
+                              <Star className="h-5 w-5 fill-gray-200 text-gray-300" />
+                              {(isFilled || isHalf) && (
+                                <div
+                                  className={`absolute inset-0 overflow-hidden ${isHalf ? 'w-1/2' : 'w-full'}`}
+                                >
+                                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {displayRating.toFixed(1)} ({totalRatings} review
@@ -408,16 +415,23 @@ export default function FreelancerProfilePage() {
                               {displayRating.toFixed(1)}
                             </div>
                             <div className="flex items-center gap-1 mt-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-4 w-4 ${
-                                    star <= Math.round(displayRating)
-                                      ? 'fill-yellow-400 text-yellow-400'
-                                      : 'fill-gray-200 text-gray-300'
-                                  }`}
-                                />
-                              ))}
+                              {[1, 2, 3, 4, 5].map((star) => {
+                                const isFilled = star <= Math.floor(displayRating);
+                                const isHalf =
+                                  star === Math.ceil(displayRating) && displayRating % 1 !== 0;
+                                return (
+                                  <div key={star} className="relative h-4 w-4">
+                                    <Star className="h-4 w-4 fill-gray-200 text-gray-300" />
+                                    {(isFilled || isHalf) && (
+                                      <div
+                                        className={`absolute inset-0 overflow-hidden ${isHalf ? 'w-1/2' : 'w-full'}`}
+                                      >
+                                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                             <p className="text-xs text-gray-500 mt-1">{totalRatings} reviews</p>
                           </div>

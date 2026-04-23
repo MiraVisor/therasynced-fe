@@ -59,7 +59,7 @@ const faqData = [
     id: 1,
     question: 'Who can I find on the platform?',
     answer:
-      'Find licensed physiotherapists, athletic therapists, massage therapists, strength & conditioning coaches, and personal trainers — all available for flexible freelance work. Whether you want to expand clinical experience, join a sports team short-term, or offer mobile/in-clinic services, our platform connects you with opportunities that match your skills and schedule.',
+      'Find licensed physiotherapists, athletic therapists, massage therapists, strength & conditioning coaches, and personal trainers - all available for flexible freelance work. Whether you want to expand clinical experience, join a sports team short-term, or offer mobile/in-clinic services, our platform connects you with opportunities that match your skills and schedule.',
   },
   {
     id: 2,
@@ -71,7 +71,7 @@ const faqData = [
     id: 3,
     question: 'Can individuals and athletes book care directly?',
     answer:
-      'Yes — individual clients and athletes can search, compare, and book qualified professionals for in-clinic, in-home, or mobile sessions. The platform simplifies booking and client acquisition so professionals can focus on delivering excellent care.',
+      'Yes - individual clients and athletes can search, compare, and book qualified professionals for in-clinic, in-home, or mobile sessions. The platform simplifies booking and client acquisition so professionals can focus on delivering excellent care.',
   },
   {
     id: 4,

@@ -23,7 +23,7 @@ const UserHome = () => {
       }
     >
       <div className="space-y-6 lg:space-y-8">
-        {/* Rating reminder — nudges the client to review past sessions
+        {/* Rating reminder - nudges the client to review past sessions
             they haven't rated yet. Renders null when nothing is pending. */}
         <UnratedBookingsBanner />
 

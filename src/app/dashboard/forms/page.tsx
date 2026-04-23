@@ -23,7 +23,7 @@ const FreelancerFormsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Tier gate — Bronze users are blocked from accessing form templates.
+  // Tier gate - Bronze users are blocked from accessing form templates.
   // Backend also enforces this (403 on the list endpoint) but we want a
   // friendly upgrade prompt instead of just an error state.
   const { data: subscription, isLoading: isLoadingSubscription } = useMySubscription();
@@ -134,7 +134,7 @@ const FreelancerFormsPage = () => {
           </div>
         )}
 
-        {/* Templates List — only shown to users with access */}
+        {/* Templates List - only shown to users with access */}
         {canAccessForms && isLoading && !templates ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
