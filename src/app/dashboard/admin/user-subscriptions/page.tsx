@@ -573,7 +573,7 @@ const UserSubscriptionsPage = () => {
               </DialogTitle>
               <DialogDescription className="font-inter">
                 {trialGrant
-                  ? `Grant 14-day trial access to ${selectedSubscription?.user.name}`
+                  ? `Grant 30-day trial access to ${selectedSubscription?.user.name}`
                   : `Revoke trial access from ${selectedSubscription?.user.name}`}
               </DialogDescription>
             </DialogHeader>

@@ -242,14 +242,6 @@ function AdminTransactionsPageContent() {
           title: 'Avg Transaction',
           value: formatCurrency(stats.averageTransactionValue),
         },
-        {
-          title: 'Net Revenue',
-          value: formatCurrency(stats.netRevenue),
-        },
-        {
-          title: 'Total Commission',
-          value: formatCurrency(stats.totalCommission),
-        },
       ]
     : [];
 
@@ -279,9 +271,9 @@ function AdminTransactionsPageContent() {
       <div className="space-y-6 lg:space-y-8">
         {/* Summary Cards */}
         {isLoadingData ? (
-          <StatsCardsSkeleton count={5} />
+          <StatsCardsSkeleton count={3} />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {statsCards.map((stat, index) => {
               return <EnhancedStatCard key={index} title={stat.title} value={stat.value} />;
             })}
@@ -444,8 +436,8 @@ function AdminTransactionsPageSkeleton() {
       }
     >
       <div className="space-y-6 lg:space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-24 bg-gray-200 rounded animate-pulse" />
           ))}
         </div>

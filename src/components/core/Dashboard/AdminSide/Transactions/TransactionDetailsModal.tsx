@@ -120,18 +120,9 @@ export function TransactionDetailsModal({
                   <span className="text-sm font-medium">{formatCurrency(transaction.amount)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">
-                    Commission ({((transaction.commission / transaction.amount) * 100).toFixed(1)}%)
-                  </span>
-                  <span className="text-sm font-medium text-red-600">
-                    -{formatCurrency(transaction.commission)}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span className="text-sm font-semibold">Net Revenue</span>
+                  <span className="text-sm font-semibold">Total</span>
                   <span className="text-sm font-bold text-primary">
-                    {formatCurrency(transaction.netAmount)}
+                    {formatCurrency(transaction.amount)}
                   </span>
                 </div>
               </div>

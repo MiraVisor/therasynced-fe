@@ -159,31 +159,6 @@ export function TransactionTable({
       ),
     },
     {
-      accessorKey: 'commission',
-      header: 'Commission',
-      cell: ({ row }) => formatCurrency(row.getValue('commission')),
-    },
-    {
-      accessorKey: 'netAmount',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="h-8 px-2"
-          >
-            Net Revenue
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="font-semibold text-primary">
-          {formatCurrency(row.getValue('netAmount'))}
-        </div>
-      ),
-    },
-    {
       accessorKey: 'paymentMethod',
       header: 'Payment',
       cell: ({ row }) => getPaymentMethodBadge(row.getValue('paymentMethod')),
