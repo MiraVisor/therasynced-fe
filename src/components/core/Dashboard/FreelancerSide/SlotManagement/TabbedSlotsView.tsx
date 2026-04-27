@@ -490,7 +490,7 @@ const SlotRow = ({
         {/* Secondary actions menu (kept small for less-common actions) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="More options">
               <MoreVertical className="w-4 h-4 text-gray-500" />
             </Button>
           </DropdownMenuTrigger>

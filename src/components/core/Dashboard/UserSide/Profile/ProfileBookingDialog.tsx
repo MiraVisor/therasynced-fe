@@ -274,7 +274,7 @@ export function ProfileBookingDialog({
         <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-mint/5">
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-              <AvatarImage src={expert.profilePicture} />
+              <AvatarImage src={expert.profilePicture || undefined} alt={expert.name} />
               <AvatarFallback className="bg-primary text-white font-poppins font-bold">
                 {expert.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -580,7 +580,7 @@ export function ProfileBookingDialog({
                 <div className="bg-primary/10 p-4 border-b">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={expert.profilePicture} />
+                      <AvatarImage src={expert.profilePicture || undefined} alt={expert.name} />
                       <AvatarFallback className="bg-primary text-white">
                         {expert.name?.charAt(0).toUpperCase()}
                       </AvatarFallback>

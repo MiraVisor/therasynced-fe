@@ -49,7 +49,7 @@ export default function GuidePage() {
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-primary" />
-                  30 day trial for therapists
+                  30-day trial for therapists
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-primary" />

@@ -11,7 +11,7 @@ const testimonialData = [
     title: 'Relieved My Back Pain Quickly',
     description:
       'I booked a session with a certified physiotherapist through the platform, and after just one session, I felt immediate relief. Highly professional and knowledgeable!',
-    image: 'https://ui-avatars.com/api/?name=Ayesha+Khan&background=random&color=fff',
+    image: '/images/testimonials/avatar-1.jpg',
     rating: 5,
     author: 'Ayesha Khan',
     handle: '@ayeshakhan',
@@ -24,7 +24,7 @@ const testimonialData = [
     title: 'Exceptional Care and Guidance',
     description:
       'The therapist tailored my treatment plan perfectly. They explained every step and helped me recover faster than I expected. The booking and communication were seamless.',
-    image: 'https://ui-avatars.com/api/?name=Omar+Farooq&background=random&color=fff',
+    image: '/images/testimonials/avatar-2.jpg',
     rating: 5,
     author: 'Omar Farooq',
     handle: '@omarfarooq',
@@ -36,7 +36,7 @@ const testimonialData = [
     title: 'Convenient and Professional',
     description:
       'I loved the convenience of booking an in-home physiotherapy session. The therapist was on time, professional, and very caring. Highly recommended for busy schedules!',
-    image: 'https://ui-avatars.com/api/?name=Lina+Ahmed&background=random&color=fff',
+    image: '/images/testimonials/avatar-3.jpg',
     rating: 4,
     author: 'Lina Ahmed',
     handle: '@linaahmed',
@@ -48,7 +48,7 @@ const testimonialData = [
     title: 'Friendly and Skilled Specialists',
     description:
       'The platform connects you with amazing specialists. My therapist really listened to my concerns and adjusted my sessions accordingly. I am very satisfied!',
-    image: 'https://ui-avatars.com/api/?name=Hamza+Ali&background=random&color=fff',
+    image: '/images/testimonials/avatar-4.jpg',
     rating: 5,
     author: 'Hamza Ali',
     handle: '@hamzaali',
@@ -60,7 +60,7 @@ const testimonialData = [
     title: 'Seamless Booking Experience',
     description:
       'Booking a session was easy and fast. The therapist was punctual, professional, and highly skilled. The whole experience was smooth and reassuring.',
-    image: 'https://ui-avatars.com/api/?name=Sana+Mir&background=random&color=fff',
+    image: '/images/testimonials/avatar-5.jpg',
     rating: 5,
     author: 'Sana Mir',
     handle: '@sanamir',
@@ -72,7 +72,7 @@ const testimonialData = [
     title: 'Highly Recommend for Wellness Services',
     description:
       'I have tried several wellness and physiotherapy services, but this platform stands out. The therapists are highly professional, caring, and always provide clear guidance.',
-    image: 'https://ui-avatars.com/api/?name=Zain+Malik&background=random&color=fff',
+    image: '/images/testimonials/avatar-6.jpg',
     rating: 5,
     author: 'Zain Malik',
     handle: '@zainmalik',

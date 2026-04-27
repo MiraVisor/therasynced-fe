@@ -46,7 +46,7 @@ const Pricing = () => {
             Simple, honest pricing
           </h2>
           <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto font-open-sans">
-            Free for clients, always. Therapists pay a flat monthly fee with a full 30 day free
+            Free for clients, always. Therapists pay a flat monthly fee with a full 30-day free
             trial to start.
           </p>
         </motion.div>
@@ -92,7 +92,7 @@ const Pricing = () => {
             Plans for therapists
           </h3>
           <p className="text-base text-gray-600 dark:text-neutral-400 font-open-sans max-w-2xl mx-auto">
-            Every plan starts with a full 30 day free trial. No card required to try it.
+            Every plan starts with a full 30-day free trial. No card required to try it.
           </p>
         </motion.div>
 
@@ -217,7 +217,7 @@ const Pricing = () => {
           <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-[#faf9f6] dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 shadow-sm">
             <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
             <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
-              30 day free trial · No card required · Cancel anytime
+              30-day free trial · No card required · Cancel anytime
             </p>
           </div>
         </motion.div>
