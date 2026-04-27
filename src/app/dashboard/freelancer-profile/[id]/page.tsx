@@ -19,16 +19,21 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VerificationBadge } from '@/components/ui/verification-badge';
-import { useFavoriteFreelancer, useFreelancerById } from '@/hooks/queries/useFreelancers';
+import {
+  useFavoriteFreelancer,
+  useFavoriteFreelancers,
+  useFreelancerById,
+} from '@/hooks/queries/useFreelancers';
 import { useFreelancerRatings } from '@/hooks/queries/useRatings';
 import { useAvailableSlots } from '@/hooks/queries/useSlots';
 
@@ -124,7 +129,8 @@ export default function FreelancerProfilePage() {
 
   const totalRatings = ratingsData?.data?.length || 0;
   const freelancerName = freelancerData?.profile?.name || 'Unknown';
-  const isFavorite = false; // TODO: Get from freelancerData if available
+  const { data: favoriteFreelancers = [] } = useFavoriteFreelancers();
+  const isFavorite = favoriteFreelancers.some((fav) => fav.id === freelancerId);
 
   const handleFavorite = () => {
     if (freelancerId) {
@@ -209,7 +215,10 @@ export default function FreelancerProfilePage() {
             <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-mint/10 p-6 md:p-8">
               <div className="flex flex-col sm:flex-row items-start gap-5">
                 <Avatar className="h-24 w-24 md:h-28 md:w-28 border-4 border-white shadow-lg">
-                  <AvatarImage src={profile.profilePicture || ''} alt={freelancerName} />
+                  <ProfileAvatarImage
+                    src={profile.profilePicture || undefined}
+                    alt={freelancerName}
+                  />
                   <AvatarFallback className="bg-primary text-white text-2xl md:text-3xl font-poppins font-bold">
                     {freelancerName?.charAt(0).toUpperCase()}
                   </AvatarFallback>

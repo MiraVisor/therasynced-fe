@@ -19,11 +19,12 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import { ProfileAvatarImage } from '@/components/common/ProfileAvatarImage';
 import { ReportFreelancerDialog } from '@/components/core/Dashboard/Complaints/ReportFreelancerDialog';
 import { DashboardPageWrapper } from '@/components/core/Dashboard/DashboardPageWrapper';
 import { ProfileBookingDialog } from '@/components/core/Dashboard/UserSide/Profile/ProfileBookingDialog';
 import { RatingDisplay } from '@/components/core/Dashboard/UserSide/Ratings/RatingDisplay';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -248,7 +249,10 @@ export default function FreelancerProfilePage() {
                 {/* Left: Avatar and Basic Info */}
                 <div className="flex flex-col sm:flex-row items-start gap-5 flex-1">
                   <Avatar className="h-24 w-24 md:h-28 md:w-28 border-4 border-white shadow-lg">
-                    <AvatarImage src={expert.profilePicture} alt={freelancerName} />
+                    <ProfileAvatarImage
+                      src={expert.profilePicture || undefined}
+                      alt={freelancerName}
+                    />
                     <AvatarFallback className="bg-primary text-white text-2xl md:text-3xl font-poppins font-bold">
                       {freelancerName?.charAt(0).toUpperCase()}
                     </AvatarFallback>
