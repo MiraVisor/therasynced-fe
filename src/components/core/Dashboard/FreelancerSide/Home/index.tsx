@@ -206,7 +206,7 @@ const TodayAppointments = () => {
                         {booking.status === 'CONFIRMED' ? 'Upcoming' : booking.status}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-4 text-sm font-inter text-gray-600
+                    <div className="flex items-center gap-4 text-sm font-inter text-gray-600"
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         <span>{formatTime(booking.slot.startTime)}</span>
@@ -224,7 +224,7 @@ const TodayAppointments = () => {
                   </div>
                   {booking.totalAmount && (
                     <div className="text-right">
-                      <span className="text-sm font-poppins font-semibold text-gray-900
+                      <span className="text-sm font-poppins font-semibold text-gray-900"
                         €{booking.totalAmount}
                       </span>
                     </div>
@@ -236,7 +236,7 @@ const TodayAppointments = () => {
         ) : (
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <Calendar className="w-12 h-12 text-gray-300 mb-2" />
-            <p className="text-sm font-inter text-gray-500
+            <p className="text-sm font-inter text-gray-500"
               No appointments today
             </p>
             <p className="text-xs font-inter text-gray-400 mt-1">
@@ -330,12 +330,12 @@ const QuickStats = ({ dashboardData, isLoading }: { dashboardData: any; isLoadin
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="p-4 border border-gray-200 rounded-lg transition-colors hover:bg-gray-50
+              className="p-4 border border-gray-200 rounded-lg transition-colors hover:bg-gray-50"
             >
               <p className="text-xs font-inter text-gray-500 mb-1">
                 {stat.label}
               </p>
-              <p className="text-xl font-poppins font-bold text-gray-900
+              <p className="text-xl font-poppins font-bold text-gray-900"
                 {stat.value}
               </p>
               {stat.change !== undefined && (

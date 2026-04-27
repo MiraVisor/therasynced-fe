@@ -95,8 +95,8 @@ export function DataAccessLogsSection() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-4">
-        <Shield className="h-5 w-5 text-gray-600 />
-        <h3 className="text-lg font-poppins font-semibold text-gray-900
+        <Shield className="h-5 w-5 text-gray-600 />"
+        <h3 className="text-lg font-poppins font-semibold text-gray-900"
           Health Data Access Logs
         </h3>
       </div>
@@ -108,7 +108,7 @@ export function DataAccessLogsSection() {
       </p>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200
+      <div className="bg-white rounded-lg p-4 border border-gray-200"
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <div>
             <Label htmlFor="startDate" className="text-sm font-medium">

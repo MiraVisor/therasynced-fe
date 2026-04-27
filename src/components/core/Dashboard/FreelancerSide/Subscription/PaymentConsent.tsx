@@ -40,9 +40,9 @@ export function PaymentConsent({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <Alert className="border-blue-500 bg-blue-50
-        <Info className="h-4 w-4 text-blue-600 />
-        <AlertDescription className="text-blue-800
+      <Alert className="border-blue-500 bg-blue-50"
+        <Info className="h-4 w-4 text-blue-600 />"
+        <AlertDescription className="text-blue-800"
           <div className="space-y-2">
             <p className="font-medium">Payment Authorization & Billing Agreement</p>
             <p className="text-sm">
@@ -52,7 +52,7 @@ export function PaymentConsent({
                 href="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-blue-900
+                className="underline hover:text-blue-900"
               >
                 Terms of Service
               </Link>{' '}
@@ -61,13 +61,13 @@ export function PaymentConsent({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-blue-900
+                className="underline hover:text-blue-900"
               >
                 Privacy Policy
               </Link>
               . This authorisation remains valid until you cancel.
             </p>
-            <p className="text-xs text-blue-700
+            <p className="text-xs text-blue-700"
               Your payment information is securely processed by Stripe, a PCI DSS Level 1 certified
               payment processor. We do not store your card details on our servers.
             </p>
@@ -76,7 +76,7 @@ export function PaymentConsent({
                 href="https://stripe.com/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-blue-700 underline hover:text-blue-900
+                className="flex items-center gap-1 text-blue-700 underline hover:text-blue-900"
               >
                 Stripe Privacy Policy
                 <ExternalLink className="h-3 w-3" />

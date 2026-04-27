@@ -137,7 +137,7 @@ export function DataRightsSection() {
         <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-2">
           Your Data Protection Rights
         </h3>
-        <p className="text-sm text-gray-600
+        <p className="text-sm text-gray-600"
           Under GDPR, you have several rights regarding your personal data. Use the options below to
           exercise these rights.
         </p>
@@ -221,18 +221,18 @@ export function DataRightsSection() {
         </Card>
 
         {/* Right to Erasure */}
-        <Card className="border-red-200
+        <Card className="border-red-200"
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600
+            <CardTitle className="flex items-center gap-2 text-red-600"
               <Trash2 className="w-5 h-5" />
               Right to Erasure (Article 17) - &quot;Right to be Forgotten&quot;
             </CardTitle>
             <CardDescription>Request deletion of your personal data and account</CardDescription>
           </CardHeader>
           <CardContent>
-            <Alert className="mb-4 border-red-200
+            <Alert className="mb-4 border-red-200"
               <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertTitle className="text-red-600
+              <AlertTitle className="text-red-600"
               <AlertDescription>
                 This action cannot be undone. All your data, including bookings, messages, and
                 profile information, will be permanently deleted. We may retain certain data for
@@ -283,27 +283,27 @@ export function DataRightsSection() {
           <CardContent className="space-y-4">
             <div>
               <h4 className="font-semibold mb-2">Right to Restrict Processing (Article 18)</h4>
-              <p className="text-sm text-gray-600
+              <p className="text-sm text-gray-600"
                 To restrict processing of your data, please contact us at privacy@therasynced.com
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-2">Right to Object (Article 21)</h4>
-              <p className="text-sm text-gray-600
+              <p className="text-sm text-gray-600"
                 You can object to processing based on legitimate interests. Manage this through your
                 account settings or contact us.
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-2">Right to Withdraw Consent</h4>
-              <p className="text-sm text-gray-600
+              <p className="text-sm text-gray-600"
                 You can withdraw consent for health data processing at any time through your account
                 settings.
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-2">Complaints</h4>
-              <p className="text-sm text-gray-600
+              <p className="text-sm text-gray-600"
                 If you have concerns about how we handle your data, you can lodge a complaint with
                 the Irish Data Protection Commission at{' '}
                 <a
@@ -331,12 +331,12 @@ export function DataRightsSection() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-3">
-            <Alert className="border-blue-200 bg-blue-50
-              <AlertCircle className="h-4 w-4 text-blue-600 />
-              <AlertTitle className="text-blue-800
+            <Alert className="border-blue-200 bg-blue-50"
+              <AlertCircle className="h-4 w-4 text-blue-600 />"
+              <AlertTitle className="text-blue-800"
                 What happens when you delete your account:
               </AlertTitle>
-              <AlertDescription className="text-blue-700
+              <AlertDescription className="text-blue-700"
                 <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
                   <li>Your account will be immediately logged out</li>
                   <li>We will stop processing your data except where legally required</li>
@@ -364,7 +364,7 @@ export function DataRightsSection() {
                 disabled={loading !== null}
                 className="w-full"
               />
-              <p className="text-xs text-gray-500
+              <p className="text-xs text-gray-500"
                 This action cannot be undone. Please type the confirmation text above.
               </p>
             </div>
@@ -491,7 +491,7 @@ export function DataRightsSection() {
                 <Label htmlFor="encrypt" className="text-sm font-medium cursor-pointer">
                   Encrypt Export (Optional)
                 </Label>
-                <p className="text-xs text-gray-600
+                <p className="text-xs text-gray-600"
                   Encrypt the export file for additional security. Encrypted exports require a
                   decryption key to access.
                 </p>
@@ -602,9 +602,9 @@ export function DataRightsSection() {
               </p>
             </div>
 
-            <Alert className="border-green-200 bg-green-50
-              <Info className="h-4 w-4 text-green-600 />
-              <AlertTitle className="text-green-900
+            <Alert className="border-green-200 bg-green-50"
+              <Info className="h-4 w-4 text-green-600 />"
+              <AlertTitle className="text-green-900"
                 Decryption Information
               </AlertTitle>
               <AlertDescription className="text-green-800 space-y-2">

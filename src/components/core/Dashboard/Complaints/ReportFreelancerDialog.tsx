@@ -120,7 +120,7 @@ export const ReportFreelancerDialog = ({
           {/* Category Selection */}
           <div className="space-y-2">
             <Label htmlFor="category">
-              Category <span className="text-red-600
+              Category <span className="text-red-600"
             </Label>
             <Select
               value={watch('category') ?? undefined}
@@ -159,7 +159,7 @@ export const ReportFreelancerDialog = ({
           {/* Reason */}
           <div className="space-y-2">
             <Label htmlFor="reason">
-              Brief Reason <span className="text-red-600
+              Brief Reason <span className="text-red-600"
             </Label>
             <Input
               id="reason"
@@ -186,7 +186,7 @@ export const ReportFreelancerDialog = ({
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">
-              Detailed Description <span className="text-red-600
+              Detailed Description <span className="text-red-600"
             </Label>
             <Textarea
               id="description"

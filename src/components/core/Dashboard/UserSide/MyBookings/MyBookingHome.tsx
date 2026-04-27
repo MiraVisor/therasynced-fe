@@ -96,7 +96,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   if (slotsError && !freelancer) {
     return (
       <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-        <p className="text-gray-600
+        <p className="text-gray-600"
           Failed to load booking information. Please try again.
         </p>
         <Button
@@ -113,7 +113,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   if (!freelancer) {
     return (
       <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-        <p className="text-gray-600
+        <p className="text-gray-600"
           No freelancer information available. Please go back and try again.
         </p>
         <Button onClick={() => window.history.back()} variant="outline" className="border-gray-300">

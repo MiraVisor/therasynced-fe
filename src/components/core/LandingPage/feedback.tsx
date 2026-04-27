@@ -171,7 +171,7 @@ const Feedback = () => {
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="relative flex-shrink-0">
-                    <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-purple-600/20 ring-4 ring-white
+                    <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-purple-600/20 ring-4 ring-white"
                       <Image
                         src={featuredTestimonial?.image ?? ''}
                         alt={featuredTestimonial?.author ?? ''}

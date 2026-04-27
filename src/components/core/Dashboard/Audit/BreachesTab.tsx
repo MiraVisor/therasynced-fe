@@ -255,7 +255,7 @@ export function BreachesTab() {
       </StatsCardsGrid>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200
+      <div className="bg-white rounded-lg p-4 border border-gray-200"
         <div className="flex flex-wrap items-end gap-4">
           <div className="flex-1 min-w-[200px]">
             <Label htmlFor="dateRange" className="text-sm font-medium">
@@ -501,7 +501,7 @@ export function BreachesTab() {
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
-                <div className="text-sm text-amber-800
+                <div className="text-sm text-amber-800"
                   <p className="font-semibold mb-1">Important:</p>
                   <ul className="list-disc list-inside space-y-1 text-xs">
                     <li>All breaches must be reported to the DPC within 72 hours if high risk</li>

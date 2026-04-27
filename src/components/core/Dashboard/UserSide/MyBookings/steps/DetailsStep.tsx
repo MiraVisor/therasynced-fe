@@ -71,7 +71,7 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
             <Label className="text-lg font-poppins font-semibold text-charcoal">
               Available Services for This Slot
             </Label>
-            <p className="text-sm font-inter text-gray-600
+            <p className="text-sm font-inter text-gray-600"
               Select from services available for your selected time slot
             </p>
             <div className="grid gap-3">
@@ -100,7 +100,7 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
                       }}
                     />
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900
+                      <div className="font-medium text-gray-900"
                         {service.name}
                       </div>
                       {service.description && (
@@ -130,7 +130,7 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
             <Label className="text-lg font-poppins font-semibold text-charcoal">
               Location Type
             </Label>
-            <p className="text-sm font-inter text-gray-600
+            <p className="text-sm font-inter text-gray-600"
               Select where you'd like to have your session
             </p>
             <Select
@@ -166,13 +166,13 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
               <Label className="text-lg font-poppins font-semibold text-charcoal">
                 Location Type
               </Label>
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200"
                 {selectedLocationType === 'HOME' ? (
                   <Home className="w-5 h-5 text-blue-600" />
                 ) : (
                   <MapPin className="w-5 h-5 text-blue-600" />
                 )}
-                <span className="font-medium text-gray-900
+                <span className="font-medium text-gray-900"
                   {selectedLocationType === 'HOME' ? 'Home Visit' : 'Clinic'}
                 </span>
               </div>
@@ -184,7 +184,7 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
           <Label htmlFor="notes" className="text-lg font-poppins font-semibold text-charcoal">
             Additional Notes (Optional)
           </Label>
-          <p className="text-sm font-inter text-gray-600
+          <p className="text-sm font-inter text-gray-600"
             Share any specific concerns, goals, or preferences for your session
           </p>
           <Textarea
@@ -205,18 +205,18 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
                 <Home className="w-5 h-5 text-blue-600" />
                 <Label
                   htmlFor="clientAddress"
-                  className="text-lg font-poppins font-semibold text-blue-900
+                  className="text-lg font-poppins font-semibold text-blue-900"
                 >
                   Home Address
                 </Label>
               </div>
-              <p className="text-sm text-blue-700
+              <p className="text-sm text-blue-700"
                 Please provide your address for home visit sessions
               </p>
               <Input
                 id="clientAddress"
                 placeholder="Enter your full address"
-                className="bg-white border-blue-200
+                className="bg-white border-blue-200"
                 {...detailsForm.register('clientAddress')}
               />
             </div>

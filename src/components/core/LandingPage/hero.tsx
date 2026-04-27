@@ -60,13 +60,13 @@ const Hero = () => {
           src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
           alt="A therapist taping an athlete for sports recovery"
           fill
-          className="object-cover object-center opacity-[0.08]
+          className="object-cover object-center opacity-[0.08]"
           priority
           quality={75}
           sizes="100vw"
         />
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/95 to-[#faf9f6] />
+        <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/95 to-[#faf9f6] />"
       </div>
 
       {/* Warm gradient background effects */}

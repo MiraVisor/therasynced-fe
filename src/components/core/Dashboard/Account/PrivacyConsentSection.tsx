@@ -176,12 +176,12 @@ export function PrivacyConsentSection() {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50
+          <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50"
             <div>
-              <h4 className="font-semibold text-sm text-red-800
+              <h4 className="font-semibold text-sm text-red-800"
                 Delete Account
               </h4>
-              <p className="text-xs text-red-600
+              <p className="text-xs text-red-600"
                 Permanently delete your account
               </p>
             </div>
@@ -291,7 +291,7 @@ export function PrivacyConsentSection() {
                 <Label htmlFor="encrypt" className="text-sm font-medium cursor-pointer">
                   Encrypt Export (Optional)
                 </Label>
-                <p className="text-xs text-gray-600
+                <p className="text-xs text-gray-600"
                   Encrypt the export file for additional security. Encrypted exports require a
                   decryption key to access.
                 </p>
@@ -320,12 +320,12 @@ export function PrivacyConsentSection() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-3">
-            <Alert className="border-blue-200 bg-blue-50
-              <AlertCircle className="h-4 w-4 text-blue-600 />
-              <AlertTitle className="text-blue-800
+            <Alert className="border-blue-200 bg-blue-50"
+              <AlertCircle className="h-4 w-4 text-blue-600 />"
+              <AlertTitle className="text-blue-800"
                 What happens when you delete your account:
               </AlertTitle>
-              <AlertDescription className="text-blue-700
+              <AlertDescription className="text-blue-700"
                 <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
                   <li>Your account will be immediately logged out</li>
                   <li>We will stop processing your data except where legally required</li>

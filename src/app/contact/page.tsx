@@ -93,7 +93,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact options */}
-      <section className="relative w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-[#faf9f6]
+      <section className="relative w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-[#faf9f6]"
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Support Card */}
@@ -169,7 +169,7 @@ export default function ContactPage() {
       <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="max-w-6xl mx-auto space-y-10">
           {/* Before you reach out */}
-          <div className="p-7 lg:p-8 rounded-2xl bg-[#faf9f6] border border-gray-100
+          <div className="p-7 lg:p-8 rounded-2xl bg-[#faf9f6] border border-gray-100"
             <h3 className="text-base font-bold text-gray-900 mb-4 font-poppins">
               Before you reach out
             </h3>
@@ -197,8 +197,8 @@ export default function ContactPage() {
               </li>
               <li>
                 In an emergency, please contact local emergency services. In Ireland, dial{' '}
-                <strong className="text-gray-900 or{' '}
-                <strong className="text-gray-900 TheraSynced is not
+                <strong className="text-gray-900 or{' '}"
+                <strong className="text-gray-900 TheraSynced is not"
                 intended for urgent or crisis situations.
               </li>
             </ul>

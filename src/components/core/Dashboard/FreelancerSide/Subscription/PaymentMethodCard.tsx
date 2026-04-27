@@ -113,7 +113,7 @@ export function PaymentMethodCard() {
                       {paymentMethod.type === 'card' &&
                         paymentMethod.expMonth &&
                         paymentMethod.expYear && (
-                          <p className="text-sm text-gray-600
+                          <p className="text-sm text-gray-600"
                             Expires {paymentMethod.expMonth}/{paymentMethod.expYear}
                           </p>
                         )}
@@ -122,13 +122,13 @@ export function PaymentMethodCard() {
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <Lock className="h-4 w-4" />
-                      <Shield className="h-4 w-4 text-green-600 />
+                      <Shield className="h-4 w-4 text-green-600 />"
                     </div>
                   </div>
                 </div>
 
                 {!paymentMethod.isDefault && (
-                  <div className="pt-3 border-t border-gray-200
+                  <div className="pt-3 border-t border-gray-200"
                     <Button
                       variant="outline"
                       size="sm"
@@ -180,9 +180,9 @@ export function PaymentMethodCard() {
             </Button>
           </div>
         )}
-        <div className="mt-6 pt-4 border-t border-gray-200
+        <div className="mt-6 pt-4 border-t border-gray-200"
           <p className="text-xs text-gray-500 flex items-center gap-2">
-            <Shield className="h-3.5 w-3.5 text-green-600 />
+            <Shield className="h-3.5 w-3.5 text-green-600 />"
             Payment information is securely processed by Stripe. We never store your card details.
           </p>
         </div>

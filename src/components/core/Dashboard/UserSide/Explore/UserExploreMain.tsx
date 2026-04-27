@@ -139,7 +139,7 @@ const UserExploreMain = () => {
       userRole="PATIENT"
       header={
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-gray-900 👋</h1>
+          <h1 className="text-2xl font-bold text-gray-900 👋</h1>"
         </div>
       }
     >
@@ -185,7 +185,7 @@ const UserExploreMain = () => {
         {/* Your Favorite Therapists Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-poppins font-semibold text-gray-900
+            <h2 className="text-xl font-poppins font-semibold text-gray-900"
               Your Favorite Freelancers
             </h2>
             <Button
@@ -232,7 +232,7 @@ const UserExploreMain = () => {
         {/* Upcoming Appointments Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-poppins font-semibold text-gray-900
+            <h2 className="text-xl font-poppins font-semibold text-gray-900"
               Upcoming Appointments
             </h2>
             <Button

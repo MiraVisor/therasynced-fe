@@ -99,7 +99,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
               <h4 className="font-poppins font-bold text-lg text-charcoal">
                 {expert.name || 'Unknown Freelancer'}
               </h4>
-              <p className="text-sm text-gray-600
+              <p className="text-sm text-gray-600"
                 {expert.cardInfo?.mainService || 'N/A'}
               </p>
             </div>
@@ -120,13 +120,13 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
         </div>
 
         {/* Appointment details */}
-        <div className="space-y-3 py-4 border-t border-gray-200
-          <div className="flex items-center gap-3 text-gray-600
+        <div className="space-y-3 py-4 border-t border-gray-200"
+          <div className="flex items-center gap-3 text-gray-600"
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-sm">📅</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900
+              <p className="text-sm font-medium text-gray-900"
                 {new Date(booking.slot?.startTime).toLocaleDateString('en-US', {
                   weekday: 'long',
                   year: 'numeric',
@@ -136,12 +136,12 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-gray-600
+          <div className="flex items-center gap-3 text-gray-600"
             <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
               <span className="text-sm">⏰</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900
+              <p className="text-sm font-medium text-gray-900"
                 {format(new Date(booking.slot?.startTime), 'HH:mm')}
               </p>
             </div>
@@ -168,13 +168,13 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
           <Button
             variant="outline"
             onClick={handleReschedule}
-            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50
+            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
           >
             Reschedule
           </Button>
           <Button
             variant="outline"
-            className="flex-1 border-red-600 text-red-600 hover:bg-red-50
+            className="flex-1 border-red-600 text-red-600 hover:bg-red-50"
             onClick={() => {}}
           >
             Cancel

@@ -201,7 +201,7 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : suggestions.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500
+            <div className="px-4 py-8 text-center text-gray-500"
               <p>No freelancers found</p>
               <p className="text-sm mt-1">Try a different search term</p>
             </div>
@@ -252,7 +252,7 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
                       {freelancer.rating && freelancer.rating > 0 && (
                         <div className="flex items-center gap-1">
                           <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs text-gray-600
+                          <span className="text-xs text-gray-600"
                             {freelancer.rating.toFixed(1)}
                             {freelancer.reviews > 0 && ` (${freelancer.reviews} reviews)`}
                           </span>

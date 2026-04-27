@@ -147,7 +147,7 @@ export const PlanCard = ({
             >
               EUR {plan.price.toFixed(2)}
             </span>
-            <span className="text-lg font-inter text-gray-600
+            <span className="text-lg font-inter text-gray-600"
           </div>
         </div>
       </CardHeader>
@@ -167,7 +167,7 @@ export const PlanCard = ({
             {plan.features.map((feature, index) => (
               <li
                 key={index}
-                className="flex items-start gap-3 text-sm font-inter text-gray-700
+                className="flex items-start gap-3 text-sm font-inter text-gray-700"
               >
                 <CheckCircle2
                   className={`mt-0.5 h-4 w-4 flex-shrink-0 ${

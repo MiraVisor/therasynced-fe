@@ -95,7 +95,7 @@ const WhoItsFor = () => {
           <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 xl:contents gap-6">
             {/* Card 01 - Top Right */}
             <article
-              className="xl:absolute xl:top-0 xl:right-0 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5
+              className="xl:absolute xl:top-0 xl:right-0 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5"
               data-aos="fade-left"
               data-aos-once="false"
               data-aos-mirror="true"
@@ -105,7 +105,7 @@ const WhoItsFor = () => {
                 <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                   {audience[0]?.badge}
                 </span>
-                <h3 className="text-base sm:text-lg font-semibold text-primary
+                <h3 className="text-base sm:text-lg font-semibold text-primary"
                   {audience[0]?.title}
                 </h3>
               </div>
@@ -141,12 +141,12 @@ const WhoItsFor = () => {
               data-aos-mirror="true"
               data-aos-delay="400"
             >
-              <article className="xl:absolute xl:top-[240px] xl:left-1/2 xl:-translate-x-1/2 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5
+              <article className="xl:absolute xl:top-[240px] xl:left-1/2 xl:-translate-x-1/2 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5"
                 <div className="flex items-center gap-3 mb-3">
                   <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                     {audience[1]?.badge}
                   </span>
-                  <h3 className="text-base sm:text-lg font-semibold text-primary
+                  <h3 className="text-base sm:text-lg font-semibold text-primary"
                     {audience[1]?.title}
                   </h3>
                 </div>
@@ -178,7 +178,7 @@ const WhoItsFor = () => {
 
             {/* Card 03 - Bottom Left (below heading) */}
             <article
-              className="xl:absolute xl:top-[480px] xl:left-0 xl:w-[380px] 2xl:w-[420px] lg:col-span-2 lg:max-w-md group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5
+              className="xl:absolute xl:top-[480px] xl:left-0 xl:w-[380px] 2xl:w-[420px] lg:col-span-2 lg:max-w-md group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5"
               data-aos="fade-right"
               data-aos-once="false"
               data-aos-mirror="true"
@@ -188,7 +188,7 @@ const WhoItsFor = () => {
                 <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                   {audience[2]?.badge}
                 </span>
-                <h3 className="text-base sm:text-lg font-semibold text-primary
+                <h3 className="text-base sm:text-lg font-semibold text-primary"
                   {audience[2]?.title}
                 </h3>
               </div>

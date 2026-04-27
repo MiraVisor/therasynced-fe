@@ -184,7 +184,7 @@ const AnalyticsPage = () => {
       <div className="space-y-8 relative">
         {/* Trial notice - visible when trial grants access but user has no Gold plan */}
         {!isCheckingTier && hasActiveTrial && planName !== 'GOLD' && (
-          <Alert className="border-amber-300 bg-amber-50
+          <Alert className="border-amber-300 bg-amber-50"
             <AlertDescription className="text-sm text-amber-800 font-inter">
               Analytics is included during your free trial so you can explore everything. After your
               trial ends, basic charts require <strong>Silver</strong> and advanced charts (peak
@@ -201,7 +201,7 @@ const AnalyticsPage = () => {
 
         {/* Silver-tier notice - basic access but advanced charts locked */}
         {!isCheckingTier && !hasActiveTrial && planName === 'SILVER' && (
-          <Alert className="border-blue-300 bg-blue-50
+          <Alert className="border-blue-300 bg-blue-50"
             <AlertDescription className="text-sm text-blue-800 font-inter">
               You're on the Silver plan - basic analytics unlocked. Advanced charts (peak times,
               rating distribution, service breakdown) are available on the{' '}

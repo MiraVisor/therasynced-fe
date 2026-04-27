@@ -92,7 +92,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
         })}
       </div>
       {showCount && (
-        <span className="text-sm text-gray-600
+        <span className="text-sm text-gray-600"
           {numericRating.toFixed(1)}{' '}
           {reviewCount > 0 && `(${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`}
         </span>

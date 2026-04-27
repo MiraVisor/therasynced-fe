@@ -173,7 +173,7 @@ export function AccessLogsTab() {
       </StatsCardsGrid>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200
+      <div className="bg-white rounded-lg p-4 border border-gray-200"
         <div className="flex flex-wrap items-end gap-4">
           <div className="flex-1 min-w-[200px]">
             <Label htmlFor="dateRange" className="text-sm font-medium">

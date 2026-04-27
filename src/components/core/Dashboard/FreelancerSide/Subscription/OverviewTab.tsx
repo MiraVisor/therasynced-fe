@@ -148,7 +148,7 @@ export function OverviewTab({
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="p-2.5 rounded-lg bg-red-100 flex-shrink-0">
-                <Shield className="h-6 w-6 text-red-600 />
+                <Shield className="h-6 w-6 text-red-600 />"
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-poppins font-semibold text-red-900 mb-1">
@@ -158,12 +158,12 @@ export function OverviewTab({
                   Your payment method needs to be updated to continue your subscription.
                 </p>
                 {gracePeriodDaysRemaining !== null && gracePeriodDaysRemaining > 0 && (
-                  <div className="mb-4 p-3 rounded-lg bg-red-200/50
+                  <div className="mb-4 p-3 rounded-lg bg-red-200/50"
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-red-900
+                      <span className="text-sm font-medium text-red-900"
                         Grace Period
                       </span>
-                      <span className="text-sm font-bold text-red-900
+                      <span className="text-sm font-bold text-red-900"
                         {gracePeriodDaysRemaining} {gracePeriodDaysRemaining === 1 ? 'day' : 'days'}{' '}
                         left
                       </span>
@@ -179,9 +179,9 @@ export function OverviewTab({
                   </div>
                 )}
                 {gracePeriodEndDate && (
-                  <Alert className="mb-4 border-red-300 bg-red-100/50
-                    <AlertTriangle className="h-4 w-4 text-red-600 />
-                    <AlertDescription className="text-xs text-red-800
+                  <Alert className="mb-4 border-red-300 bg-red-100/50"
+                    <AlertTriangle className="h-4 w-4 text-red-600 />"
+                    <AlertDescription className="text-xs text-red-800"
                       If payment isn't updated by{' '}
                       {gracePeriodEndDate.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -224,7 +224,7 @@ export function OverviewTab({
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-lg bg-orange-100 flex-shrink-0">
-                <Calendar className="h-5 w-5 text-orange-600 />
+                <Calendar className="h-5 w-5 text-orange-600 />"
               </div>
               <div className="flex-1">
                 {isTrial ? (
@@ -244,7 +244,7 @@ export function OverviewTab({
                     </p>
                     {trialDaysRemaining !== null && trialDaysRemaining > 0 && (
                       <div className="mb-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 text-orange-900
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 text-orange-900"
                           Trial ends in {trialDaysRemaining}{' '}
                           {trialDaysRemaining === 1 ? 'day' : 'days'}
                         </span>
@@ -267,7 +267,7 @@ export function OverviewTab({
                     </p>
                     {daysUntilEnd !== null && daysUntilEnd > 0 && (
                       <div className="mb-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 text-orange-900
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 text-orange-900"
                           Ends in {daysUntilEnd} {daysUntilEnd === 1 ? 'day' : 'days'}
                         </span>
                       </div>
@@ -321,7 +321,7 @@ export function OverviewTab({
               {/* Plan Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2.5 rounded-lg bg-primary/10
+                  <div className="p-2.5 rounded-lg bg-primary/10"
                     <Crown className="h-6 w-6 text-primary" />
                   </div>
                   <div>
@@ -346,9 +346,9 @@ export function OverviewTab({
 
                 {/* Trial Status Message */}
                 {isTrial && (
-                  <Alert className="mb-6 border-orange-300 bg-orange-50
-                    <AlertTriangle className="h-4 w-4 text-orange-600 />
-                    <AlertDescription className="text-sm text-orange-800
+                  <Alert className="mb-6 border-orange-300 bg-orange-50"
+                    <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                    <AlertDescription className="text-sm text-orange-800"
                       {isCanceledButActive ? (
                         <>
                           Your subscription has been canceled. You'll continue with trial access
@@ -383,7 +383,7 @@ export function OverviewTab({
                       <span className="text-5xl font-poppins font-bold text-charcoal">
                         EUR {plan.price.toFixed(2)}
                       </span>
-                      <span className="text-lg font-inter text-gray-600
+                      <span className="text-lg font-inter text-gray-600"
                         /month
                       </span>
                     </div>
@@ -393,7 +393,7 @@ export function OverviewTab({
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                   {nextBillingDate && (
-                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200"
                       <div className="flex items-center gap-2 mb-2">
                         <Calendar className="h-4 w-4 text-primary" />
                         <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -410,7 +410,7 @@ export function OverviewTab({
                     </div>
                   )}
                   {isTrial && trialDaysRemaining !== null && (
-                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200"
                       <div className="flex items-center gap-2 mb-2">
                         <TrendingUp className="h-4 w-4 text-primary" />
                         <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -423,7 +423,7 @@ export function OverviewTab({
                     </div>
                   )}
                   {subscription && (
-                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200"
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="h-4 w-4 text-primary" />
                         <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -486,7 +486,7 @@ export function OverviewTab({
         <div className="space-y-6">
           <div>
             <h3 className="text-xl font-poppins font-bold text-charcoal mb-1">Usage & Limits</h3>
-            <p className="text-sm text-gray-600
+            <p className="text-sm text-gray-600"
               Monitor your subscription usage and limits
             </p>
           </div>
@@ -505,7 +505,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 used</span>
+                      <span className="text-sm text-gray-600 used</span>"
                       <span className="text-sm font-semibold text-primary">
                         {subscription.slotsUsed ?? 0} / Unlimited
                       </span>
@@ -532,15 +532,15 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 used</span>
+                        <span className="text-sm text-gray-600 used</span>"
                         <span className="text-sm font-semibold">
                           {subscription.slotsUsed ?? 0}/{formatLimit(subscription.slotsLimit)}
                         </span>
                       </div>
                       {isApproachingLimit(subscription.slotsUsed ?? 0, subscription.slotsLimit) && (
-                        <Alert className="mt-2 border-orange-300 bg-orange-50
-                          <AlertTriangle className="h-4 w-4 text-orange-600 />
-                          <AlertDescription className="text-xs text-orange-800
+                        <Alert className="mt-2 border-orange-300 bg-orange-50"
+                          <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                          <AlertDescription className="text-xs text-orange-800"
                             You're approaching your slot limit. Consider upgrading for more slots.
                           </AlertDescription>
                         </Alert>
@@ -565,7 +565,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600
+                      <span className="text-sm text-gray-600"
                         Days used this week
                       </span>
                       <span className="text-sm font-semibold text-primary">
@@ -594,7 +594,7 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600
+                        <span className="text-sm text-gray-600"
                           Days used this week
                         </span>
                         <span className="text-sm font-semibold">
@@ -605,9 +605,9 @@ export function OverviewTab({
                         subscription.daysUsed ?? 0,
                         subscription.maxDaysPerWeek,
                       ) && (
-                        <Alert className="mt-2 border-orange-300 bg-orange-50
-                          <AlertTriangle className="h-4 w-4 text-orange-600 />
-                          <AlertDescription className="text-xs text-orange-800
+                        <Alert className="mt-2 border-orange-300 bg-orange-50"
+                          <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                          <AlertDescription className="text-xs text-orange-800"
                             You're approaching your weekly day limit. Consider upgrading for more
                             flexibility.
                           </AlertDescription>
@@ -633,7 +633,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600
+                      <span className="text-sm text-gray-600"
                         Messages used
                       </span>
                       <span className="text-sm font-semibold text-primary">
@@ -662,7 +662,7 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600
+                        <span className="text-sm text-gray-600"
                           Messages used
                         </span>
                         <span className="text-sm font-semibold">
@@ -674,7 +674,7 @@ export function OverviewTab({
                         const billingCycleEnd = getBillingCycleEndDate(subscription);
                         const daysUntilReset = getDaysUntilBillingCycleReset(subscription);
                         return (
-                          <div className="text-xs text-gray-500
+                          <div className="text-xs text-gray-500"
                             {billingCycleEnd && daysUntilReset !== null ? (
                               <span>
                                 Billing cycle resets in {daysUntilReset}{' '}
@@ -696,9 +696,9 @@ export function OverviewTab({
                         subscription.messagesUsed ?? 0,
                         subscription.maxMessagesPerBillingCycle,
                       ) && (
-                        <Alert className="mt-2 border-orange-300 bg-orange-50
-                          <AlertTriangle className="h-4 w-4 text-orange-600 />
-                          <AlertDescription className="text-xs text-orange-800
+                        <Alert className="mt-2 border-orange-300 bg-orange-50"
+                          <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                          <AlertDescription className="text-xs text-orange-800"
                             You're approaching your messaging limit. Consider upgrading for
                             unlimited messages.
                           </AlertDescription>
@@ -733,7 +733,7 @@ export function OverviewTab({
                   : 'Choose a subscription plan to unlock all features and start accepting bookings.'}
             </p>
             {subscription?.status === 'UNPAID' && (
-              <div className="mb-4 text-sm text-gray-600
+              <div className="mb-4 text-sm text-gray-600"
                 <p className="font-medium mb-2">You'll get back:</p>
                 <ul className="list-disc list-inside space-y-1">
                   {plan && (

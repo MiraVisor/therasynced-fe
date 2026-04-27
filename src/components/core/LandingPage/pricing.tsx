@@ -102,7 +102,7 @@ const Pricing = () => {
             ? [1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-[560px] rounded-2xl bg-[#faf9f6] animate-pulse border border-gray-100
+                  className="h-[560px] rounded-2xl bg-[#faf9f6] animate-pulse border border-gray-100"
                 />
               ))
             : sortedPlans.map((plan, index) => {
@@ -145,7 +145,7 @@ const Pricing = () => {
                       </div>
 
                       {/* Price */}
-                      <div className="mb-6 pb-6 border-b border-gray-200
+                      <div className="mb-6 pb-6 border-b border-gray-200"
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-bold text-gray-900 font-playfair">
                             €

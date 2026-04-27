@@ -160,25 +160,25 @@ export default function AdminRefundsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600 Requests</div>
+              <div className="text-sm text-gray-600 Requests</div>"
               <div className="text-2xl font-bold">{stats.total}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600
+              <div className="text-sm text-gray-600"
               <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600
+              <div className="text-sm text-gray-600"
               <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600
+              <div className="text-sm text-gray-600"
               <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
             </CardContent>
           </Card>
@@ -219,7 +219,7 @@ export default function AdminRefundsPage() {
                                 </h3>
                                 {getStatusBadge(request.status)}
                               </div>
-                              <div className="space-y-1 text-sm text-gray-600
+                              <div className="space-y-1 text-sm text-gray-600"
                                 <p>
                                   <strong>Invoice:</strong> {request.invoiceId}
                                 </p>

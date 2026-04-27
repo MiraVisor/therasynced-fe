@@ -53,7 +53,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
 
   if (loading) {
     return (
-      <Card className="border border-gray-200
+      <Card className="border border-gray-200"
         <CardContent className="p-8">
           <div className="animate-pulse">
             <div className="flex items-center gap-6">
@@ -198,11 +198,11 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
             {/* Date */}
             <div className="flex items-start gap-2">
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 text-blue-600 />
+                <Calendar className="w-5 h-5 text-blue-600 />"
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Date</p>
-                <p className="text-sm font-semibold text-gray-900
+                <p className="text-sm font-semibold text-gray-900"
                   {getBookingDate(booking)}
                 </p>
               </div>
@@ -211,11 +211,11 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
             {/* Time */}
             <div className="flex items-start gap-2">
               <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-green-600 />
+                <Clock className="w-5 h-5 text-green-600 />"
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Time</p>
-                <p className="text-sm font-semibold text-gray-900
+                <p className="text-sm font-semibold text-gray-900"
                   {getBookingTime(booking)}
                 </p>
                 {isWithin24Hours && timeUntil && (
@@ -229,11 +229,11 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
             {/* Location */}
             <div className="flex items-start gap-2">
               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <LocationIcon className="w-5 h-5 text-purple-600 />
+                <LocationIcon className="w-5 h-5 text-purple-600 />"
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Location</p>
-                <p className="text-sm font-semibold text-gray-900
+                <p className="text-sm font-semibold text-gray-900"
                   {getBookingLocation(booking)}
                 </p>
               </div>
@@ -241,7 +241,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
           </div>
 
           {/* Right Section: Price and Actions */}
-          <div className="flex flex-col items-end justify-between gap-4 md:border-l md:pl-6 md:border-gray-200
+          <div className="flex flex-col items-end justify-between gap-4 md:border-l md:pl-6 md:border-gray-200"
             {booking?.totalAmount && (
               <div className="text-center">
                 <p className="text-xs font-inter text-gray-500 mb-1">
@@ -266,7 +266,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-green-500 text-green-600 hover:bg-green-50
+                  className="border-green-500 text-green-600 hover:bg-green-50"
                   onClick={() => {
                     // TODO: Implement join session logic
                   }}

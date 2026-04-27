@@ -56,7 +56,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
 
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Appointment Summary Card */}
-        <Card className="border-2 border-primary bg-gradient-to-br from-white to-green-50/30
+        <Card className="border-2 border-primary bg-gradient-to-br from-white to-green-50/30"
           <CardContent className="p-8">
             {/* Therapist Info */}
             <div className="flex items-center gap-4 mb-6">
@@ -96,7 +96,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
                   <h4 className="font-poppins font-semibold text-charcoal">Date & Time</h4>
                 </div>
                 <div className="pl-7">
-                  <p className="font-medium text-gray-900
+                  <p className="font-medium text-gray-900"
                     {selectedDate &&
                       new Date(selectedDate).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -138,7 +138,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
                       })}
                     </div>
                   ) : (
-                    <p className="text-gray-600 therapy session</p>
+                    <p className="text-gray-600 therapy session</p>"
                   )}
                 </div>
               </div>
@@ -146,14 +146,14 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
 
             {/* Additional Details */}
             {(detailsForm.watch('notes') || detailsForm.watch('clientAddress')) && (
-              <div className="mt-6 pt-6 border-t border-gray-200
+              <div className="mt-6 pt-6 border-t border-gray-200"
                 <h4 className="font-poppins font-semibold text-charcoal mb-3">
                   Additional Details
                 </h4>
                 <div className="space-y-3">
                   {detailsForm.watch('notes') && (
                     <div>
-                      <span className="text-sm font-medium text-gray-600
+                      <span className="text-sm font-medium text-gray-600"
                         Notes:
                       </span>
                       <p className="text-gray-900 mt-1">
@@ -163,7 +163,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
                   )}
                   {detailsForm.watch('clientAddress') && (
                     <div>
-                      <span className="text-sm font-medium text-gray-600
+                      <span className="text-sm font-medium text-gray-600"
                         Address:
                       </span>
                       <p className="text-gray-900 mt-1">
@@ -176,7 +176,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
             )}
 
             {/* Price */}
-            <div className="mt-6 pt-6 border-t border-gray-200
+            <div className="mt-6 pt-6 border-t border-gray-200"
               <div className="space-y-2">
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-lg font-poppins font-semibold text-charcoal">
@@ -192,7 +192,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
         </Card>
 
         {/* Important Information */}
-        <Card className="bg-blue-50 border border-blue-200
+        <Card className="bg-blue-50 border border-blue-200"
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />

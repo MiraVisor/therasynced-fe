@@ -99,7 +99,7 @@ const Navbar = () => {
             ),
           )}
 
-          <div className="w-px h-4 bg-gray-200 />
+          <div className="w-px h-4 bg-gray-200" />
           <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}>
             <Button size="sm" className="bg-primary text-white font-semibold font-inter">
               {hasValidToken ? 'Go to Dashboard' : 'Sign In'}
@@ -109,7 +109,7 @@ const Navbar = () => {
 
         {/* Mobile Toggle */}
         <button
-          className="md:hidden p-2 text-gray-600
+          className="md:hidden p-2 text-gray-600"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}

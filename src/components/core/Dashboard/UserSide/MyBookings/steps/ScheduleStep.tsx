@@ -61,7 +61,7 @@ export const ScheduleStep: React.FC<ScheduleStepProps> = ({
         {/* Calendar Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-poppins font-semibold text-charcoal">Select Date</h3>
-          <div className="border border-gray-200 rounded-lg p-4 bg-white
+          <div className="border border-gray-200 rounded-lg p-4 bg-white"
             <Calendar
               mode="single"
               selected={selectedDateObj}
@@ -87,7 +87,7 @@ export const ScheduleStep: React.FC<ScheduleStepProps> = ({
         <div className="space-y-4">
           <h3 className="text-lg font-poppins font-semibold text-charcoal">Available Times</h3>
           {selectedDate ? (
-            <div className="border border-gray-200 rounded-lg p-4 bg-white
+            <div className="border border-gray-200 rounded-lg p-4 bg-white"
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2">
                 {slotsByDate[selectedDate]?.map((slot) => {
                   const time = new Date(slot.startTime).toLocaleTimeString('en-US', {
@@ -150,10 +150,10 @@ export const ScheduleStep: React.FC<ScheduleStepProps> = ({
               <div className="flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-green-900
+                  <div className="font-medium text-green-900"
                     Time Selected
                   </div>
-                  <div className="text-sm text-green-700
+                  <div className="text-sm text-green-700"
                     {(() => {
                       const selectedSlot = slotsByDate[selectedDate]?.find(
                         (s) => s.id === selectedTime,

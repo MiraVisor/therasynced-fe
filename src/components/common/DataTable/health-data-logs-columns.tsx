@@ -137,7 +137,7 @@ export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : (
               <Badge
                 variant="secondary"
-                className="font-inter text-xs text-amber-700
+                className="font-inter text-xs text-amber-700"
               >
                 Third-Party Access
               </Badge>
@@ -239,7 +239,7 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : (
               <Badge
                 variant="secondary"
-                className="font-inter text-xs text-amber-700
+                className="font-inter text-xs text-amber-700"
               >
                 Third-Party Access
               </Badge>

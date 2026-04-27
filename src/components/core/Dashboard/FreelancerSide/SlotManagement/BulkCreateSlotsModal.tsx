@@ -609,7 +609,7 @@ export const BulkCreateSlotsModal = ({
               </div>
 
               {overlapCount > 0 && (
-                <p className="text-xs text-amber-600
+                <p className="text-xs text-amber-600"
                   {overlapCount} slot{overlapCount !== 1 ? 's' : ''} will be skipped (overlap with
                   existing)
                 </p>

@@ -190,7 +190,7 @@ export default function CookieConsent() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Cookie Consent
               </h3>
-              <p className="text-sm text-gray-600
+              <p className="text-sm text-gray-600">
                 We use cookies to enhance your experience, analyse site usage, and assist in our
                 marketing efforts. Essential cookies are required for the site to function properly.
                 You can manage your preferences at any time.{' '}
@@ -313,7 +313,7 @@ export default function CookieConsent() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200
+            <div className="pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-500 mb-4">
                 You can change these preferences at any time by clicking the cookie settings link in
                 the footer or clearing your browser cookies.

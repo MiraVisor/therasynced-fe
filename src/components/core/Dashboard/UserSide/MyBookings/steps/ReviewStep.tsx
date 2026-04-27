@@ -239,7 +239,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-poppins font-bold text-charcoal
+        <h2 className="text-3xl font-poppins font-bold text-charcoal"
           Review Your Booking
         </h2>
         <p className="text-gray-600 text-lg font-inter">
@@ -265,11 +265,11 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-poppins font-semibold text-lg text-charcoal
+                  <h3 className="font-poppins font-semibold text-lg text-charcoal"
                     {freelancer.name}
                   </h3>
                   {freelancer.specialty && (
-                    <p className="text-sm text-gray-600
+                    <p className="text-sm text-gray-600"
                       {freelancer.specialty}
                     </p>
                   )}
@@ -283,14 +283,14 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Calendar className="w-5 h-5 text-primary" />
-                <h4 className="font-semibold text-charcoal & Time</h4>
+                <h4 className="font-semibold text-charcoal & Time</h4>"
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-gray-700
+                <div className="flex items-center gap-2 text-gray-700"
                   <Calendar className="w-4 h-4" />
                   <span>{format(new Date(slot.startTime), 'EEEE, MMMM d, yyyy')}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-700
+                <div className="flex items-center gap-2 text-gray-700"
                   <Clock className="w-4 h-4" />
                   <span>
                     {format(new Date(slot.startTime), 'h:mm a')} -{' '}
@@ -312,7 +312,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   {selectedServices.map((service) => (
                     <div key={service.id} className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span className="text-gray-700
+                      <span className="text-gray-700"
                     </div>
                   ))}
                 </div>
@@ -325,14 +325,14 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <MapPin className="w-5 h-5 text-primary" />
-                <h4 className="font-semibold text-charcoal
+                <h4 className="font-semibold text-charcoal"
               </div>
               {selectedLocationType === LocationType.HOME ? (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-1">
                     At Home
                   </p>
-                  <p className="text-sm text-gray-600
+                  <p className="text-sm text-gray-600"
                 </div>
               ) : (
                 <div>
@@ -341,10 +341,10 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   </p>
                   {slot.location && (
                     <>
-                      <p className="text-sm font-medium text-gray-900
+                      <p className="text-sm font-medium text-gray-900"
                         {slot.location.name}
                       </p>
-                      <p className="text-sm text-gray-600
+                      <p className="text-sm text-gray-600"
                         {slot.location.address}
                       </p>
                     </>
@@ -362,12 +362,12 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               <h4 className="font-semibold text-charcoal mb-4">Price Summary</h4>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 Price</span>
+                  <span className="text-gray-600 Price</span>"
                   <span className="font-medium">€{basePrice.toFixed(2)}</span>
                 </div>
                 {servicePriceTotal > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 Price</span>
+                    <span className="text-gray-600 Price</span>"
                     <span className="font-medium">€{servicePriceTotal.toFixed(2)}</span>
                   </div>
                 )}
@@ -382,7 +382,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 After Discount</span>
+                      <span className="text-gray-600 After Discount</span>"
                       <span className="font-medium">€{finalPrice.toFixed(2)}</span>
                     </div>
                   </>
@@ -391,13 +391,13 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   selectedLocationType === LocationType.CLINIC &&
                   slot.location.additionalFee > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 Fee</span>
+                      <span className="text-gray-600 Fee</span>"
                       <span className="font-medium">€{slot.location.additionalFee.toFixed(2)}</span>
                     </div>
                   )}
                 <div className="border-t border-gray-200 pt-3 mt-3">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-lg text-charcoal
+                    <span className="font-semibold text-lg text-charcoal"
                       Total
                     </span>
                     <div className="flex flex-col items-end">
@@ -434,9 +434,9 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           </Card>
 
           {/* Debug Information */}
-          <Card className="mt-6 border-2 border-yellow-300 bg-yellow-50
+          <Card className="mt-6 border-2 border-yellow-300 bg-yellow-50"
             <CardContent className="p-4">
-              <h5 className="font-semibold text-sm mb-3 text-yellow-800
+              <h5 className="font-semibold text-sm mb-3 text-yellow-800"
                 🔍 Debug Information
               </h5>
               <div className="space-y-2 text-xs font-mono">

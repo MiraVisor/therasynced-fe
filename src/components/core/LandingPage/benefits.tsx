@@ -137,7 +137,7 @@ const Benefits = () => {
     <section
       ref={sectionRef}
       id="benefits"
-      className="w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 bg-gradient-to-b from-gray-50 to-white
+      className="w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 bg-gradient-to-b from-gray-50 to-white"
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -227,7 +227,7 @@ const Benefits = () => {
             <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               What Our Clients Say
             </h3>
-            <p className="text-gray-600
+            <p className="text-gray-600"
               Real stories from people who found their perfect match
             </p>
           </div>
@@ -264,10 +264,10 @@ const Benefits = () => {
                       </span>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900
+                      <div className="font-semibold text-gray-900"
                         {testimonial.author}
                       </div>
-                      <div className="text-sm text-gray-500
+                      <div className="text-sm text-gray-500"
                         {testimonial.role}
                       </div>
                     </div>

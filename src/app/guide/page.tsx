@@ -42,7 +42,7 @@ export default function GuidePage() {
                 A quick tour of the platform for clients and therapists. Pick the view that applies
                 to you, and you will be up and running in a few minutes.
               </p>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2 text-sm font-open-sans text-gray-600
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2 text-sm font-open-sans text-gray-600"
                 <span className="inline-flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-primary" />
                   Free for clients
@@ -59,7 +59,7 @@ export default function GuidePage() {
             </div>
 
             {/* Hero image */}
-            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-[5/4] shadow-lg border border-gray-100
+            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-[5/4] shadow-lg border border-gray-100"
               <Image
                 src="/images/physio/pilates-therapy-session.jpg"
                 alt="A therapist guiding a client through a session"
@@ -83,7 +83,7 @@ export default function GuidePage() {
       </section>
 
       {/* FAQ section */}
-      <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-white
+      <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-white"
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 space-y-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 font-playfair">
@@ -137,7 +137,7 @@ export default function GuidePage() {
                 key={idx}
                 className="group p-5 lg:p-6 rounded-2xl border border-gray-100 bg-[#faf9f6] shadow-sm open:shadow-md transition-all"
               >
-                <summary className="flex items-start justify-between gap-4 cursor-pointer list-none font-poppins font-semibold text-gray-900
+                <summary className="flex items-start justify-between gap-4 cursor-pointer list-none font-poppins font-semibold text-gray-900"
                   <span className="text-base">{item.q}</span>
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg leading-none transition-transform group-open:rotate-45">
                     +
@@ -159,7 +159,7 @@ export default function GuidePage() {
           <div className="p-6 lg:p-7 rounded-2xl bg-red-50/70 border border-red-200/70 mb-6">
             <div className="flex items-start gap-4">
               <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-red-600 />
+                <AlertTriangle className="w-5 h-5 text-red-600 />"
               </div>
               <div className="min-w-0">
                 <h3 className="font-poppins font-semibold text-gray-900 text-base mb-1">
@@ -168,8 +168,8 @@ export default function GuidePage() {
                 <p className="text-sm text-gray-700 font-open-sans leading-relaxed">
                   If you are in crisis or experiencing a medical emergency, please contact local
                   emergency services immediately. In Ireland, dial{' '}
-                  <strong className="text-gray-900 or{' '}
-                  <strong className="text-gray-900 Our messaging is
+                  <strong className="text-gray-900 or{' '}"
+                  <strong className="text-gray-900 Our messaging is"
                   not monitored for urgent situations.
                 </p>
               </div>

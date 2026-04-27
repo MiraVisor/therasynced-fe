@@ -109,10 +109,10 @@ export function ActivityHeatmap({ data, title, description, loading }: ActivityH
             <span>Less</span>
             <div className="flex gap-1">
               <div className="w-3 h-3 rounded-sm bg-muted" />
-              <div className="w-3 h-3 rounded-sm bg-blue-200 />
-              <div className="w-3 h-3 rounded-sm bg-blue-400 />
-              <div className="w-3 h-3 rounded-sm bg-blue-600 />
-              <div className="w-3 h-3 rounded-sm bg-blue-800 />
+              <div className="w-3 h-3 rounded-sm bg-blue-200 />"
+              <div className="w-3 h-3 rounded-sm bg-blue-400 />"
+              <div className="w-3 h-3 rounded-sm bg-blue-600 />"
+              <div className="w-3 h-3 rounded-sm bg-blue-800 />"
             </div>
             <span>More</span>
           </div>

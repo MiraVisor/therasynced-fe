@@ -589,7 +589,7 @@ export default function BookingPage() {
           <Card className="max-w-md w-full border-0 shadow-xl">
             <CardContent className="p-8 text-center">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-100 to-mint/30 rounded-full flex items-center justify-center animate-in zoom-in-50 duration-500">
-                <CheckCircle className="w-12 h-12 text-green-600 />
+                <CheckCircle className="w-12 h-12 text-green-600 />"
               </div>
               <h2 className="text-2xl font-poppins font-bold text-charcoal mb-2">
                 Booking Confirmed!
@@ -745,7 +745,7 @@ export default function BookingPage() {
                               {/* Info */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                  <span className="font-semibold text-gray-900
+                                  <span className="font-semibold text-gray-900"
                                     {freelancer.name}
                                   </span>
                                   <VerificationBadge
@@ -764,7 +764,7 @@ export default function BookingPage() {
                                 {freelancer.rating !== undefined && freelancer.rating > 0 && (
                                   <div className="flex items-center gap-1 mt-1">
                                     <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                    <span className="text-sm text-gray-600
+                                    <span className="text-sm text-gray-600"
                                       {freelancer.rating.toFixed(1)}
                                       {freelancer.reviews > 0 && ` (${freelancer.reviews})`}
                                     </span>
@@ -784,7 +784,7 @@ export default function BookingPage() {
               </div>
             ) : (
               <div className="max-w-2xl mx-auto mb-8">
-                <div className="border border-gray-200 rounded-xl p-6 bg-white
+                <div className="border border-gray-200 rounded-xl p-6 bg-white"
                   {isLoadingFavorites ? (
                     <div className="space-y-4">
                       {Array.from({ length: 3 }).map((_, i) => (
@@ -877,11 +877,11 @@ export default function BookingPage() {
 
             {/* Divider */}
             <div className="flex items-center gap-4 max-w-2xl mx-auto">
-              <div className="flex-1 h-px bg-gray-200 />
+              <div className="flex-1 h-px bg-gray-200 />"
               <span className="text-sm text-gray-500 font-medium">
                 or browse by date
               </span>
-              <div className="flex-1 h-px bg-gray-200 />
+              <div className="flex-1 h-px bg-gray-200 />"
             </div>
 
             {/* Selected Freelancer Banner (if in freelancer-first flow) */}
@@ -901,7 +901,7 @@ export default function BookingPage() {
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-charcoal
+                          <p className="font-semibold text-charcoal"
                             {selectedFreelancerData.name}
                           </p>
                           <VerificationBadge
@@ -909,7 +909,7 @@ export default function BookingPage() {
                             size="sm"
                           />
                         </div>
-                        <p className="text-sm text-gray-600
+                        <p className="text-sm text-gray-600"
                           {selectedFreelancerData.jobTitle?.name || 'Freelancer'}
                         </p>
                       </div>
@@ -946,7 +946,7 @@ export default function BookingPage() {
                     <div className="p-4 md:p-8 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col items-center justify-center min-h-[400px] md:min-h-0">
                       <div className="flex items-center gap-2 mb-4 md:mb-6">
                         <Calendar className="w-5 h-5 text-primary" />
-                        <h2 className="font-poppins font-semibold text-lg text-charcoal
+                        <h2 className="font-poppins font-semibold text-lg text-charcoal"
                           Select a Date
                         </h2>
                       </div>
@@ -1002,7 +1002,7 @@ export default function BookingPage() {
                         <div className="flex-1 overflow-y-auto">
                           <div className="flex items-center gap-2 mb-4">
                             <User className="w-5 h-5 text-primary" />
-                            <h2 className="font-poppins font-semibold text-lg text-charcoal
+                            <h2 className="font-poppins font-semibold text-lg text-charcoal"
                               Available on {format(selectedDate, 'MMMM d')}
                             </h2>
                           </div>
@@ -1032,13 +1032,13 @@ export default function BookingPage() {
                                   </div>
                                 ))}
                               </div>
-                              <p className="text-center text-sm text-gray-500
+                              <p className="text-center text-sm text-gray-500"
                                 Loading available freelancers...
                               </p>
                             </div>
                           ) : freelancersWithSlots.length === 0 ? (
                             <div className="text-center py-8">
-                              <p className="text-gray-500
+                              <p className="text-gray-500"
                                 No freelancers available on this date
                               </p>
                               <Button
@@ -1093,7 +1093,7 @@ export default function BookingPage() {
                                           />
                                           <Badge
                                             variant="secondary"
-                                            className="text-xs bg-green-100 text-green-700
+                                            className="text-xs bg-green-100 text-green-700"
                                           >
                                             {(freelancer as any).slotCount} slots
                                           </Badge>
@@ -1118,7 +1118,7 @@ export default function BookingPage() {
                               <div className="h-full flex flex-col">
                                 <div className="flex items-center gap-2 mb-4">
                                   <Clock className="w-5 h-5 text-primary" />
-                                  <h3 className="font-semibold text-charcoal
+                                  <h3 className="font-semibold text-charcoal"
                                     Select Time
                                   </h3>
                                 </div>
@@ -1132,7 +1132,7 @@ export default function BookingPage() {
                                         />
                                       ))}
                                     </div>
-                                    <p className="text-center text-sm text-gray-500
+                                    <p className="text-center text-sm text-gray-500"
                                       Loading available times...
                                     </p>
                                   </div>
@@ -1177,7 +1177,7 @@ export default function BookingPage() {
                                 <div className="animate-in slide-in-from-right-2 duration-300">
                                   <div className="flex items-center gap-2 mb-4">
                                     <Sparkles className="w-5 h-5 text-primary" />
-                                    <h3 className="font-semibold text-charcoal
+                                    <h3 className="font-semibold text-charcoal"
                                       Select Service
                                     </h3>
                                   </div>
@@ -1208,7 +1208,7 @@ export default function BookingPage() {
                                           htmlFor={service.id}
                                           className="flex-1 cursor-pointer"
                                         >
-                                          <span className="font-medium text-charcoal
+                                          <span className="font-medium text-charcoal"
                                             {service.name}
                                           </span>
                                         </Label>
@@ -1225,7 +1225,7 @@ export default function BookingPage() {
                                 <div className="animate-in slide-in-from-right-2 duration-300">
                                   <div className="flex items-center gap-2 mb-4">
                                     <MapPin className="w-5 h-5 text-primary" />
-                                    <h3 className="font-semibold text-charcoal
+                                    <h3 className="font-semibold text-charcoal"
                                       Select Location
                                     </h3>
                                   </div>
@@ -1249,7 +1249,7 @@ export default function BookingPage() {
                                         <RadioGroupItem value={LocationType.HOME} id="home" />
                                         <Home className="w-5 h-5 text-gray-500" />
                                         <Label htmlFor="home" className="flex-1 cursor-pointer">
-                                          <span className="font-medium text-charcoal
+                                          <span className="font-medium text-charcoal"
                                             At Home
                                           </span>
                                         </Label>
@@ -1268,7 +1268,7 @@ export default function BookingPage() {
                                         <RadioGroupItem value={LocationType.CLINIC} id="clinic" />
                                         <Building2 className="w-5 h-5 text-gray-500" />
                                         <Label htmlFor="clinic" className="flex-1 cursor-pointer">
-                                          <span className="font-medium text-charcoal
+                                          <span className="font-medium text-charcoal"
                                             At Clinic
                                           </span>
                                         </Label>
@@ -1290,7 +1290,7 @@ export default function BookingPage() {
                                         )}
                                       />
                                       {!homeAddress.trim() && (
-                                        <p className="text-xs text-yellow-600
+                                        <p className="text-xs text-yellow-600"
                                           Please enter your address to continue
                                         </p>
                                       )}
@@ -1304,7 +1304,7 @@ export default function BookingPage() {
                               <div className="animate-in slide-in-from-right-2 duration-300">
                                 <div className="flex items-center gap-2 mb-4">
                                   <CheckCircle className="w-5 h-5 text-primary" />
-                                  <h3 className="font-semibold text-charcoal
+                                  <h3 className="font-semibold text-charcoal"
                                     Review & Confirm
                                   </h3>
                                 </div>
@@ -1312,21 +1312,21 @@ export default function BookingPage() {
                                   <>
                                     <div className="space-y-3 mb-4">
                                       {selectedFreelancerData && (
-                                        <div className="flex justify-between py-2 border-b border-gray-200
-                                          <span className="text-gray-600
+                                        <div className="flex justify-between py-2 border-b border-gray-200"
+                                          <span className="text-gray-600"
                                             Freelancer:
                                           </span>
-                                          <span className="font-medium text-charcoal
+                                          <span className="font-medium text-charcoal"
                                             {selectedFreelancerData.name}
                                           </span>
                                         </div>
                                       )}
                                       {selectedDate && selectedSlotData && (
-                                        <div className="flex justify-between py-2 border-b border-gray-200
-                                          <span className="text-gray-600
+                                        <div className="flex justify-between py-2 border-b border-gray-200"
+                                          <span className="text-gray-600"
                                             Date & Time:
                                           </span>
-                                          <span className="font-medium text-charcoal
+                                          <span className="font-medium text-charcoal"
                                             {format(
                                               parseISO(selectedSlotData.startTime),
                                               'MMM d, h:mm a',
@@ -1335,21 +1335,21 @@ export default function BookingPage() {
                                         </div>
                                       )}
                                       {selectedServiceData && (
-                                        <div className="flex justify-between py-2 border-b border-gray-200
-                                          <span className="text-gray-600
+                                        <div className="flex justify-between py-2 border-b border-gray-200"
+                                          <span className="text-gray-600"
                                             Service:
                                           </span>
-                                          <span className="font-medium text-charcoal
+                                          <span className="font-medium text-charcoal"
                                             {selectedServiceData.name}
                                           </span>
                                         </div>
                                       )}
                                       {locationType && (
-                                        <div className="flex justify-between py-2 border-b border-gray-200
-                                          <span className="text-gray-600
+                                        <div className="flex justify-between py-2 border-b border-gray-200"
+                                          <span className="text-gray-600"
                                             Location:
                                           </span>
-                                          <span className="font-medium text-charcoal
+                                          <span className="font-medium text-charcoal"
                                             {locationType === LocationType.HOME
                                               ? 'At Home'
                                               : 'At Clinic'}
@@ -1357,8 +1357,8 @@ export default function BookingPage() {
                                         </div>
                                       )}
                                       {locationType === LocationType.HOME && homeAddress && (
-                                        <div className="flex justify-between py-2 border-b border-gray-200
-                                          <span className="text-gray-600
+                                        <div className="flex justify-between py-2 border-b border-gray-200"
+                                          <span className="text-gray-600"
                                             Address:
                                           </span>
                                           <span className="font-medium text-charcoal text-right max-w-[60%]">
@@ -1370,7 +1370,7 @@ export default function BookingPage() {
                                       {/* Price Breakdown */}
                                       <div className="pt-4 border-t border-gray-200 space-y-2">
                                         <div className="flex justify-between text-sm">
-                                          <span className="text-gray-600
+                                          <span className="text-gray-600"
                                             Base Price:
                                           </span>
                                           <span className="font-medium">
@@ -1379,7 +1379,7 @@ export default function BookingPage() {
                                         </div>
                                         {priceCalculation.servicePrice > 0 && (
                                           <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600
+                                            <span className="text-gray-600"
                                               Service Price:
                                             </span>
                                             <span className="font-medium">
@@ -1399,7 +1399,7 @@ export default function BookingPage() {
                                               </span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                              <span className="text-gray-600
+                                              <span className="text-gray-600"
                                                 Price After Discount:
                                               </span>
                                               <span className="font-medium">
@@ -1410,7 +1410,7 @@ export default function BookingPage() {
                                         )}
                                         {priceCalculation.locationFee > 0 && (
                                           <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600
+                                            <span className="text-gray-600"
                                               Location Fee:
                                             </span>
                                             <span className="font-medium">
@@ -1418,8 +1418,8 @@ export default function BookingPage() {
                                             </span>
                                           </div>
                                         )}
-                                        <div className="flex justify-between pt-2 border-t border-gray-200
-                                          <span className="text-lg font-semibold text-charcoal
+                                        <div className="flex justify-between pt-2 border-t border-gray-200"
+                                          <span className="text-lg font-semibold text-charcoal"
                                             Total:
                                           </span>
                                           <div className="flex flex-col items-end">
@@ -1461,7 +1461,7 @@ export default function BookingPage() {
                                 ) : (
                                   <div className="space-y-4">
                                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                      <p className="text-sm text-yellow-800
+                                      <p className="text-sm text-yellow-800"
                                         {locationType === LocationType.HOME && !homeAddress.trim()
                                           ? 'Please go back and enter your address for home visit appointments.'
                                           : 'Please complete all required fields to confirm your booking.'}
@@ -1483,7 +1483,7 @@ export default function BookingPage() {
 
                           {/* Navigation Buttons */}
                           {bookingStep !== 'confirm' && (
-                            <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200
+                            <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200"
                               <Button
                                 variant="outline"
                                 onClick={handlePreviousStep}

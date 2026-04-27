@@ -406,7 +406,7 @@ export default function SubscriptionManagement() {
       <div>
         <div className="mb-6">
           <h3 className="text-2xl font-poppins font-bold text-charcoal mb-2">Choose Your Plan</h3>
-          <p className="text-sm text-gray-600
+          <p className="text-sm text-gray-600"
             Select the plan that best fits your needs
           </p>
         </div>
@@ -434,7 +434,7 @@ export default function SubscriptionManagement() {
         <h1 className="text-3xl font-poppins font-bold text-charcoal mb-2">
           Subscription Management
         </h1>
-        <p className="text-base font-inter text-gray-600
+        <p className="text-base font-inter text-gray-600"
           Manage your subscription plan, billing, and payment methods
         </p>
       </div>
@@ -447,8 +447,8 @@ export default function SubscriptionManagement() {
         !(status === 'INACTIVE' && currentSubscription?.plan) &&
         (status === 'TRIAL_EXPIRED' || status === 'INACTIVE' || !currentSubscription?.plan) && (
           <Alert className="border-orange-300 bg-orange-50 shadow-sm mb-4">
-            <AlertTriangle className="h-5 w-5 text-orange-600 />
-            <AlertTitle className="text-base font-poppins font-semibold text-orange-900
+            <AlertTriangle className="h-5 w-5 text-orange-600 />"
+            <AlertTitle className="text-base font-poppins font-semibold text-orange-900"
               Trial Expired
             </AlertTitle>
             <AlertDescription className="text-sm text-orange-800 space-y-3 mt-2">
@@ -472,7 +472,7 @@ export default function SubscriptionManagement() {
         <Alert className="border-red-400 bg-gradient-to-r from-red-50 to-orange-50 shadow-sm animate-in slide-in-from-top duration-300 mb-4">
           <div className="flex items-start gap-3">
             <div className="p-1.5 rounded-lg bg-red-100 flex-shrink-0">
-              <Shield className="h-5 w-5 text-red-600 />
+              <Shield className="h-5 w-5 text-red-600 />"
             </div>
             <div className="flex-1">
               <AlertTitle className="text-base font-poppins font-semibold text-red-900 mb-2">
@@ -571,7 +571,7 @@ export default function SubscriptionManagement() {
               <CardContent className="space-y-4">
                 <div className="rounded-lg border p-4">
                   <h3 className="font-poppins font-semibold text-lg">{selectedPlan.displayName}</h3>
-                  <p className="text-sm text-gray-600
+                  <p className="text-sm text-gray-600"
                     {selectedPlan.description}
                   </p>
                   <p className="mt-2 text-2xl font-poppins font-bold text-primary">
@@ -599,7 +599,7 @@ export default function SubscriptionManagement() {
                       setShowPreCheckoutSummary(false);
                       setSelectedPlanForCheckout(null);
                     }}
-                    className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50
+                    className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50"
                   >
                     Cancel
                   </button>

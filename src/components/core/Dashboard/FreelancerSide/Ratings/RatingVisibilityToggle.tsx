@@ -58,7 +58,7 @@ export function RatingVisibilityToggle({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={className}>
-              <div className="flex items-center gap-2 text-sm text-gray-500
+              <div className="flex items-center gap-2 text-sm text-gray-500"
                 <Eye className="h-4 w-4" />
                 <span>Always visible</span>
               </div>
@@ -79,7 +79,7 @@ export function RatingVisibilityToggle({
       ) : (
         <>
           {isVisible ? (
-            <Eye className="h-4 w-4 text-green-600 />
+            <Eye className="h-4 w-4 text-green-600 />"
           ) : (
             <EyeOff className="h-4 w-4 text-gray-400" />
           )}
@@ -91,7 +91,7 @@ export function RatingVisibilityToggle({
         disabled={isPending}
         aria-label={`Toggle rating visibility (currently ${isVisible ? 'visible' : 'hidden'})`}
       />
-      <span className="text-xs text-gray-600
+      <span className="text-xs text-gray-600"
         {isVisible ? 'Visible' : 'Hidden'}
       </span>
     </div>

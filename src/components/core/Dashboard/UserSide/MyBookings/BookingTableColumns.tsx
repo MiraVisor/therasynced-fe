@@ -40,10 +40,10 @@ export const createBookingColumns = ({
         const startTime = parseISO(row.original.slot.startTime);
         return (
           <div className="flex flex-col">
-            <span className="font-medium text-charcoal
+            <span className="font-medium text-charcoal"
               {format(startTime, 'MMM d, yyyy')}
             </span>
-            <span className="text-sm text-gray-600
+            <span className="text-sm text-gray-600"
               {format(startTime, 'h:mm a')}
             </span>
           </div>
@@ -58,9 +58,9 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal
+              <span className="font-medium text-charcoal"
               {freelancer.averageRating && (
-                <span className="text-xs text-gray-600
+                <span className="text-xs text-gray-600"
                   ⭐ {freelancer.averageRating.toFixed(1)}
                 </span>
               )}
@@ -77,7 +77,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal
+              <span className="font-medium text-charcoal"
             </div>
           </div>
         );
@@ -94,7 +94,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex flex-col gap-1">
             {serviceCategories.slice(0, 2).map((service, idx) => (
-              <span key={idx} className="text-sm text-charcoal
+              <span key={idx} className="text-sm text-charcoal"
                 {service.name}
               </span>
             ))}
@@ -157,7 +157,7 @@ export const createBookingColumns = ({
       header: 'Amount',
       cell: ({ row }) => {
         return (
-          <span className="font-semibold text-charcoal
+          <span className="font-semibold text-charcoal"
             €{row.original.totalAmount.toFixed(2)}
           </span>
         );

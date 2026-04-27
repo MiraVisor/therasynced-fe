@@ -86,7 +86,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                 />
               </div>
               {freelancer.specialty && (
-                <p className="text-sm font-inter text-gray-600
+                <p className="text-sm font-inter text-gray-600"
                   {freelancer.specialty}
                 </p>
               )}
@@ -140,7 +140,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                             </div>
                             <div className="flex items-center gap-2">
                               <LocationIcon className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm text-gray-600
+                              <span className="text-sm text-gray-600"
                                 {getLocationText(slot.locationType)}
                               </span>
                             </div>

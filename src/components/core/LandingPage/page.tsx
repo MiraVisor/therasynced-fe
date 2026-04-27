@@ -17,7 +17,7 @@ const ForWho = dynamic(() => import('./for-who'), {
 
 const HowItWorks = dynamic(() => import('./how-it-works'), {
   ssr: true,
-  loading: () => <div className="h-[600px] bg-white />,
+  loading: () => <div className="h-[600px] bg-white" />,
 });
 
 const Features = dynamic(() => import('./features'), {
@@ -33,7 +33,7 @@ const Features = dynamic(() => import('./features'), {
 
 const Pricing = dynamic(() => import('./pricing'), {
   ssr: true,
-  loading: () => <div className="h-[600px] bg-white />,
+  loading: () => <div className="h-[600px] bg-white" />,
 });
 
 const LandingPage = () => {
