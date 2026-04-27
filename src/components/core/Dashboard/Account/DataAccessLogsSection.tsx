@@ -95,7 +95,7 @@ export function DataAccessLogsSection() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-4">
-        <Shield className="h-5 w-5 text-gray-600 />"
+        <Shield className="h-5 w-5 text-gray-600 />
         <h3 className="text-lg font-poppins font-semibold text-gray-900"
           Health Data Access Logs
         </h3>

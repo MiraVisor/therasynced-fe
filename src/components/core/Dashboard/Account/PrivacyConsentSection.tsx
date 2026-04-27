@@ -321,7 +321,7 @@ export function PrivacyConsentSection() {
           </DialogHeader>
           <div className="py-4 space-y-3">
             <Alert className="border-blue-200 bg-blue-50"
-              <AlertCircle className="h-4 w-4 text-blue-600 />"
+              <AlertCircle className="h-4 w-4 text-blue-600 />
               <AlertTitle className="text-blue-800"
                 What happens when you delete your account:
               </AlertTitle>

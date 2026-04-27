@@ -122,7 +122,7 @@ export function PaymentMethodCard() {
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <Lock className="h-4 w-4" />
-                      <Shield className="h-4 w-4 text-green-600 />"
+                      <Shield className="h-4 w-4 text-green-600 />
                     </div>
                   </div>
                 </div>
@@ -182,7 +182,7 @@ export function PaymentMethodCard() {
         )}
         <div className="mt-6 pt-4 border-t border-gray-200"
           <p className="text-xs text-gray-500 flex items-center gap-2">
-            <Shield className="h-3.5 w-3.5 text-green-600 />"
+            <Shield className="h-3.5 w-3.5 text-green-600 />
             Payment information is securely processed by Stripe. We never store your card details.
           </p>
         </div>

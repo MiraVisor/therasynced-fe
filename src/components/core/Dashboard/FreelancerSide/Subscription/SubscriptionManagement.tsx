@@ -447,7 +447,7 @@ export default function SubscriptionManagement() {
         !(status === 'INACTIVE' && currentSubscription?.plan) &&
         (status === 'TRIAL_EXPIRED' || status === 'INACTIVE' || !currentSubscription?.plan) && (
           <Alert className="border-orange-300 bg-orange-50 shadow-sm mb-4">
-            <AlertTriangle className="h-5 w-5 text-orange-600 />"
+            <AlertTriangle className="h-5 w-5 text-orange-600 />
             <AlertTitle className="text-base font-poppins font-semibold text-orange-900"
               Trial Expired
             </AlertTitle>
@@ -472,7 +472,7 @@ export default function SubscriptionManagement() {
         <Alert className="border-red-400 bg-gradient-to-r from-red-50 to-orange-50 shadow-sm animate-in slide-in-from-top duration-300 mb-4">
           <div className="flex items-start gap-3">
             <div className="p-1.5 rounded-lg bg-red-100 flex-shrink-0">
-              <Shield className="h-5 w-5 text-red-600 />"
+              <Shield className="h-5 w-5 text-red-600 />
             </div>
             <div className="flex-1">
               <AlertTitle className="text-base font-poppins font-semibold text-red-900 mb-2">

@@ -150,7 +150,7 @@ const CtaSection = () => {
         {/* Divider */}
         <div className="relative mb-12">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 />"
+            <div className="w-full border-t border-gray-300 />
           </div>
           <div className="relative flex justify-center">
             <span className="px-4 bg-gradient-to-br from-cream via-mint-light/50 to-sage-warm/30 text-sm text-gray-500 font-inter">

@@ -71,7 +71,7 @@ export default function TrialBanner() {
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1">
           <div className="p-1.5 rounded-lg bg-orange-100 flex-shrink-0 mt-0.5">
-            <Sparkles className="h-4 w-4 text-orange-600 />"
+            <Sparkles className="h-4 w-4 text-orange-600 />
           </div>
           <div className="flex-1">
             <AlertTitle className="font-semibold text-gray-900 flex items-center gap-2 mb-2">

@@ -159,7 +159,7 @@ export default function GuidePage() {
           <div className="p-6 lg:p-7 rounded-2xl bg-red-50/70 border border-red-200/70 mb-6">
             <div className="flex items-start gap-4">
               <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-red-600 />"
+                <AlertTriangle className="w-5 h-5 text-red-600 />
               </div>
               <div className="min-w-0">
                 <h3 className="font-poppins font-semibold text-gray-900 text-base mb-1">

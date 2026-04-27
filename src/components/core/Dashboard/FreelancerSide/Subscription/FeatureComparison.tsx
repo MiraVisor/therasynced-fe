@@ -60,7 +60,7 @@ export function FeatureComparison({
   const renderFeatureValue = (value: boolean | string) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <CheckCircle2 className="h-5 w-5 text-green-600 />"
+        <CheckCircle2 className="h-5 w-5 text-green-600 />
       ) : (
         <X className="h-5 w-5 text-gray-400" />
       );
@@ -136,7 +136,7 @@ export function FeatureComparison({
                           </span>
                         </div>
                         <div className="ml-4">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 />"
+                          <CheckCircle2 className="h-5 w-5 text-green-600 />
                         </div>
                       </div>
                     ))

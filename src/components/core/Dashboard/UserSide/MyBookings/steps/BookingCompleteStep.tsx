@@ -31,7 +31,7 @@ export const BookingCompleteStep: React.FC<BookingCompleteStepProps> = ({ bookin
       {/* Success Message */}
       <div className="text-center space-y-4 py-8">
         <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-          <CheckCircle className="w-12 h-12 text-green-600 />"
+          <CheckCircle className="w-12 h-12 text-green-600 />
         </div>
         <div>
           <h2 className="text-3xl font-poppins font-bold text-charcoal mb-2">

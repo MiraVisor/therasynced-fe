@@ -504,7 +504,7 @@ export function EnhancedBookingSearch() {
         <Card className="max-w-md w-full border-0 shadow-xl">
           <CardContent className="p-8 text-center">
             <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-100 to-mint/30 rounded-full flex items-center justify-center animate-in zoom-in-50 duration-500">
-              <CheckCircle className="w-12 h-12 text-green-600 />"
+              <CheckCircle className="w-12 h-12 text-green-600 />
             </div>
             <h2 className="text-2xl font-poppins font-bold text-charcoal mb-2">
               Booking Confirmed!
@@ -619,7 +619,7 @@ export function EnhancedBookingSearch() {
             <ChevronLeft className="w-4 h-4" />
             Back to Methods
           </Button>
-          <div className="h-6 w-px bg-gray-300 />"
+          <div className="h-6 w-px bg-gray-300 />
           <div>
             <h2 className="text-xl font-semibold text-charcoal"
               {searchMethod === 'name' && 'Search by Name'}
@@ -868,7 +868,7 @@ export function EnhancedBookingSearch() {
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>
-          <div className="h-6 w-px bg-gray-300 />"
+          <div className="h-6 w-px bg-gray-300 />
           <div>
             <h2 className="text-xl font-semibold text-charcoal"
               {selectedFreelancer.name}
@@ -924,7 +924,7 @@ export function EnhancedBookingSearch() {
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>
-          <div className="h-6 w-px bg-gray-300 />"
+          <div className="h-6 w-px bg-gray-300 />
           <div>
             <h2 className="text-xl font-semibold text-charcoal"
               {selectedFreelancer.name}

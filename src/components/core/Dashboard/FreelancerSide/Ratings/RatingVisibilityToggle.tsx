@@ -79,7 +79,7 @@ export function RatingVisibilityToggle({
       ) : (
         <>
           {isVisible ? (
-            <Eye className="h-4 w-4 text-green-600 />"
+            <Eye className="h-4 w-4 text-green-600 />
           ) : (
             <EyeOff className="h-4 w-4 text-gray-400" />
           )}

@@ -589,7 +589,7 @@ export default function BookingPage() {
           <Card className="max-w-md w-full border-0 shadow-xl">
             <CardContent className="p-8 text-center">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-100 to-mint/30 rounded-full flex items-center justify-center animate-in zoom-in-50 duration-500">
-                <CheckCircle className="w-12 h-12 text-green-600 />"
+                <CheckCircle className="w-12 h-12 text-green-600 />
               </div>
               <h2 className="text-2xl font-poppins font-bold text-charcoal mb-2">
                 Booking Confirmed!
@@ -877,11 +877,11 @@ export default function BookingPage() {
 
             {/* Divider */}
             <div className="flex items-center gap-4 max-w-2xl mx-auto">
-              <div className="flex-1 h-px bg-gray-200 />"
+              <div className="flex-1 h-px bg-gray-200 />
               <span className="text-sm text-gray-500 font-medium">
                 or browse by date
               </span>
-              <div className="flex-1 h-px bg-gray-200 />"
+              <div className="flex-1 h-px bg-gray-200 />
             </div>
 
             {/* Selected Freelancer Banner (if in freelancer-first flow) */}

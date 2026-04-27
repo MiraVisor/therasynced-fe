@@ -123,7 +123,7 @@ export function HealthDataConsent({
       <div className={className}>
         {consentGranted ? (
           <Alert className="border-green-200 bg-green-50"
-            <CheckCircle2 className="h-4 w-4 text-green-600 />"
+            <CheckCircle2 className="h-4 w-4 text-green-600 />
             <AlertTitle className="text-green-900"
               Client Consent Granted
             </AlertTitle>

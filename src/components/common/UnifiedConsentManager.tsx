@@ -302,7 +302,7 @@ export function UnifiedConsentManager({
                     className={`flex items-start space-x-3 rounded-lg border ${paddingClass} bg-gray-50
                   >
                     <div className="flex items-center justify-center mt-0.5 w-5 h-5">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 />"
+                      <CheckCircle2 className="h-5 w-5 text-green-600 />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -398,7 +398,7 @@ export function UnifiedConsentManager({
           {/* Info box explaining withdrawal = account deletion */}
           {!requiredOnly && (
             <Alert className="border-blue-500 bg-blue-50"
-              <Info className="h-4 w-4 text-blue-600 />"
+              <Info className="h-4 w-4 text-blue-600 />
               <AlertDescription className="text-blue-800"
                 <div>
                   <p className="font-medium">Withdrawing Required Agreements</p>

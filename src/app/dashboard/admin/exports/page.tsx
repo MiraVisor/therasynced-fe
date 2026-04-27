@@ -148,7 +148,7 @@ export default function AdminExportsPage() {
         <Card className="border-amber-200 bg-amber-50"
           <CardHeader>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600 />"
+              <AlertTriangle className="h-5 w-5 text-amber-600 />
               <CardTitle className="font-poppins font-semibold text-amber-900"
                 Important Security Notice
               </CardTitle>
@@ -469,7 +469,7 @@ export default function AdminExportsPage() {
             </div>
 
             <Alert className="border-green-200 bg-green-50"
-              <Info className="h-4 w-4 text-green-600 />"
+              <Info className="h-4 w-4 text-green-600 />
               <AlertTitle className="text-green-900"
                 Decryption Information
               </AlertTitle>

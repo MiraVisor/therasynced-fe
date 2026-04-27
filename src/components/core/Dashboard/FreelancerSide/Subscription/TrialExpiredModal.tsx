@@ -120,7 +120,7 @@ export function TrialExpiredModal() {
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-full bg-red-100"
-              <AlertCircle className="h-6 w-6 text-red-600 />"
+              <AlertCircle className="h-6 w-6 text-red-600 />
             </div>
             <DialogTitle className="text-2xl font-poppins font-bold text-charcoal">
               Trial Expired

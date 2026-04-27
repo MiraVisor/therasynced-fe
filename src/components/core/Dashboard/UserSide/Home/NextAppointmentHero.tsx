@@ -198,7 +198,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
             {/* Date */}
             <div className="flex items-start gap-2">
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 text-blue-600 />"
+                <Calendar className="w-5 h-5 text-blue-600 />
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Date</p>
@@ -211,7 +211,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
             {/* Time */}
             <div className="flex items-start gap-2">
               <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-green-600 />"
+                <Clock className="w-5 h-5 text-green-600 />
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Time</p>
@@ -229,7 +229,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
             {/* Location */}
             <div className="flex items-start gap-2">
               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <LocationIcon className="w-5 h-5 text-purple-600 />"
+                <LocationIcon className="w-5 h-5 text-purple-600 />
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Location</p>

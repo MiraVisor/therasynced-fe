@@ -100,7 +100,7 @@ export function UsageMeter({
 
       {showWarning && isNearLimit && !isAtLimit && (
         <Alert className="mt-2 border-orange-500 bg-orange-50"
-          <AlertTriangle className="h-4 w-4 text-orange-600 />"
+          <AlertTriangle className="h-4 w-4 text-orange-600 />
           <AlertDescription className="text-orange-800"
             You're using {Math.round(percentage)}% of your available slots. Consider upgrading to
             avoid hitting the limit.

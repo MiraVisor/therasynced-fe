@@ -148,7 +148,7 @@ export function OverviewTab({
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="p-2.5 rounded-lg bg-red-100 flex-shrink-0">
-                <Shield className="h-6 w-6 text-red-600 />"
+                <Shield className="h-6 w-6 text-red-600 />
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-poppins font-semibold text-red-900 mb-1">
@@ -180,7 +180,7 @@ export function OverviewTab({
                 )}
                 {gracePeriodEndDate && (
                   <Alert className="mb-4 border-red-300 bg-red-100/50"
-                    <AlertTriangle className="h-4 w-4 text-red-600 />"
+                    <AlertTriangle className="h-4 w-4 text-red-600 />
                     <AlertDescription className="text-xs text-red-800"
                       If payment isn't updated by{' '}
                       {gracePeriodEndDate.toLocaleDateString('en-US', {
@@ -224,7 +224,7 @@ export function OverviewTab({
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-lg bg-orange-100 flex-shrink-0">
-                <Calendar className="h-5 w-5 text-orange-600 />"
+                <Calendar className="h-5 w-5 text-orange-600 />
               </div>
               <div className="flex-1">
                 {isTrial ? (
@@ -347,7 +347,7 @@ export function OverviewTab({
                 {/* Trial Status Message */}
                 {isTrial && (
                   <Alert className="mb-6 border-orange-300 bg-orange-50"
-                    <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                    <AlertTriangle className="h-4 w-4 text-orange-600 />
                     <AlertDescription className="text-sm text-orange-800"
                       {isCanceledButActive ? (
                         <>
@@ -539,7 +539,7 @@ export function OverviewTab({
                       </div>
                       {isApproachingLimit(subscription.slotsUsed ?? 0, subscription.slotsLimit) && (
                         <Alert className="mt-2 border-orange-300 bg-orange-50"
-                          <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                          <AlertTriangle className="h-4 w-4 text-orange-600 />
                           <AlertDescription className="text-xs text-orange-800"
                             You're approaching your slot limit. Consider upgrading for more slots.
                           </AlertDescription>
@@ -606,7 +606,7 @@ export function OverviewTab({
                         subscription.maxDaysPerWeek,
                       ) && (
                         <Alert className="mt-2 border-orange-300 bg-orange-50"
-                          <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                          <AlertTriangle className="h-4 w-4 text-orange-600 />
                           <AlertDescription className="text-xs text-orange-800"
                             You're approaching your weekly day limit. Consider upgrading for more
                             flexibility.
@@ -697,7 +697,7 @@ export function OverviewTab({
                         subscription.maxMessagesPerBillingCycle,
                       ) && (
                         <Alert className="mt-2 border-orange-300 bg-orange-50"
-                          <AlertTriangle className="h-4 w-4 text-orange-600 />"
+                          <AlertTriangle className="h-4 w-4 text-orange-600 />
                           <AlertDescription className="text-xs text-orange-800"
                             You're approaching your messaging limit. Consider upgrading for
                             unlimited messages.

@@ -66,7 +66,7 @@ const Hero = () => {
           sizes="100vw"
         />
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/95 to-[#faf9f6] />"
+        <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/95 to-[#faf9f6]" />
       </div>
 
       {/* Warm gradient background effects */}
