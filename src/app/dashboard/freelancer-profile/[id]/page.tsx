@@ -177,7 +177,7 @@ export default function FreelancerProfilePage() {
         }
       >
         <div className="flex flex-col items-center justify-center min-h-96 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
             <span className="text-2xl">⚠️</span>
           </div>
           <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-2">
@@ -226,7 +226,7 @@ export default function FreelancerProfilePage() {
 
                 <div className="flex-1 min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 dark:text-white">
+                    <h1 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900
                       {freelancerName}
                     </h1>
                     <VerificationBadge
@@ -271,7 +271,7 @@ export default function FreelancerProfilePage() {
                           );
                         })}
                       </div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium text-gray-700
                         {displayRating.toFixed(1)} ({totalRatings} review
                         {totalRatings !== 1 ? 's' : ''})
                       </span>
@@ -280,7 +280,7 @@ export default function FreelancerProfilePage() {
 
                   {/* Location - Below Ratings */}
                   {(profile.county || profile.cityTown) && (
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-1.5 text-sm text-gray-600
                       <MapPin className="h-4 w-4" />
                       <span>
                         {profile.cityTown && profile.county
@@ -296,22 +296,22 @@ export default function FreelancerProfilePage() {
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 p-1 rounded-xl w-full justify-start gap-1 h-auto">
+            <TabsList className="bg-gray-50 border border-gray-200 p-1 rounded-xl w-full justify-start gap-1 h-auto">
               <TabsTrigger
                 value="overview"
-                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="availability"
-                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900
               >
                 Availability
               </TabsTrigger>
               <TabsTrigger
                 value="pricing"
-                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900
               >
                 Pricing
               </TabsTrigger>
@@ -369,7 +369,7 @@ export default function FreelancerProfilePage() {
                     </CardHeader>
                     <CardContent>
                       {profile.description ? (
-                        <p className="text-sm font-inter text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        <p className="text-sm font-inter text-gray-700 leading-relaxed whitespace-pre-line">
                           {profile.description}
                         </p>
                       ) : (
@@ -394,10 +394,10 @@ export default function FreelancerProfilePage() {
                           {serviceCategories.map((service) => (
                             <div
                               key={service.id}
-                              className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700"
+                              className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100
                             >
                               <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span className="font-inter text-sm text-gray-900 dark:text-white">
+                              <span className="font-inter text-sm text-gray-900
                                 {service.name}
                               </span>
                             </div>
@@ -459,12 +459,12 @@ export default function FreelancerProfilePage() {
                               return (
                                 <div key={stars} className="flex items-center gap-3">
                                   <div className="flex items-center gap-1 w-12">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <span className="text-sm font-medium text-gray-700
                                       {stars}
                                     </span>
                                     <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
                                   </div>
-                                  <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-yellow-400 rounded-full transition-all duration-300"
                                       style={{ width: `${percentage}%` }}
@@ -496,9 +496,9 @@ export default function FreelancerProfilePage() {
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                          <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700 dark:text-green-400">
+                            <span className="text-sm text-green-700
                               Verified Professional
                             </span>
                           </div>
@@ -558,7 +558,7 @@ export default function FreelancerProfilePage() {
                         return (
                           <div
                             key={slot.id}
-                            className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl"
+                            className="p-4 border border-gray-200 rounded-xl"
                           >
                             <div className="flex items-center gap-3 mb-2">
                               <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
@@ -570,7 +570,7 @@ export default function FreelancerProfilePage() {
                                 </span>
                               </div>
                               <div>
-                                <p className="font-medium text-gray-900 dark:text-white">
+                                <p className="font-medium text-gray-900
                                   {format(slotDate, 'EEEE')}
                                 </p>
                                 <p className="text-sm text-gray-500">
@@ -597,33 +597,33 @@ export default function FreelancerProfilePage() {
 
               {/* Availability Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                <Card className="bg-blue-50 border-blue-200
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                        <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Clock className="h-5 w-5 text-blue-600 />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        <p className="text-2xl font-bold text-blue-700
                           {slotStats.todaySlots}
                         </p>
-                        <p className="text-sm text-blue-600 dark:text-blue-400">Available Today</p>
+                        <p className="text-sm text-blue-600 Today</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                <Card className="bg-green-50 border-green-200
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                        <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <TrendingUp className="h-5 w-5 text-green-600 />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                        <p className="text-2xl font-bold text-green-700
                           {slotStats.tomorrowSlots}
                         </p>
-                        <p className="text-sm text-green-600 dark:text-green-400">
+                        <p className="text-sm text-green-600
                           Available Tomorrow
                         </p>
                       </div>
@@ -631,17 +631,17 @@ export default function FreelancerProfilePage() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
+                <Card className="bg-purple-50 border-purple-200
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                        <CalendarDays className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <CalendarDays className="h-5 w-5 text-purple-600 />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                        <p className="text-2xl font-bold text-purple-700
                           {slotStats.thisWeekSlots}
                         </p>
-                        <p className="text-sm text-purple-600 dark:text-purple-400">This Week</p>
+                        <p className="text-sm text-purple-600 Week</p>
                       </div>
                     </div>
                   </CardContent>
@@ -667,9 +667,9 @@ export default function FreelancerProfilePage() {
                         .map((dp) => (
                           <div
                             key={dp.duration}
-                            className="relative p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 text-center hover:border-primary transition-colors"
+                            className="relative p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 text-center hover:border-primary transition-colors"
                           >
-                            <div className="text-xs font-inter text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                            <div className="text-xs font-inter text-gray-500 mb-1 uppercase tracking-wide">
                               {dp.duration} minutes
                             </div>
                             <div className="text-2xl font-poppins font-bold text-primary">
@@ -704,9 +704,9 @@ export default function FreelancerProfilePage() {
                         return (
                           <div
                             key={service.id}
-                            className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                            className="p-4 bg-gray-50 rounded-xl border border-gray-200
                           >
-                            <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3">
+                            <h4 className="font-poppins font-semibold text-gray-900 mb-3">
                               {service.name}
                             </h4>
 
@@ -714,11 +714,11 @@ export default function FreelancerProfilePage() {
                               {servicePricing.map((location, idx) => (
                                 <div
                                   key={`${location.locationType}-${idx}`}
-                                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-700/50 rounded-lg"
+                                  className="flex items-center justify-between p-3 bg-white rounded-lg"
                                 >
                                   <div className="flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-gray-400" />
-                                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                                    <span className="text-sm text-gray-600
                                       {location.locationType === 'HOME'
                                         ? 'Home Visit'
                                         : 'At Clinic'}
@@ -744,7 +744,7 @@ export default function FreelancerProfilePage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
                         Pricing Not Set
                       </h3>
                       <p className="text-gray-500">

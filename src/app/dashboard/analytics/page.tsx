@@ -184,8 +184,8 @@ const AnalyticsPage = () => {
       <div className="space-y-8 relative">
         {/* Trial notice - visible when trial grants access but user has no Gold plan */}
         {!isCheckingTier && hasActiveTrial && planName !== 'GOLD' && (
-          <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
-            <AlertDescription className="text-sm text-amber-800 dark:text-amber-200 font-inter">
+          <Alert className="border-amber-300 bg-amber-50
+            <AlertDescription className="text-sm text-amber-800 font-inter">
               Analytics is included during your free trial so you can explore everything. After your
               trial ends, basic charts require <strong>Silver</strong> and advanced charts (peak
               times, rating distribution, service breakdown) require <strong>Gold</strong>.{' '}
@@ -201,8 +201,8 @@ const AnalyticsPage = () => {
 
         {/* Silver-tier notice - basic access but advanced charts locked */}
         {!isCheckingTier && !hasActiveTrial && planName === 'SILVER' && (
-          <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
-            <AlertDescription className="text-sm text-blue-800 dark:text-blue-200 font-inter">
+          <Alert className="border-blue-300 bg-blue-50
+            <AlertDescription className="text-sm text-blue-800 font-inter">
               You're on the Silver plan - basic analytics unlocked. Advanced charts (peak times,
               rating distribution, service breakdown) are available on the{' '}
               <strong>Gold plan</strong>.{' '}
@@ -337,9 +337,9 @@ const AnalyticsPage = () => {
                 isLoading={isLoadingServices && !serviceData}
               />
               {!hasFullAccess && (
-                <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 dark:bg-black/40 rounded-lg flex items-center justify-center p-6">
-                  <div className="bg-white dark:bg-gray-900 rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
-                    <p className="text-xs text-gray-600 dark:text-gray-300 font-inter">
+                <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 rounded-lg flex items-center justify-center p-6">
+                  <div className="bg-white rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
+                    <p className="text-xs text-gray-600 font-inter">
                       <strong>Service breakdown</strong> is a Gold-only advanced chart.{' '}
                       <a
                         href="/dashboard/account?tab=subscription&view=plans"
@@ -422,9 +422,9 @@ const AnalyticsPage = () => {
                 isLoading={isLoadingRatings && !ratingData}
               />
               {!hasFullAccess && (
-                <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 dark:bg-black/40 rounded-lg flex items-center justify-center p-6">
-                  <div className="bg-white dark:bg-gray-900 rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
-                    <p className="text-xs text-gray-600 dark:text-gray-300 font-inter">
+                <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 rounded-lg flex items-center justify-center p-6">
+                  <div className="bg-white rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
+                    <p className="text-xs text-gray-600 font-inter">
                       <strong>Rating distribution</strong> is a Gold-only advanced chart.{' '}
                       <a
                         href="/dashboard/account?tab=subscription&view=plans"
@@ -456,9 +456,9 @@ const AnalyticsPage = () => {
                   isLoading={isLoadingBookings && !bookingData}
                 />
                 {!hasFullAccess && (
-                  <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 dark:bg-black/40 rounded-lg flex items-center justify-center p-6">
-                    <div className="bg-white dark:bg-gray-900 rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
-                      <p className="text-xs text-gray-600 dark:text-gray-300 font-inter">
+                  <div className="absolute inset-0 backdrop-blur-[2px] bg-white/40 rounded-lg flex items-center justify-center p-6">
+                    <div className="bg-white rounded-lg border border-amber-300 px-4 py-3 max-w-xs text-center shadow-lg">
+                      <p className="text-xs text-gray-600 font-inter">
                         <strong>Peak times</strong> is a Gold-only advanced chart.{' '}
                         <a
                           href="/dashboard/account?tab=subscription&view=plans"

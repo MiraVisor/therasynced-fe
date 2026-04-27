@@ -112,10 +112,10 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-3">
-        <h2 className="text-3xl font-poppins font-bold text-charcoal dark:text-white">
+        <h2 className="text-3xl font-poppins font-bold text-charcoal
           Tell us what you need
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
+        <p className="text-gray-600 text-lg font-inter">
           We'll help you find the perfect freelancer
         </p>
       </div>
@@ -124,7 +124,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Preferred Date */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal dark:text-white">
+          <Label className="text-lg font-poppins font-semibold text-charcoal
             When would you like your appointment? <span className="text-red-500">*</span>
           </Label>
           <Popover>
@@ -154,7 +154,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Service Categories */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal dark:text-white">
+          <Label className="text-lg font-poppins font-semibold text-charcoal
             What type of services do you need? (Optional)
           </Label>
           {loadingCategories ? (
@@ -162,7 +162,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
               <LoadingSpinner size="md" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto p-2 border border-gray-200 rounded-lg">
               {serviceCategories.slice(0, 10).map((category) => (
                 <div key={category.id} className="flex items-start space-x-2">
                   <Checkbox
@@ -172,7 +172,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
                   />
                   <label
                     htmlFor={category.id}
-                    className="text-sm font-inter text-gray-700 dark:text-gray-300 cursor-pointer leading-tight"
+                    className="text-sm font-inter text-gray-700 cursor-pointer leading-tight"
                   >
                     {category.name}
                   </label>
@@ -181,7 +181,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
             </div>
           )}
           {serviceCategories.length > 10 && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500
               Showing first 10 categories. More will be available after search.
             </p>
           )}
@@ -189,7 +189,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Booking For */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal dark:text-white">
+          <Label className="text-lg font-poppins font-semibold text-charcoal
             Who is this booking for?
           </Label>
           <RadioGroup
@@ -213,7 +213,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Location Preference */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal dark:text-white">
+          <Label className="text-lg font-poppins font-semibold text-charcoal
             Location preference (Optional)
           </Label>
           <RadioGroup
@@ -243,7 +243,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Freelancer Name Search */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal dark:text-white">
+          <Label className="text-lg font-poppins font-semibold text-charcoal
             Search for a specific freelancer (Optional)
           </Label>
           <div className="relative">
@@ -271,21 +271,21 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
               </div>
             )}
             {showSuggestions && searchSuggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                 {searchSuggestions.map((freelancer) => (
                   <button
                     key={freelancer.id}
                     type="button"
                     onClick={() => handleSuggestionSelect(freelancer)}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-3"
                   >
                     <User className="w-5 h-5 text-gray-400" />
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-gray-900
                         {freelancer.name}
                       </div>
                       {freelancer.specialty && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-gray-500
                           {freelancer.specialty}
                         </div>
                       )}

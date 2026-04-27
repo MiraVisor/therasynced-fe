@@ -503,13 +503,13 @@ export function EnhancedBookingSearch() {
       <div className="min-h-[80vh] flex items-center justify-center">
         <Card className="max-w-md w-full border-0 shadow-xl">
           <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-100 to-mint/30 dark:from-green-900/30 dark:to-mint/20 rounded-full flex items-center justify-center animate-in zoom-in-50 duration-500">
-              <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
+            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-100 to-mint/30 rounded-full flex items-center justify-center animate-in zoom-in-50 duration-500">
+              <CheckCircle className="w-12 h-12 text-green-600 />
             </div>
-            <h2 className="text-2xl font-poppins font-bold text-charcoal dark:text-white mb-2">
+            <h2 className="text-2xl font-poppins font-bold text-charcoal mb-2">
               Booking Confirmed!
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6 font-inter">
+            <p className="text-gray-600 mb-6 font-inter">
               Your appointment has been successfully booked
             </p>
             <Button
@@ -528,13 +528,13 @@ export function EnhancedBookingSearch() {
   if (bookingStep === 'method-selection') {
     return (
       <div className="w-full">
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-primary/5 via-white to-mint/5 dark:from-primary/10 dark:via-gray-900 dark:to-mint/10">
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-primary/5 via-white to-mint/5
           <CardContent className="p-12">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-charcoal dark:text-white mb-3">
+              <h2 className="text-3xl font-bold text-charcoal mb-3">
                 How would you like to find your freelancer?
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600
                 Choose your preferred search method to get started
               </p>
             </div>
@@ -543,17 +543,17 @@ export function EnhancedBookingSearch() {
               {/* Search by Name */}
               <button
                 onClick={() => handleMethodSelect('name')}
-                className="group relative p-8 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                className="group relative p-8 bg-white rounded-xl border-2 border-gray-200 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Search className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-2">
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">
                       Search by Name
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600
                       Know who you're looking for? Type their name to find them quickly.
                     </p>
                   </div>
@@ -564,17 +564,17 @@ export function EnhancedBookingSearch() {
               {/* Search by Location */}
               <button
                 onClick={() => handleMethodSelect('location')}
-                className="group relative p-8 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                className="group relative p-8 bg-white rounded-xl border-2 border-gray-200 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <MapPin className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-2">
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">
                       Search by Location
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600
                       Find freelancers near you or in a specific city or area.
                     </p>
                   </div>
@@ -585,17 +585,17 @@ export function EnhancedBookingSearch() {
               {/* Browse by Date */}
               <button
                 onClick={() => handleMethodSelect('date')}
-                className="group relative p-8 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                className="group relative p-8 bg-white rounded-xl border-2 border-gray-200 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Calendar className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-2">
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">
                       Browse by Date
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600
                       See who's available on a specific date. Perfect for planning ahead.
                     </p>
                   </div>
@@ -619,9 +619,9 @@ export function EnhancedBookingSearch() {
             <ChevronLeft className="w-4 h-4" />
             Back to Methods
           </Button>
-          <div className="h-6 w-px bg-gray-300 dark:bg-gray-700" />
+          <div className="h-6 w-px bg-gray-300 />
           <div>
-            <h2 className="text-xl font-semibold text-charcoal dark:text-white">
+            <h2 className="text-xl font-semibold text-charcoal
               {searchMethod === 'name' && 'Search by Name'}
               {searchMethod === 'location' && 'Search by Location'}
               {searchMethod === 'date' && 'Browse by Date'}
@@ -660,7 +660,7 @@ export function EnhancedBookingSearch() {
           {searchMethod === 'location' && (
             <Card className="border-2 border-primary/20 shadow-lg">
               <CardContent className="p-6">
-                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">
                   Select Location
                 </Label>
                 <LocationDropdown
@@ -722,7 +722,7 @@ export function EnhancedBookingSearch() {
         {isLoading && currentPage === 1 && (
           <div className="space-y-4">
             {Array.from({ length: 2 }).map((_, i) => (
-              <Card key={i} className="border border-gray-200 dark:border-gray-700">
+              <Card key={i} className="border border-gray-200
                 <CardContent className="p-5">
                   <div className="flex items-start gap-4">
                     <Skeleton className="w-16 h-16 rounded-full flex-shrink-0" />
@@ -739,15 +739,15 @@ export function EnhancedBookingSearch() {
         )}
 
         {!isLoading && !hasResults && (nameQuery || locationQuery || selectedDate) && (
-          <Card className="border border-gray-200 dark:border-gray-700">
+          <Card className="border border-gray-200
             <CardContent className="p-12 text-center">
-              <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <Search className="w-6 h-6 text-gray-400" />
               </div>
-              <h3 className="text-base font-semibold text-charcoal dark:text-white mb-2">
+              <h3 className="text-base font-semibold text-charcoal mb-2">
                 No freelancers found
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600
                 Try adjusting your search criteria
               </p>
             </CardContent>
@@ -761,11 +761,11 @@ export function EnhancedBookingSearch() {
                 <Card
                   key={freelancer.id}
                   onClick={() => handleFreelancerSelect(freelancer)}
-                  className="border border-gray-200 dark:border-gray-700 hover:border-primary/30 cursor-pointer hover:shadow-md transition-all duration-200"
+                  className="border border-gray-200 hover:border-primary/30 cursor-pointer hover:shadow-md transition-all duration-200"
                 >
                   <CardContent className="p-5">
                     <div className="flex items-start gap-4">
-                      <Avatar className="w-16 h-16 flex-shrink-0 border-2 border-gray-200 dark:border-gray-700">
+                      <Avatar className="w-16 h-16 flex-shrink-0 border-2 border-gray-200
                         <ProfileAvatarImage
                           src={freelancer.profilePicture || undefined}
                           alt={freelancer.name || 'Freelancer'}
@@ -779,7 +779,7 @@ export function EnhancedBookingSearch() {
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <h3 className="font-semibold text-lg text-charcoal dark:text-white">
+                              <h3 className="font-semibold text-lg text-charcoal
                                 {freelancer.name}
                               </h3>
                               <VerificationBadge
@@ -791,7 +791,7 @@ export function EnhancedBookingSearch() {
                               )}
                             </div>
                             {freelancer.jobTitle?.name && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                              <p className="text-sm text-gray-600 mb-2">
                                 {freelancer.jobTitle.name}
                               </p>
                             )}
@@ -809,7 +809,7 @@ export function EnhancedBookingSearch() {
                             showCount={true}
                           />
                           {freelancer.city && (
-                            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-1.5 text-sm text-gray-600
                               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                               <span className="truncate">{freelancer.city}</span>
                             </div>
@@ -848,7 +848,7 @@ export function EnhancedBookingSearch() {
 
             {/* Pagination Info */}
             {pagination && (
-              <div className="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-center mt-4 text-sm text-gray-500
                 Showing {displayResults.length} of {pagination.total} freelancers
                 {pagination.hasNext && ' • More available'}
               </div>
@@ -868,12 +868,12 @@ export function EnhancedBookingSearch() {
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>
-          <div className="h-6 w-px bg-gray-300 dark:bg-gray-700" />
+          <div className="h-6 w-px bg-gray-300 />
           <div>
-            <h2 className="text-xl font-semibold text-charcoal dark:text-white">
+            <h2 className="text-xl font-semibold text-charcoal
               {selectedFreelancer.name}
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500
               {selectedFreelancer.jobTitle?.name || 'Freelancer'}
             </p>
           </div>
@@ -881,7 +881,7 @@ export function EnhancedBookingSearch() {
 
         <Card className="border-2 border-primary/20 shadow-lg">
           <CardContent className="p-6">
-            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 block">
+            <Label className="text-sm font-medium text-gray-700 mb-4 block">
               Select a Date
             </Label>
             <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
@@ -924,12 +924,12 @@ export function EnhancedBookingSearch() {
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>
-          <div className="h-6 w-px bg-gray-300 dark:bg-gray-700" />
+          <div className="h-6 w-px bg-gray-300 />
           <div>
-            <h2 className="text-xl font-semibold text-charcoal dark:text-white">
+            <h2 className="text-xl font-semibold text-charcoal
               {selectedFreelancer.name}
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500
               {selectedDate && format(selectedDate, 'MMMM d, yyyy')}
             </p>
           </div>
@@ -942,14 +942,14 @@ export function EnhancedBookingSearch() {
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Clock className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal dark:text-white">
+                  <h3 className="font-semibold text-lg text-charcoal
                     Select Time
                   </h3>
                 </div>
                 {isLoadingSlots || (isFetchingSlots && availableSlots.length === 0) ? (
                   <div className="space-y-4">
                     <div className="text-center py-4">
-                      <div className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                      <div className="inline-flex items-center gap-2 text-gray-600
                         <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         <p className="text-sm font-medium">
                           {isLoadingSlots
@@ -966,7 +966,7 @@ export function EnhancedBookingSearch() {
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    <p className="text-gray-500 mb-4">
                       No available slots on {format(selectedDate, 'MMMM d, yyyy')}
                     </p>
                     <Button variant="outline" onClick={() => setBookingStep('date')}>
@@ -987,7 +987,7 @@ export function EnhancedBookingSearch() {
                               'py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200',
                               isSelected
                                 ? 'bg-primary text-white shadow-md'
-                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/50 text-charcoal dark:text-white',
+                                : 'bg-white border border-gray-200 hover:border-primary/50 text-charcoal
                             )}
                           >
                             {format(slotTime, 'h:mm a')}
@@ -1011,7 +1011,7 @@ export function EnhancedBookingSearch() {
               <div className="animate-in slide-in-from-right-2 duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal dark:text-white">
+                  <h3 className="font-semibold text-lg text-charcoal
                     Select Service
                   </h3>
                 </div>
@@ -1030,7 +1030,7 @@ export function EnhancedBookingSearch() {
                         'flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all duration-200',
                         selectedService === service.id
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 bg-white dark:bg-gray-800',
+                          : 'border-gray-200 hover:border-primary/50 bg-white
                       )}
                       onClick={() => {
                         setSelectedService(service.id);
@@ -1039,7 +1039,7 @@ export function EnhancedBookingSearch() {
                     >
                       <RadioGroupItem value={service.id} id={service.id} />
                       <Label htmlFor={service.id} className="flex-1 cursor-pointer">
-                        <span className="font-medium text-charcoal dark:text-white">
+                        <span className="font-medium text-charcoal
                           {service.name}
                         </span>
                       </Label>
@@ -1064,7 +1064,7 @@ export function EnhancedBookingSearch() {
               <div className="animate-in slide-in-from-right-2 duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <MapPin className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal dark:text-white">
+                  <h3 className="font-semibold text-lg text-charcoal
                     Select Location
                   </h3>
                 </div>
@@ -1079,14 +1079,14 @@ export function EnhancedBookingSearch() {
                         'flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all duration-200',
                         locationType === LocationType.HOME
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 bg-white dark:bg-gray-800',
+                          : 'border-gray-200 hover:border-primary/50 bg-white
                       )}
                       onClick={() => setLocationType(LocationType.HOME)}
                     >
                       <RadioGroupItem value={LocationType.HOME} id="home" />
                       <Home className="w-5 h-5 text-gray-500" />
                       <Label htmlFor="home" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-charcoal dark:text-white">At Home</span>
+                        <span className="font-medium text-charcoal Home</span>
                       </Label>
                     </div>
                   )}
@@ -1096,14 +1096,14 @@ export function EnhancedBookingSearch() {
                         'flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all duration-200',
                         locationType === LocationType.CLINIC
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 bg-white dark:bg-gray-800',
+                          : 'border-gray-200 hover:border-primary/50 bg-white
                       )}
                       onClick={() => setLocationType(LocationType.CLINIC)}
                     >
                       <RadioGroupItem value={LocationType.CLINIC} id="clinic" />
                       <Building2 className="w-5 h-5 text-gray-500" />
                       <Label htmlFor="clinic" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-charcoal dark:text-white">At Clinic</span>
+                        <span className="font-medium text-charcoal Clinic</span>
                       </Label>
                     </div>
                   )}
@@ -1117,13 +1117,13 @@ export function EnhancedBookingSearch() {
                       value={homeAddress}
                       onChange={(e) => setHomeAddress(e.target.value)}
                       className={cn(
-                        'bg-white dark:bg-gray-800',
+                        'bg-white
                         !homeAddress.trim() &&
                           'border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500/20',
                       )}
                     />
                     {!homeAddress.trim() && (
-                      <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                      <p className="text-xs text-yellow-600
                         Please enter your address to continue
                       </p>
                     )}
@@ -1148,7 +1148,7 @@ export function EnhancedBookingSearch() {
               <div className="animate-in slide-in-from-right-2 duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal dark:text-white">
+                  <h3 className="font-semibold text-lg text-charcoal
                     Review & Confirm
                   </h3>
                 </div>
@@ -1156,47 +1156,47 @@ export function EnhancedBookingSearch() {
                   <>
                     <div className="space-y-3 mb-6">
                       {selectedFreelancer && (
-                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400">Freelancer:</span>
-                          <span className="font-medium text-charcoal dark:text-white">
+                        <div className="flex justify-between py-2 border-b border-gray-200
+                          <span className="text-gray-600
+                          <span className="font-medium text-charcoal
                             {selectedFreelancer.name}
                           </span>
                         </div>
                       )}
                       {selectedDate && selectedSlotData && (
-                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400">Date & Time:</span>
-                          <span className="font-medium text-charcoal dark:text-white">
+                        <div className="flex justify-between py-2 border-b border-gray-200
+                          <span className="text-gray-600 & Time:</span>
+                          <span className="font-medium text-charcoal
                             {format(parseISO(selectedSlotData.startTime), 'MMM d, h:mm a')}
                           </span>
                         </div>
                       )}
                       {selectedServiceData && (
-                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400">Service:</span>
-                          <span className="font-medium text-charcoal dark:text-white">
+                        <div className="flex justify-between py-2 border-b border-gray-200
+                          <span className="text-gray-600
+                          <span className="font-medium text-charcoal
                             {selectedServiceData.name}
                           </span>
                         </div>
                       )}
                       {locationType && (
-                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400">Location:</span>
-                          <span className="font-medium text-charcoal dark:text-white">
+                        <div className="flex justify-between py-2 border-b border-gray-200
+                          <span className="text-gray-600
+                          <span className="font-medium text-charcoal
                             {locationType === LocationType.HOME ? 'At Home' : 'At Clinic'}
                           </span>
                         </div>
                       )}
                       {locationType === LocationType.HOME && homeAddress && (
-                        <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400">Address:</span>
-                          <span className="font-medium text-charcoal dark:text-white text-right max-w-[60%]">
+                        <div className="flex justify-between py-2 border-b border-gray-200
+                          <span className="text-gray-600
+                          <span className="font-medium text-charcoal text-right max-w-[60%]">
                             {homeAddress}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between pt-4">
-                        <span className="text-lg font-semibold text-charcoal dark:text-white">
+                        <span className="text-lg font-semibold text-charcoal
                           Total:
                         </span>
                         <span className="text-2xl font-bold text-primary">
@@ -1225,8 +1225,8 @@ export function EnhancedBookingSearch() {
                   </>
                 ) : (
                   <div className="space-y-4">
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-sm text-yellow-800
                         {locationType === LocationType.HOME && !homeAddress.trim()
                           ? 'Please go back and enter your address for home visit appointments.'
                           : 'Please complete all required fields to confirm your booking.'}

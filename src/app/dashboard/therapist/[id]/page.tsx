@@ -212,7 +212,7 @@ export default function FreelancerProfilePage() {
         }
       >
         <div className="flex flex-col items-center justify-center min-h-96 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
             <span className="text-2xl">⚠️</span>
           </div>
           <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-2">
@@ -260,7 +260,7 @@ export default function FreelancerProfilePage() {
 
                   <div className="flex-1 min-w-0 space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 dark:text-white">
+                      <h1 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900
                         {freelancerName}
                       </h1>
                       <VerificationBadge
@@ -287,7 +287,7 @@ export default function FreelancerProfilePage() {
                       </div>
 
                       {(expert.county || expert.cityTown) && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-1.5 text-sm text-gray-600
                           <MapPin className="h-4 w-4" />
                           <span>
                             {expert.cityTown && expert.county
@@ -303,7 +303,7 @@ export default function FreelancerProfilePage() {
                       {slotStats.nextAvailable && (
                         <Badge
                           variant="secondary"
-                          className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 gap-1.5"
+                          className="bg-green-100 text-green-800 gap-1.5"
                         >
                           <Clock className="h-3.5 w-3.5" />
                           Next: {formatNextAvailable(slotStats.nextAvailable)}
@@ -312,7 +312,7 @@ export default function FreelancerProfilePage() {
                       {slotStats.todaySlots > 0 && (
                         <Badge
                           variant="secondary"
-                          className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 gap-1.5"
+                          className="bg-blue-100 text-blue-800 gap-1.5"
                         >
                           <Calendar className="h-3.5 w-3.5" />
                           {slotStats.todaySlots} slot{slotStats.todaySlots > 1 ? 's' : ''} today
@@ -340,7 +340,7 @@ export default function FreelancerProfilePage() {
                           <span className="inline-block w-full">
                             <Button
                               variant="outline"
-                              className="w-full h-14 text-lg font-semibold shadow-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 cursor-not-allowed rounded-xl"
+                              className="w-full h-14 text-lg font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl"
                               disabled
                             >
                               <CalendarDays className="h-5 w-5 mr-2" />
@@ -394,37 +394,37 @@ export default function FreelancerProfilePage() {
             </div>
 
             {/* Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-200 dark:divide-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-200 bg-gray-50
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {slotStats.availableSlots}
                 </div>
-                <div className="text-xs font-inter text-gray-500 dark:text-gray-400">
+                <div className="text-xs font-inter text-gray-500
                   Available Slots
                 </div>
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">{totalRatings}</div>
-                <div className="text-xs font-inter text-gray-500 dark:text-gray-400">Reviews</div>
+                <div className="text-xs font-inter text-gray-500
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {displayRating > 0 ? displayRating.toFixed(1) : '—'}
                 </div>
-                <div className="text-xs font-inter text-gray-500 dark:text-gray-400">Rating</div>
+                <div className="text-xs font-inter text-gray-500
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {slotStats.thisWeekSlots}
                 </div>
-                <div className="text-xs font-inter text-gray-500 dark:text-gray-400">This Week</div>
+                <div className="text-xs font-inter text-gray-500 Week</div>
               </div>
             </div>
           </Card>
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-1 rounded-xl w-full justify-start overflow-x-auto">
+            <TabsList className="bg-white border border-gray-200 p-1 rounded-xl w-full justify-start overflow-x-auto">
               <TabsTrigger
                 value="overview"
                 className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
@@ -466,7 +466,7 @@ export default function FreelancerProfilePage() {
                     </CardHeader>
                     <CardContent>
                       {expert.description ? (
-                        <p className="text-sm font-inter text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        <p className="text-sm font-inter text-gray-700 leading-relaxed whitespace-pre-line">
                           {expert.description}
                         </p>
                       ) : (
@@ -491,11 +491,11 @@ export default function FreelancerProfilePage() {
                           {expert.serviceCategoryPricing.map((service) => (
                             <div
                               key={service.serviceId}
-                              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700"
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100
                             >
                               <div className="flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-primary" />
-                                <span className="font-inter text-sm text-gray-900 dark:text-white">
+                                <span className="font-inter text-sm text-gray-900
                                   {service.serviceName}
                                 </span>
                               </div>
@@ -554,12 +554,12 @@ export default function FreelancerProfilePage() {
                               return (
                                 <div key={stars} className="flex items-center gap-3">
                                   <div className="flex items-center gap-1 w-12">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <span className="text-sm font-medium text-gray-700
                                       {stars}
                                     </span>
                                     <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
                                   </div>
-                                  <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-yellow-400 rounded-full transition-all duration-300"
                                       style={{ width: `${percentage}%` }}
@@ -594,17 +594,17 @@ export default function FreelancerProfilePage() {
                       <CardContent className="space-y-2">
                         {(expert.verificationStatus === 'APPROVED' ||
                           expert.verificationStatus === 'verified') && (
-                          <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700 dark:text-green-400">
+                            <span className="text-sm text-green-700
                               Verified Professional
                             </span>
                           </div>
                         )}
                         {expert.firstAidCertificateStatus === 'APPROVED' && (
-                          <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700 dark:text-green-400">
+                            <span className="text-sm text-green-700
                               First Aid Certified
                             </span>
                           </div>
@@ -680,7 +680,7 @@ export default function FreelancerProfilePage() {
                           <button
                             key={slot.id}
                             onClick={() => handleBookNow(slot.id)}
-                            className="group p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-left"
+                            className="group p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-left"
                           >
                             <div className="flex items-center gap-3 mb-2">
                               <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
@@ -692,7 +692,7 @@ export default function FreelancerProfilePage() {
                                 </span>
                               </div>
                               <div>
-                                <p className="font-medium text-gray-900 dark:text-white">
+                                <p className="font-medium text-gray-900
                                   {format(slotDate, 'EEEE')}
                                 </p>
                                 <p className="text-sm text-gray-500">
@@ -732,33 +732,33 @@ export default function FreelancerProfilePage() {
 
               {/* Availability Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                <Card className="bg-blue-50 border-blue-200
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                        <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Clock className="h-5 w-5 text-blue-600 />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        <p className="text-2xl font-bold text-blue-700
                           {slotStats.todaySlots}
                         </p>
-                        <p className="text-sm text-blue-600 dark:text-blue-400">Available Today</p>
+                        <p className="text-sm text-blue-600 Today</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                <Card className="bg-green-50 border-green-200
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                        <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <TrendingUp className="h-5 w-5 text-green-600 />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                        <p className="text-2xl font-bold text-green-700
                           {slotStats.tomorrowSlots}
                         </p>
-                        <p className="text-sm text-green-600 dark:text-green-400">
+                        <p className="text-sm text-green-600
                           Available Tomorrow
                         </p>
                       </div>
@@ -766,17 +766,17 @@ export default function FreelancerProfilePage() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
+                <Card className="bg-purple-50 border-purple-200
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                        <CalendarDays className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <CalendarDays className="h-5 w-5 text-purple-600 />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                        <p className="text-2xl font-bold text-purple-700
                           {slotStats.thisWeekSlots}
                         </p>
-                        <p className="text-sm text-purple-600 dark:text-purple-400">This Week</p>
+                        <p className="text-sm text-purple-600 Week</p>
                       </div>
                     </div>
                   </CardContent>
@@ -793,7 +793,7 @@ export default function FreelancerProfilePage() {
                     <CardContent className="p-6">
                       <div className="flex flex-col sm:flex-row items-center gap-6">
                         <div className="text-center">
-                          <div className="text-5xl font-poppins font-bold text-gray-900 dark:text-white">
+                          <div className="text-5xl font-poppins font-bold text-gray-900
                             {displayRating.toFixed(1)}
                           </div>
                           <div className="flex items-center justify-center gap-1 mt-2">
@@ -831,7 +831,7 @@ export default function FreelancerProfilePage() {
                                   <span className="text-sm font-medium">{stars}</span>
                                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                                 </div>
-                                <div className="flex-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-yellow-400 rounded-full transition-all duration-500"
                                     style={{ width: `${percentage}%` }}
@@ -864,7 +864,7 @@ export default function FreelancerProfilePage() {
                           return (
                             <div
                               key={(rating as { id: string }).id}
-                              className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"
+                              className="p-4 bg-gray-50 rounded-xl"
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-3">
@@ -874,7 +874,7 @@ export default function FreelancerProfilePage() {
                                     </AvatarFallback>
                                   </Avatar>
                                   <div>
-                                    <p className="font-poppins font-medium text-gray-900 dark:text-white">
+                                    <p className="font-poppins font-medium text-gray-900
                                       {patient?.name || 'Anonymous'}
                                     </p>
                                     <p className="text-xs text-gray-500">
@@ -898,7 +898,7 @@ export default function FreelancerProfilePage() {
                                 </div>
                               </div>
                               {comment && (
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                <p className="text-sm text-gray-600
                                   {comment}
                                 </p>
                               )}
@@ -913,7 +913,7 @@ export default function FreelancerProfilePage() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Star className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No Reviews Yet
                     </h3>
                     <p className="text-gray-500">Be the first to review {freelancerName}!</p>
@@ -940,9 +940,9 @@ export default function FreelancerProfilePage() {
                         .map((dp) => (
                           <div
                             key={dp.duration}
-                            className="relative p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 text-center hover:border-primary transition-colors"
+                            className="relative p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 text-center hover:border-primary transition-colors"
                           >
-                            <div className="text-xs font-inter text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">
+                            <div className="text-xs font-inter text-gray-500 mb-1 uppercase tracking-wide">
                               {dp.duration} minutes
                             </div>
                             <div className="text-2xl font-poppins font-bold text-primary">
@@ -969,10 +969,10 @@ export default function FreelancerProfilePage() {
                       {expert.serviceCategoryPricing.map((sp) => (
                         <div
                           key={sp.serviceId}
-                          className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                          className="p-4 bg-gray-50 rounded-xl border border-gray-200
                         >
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-poppins font-semibold text-gray-900 dark:text-white">
+                            <h4 className="font-poppins font-semibold text-gray-900
                               {sp.serviceName}
                             </h4>
                             <span className="text-lg font-poppins font-bold text-primary">
@@ -985,11 +985,11 @@ export default function FreelancerProfilePage() {
                               {sp.locations.map((location, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-700/50 rounded-lg"
+                                  className="flex items-center justify-between p-3 bg-white rounded-lg"
                                 >
                                   <div className="flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-gray-400" />
-                                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                                    <span className="text-sm text-gray-600
                                       {location.locationType === 'HOME'
                                         ? 'Home Visit'
                                         : 'At Clinic'}
@@ -1015,7 +1015,7 @@ export default function FreelancerProfilePage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
                         Pricing Not Set
                       </h3>
                       <p className="text-gray-500">
@@ -1028,13 +1028,13 @@ export default function FreelancerProfilePage() {
           </Tabs>
 
           {/* Sticky CTA at bottom */}
-          <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 -mx-6 md:-mx-8 shadow-lg mt-8">
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 md:-mx-8 shadow-lg mt-8">
             <div className="max-w-5xl mx-auto flex items-center justify-between">
               <div>
-                <p className="font-poppins font-semibold text-gray-900 dark:text-white">
+                <p className="font-poppins font-semibold text-gray-900
                   {freelancerName}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600
                   {hasAvailableSlots
                     ? `${slotStats.availableSlots} slots available`
                     : 'No slots available'}
@@ -1050,7 +1050,7 @@ export default function FreelancerProfilePage() {
               ) : (
                 <Button
                   variant="outline"
-                  className="h-12 px-8 text-base font-semibold shadow-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 cursor-not-allowed rounded-xl"
+                  className="h-12 px-8 text-base font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl"
                   disabled
                 >
                   No Slots Available

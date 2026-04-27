@@ -30,10 +30,10 @@ const CtaSection = () => {
   };
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 bg-gradient-to-br from-cream via-mint-light/50 to-sage-warm/30 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 relative overflow-hidden">
+    <section className="w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 bg-gradient-to-br from-cream via-mint-light/50 to-sage-warm/30 relative overflow-hidden">
       {/* Background Image with Gradient Overlay */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 opacity-20 dark:opacity-10">
+        <div className="absolute inset-0 opacity-20
           <Image
             src="/images/physio/close-up-man-training-with-elastic-band.jpg"
             alt="An active session using a resistance band"
@@ -43,7 +43,7 @@ const CtaSection = () => {
             priority={false}
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-br from-cream/80 via-mint-light/60 to-sage-warm/40 dark:from-neutral-950/90 dark:via-neutral-900/85 dark:to-neutral-950/90" />
+        <div className="absolute inset-0 bg-gradient-to-br from-cream/80 via-mint-light/60 to-sage-warm/40 />
       </div>
 
       {/* Organic Shapes Background */}
@@ -95,7 +95,7 @@ const CtaSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight font-playfair"
+          className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight font-playfair"
         >
           Ready to start your wellness journey?
         </motion.h2>
@@ -105,7 +105,7 @@ const CtaSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-xl sm:text-2xl text-gray-700 dark:text-neutral-300 mb-10 max-w-3xl mx-auto leading-relaxed font-open-sans"
+          className="text-xl sm:text-2xl text-gray-700 mb-10 max-w-3xl mx-auto leading-relaxed font-open-sans"
         >
           Join thousands of clients who've found their perfect therapist match. Your wellness
           journey is just a click away.
@@ -135,7 +135,7 @@ const CtaSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-gray-700 dark:text-neutral-300 mb-12"
+          className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-gray-700 mb-12"
         >
           {['No credit card required', 'Free forever for clients', 'Cancel anytime'].map(
             (item, index) => (
@@ -150,10 +150,10 @@ const CtaSection = () => {
         {/* Divider */}
         <div className="relative mb-12">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-neutral-700" />
+            <div className="w-full border-t border-gray-300 />
           </div>
           <div className="relative flex justify-center">
-            <span className="px-4 bg-gradient-to-br from-cream via-mint-light/50 to-sage-warm/30 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 text-sm text-gray-500 dark:text-neutral-400 font-inter">
+            <span className="px-4 bg-gradient-to-br from-cream via-mint-light/50 to-sage-warm/30 text-sm text-gray-500 font-inter">
               Are you a therapist?
             </span>
           </div>
@@ -167,15 +167,15 @@ const CtaSection = () => {
           transition={{ delay: 0.6, duration: 0.6 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <div className="flex items-center gap-3 p-6 rounded-2xl bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border border-gray-200 dark:border-neutral-800 shadow-lg">
+          <div className="flex items-center gap-3 p-6 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <Users className="w-6 h-6 text-primary" />
             </div>
             <div className="text-left">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 font-poppins">
+              <h3 className="text-lg font-bold text-gray-900 mb-1 font-poppins">
                 Join Our Network
               </h3>
-              <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
+              <p className="text-sm text-gray-600 font-open-sans">
                 Connect with clients and grow your practice
               </p>
             </div>

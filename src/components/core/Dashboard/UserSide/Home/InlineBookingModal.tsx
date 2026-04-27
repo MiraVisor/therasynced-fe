@@ -86,7 +86,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                 />
               </div>
               {freelancer.specialty && (
-                <p className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-inter text-gray-600
                   {freelancer.specialty}
                 </p>
               )}
@@ -123,7 +123,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                       className={`cursor-pointer transition-all duration-200 ${
                         isSelected
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                          : 'border-gray-200 hover:border-primary/50'
                       }`}
                       onClick={() => setSelectedSlot(slot)}
                     >
@@ -140,7 +140,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                             </div>
                             <div className="flex items-center gap-2">
                               <LocationIcon className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm text-gray-600 dark:text-gray-400">
+                              <span className="text-sm text-gray-600
                                 {getLocationText(slot.locationType)}
                               </span>
                             </div>

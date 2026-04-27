@@ -71,7 +71,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
   return (
     <div className="space-y-6">
       {/* Freelancer Info */}
-      <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
         <Avatar className="w-16 h-16">
           <AvatarImage src={freelancer.profilePicture || undefined} />
           <AvatarFallback className="bg-primary text-white text-lg">
@@ -83,10 +83,10 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
           </AvatarFallback>
         </Avatar>
         <div>
-          <h3 className="font-poppins font-semibold text-lg text-charcoal dark:text-white">
+          <h3 className="font-poppins font-semibold text-lg text-charcoal
             {freelancer.name}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600
             {format(new Date(`${selectedDate}T00:00:00`), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
@@ -96,7 +96,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
       {totalSlots === 0 ? (
         <div className="text-center py-12">
           <Clock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-poppins font-semibold text-charcoal dark:text-white mb-2">
+          <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
             No available times
           </h3>
           <p className="font-inter text-muted-foreground">
@@ -107,7 +107,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
         <div className="space-y-6">
           {morningSlots.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">
                 Morning
               </h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -128,7 +128,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
 
           {afternoonSlots.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">
                 Afternoon
               </h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -149,7 +149,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
 
           {eveningSlots.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">
                 Evening
               </h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -172,17 +172,17 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
 
       {/* Selected Slot Summary */}
       {selectedSlot && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-green-900 dark:text-green-100">Time Selected</div>
-              <div className="text-sm text-green-700 dark:text-green-300">
+              <div className="font-medium text-green-900 Selected</div>
+              <div className="text-sm text-green-700
                 {format(new Date(selectedSlot.startTime), 'h:mm a')} -{' '}
                 {format(new Date(selectedSlot.endTime), 'h:mm a')}
               </div>
             </div>
-            <div className="ml-auto font-bold text-green-900 dark:text-green-100 whitespace-nowrap">
+            <div className="ml-auto font-bold text-green-900 whitespace-nowrap">
               €{selectedSlot.basePrice}
             </div>
           </div>
@@ -211,7 +211,7 @@ const SlotButton: React.FC<{
         'p-3 rounded-lg border-2 font-medium text-sm transition-all',
         isSelected
           ? 'border-primary bg-primary text-white shadow-lg'
-          : 'border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5 dark:bg-gray-800 dark:text-white dark:hover:bg-primary/10',
+          : 'border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5
       )}
     >
       <div className="text-center">

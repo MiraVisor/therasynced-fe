@@ -137,7 +137,7 @@ const Benefits = () => {
     <section
       ref={sectionRef}
       id="benefits"
-      className="w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 bg-gradient-to-b from-gray-50 to-white dark:from-neutral-950 dark:to-black"
+      className="w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 bg-gradient-to-b from-gray-50 to-white
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -145,10 +145,10 @@ const Benefits = () => {
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
             Why Choose Us
           </span>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
             Built for <span className="text-primary">You</span>
           </h2>
-          <p className="text-xl sm:text-2xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We're not just another booking platform. We're your partner in wellness, designed to
             make finding and connecting with the right therapist effortless.
           </p>
@@ -159,7 +159,7 @@ const Benefits = () => {
           {infoBlocks.map((block) => (
             <div
               key={block.id}
-              className="group relative p-8 lg:p-10 rounded-2xl border border-primary/20 dark:border-primary/30 bg-gradient-to-br from-primary/5 to-emerald-500/5 dark:from-primary/10 dark:to-emerald-500/10 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-default overflow-hidden"
+              className="group relative p-8 lg:p-10 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-emerald-500/5 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-default overflow-hidden"
             >
               {/* Highlight badge */}
               <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
@@ -167,16 +167,16 @@ const Benefits = () => {
               </div>
 
               {/* Icon */}
-              <div className="mb-6 w-16 h-16 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+              <div className="mb-6 w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
                 <block.icon className="w-8 h-8 text-primary group-hover:text-white transition-colors" />
               </div>
 
               {/* Content */}
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                <h3 className="text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors">
                   {block.title}
                 </h3>
-                <p className="text-base text-gray-600 dark:text-neutral-400 leading-relaxed">
+                <p className="text-base text-gray-600 leading-relaxed">
                   {block.description}
                 </p>
               </div>
@@ -189,7 +189,7 @@ const Benefits = () => {
           {benefits.map((benefit, index) => (
             <div
               key={benefit.id}
-              className={`group relative p-6 lg:p-8 rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-default overflow-hidden ${
+              className={`group relative p-6 lg:p-8 rounded-2xl border border-gray-200 bg-white hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-default overflow-hidden ${
                 visibleItems.includes(index)
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-6'
@@ -201,16 +201,16 @@ const Benefits = () => {
               </div>
 
               {/* Icon */}
-              <div className="mb-5 w-14 h-14 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+              <div className="mb-5 w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
                 <benefit.icon className="w-7 h-7 text-primary group-hover:text-white transition-colors" />
               </div>
 
               {/* Content */}
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
                   {benefit.title}
                 </h3>
-                <p className="text-base text-gray-600 dark:text-neutral-400 leading-relaxed">
+                <p className="text-base text-gray-600 leading-relaxed">
                   {benefit.description}
                 </p>
               </div>
@@ -219,15 +219,15 @@ const Benefits = () => {
         </div>
 
         {/* Testimonials Section */}
-        <div className="relative bg-gradient-to-r from-primary/5 via-emerald-500/5 to-teal-500/5 dark:from-primary/10 dark:via-emerald-500/10 dark:to-teal-500/10 rounded-3xl p-8 lg:p-12 overflow-hidden">
+        <div className="relative bg-gradient-to-r from-primary/5 via-emerald-500/5 to-teal-500/5 rounded-3xl p-8 lg:p-12 overflow-hidden">
           <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl" />
 
           <div className="relative text-center mb-8">
-            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               What Our Clients Say
             </h3>
-            <p className="text-gray-600 dark:text-neutral-400">
+            <p className="text-gray-600
               Real stories from people who found their perfect match
             </p>
           </div>
@@ -243,7 +243,7 @@ const Benefits = () => {
                     : 'opacity-0 absolute inset-0 translate-x-8'
                 }`}
               >
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-lg">
+                <div className="bg-white rounded-2xl p-8 shadow-lg">
                   {/* Stars */}
                   <div className="flex items-center gap-1 mb-4">
                     {Array.from({ length: testimonial.rating }).map((_, i) => (
@@ -252,22 +252,22 @@ const Benefits = () => {
                   </div>
 
                   {/* Quote */}
-                  <p className="text-lg sm:text-xl text-gray-700 dark:text-neutral-300 mb-6 italic">
+                  <p className="text-lg sm:text-xl text-gray-700 mb-6 italic">
                     "{testimonial.text}"
                   </p>
 
                   {/* Author */}
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                       <span className="text-lg font-bold text-primary">
                         {testimonial.author.charAt(0)}
                       </span>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">
+                      <div className="font-semibold text-gray-900
                         {testimonial.author}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-neutral-500">
+                      <div className="text-sm text-gray-500
                         {testimonial.role}
                       </div>
                     </div>
@@ -286,7 +286,7 @@ const Benefits = () => {
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                   index === activeTestimonial
                     ? 'w-8 bg-primary'
-                    : 'bg-gray-300 dark:bg-neutral-700 hover:bg-primary/50'
+                    : 'bg-gray-300 hover:bg-primary/50'
                 }`}
               />
             ))}

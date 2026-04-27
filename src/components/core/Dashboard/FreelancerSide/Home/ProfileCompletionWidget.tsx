@@ -68,10 +68,10 @@ export const ProfileCompletionWidget = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 w-[calc(100vw-3rem)] sm:w-[360px] max-h-[calc(100vh-3rem)] flex flex-col bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden">
-      <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+    <div className="fixed bottom-6 right-6 z-40 w-[calc(100vw-3rem)] sm:w-[360px] max-h-[calc(100vh-3rem)] flex flex-col bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 border-b border-gray-100
         <div className="min-w-0">
-          <h3 className="text-sm font-poppins font-bold text-charcoal dark:text-white">
+          <h3 className="text-sm font-poppins font-bold text-charcoal
             Complete your profile
           </h3>
           <p className="text-xs text-muted-foreground font-inter mt-0.5">
@@ -98,7 +98,7 @@ export const ProfileCompletionWidget = () => {
             key={item.key}
             className={cn(
               'flex items-center gap-2.5 p-2 rounded-md transition-colors',
-              !item.completed && 'hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer',
+              !item.completed && 'hover:bg-gray-50 cursor-pointer',
             )}
             onClick={() => {
               if (!item.completed && item.actionUrl) {
@@ -114,13 +114,13 @@ export const ProfileCompletionWidget = () => {
             <span
               className={cn(
                 'text-xs font-inter flex-1 min-w-0 truncate',
-                item.completed ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-white',
+                item.completed ? 'text-gray-400 line-through' : 'text-gray-900
               )}
             >
               {item.label}
             </span>
             {item.status === 'pending' && !item.completed && (
-              <span className="text-[10px] font-inter text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 px-1.5 py-0.5 rounded shrink-0">
+              <span className="text-[10px] font-inter text-yellow-600 bg-yellow-100 px-1.5 py-0.5 rounded shrink-0">
                 Pending
               </span>
             )}

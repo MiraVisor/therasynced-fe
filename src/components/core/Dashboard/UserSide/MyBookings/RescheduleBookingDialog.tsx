@@ -215,10 +215,10 @@ export function RescheduleBookingDialog({
 
         <div className="space-y-6 py-4">
           {/* Current Booking Info */}
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-              <span className="text-sm font-medium text-red-800 dark:text-red-200">
+              <AlertCircle className="h-4 w-4 text-red-600 />
+              <span className="text-sm font-medium text-red-800
                 Current Appointment
               </span>
             </div>
@@ -304,7 +304,7 @@ export function RescheduleBookingDialog({
                   })}
                 </div>
               ) : (
-                <div className="text-center py-8 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="text-center py-8 border border-gray-200 rounded-lg">
                   <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500 font-medium">No available slots</p>
                   <p className="text-sm text-gray-400 mt-1">Try selecting a different date</p>
@@ -336,7 +336,7 @@ export function RescheduleBookingDialog({
                         'flex items-start gap-3 p-4 border rounded-lg transition-all cursor-pointer',
                         isSelected
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50',
+                          : 'border-gray-200 hover:border-primary/50',
                       )}
                       onClick={() => setSelectedServiceCategoryId(service.id)}
                       role="button"
@@ -353,12 +353,12 @@ export function RescheduleBookingDialog({
                       <div className="flex-1">
                         <Label
                           htmlFor={service.id}
-                          className="font-medium text-charcoal dark:text-white cursor-pointer"
+                          className="font-medium text-charcoal cursor-pointer"
                         >
                           {service.name}
                         </Label>
                         {service.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-gray-600 mt-1">
                             {service.description}
                           </p>
                         )}
@@ -431,7 +431,7 @@ export function RescheduleBookingDialog({
                         At Clinic
                       </Label>
                       {selectedSlot.location?.address && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        <p className="text-sm text-gray-600 mt-2">
                           {selectedSlot.location.address}
                         </p>
                       )}

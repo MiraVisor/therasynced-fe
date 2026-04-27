@@ -15,10 +15,10 @@ const ForWho = () => {
   return (
     <section
       id="for-who"
-      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-[#f5f4f1] dark:bg-neutral-950/50 relative overflow-hidden"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-[#f5f4f1] relative overflow-hidden"
     >
       {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute top-20 right-20 w-80 h-80 border border-primary rounded-full" />
         <div className="absolute bottom-20 left-20 w-64 h-64 border border-sage-warm rounded-full" />
       </div>
@@ -31,10 +31,10 @@ const ForWho = () => {
           transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-16 lg:mb-20 space-y-4"
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white font-playfair">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 font-playfair">
             For Freelancers & Clients
           </h2>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto font-open-sans">
+          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto font-open-sans">
             Whether you&apos;re looking for work or looking to hire, TheraSynced makes it simple.
           </p>
         </motion.div>
@@ -46,10 +46,10 @@ const ForWho = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: isMobile ? '0px' : '-50px' }}
             transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+            className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
           >
             {/* Hero photo for this card */}
-            <div className="relative w-full aspect-[16/9] bg-gray-100 dark:bg-neutral-800">
+            <div className="relative w-full aspect-[16/9] bg-gray-100
               <Image
                 src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
                 alt="A therapist providing sports recovery support"
@@ -58,16 +58,16 @@ const ForWho = () => {
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent pointer-events-none" />
-              <div className="absolute top-4 left-4 w-11 h-11 rounded-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm flex items-center justify-center shadow-md">
+              <div className="absolute top-4 left-4 w-11 h-11 rounded-xl bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-md">
                 <UserCheck className="w-5 h-5 text-primary" />
               </div>
             </div>
 
             <div className="p-8 lg:p-10">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 font-playfair">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">
                 Freelancers
               </h3>
-              <p className="text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans mb-6">
+              <p className="text-gray-600 leading-relaxed font-open-sans mb-6">
                 Create your profile, set your availability and rates, and let clients book you for
                 freelance and locum work across clinics, sports teams, gyms, and organisations.
               </p>
@@ -79,7 +79,7 @@ const ForWho = () => {
                 ].map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans"
+                    className="flex items-start gap-3 text-sm text-gray-700 font-open-sans"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                     {item}
@@ -106,10 +106,10 @@ const ForWho = () => {
               duration: isMobile ? 0.3 : 0.6,
               ease: [0.16, 1, 0.3, 1],
             }}
-            className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+            className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
           >
             {/* Hero photo for this card */}
-            <div className="relative w-full aspect-[16/9] bg-gray-100 dark:bg-neutral-800">
+            <div className="relative w-full aspect-[16/9] bg-gray-100
               <Image
                 src="/images/physio/woman-working-with-personal-trainer.jpg"
                 alt="A client training with a personal trainer"
@@ -118,16 +118,16 @@ const ForWho = () => {
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent pointer-events-none" />
-              <div className="absolute top-4 left-4 w-11 h-11 rounded-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm flex items-center justify-center shadow-md">
+              <div className="absolute top-4 left-4 w-11 h-11 rounded-xl bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-md">
                 <Briefcase className="w-5 h-5 text-primary" />
               </div>
             </div>
 
             <div className="p-8 lg:p-10">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 font-playfair">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">
                 Clients
               </h3>
-              <p className="text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans mb-6">
+              <p className="text-gray-600 leading-relaxed font-open-sans mb-6">
                 Find and book qualified therapists, coaches, and trainers with ease. Whether you
                 need clinic cover, event support, or a private session, discover trusted
                 professionals and secure your booking in minutes.
@@ -140,7 +140,7 @@ const ForWho = () => {
                 ].map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans"
+                    className="flex items-start gap-3 text-sm text-gray-700 font-open-sans"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                     {item}
@@ -150,7 +150,7 @@ const ForWho = () => {
               <Button
                 onClick={() => router.push('/authentication/sign-in')}
                 variant="outline"
-                className="group border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:border-primary/40 font-semibold rounded-lg px-6 h-11 transition-all duration-300"
+                className="group border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-primary/40 font-semibold rounded-lg px-6 h-11 transition-all duration-300"
               >
                 Hire Professionals
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />

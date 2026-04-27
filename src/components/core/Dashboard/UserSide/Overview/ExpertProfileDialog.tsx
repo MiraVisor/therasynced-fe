@@ -124,7 +124,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   {/* Profile Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <DialogTitle className="text-2xl lg:text-3xl font-poppins font-bold text-gray-900 dark:text-white truncate">
+                      <DialogTitle className="text-2xl lg:text-3xl font-poppins font-bold text-gray-900 truncate">
                         {freelancerName}
                       </DialogTitle>
                       <VerificationBadge status={verificationStatus} size="md" />
@@ -154,12 +154,12 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
             <div className="p-6 space-y-6">
               {/* Bio/Description */}
               {description && (
-                <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent dark:from-primary/10 dark:via-primary/5 rounded-lg p-5 border border-primary/20">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-3 text-lg flex items-center gap-2">
+                <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-lg p-5 border border-primary/20">
+                  <h4 className="font-poppins font-semibold text-gray-900 mb-3 text-lg flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full" />
                     About {freelancerName}
                   </h4>
-                  <p className="text-sm font-inter text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                  <p className="text-sm font-inter text-gray-700 leading-relaxed whitespace-pre-line">
                     {description}
                   </p>
                 </div>
@@ -167,20 +167,20 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+                <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {availableSlots || 0}
                   </div>
-                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                  <div className="text-sm font-inter text-gray-600
                     Available Slots
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
+                <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {cardInfo?.totalRatings || 0}
                   </div>
-                  <div className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                  <div className="text-sm font-inter text-gray-600
                     Total Reviews
                   </div>
                 </div>
@@ -188,8 +188,8 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
 
               {/* Duration Pricing */}
               {durationPricing && durationPricing.length > 0 && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-poppins font-semibold text-gray-900 mb-4 text-base flex items-center gap-2">
                     <Clock className="w-4 h-4 text-primary" />
                     Pricing by Duration
                   </h4>
@@ -199,16 +199,16 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                       .map((dp) => (
                         <div
                           key={dp.duration}
-                          className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 text-center"
+                          className="bg-white rounded-lg p-3 border border-gray-200 text-center"
                         >
-                          <div className="text-xs font-inter text-gray-600 dark:text-gray-400 mb-1">
+                          <div className="text-xs font-inter text-gray-600 mb-1">
                             {dp.duration} min
                           </div>
                           <div className="text-lg font-poppins font-bold text-primary">
                             €{dp.price.toFixed(2)}
                           </div>
                           {dp.currency && dp.currency !== 'EUR' && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <div className="text-xs text-gray-500 mt-1">
                               {dp.currency}
                             </div>
                           )}
@@ -220,8 +220,8 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
 
               {/* Service Category Pricing */}
               {serviceCategoryPricing && serviceCategoryPricing.length > 0 && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-poppins font-semibold text-gray-900 mb-4 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full" />
                     Pricing by Service Category
                   </h4>
@@ -229,9 +229,9 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                     {serviceCategoryPricing.map((sp) => (
                       <div
                         key={sp.serviceId}
-                        className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+                        className="bg-white rounded-lg p-4 border border-gray-200
                       >
-                        <div className="font-poppins font-semibold text-gray-900 dark:text-white mb-2">
+                        <div className="font-poppins font-semibold text-gray-900 mb-2">
                           {sp.serviceName}
                         </div>
                         {sp.locations && sp.locations.length > 0 ? (
@@ -239,9 +239,9 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                             {sp.locations.map((location, idx) => (
                               <div
                                 key={idx}
-                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded"
+                                className="flex items-center justify-between p-2 bg-gray-50 rounded"
                               >
-                                <span className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                                <span className="text-sm font-inter text-gray-600
                                   {location.locationType === 'HOME' ? 'Home Visit' : 'Clinic'}
                                 </span>
                                 <span className="text-base font-poppins font-bold text-primary">
@@ -252,7 +252,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                           </div>
                         ) : (
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-sm font-inter text-gray-600 dark:text-gray-400">
+                            <span className="text-sm font-inter text-gray-600
                               Standard Price
                             </span>
                             <span className="text-base font-poppins font-bold text-primary">
@@ -268,38 +268,38 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
 
               {/* Legacy Pricing Information (fallback) */}
               {pricing && (!durationPricing || durationPricing.length === 0) && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-gray-900 dark:text-white mb-4 text-base flex items-center gap-2">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-poppins font-semibold text-gray-900 mb-4 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full" />
                     Pricing Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {pricing.online && (
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-1">
+                      <div className="bg-white rounded-lg p-3 border border-gray-200
+                        <div className="text-sm font-inter text-gray-600 mb-1">
                           Online Sessions
                         </div>
-                        <div className="text-lg font-poppins font-bold text-gray-900 dark:text-white">
+                        <div className="text-lg font-poppins font-bold text-gray-900
                           EUR {pricing.online.min} - {pricing.online.max}
                         </div>
                       </div>
                     )}
                     {pricing.office && (
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-1">
+                      <div className="bg-white rounded-lg p-3 border border-gray-200
+                        <div className="text-sm font-inter text-gray-600 mb-1">
                           Office Sessions
                         </div>
-                        <div className="text-lg font-poppins font-bold text-gray-900 dark:text-white">
+                        <div className="text-lg font-poppins font-bold text-gray-900
                           EUR {pricing.office.min} - {pricing.office.max}
                         </div>
                       </div>
                     )}
                     {pricing.home && (
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                        <div className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-1">
+                      <div className="bg-white rounded-lg p-3 border border-gray-200
+                        <div className="text-sm font-inter text-gray-600 mb-1">
                           Home Visits
                         </div>
-                        <div className="text-lg font-poppins font-bold text-gray-900 dark:text-white">
+                        <div className="text-lg font-poppins font-bold text-gray-900
                           EUR {pricing.home.min} - {pricing.home.max}
                         </div>
                       </div>
@@ -312,8 +312,8 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
               {(verificationStatus === 'APPROVED' ||
                 verificationStatus === 'verified' ||
                 firstAidCertificateStatus === 'APPROVED') && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-base flex items-center gap-2">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-base flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full" />
                     Certifications & Verification
                   </h4>
@@ -321,7 +321,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                     {(verificationStatus === 'APPROVED' || verificationStatus === 'verified') && (
                       <Badge
                         variant="outline"
-                        className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400"
+                        className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50
                       >
                         ✓ Verified Professional
                       </Badge>
@@ -330,7 +330,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                     {firstAidCertificateStatus === 'APPROVED' && (
                       <Badge
                         variant="outline"
-                        className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400"
+                        className="px-3 py-2 text-sm font-medium border-green-300 text-green-700 bg-green-50
                       >
                         ✓ First Aid Certified
                       </Badge>
@@ -340,7 +340,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
               )}
 
               {/* Action Buttons */}
-              <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="space-y-4 pt-4 border-t border-gray-200
                 {/* View Full Profile Button */}
                 <Button
                   variant="outline"
@@ -375,7 +375,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                         <span className="inline-block w-full">
                           <Button
                             variant="outline"
-                            className="w-full h-12 text-base font-semibold shadow-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-400"
+                            className="w-full h-12 text-base font-semibold shadow-md bg-gray-100 text-gray-600 border-2 border-gray-300 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600
                             disabled
                             tabIndex={1}
                             autoFocus

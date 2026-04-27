@@ -60,13 +60,13 @@ const Hero = () => {
           src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
           alt="A therapist taping an athlete for sports recovery"
           fill
-          className="object-cover object-center opacity-[0.08] dark:opacity-[0.05]"
+          className="object-cover object-center opacity-[0.08]
           priority
           quality={75}
           sizes="100vw"
         />
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/95 to-[#faf9f6] dark:from-black dark:via-black/95 dark:to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-cream via-cream/95 to-[#faf9f6] />
       </div>
 
       {/* Warm gradient background effects */}
@@ -96,11 +96,11 @@ const Hero = () => {
             transition={{ duration: isMobile ? 0.3 : 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4 max-w-3xl"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] font-playfair py-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 leading-[1.1] font-playfair py-3">
               CONNECT. WORK. THRIVE.
             </h1>
 
-            <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed font-open-sans font-normal py-8">
+            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-open-sans font-normal py-8">
               TheraSynced connects you with qualified health and performance professionals, without
               the calls, emails, or scheduling hassle.
             </p>
@@ -113,7 +113,7 @@ const Hero = () => {
             transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="w-full max-w-3xl"
           >
-            <p className="text-sm font-medium text-gray-500 dark:text-neutral-500 mb-4 font-open-sans">
+            <p className="text-sm font-medium text-gray-500 mb-4 font-open-sans">
               What type of service are you looking for?
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -124,14 +124,14 @@ const Hero = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
                   onClick={() => handleServiceTypeClick(type.id)}
-                  className={`group relative p-5 rounded-xl bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border border-gray-100 dark:border-neutral-800 hover:border-primary/40 transition-all duration-300 text-left shadow-sm hover:shadow-lg hover:scale-[1.02]`}
+                  className={`group relative p-5 rounded-xl bg-white/80 backdrop-blur-md border border-gray-100 hover:border-primary/40 transition-all duration-300 text-left shadow-sm hover:shadow-lg hover:scale-[1.02]`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 font-poppins">
+                      <h3 className="text-base font-semibold text-gray-900 mb-1 font-poppins">
                         {type.title}
                       </h3>
-                      <p className="text-xs text-gray-600 dark:text-neutral-400 font-open-sans leading-snug line-clamp-2">
+                      <p className="text-xs text-gray-600 font-open-sans leading-snug line-clamp-2">
                         {type.description}
                       </p>
                     </div>

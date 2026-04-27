@@ -35,13 +35,13 @@ export function UnratedBookingsBanner() {
   if (unratedCount === 0) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl bg-white border border-gray-200 shadow-sm">
       <div className="flex items-center gap-4 flex-1">
         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
           <Star className="w-6 h-6 text-primary fill-primary" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-poppins font-semibold text-charcoal dark:text-white text-base">
+          <h3 className="font-poppins font-semibold text-charcoal text-base">
             {unratedCount} {unratedCount === 1 ? 'session' : 'sessions'} waiting for your review
           </h3>
           <p className="text-sm text-muted-foreground font-inter mt-0.5">

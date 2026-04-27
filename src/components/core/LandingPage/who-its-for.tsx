@@ -1,6 +1,5 @@
 'use client';
 
-import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -88,7 +87,7 @@ const WhoItsFor = () => {
             <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary tracking-tight leading-[1.1]">
               How <span className="text-primary/70">our</span> Platform Works
             </h1>
-            <p className="mt-4 sm:mt-6 text-sm xs:text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-sm mx-auto lg:mx-0 leading-relaxed">
+            <p className="mt-4 sm:mt-6 text-sm xs:text-base sm:text-lg text-gray-600 max-w-sm mx-auto lg:mx-0 leading-relaxed">
               Whether you’re an individual, athlete, or clinic,our platform connects you with
               professionals across wellness fields:
             </p>
@@ -98,17 +97,17 @@ const WhoItsFor = () => {
           <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 xl:contents gap-6">
             {/* Card 01 - Top Right */}
             <article
-              className="xl:absolute xl:top-0 xl:right-0 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm shadow-lg shadow-primary/5 dark:shadow-primary/10"
+              className="xl:absolute xl:top-0 xl:right-0 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5
               data-aos="fade-left"
               data-aos-once="false"
               data-aos-mirror="true"
               data-aos-delay="200"
             >
               <div className="flex items-center gap-3 mb-3">
-                <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold">
+                <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                   {audience[0]?.badge}
                 </span>
-                <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary/90">
+                <h3 className="text-base sm:text-lg font-semibold text-primary
                   {audience[0]?.title}
                 </h3>
               </div>
@@ -121,14 +120,14 @@ const WhoItsFor = () => {
                   priority
                 />
               </div>
-              <p className="text-sm text-gray-700 dark:text-neutral-300 leading-relaxed mb-3">
+              <p className="text-sm text-gray-700 leading-relaxed mb-3">
                 {audience[0]?.subtitle}
               </p>
               <ul className="flex flex-wrap gap-2">
                 {audience[0]?.bullets.map((bullet) => (
                   <li
                     key={bullet}
-                    className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-neutral-400 bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-full"
+                    className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-primary/5 px-2.5 py-1 rounded-full"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     {bullet}
@@ -144,12 +143,12 @@ const WhoItsFor = () => {
               data-aos-mirror="true"
               data-aos-delay="400"
             >
-              <article className="xl:absolute xl:top-[240px] xl:left-1/2 xl:-translate-x-1/2 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm shadow-lg shadow-primary/5 dark:shadow-primary/10">
+              <article className="xl:absolute xl:top-[240px] xl:left-1/2 xl:-translate-x-1/2 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold">
+                  <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                     {audience[1]?.badge}
                   </span>
-                  <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary/90">
+                  <h3 className="text-base sm:text-lg font-semibold text-primary
                     {audience[1]?.title}
                   </h3>
                 </div>
@@ -162,14 +161,14 @@ const WhoItsFor = () => {
                     priority
                   />
                 </div>
-                <p className="text-sm text-gray-700 dark:text-neutral-300 leading-relaxed mb-3">
+                <p className="text-sm text-gray-700 leading-relaxed mb-3">
                   {audience[1]?.subtitle}
                 </p>
                 <ul className="flex flex-wrap gap-2">
                   {audience[1]?.bullets.map((bullet) => (
                     <li
                       key={bullet}
-                      className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-neutral-400 bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-full"
+                      className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-primary/5 px-2.5 py-1 rounded-full"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                       {bullet}
@@ -181,17 +180,17 @@ const WhoItsFor = () => {
 
             {/* Card 03 - Bottom Left (below heading) */}
             <article
-              className="xl:absolute xl:top-[480px] xl:left-0 xl:w-[380px] 2xl:w-[420px] lg:col-span-2 lg:max-w-md group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm shadow-lg shadow-primary/5 dark:shadow-primary/10"
+              className="xl:absolute xl:top-[480px] xl:left-0 xl:w-[380px] 2xl:w-[420px] lg:col-span-2 lg:max-w-md group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5
               data-aos="fade-right"
               data-aos-once="false"
               data-aos-mirror="true"
               data-aos-delay="400"
             >
               <div className="flex items-center gap-3 mb-3">
-                <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold">
+                <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                   {audience[2]?.badge}
                 </span>
-                <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary/90">
+                <h3 className="text-base sm:text-lg font-semibold text-primary
                   {audience[2]?.title}
                 </h3>
               </div>
@@ -204,14 +203,14 @@ const WhoItsFor = () => {
                   priority
                 />
               </div>
-              <p className="text-sm text-gray-700 dark:text-neutral-300 leading-relaxed mb-3">
+              <p className="text-sm text-gray-700 leading-relaxed mb-3">
                 {audience[2]?.subtitle}
               </p>
               <ul className="flex flex-wrap gap-2">
                 {audience[2]?.bullets.map((bullet) => (
                   <li
                     key={bullet}
-                    className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-neutral-400 bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-full"
+                    className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-primary/5 px-2.5 py-1 rounded-full"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     {bullet}

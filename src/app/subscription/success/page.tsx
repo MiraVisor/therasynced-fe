@@ -44,10 +44,10 @@ function SubscriptionSuccessContent() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50
         <div className="text-center">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Verifying your payment...</p>
+          <p className="mt-4 text-sm text-gray-600 your payment...</p>
         </div>
       </div>
     );
@@ -58,11 +58,11 @@ function SubscriptionSuccessContent() {
     : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 animate-in zoom-in duration-500">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400 animate-in zoom-in duration-300 delay-200" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 animate-in zoom-in duration-500">
+            <CheckCircle2 className="h-8 w-8 text-green-600 animate-in zoom-in duration-300 delay-200" />
           </div>
           <CardTitle className="text-2xl font-poppins font-bold">Payment Successful!</CardTitle>
           <CardDescription className="mt-2">
@@ -75,10 +75,10 @@ function SubscriptionSuccessContent() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800">
-              <p className="text-sm font-medium text-red-800 dark:text-red-200">Error</p>
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
-              <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4
+              <p className="text-sm font-medium text-red-800
+              <p className="mt-1 text-sm text-red-600
+              <p className="mt-2 text-xs text-red-600
                 If your payment was successful, please contact support with your session ID.
               </p>
             </div>
@@ -92,7 +92,7 @@ function SubscriptionSuccessContent() {
               </div>
               {subscription.plan && (
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Plan</p>
+                  <p className="text-sm text-gray-600
                   <p className="font-poppins font-semibold text-lg">
                     {subscription.plan.displayName}
                   </p>
@@ -102,7 +102,7 @@ function SubscriptionSuccessContent() {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Next billing date</p>
+                    <p className="text-sm text-gray-600 billing date</p>
                     <p className="font-medium">
                       {nextBillingDate.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -117,8 +117,8 @@ function SubscriptionSuccessContent() {
           )}
 
           {sessionId && !error && !isVerified && (
-            <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="rounded-lg bg-gray-50 p-3
+              <p className="text-sm text-gray-600
                 Session ID: <span className="font-mono text-xs">{sessionId}</span>
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function SubscriptionSuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50
           <LoadingSpinner size="lg" />
         </div>
       }

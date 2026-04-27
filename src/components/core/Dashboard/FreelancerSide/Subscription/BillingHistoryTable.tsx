@@ -63,19 +63,19 @@ export function BillingHistoryTable() {
     const statusConfig: Record<string, { label: string; className: string }> = {
       paid: {
         label: 'Paid',
-        className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+        className: 'bg-green-100 text-green-800
       },
       pending: {
         label: 'Pending',
-        className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+        className: 'bg-yellow-100 text-yellow-800
       },
       failed: {
         label: 'Failed',
-        className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        className: 'bg-red-100 text-red-800
       },
       refunded: {
         label: 'Refunded',
-        className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+        className: 'bg-gray-100 text-gray-800
       },
     };
 
@@ -119,12 +119,12 @@ export function BillingHistoryTable() {
   }
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
+    <Card className="border border-gray-200 shadow-sm">
       <CardContent className="p-6">
         {/* Header */}
         <div className="mb-6">
           <h3 className="text-xl font-poppins font-bold text-charcoal mb-2">Billing History</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600
             View and download your past invoices
           </p>
         </div>
@@ -142,13 +142,13 @@ export function BillingHistoryTable() {
         {/* Table */}
         {filteredTransactions.length === 0 ? (
           <div className="text-center py-16">
-            <div className="p-4 rounded-full bg-gray-100 dark:bg-gray-800 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <div className="p-4 rounded-full bg-gray-100 w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <FileText className="h-8 w-8 text-gray-400" />
             </div>
             <h4 className="text-lg font-poppins font-semibold text-charcoal mb-2">
               {searchQuery ? 'No Results Found' : 'No Billing History'}
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600
               {searchQuery
                 ? 'No transactions found matching your search.'
                 : 'Your billing history will appear here once you make your first payment.'}
@@ -159,7 +159,7 @@ export function BillingHistoryTable() {
             <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b-2 border-gray-200 dark:border-gray-700">
+                  <TableRow className="border-b-2 border-gray-200
                     <TableHead className="font-poppins font-semibold text-charcoal">Date</TableHead>
                     <TableHead className="font-poppins font-semibold text-charcoal">
                       Period
@@ -183,12 +183,12 @@ export function BillingHistoryTable() {
                   {filteredTransactions.map((transaction) => (
                     <TableRow
                       key={transaction.invoiceId}
-                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
+                      className="border-b border-gray-100 hover:bg-gray-50/50
                     >
                       <TableCell className="font-inter py-4">
                         {formatDate(transaction.date)}
                       </TableCell>
-                      <TableCell className="font-inter text-sm py-4 text-gray-600 dark:text-gray-400">
+                      <TableCell className="font-inter text-sm py-4 text-gray-600
                         {transaction.periodStart} - {transaction.periodEnd}
                       </TableCell>
                       <TableCell className="font-inter font-medium capitalize py-4">
@@ -200,7 +200,7 @@ export function BillingHistoryTable() {
                       <TableCell className="py-4">
                         <div className="flex items-center gap-2">
                           {getPaymentMethodIcon(transaction.paymentMethodType)}
-                          <span className="text-sm capitalize text-gray-600 dark:text-gray-400">
+                          <span className="text-sm capitalize text-gray-600
                             {transaction.paymentMethodType || 'N/A'}
                           </span>
                         </div>
@@ -213,7 +213,7 @@ export function BillingHistoryTable() {
                               variant="ghost"
                               size="sm"
                               onClick={() => window.open(transaction.invoiceUrl, '_blank')}
-                              className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              className="h-8 w-8 p-0 hover:bg-gray-100
                               title="View invoice"
                             >
                               <Download className="h-4 w-4" />
@@ -235,7 +235,7 @@ export function BillingHistoryTable() {
                                 });
                                 setIsRefundDialogOpen(true);
                               }}
-                              className="h-8 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              className="h-8 px-3 hover:bg-gray-100
                               title="Request refund"
                             >
                               <RotateCcw className="h-4 w-4 mr-1" />

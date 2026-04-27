@@ -115,12 +115,12 @@ export const ExpertCardContent = memo(
       <TooltipProvider>
         <Card
           className={cn(
-            'group overflow-hidden bg-white/80 dark:bg-gray-800 backdrop-blur-sm shadow-soft min-h-[320px] flex flex-col border-gray-200/80 dark:border-gray-700',
+            'group overflow-hidden bg-white/80 backdrop-blur-sm shadow-soft min-h-[320px] flex flex-col border-gray-200/80
           )}
         >
           <CardHeader className="pb-3 px-4">
             {showFavoriteText && (
-              <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-white">
+              <h3 className="text-base font-semibold mb-3 text-gray-900
                 Your <span className="text-primary">Favorites</span>
               </h3>
             )}
@@ -139,7 +139,7 @@ export const ExpertCardContent = memo(
                 <div className="flex-1 min-w-0 space-y-1.5">
                   {/* Row 1: Name and Verification Badge */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-base font-poppins font-semibold text-gray-900 dark:text-white truncate">
+                    <h4 className="text-base font-poppins font-semibold text-gray-900 truncate">
                       {freelancerName}
                     </h4>
                     <VerificationBadge status={verificationStatus} size="sm" />
@@ -164,7 +164,7 @@ export const ExpertCardContent = memo(
 
               <button
                 className={`p-2 rounded-full flex-shrink-0 ${
-                  isFavorite ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'text-gray-400'
+                  isFavorite ? 'text-red-500 bg-red-50 : 'text-gray-400'
                 } ${isFavoriteLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                 onClick={handleFavorite}
                 disabled={isFavoriteLoading}

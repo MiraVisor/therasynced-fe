@@ -48,7 +48,7 @@ export function PaymentMethodCard() {
   }
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-700 shadow-sm">
+    <Card className="border border-gray-200 shadow-sm">
       <CardHeader className="pb-4">
         <CardTitle className="text-xl font-poppins font-bold text-charcoal">
           Payment Methods
@@ -65,8 +65,8 @@ export function PaymentMethodCard() {
                 key={paymentMethod.id}
                 className={`relative p-5 rounded-xl border-2 transition-all ${
                   paymentMethod.isDefault
-                    ? 'border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 shadow-sm'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 shadow-sm'
+                    : 'border-gray-200 bg-white hover:border-gray-300
                 }`}
               >
                 {/* Credit Card Visual Style */}
@@ -75,8 +75,8 @@ export function PaymentMethodCard() {
                     <div
                       className={`p-3 rounded-lg ${
                         paymentMethod.isDefault
-                          ? 'bg-primary/20 dark:bg-primary/30'
-                          : 'bg-gray-100 dark:bg-gray-700'
+                          ? 'bg-primary/20
+                          : 'bg-gray-100
                       }`}
                     >
                       {paymentMethod.type === 'card' ? (
@@ -84,7 +84,7 @@ export function PaymentMethodCard() {
                           className={`h-6 w-6 ${
                             paymentMethod.isDefault
                               ? 'text-primary'
-                              : 'text-gray-600 dark:text-gray-400'
+                              : 'text-gray-600
                           }`}
                         />
                       ) : (
@@ -113,7 +113,7 @@ export function PaymentMethodCard() {
                       {paymentMethod.type === 'card' &&
                         paymentMethod.expMonth &&
                         paymentMethod.expYear && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-sm text-gray-600
                             Expires {paymentMethod.expMonth}/{paymentMethod.expYear}
                           </p>
                         )}
@@ -122,13 +122,13 @@ export function PaymentMethodCard() {
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <Lock className="h-4 w-4" />
-                      <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      <Shield className="h-4 w-4 text-green-600 />
                     </div>
                   </div>
                 </div>
 
                 {!paymentMethod.isDefault && (
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="pt-3 border-t border-gray-200
                     <Button
                       variant="outline"
                       size="sm"
@@ -160,13 +160,13 @@ export function PaymentMethodCard() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="p-4 rounded-full bg-gray-100 dark:bg-gray-800 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <div className="p-4 rounded-full bg-gray-100 w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <CreditCard className="h-8 w-8 text-gray-400" />
             </div>
             <h4 className="text-lg font-poppins font-semibold text-charcoal mb-2">
               No Payment Method
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+            <p className="text-sm text-gray-600 mb-6 max-w-sm mx-auto">
               Add a payment method to subscribe to a plan and start accepting bookings.
             </p>
             <Button
@@ -180,9 +180,9 @@ export function PaymentMethodCard() {
             </Button>
           </div>
         )}
-        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-            <Shield className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+        <div className="mt-6 pt-4 border-t border-gray-200
+          <p className="text-xs text-gray-500 flex items-center gap-2">
+            <Shield className="h-3.5 w-3.5 text-green-600 />
             Payment information is securely processed by Stripe. We never store your card details.
           </p>
         </div>

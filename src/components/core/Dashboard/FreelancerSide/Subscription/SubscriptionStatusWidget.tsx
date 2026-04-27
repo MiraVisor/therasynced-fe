@@ -78,7 +78,7 @@ export function SubscriptionStatusWidget() {
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                <span className="text-xs font-medium text-gray-600
                   {subscription.plan.displayName}
                 </span>
                 <StatusBadge status={subscription.status} size="sm" />
@@ -87,7 +87,7 @@ export function SubscriptionStatusWidget() {
               {/* Slots Limit */}
               <div className="mb-2">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">Slots</span>
+                  <span className="text-gray-600
                   <span className="font-semibold">
                     {isTrial ? (
                       <span className="text-primary">{slotsUsed} / Unlimited</span>
@@ -114,7 +114,7 @@ export function SubscriptionStatusWidget() {
               {isTrial ? (
                 <div className="mb-2">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-gray-600 dark:text-gray-400">Days per week</span>
+                    <span className="text-gray-600 per week</span>
                     <span className="font-semibold text-primary">{daysUsed} / Unlimited</span>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ export function SubscriptionStatusWidget() {
                 daysLimit !== null && (
                   <div className="mb-2">
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-gray-600 dark:text-gray-400">Days per week</span>
+                      <span className="text-gray-600 per week</span>
                       <span className="font-semibold">
                         {daysUsed}/{formatLimit(daysLimit)}
                       </span>
@@ -139,7 +139,7 @@ export function SubscriptionStatusWidget() {
               {isTrial ? (
                 <div className="mb-2">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-gray-600 dark:text-gray-400">Messages</span>
+                    <span className="text-gray-600
                     <span className="font-semibold text-primary">{messagesUsed} / Unlimited</span>
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export function SubscriptionStatusWidget() {
                 messagesLimit !== null && (
                   <div className="mb-2">
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-gray-600 dark:text-gray-400">Messages</span>
+                      <span className="text-gray-600
                       <span className="font-semibold">
                         {messagesUsed}/{formatLimit(messagesLimit)}
                       </span>
@@ -178,7 +178,7 @@ export function SubscriptionStatusWidget() {
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-gray-600
               {subscription.status === 'TRIALING'
                 ? 'You are on a free trial'
                 : 'No active subscription'}

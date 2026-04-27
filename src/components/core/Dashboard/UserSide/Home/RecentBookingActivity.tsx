@@ -80,13 +80,13 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'CONFIRMED':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-100 text-green-800
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-100 text-red-800
       case 'RESCHEDULED':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-yellow-100 text-yellow-800
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800
     }
   };
 
@@ -105,31 +105,31 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden relative"
+                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg overflow-hidden relative"
               >
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse" />
-                    <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-16 animate-pulse" />
+                    <div className="h-5 bg-gray-200 rounded w-1/3 animate-pulse" />
+                    <div className="h-6 bg-gray-200 rounded w-16 animate-pulse" />
                   </div>
                   <div className="flex items-center gap-4">
                     {Array.from({ length: 3 }).map((_, j) => (
                       <div key={j} className="flex items-center gap-1">
-                        <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700/60 rounded animate-pulse" />
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-12 animate-pulse" />
+                        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-4 bg-gray-200 rounded w-12 animate-pulse" />
                       </div>
                     ))}
                   </div>
                   <div className="mt-2">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse" />
+                    <div className="h-4 bg-gray-200 rounded w-16 animate-pulse" />
                   </div>
                 </div>
-                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700/30 rounded ml-4 animate-pulse" />
+                <div className="w-8 h-8 bg-gray-200 rounded ml-4 animate-pulse" />
               </div>
             ))}
           </div>
-          <div className="h-10 bg-gray-200 dark:bg-gray-700/30 rounded w-full mt-4 animate-pulse" />
+          <div className="h-10 bg-gray-200 rounded w-full mt-4 animate-pulse" />
         </CardContent>
       </Card>
     );
@@ -146,11 +146,11 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
-            <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
-            <p className="text-sm font-inter text-gray-500 dark:text-gray-400">
+            <Calendar className="w-12 h-12 text-gray-300 mb-2" />
+            <p className="text-sm font-inter text-gray-500
               No recent bookings
             </p>
-            <p className="text-xs font-inter text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-xs font-inter text-gray-400 mt-1">
               Your booking history will appear here
             </p>
           </div>
@@ -175,16 +175,16 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
             return (
               <div
                 key={booking.id}
-                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-poppins font-semibold text-gray-900 dark:text-white truncate">
+                    <h3 className="font-poppins font-semibold text-gray-900 truncate">
                       {booking.slot.freelancer?.name || 'Unknown Freelancer'}
                     </h3>
                     <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                   </div>
-                  <div className="flex items-center gap-4 text-sm font-inter text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-4 text-sm font-inter text-gray-600
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       <span>{formatDate(booking.slot.startTime)}</span>
@@ -200,7 +200,7 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
                   </div>
                   {booking.totalAmount && (
                     <div className="mt-2">
-                      <span className="text-sm font-poppins font-semibold text-gray-900 dark:text-white">
+                      <span className="text-sm font-poppins font-semibold text-gray-900
                         EUR {booking.totalAmount}
                       </span>
                     </div>

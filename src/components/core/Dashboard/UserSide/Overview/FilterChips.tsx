@@ -146,7 +146,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
           <button
             type="button"
             onClick={() => updateFilter('location', '')}
-            className="ml-2 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5"
+            className="ml-2 hover:bg-gray-300 rounded-full p-0.5"
           >
             <X className="h-3 w-3" />
           </button>
@@ -162,7 +162,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
               updateFilter('priceMin', undefined);
               updateFilter('priceMax', undefined);
             }}
-            className="ml-2 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5"
+            className="ml-2 hover:bg-gray-300 rounded-full p-0.5"
           >
             <X className="h-3 w-3" />
           </button>
@@ -178,7 +178,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
             <button
               type="button"
               onClick={() => toggleArrayFilter('tier', tier)}
-              className="ml-2 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5"
+              className="ml-2 hover:bg-gray-300 rounded-full p-0.5"
             >
               <X className="h-3 w-3" />
             </button>

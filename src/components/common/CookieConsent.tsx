@@ -183,14 +183,14 @@ export default function CookieConsent() {
   return (
     <>
       {/* Cookie Consent Banner */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Cookie Consent
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600
                 We use cookies to enhance your experience, analyse site usage, and assist in our
                 marketing efforts. Essential cookies are required for the site to function properly.
                 You can manage your preferences at any time.{' '}
@@ -247,13 +247,13 @@ export default function CookieConsent() {
 
           <div className="space-y-6 mt-4">
             {/* Essential Cookies */}
-            <div className="space-y-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="space-y-3 p-4 border border-gray-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <Label htmlFor="essential" className="text-base font-semibold cursor-pointer">
                     Essential Cookies
                   </Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
                     Required for the website to function. These include authentication, security,
                     and session management cookies. These cannot be disabled.
                   </p>
@@ -270,13 +270,13 @@ export default function CookieConsent() {
             </div>
 
             {/* Analytics Cookies */}
-            <div className="space-y-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="space-y-3 p-4 border border-gray-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <Label htmlFor="analytics" className="text-base font-semibold cursor-pointer">
                     Analytics Cookies
                   </Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
                     Help us understand how visitors interact with our website by collecting and
                     reporting information anonymously. This helps us improve our services.
                   </p>
@@ -292,13 +292,13 @@ export default function CookieConsent() {
             </div>
 
             {/* Marketing Cookies */}
-            <div className="space-y-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="space-y-3 p-4 border border-gray-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <Label htmlFor="marketing" className="text-base font-semibold cursor-pointer">
                     Marketing Cookies
                   </Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
                     Used to deliver personalised advertisements and track campaign performance.
                     These cookies may be set by third-party advertising partners.
                   </p>
@@ -313,8 +313,8 @@ export default function CookieConsent() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            <div className="pt-4 border-t border-gray-200
+              <p className="text-xs text-gray-500 mb-4">
                 You can change these preferences at any time by clicking the cookie settings link in
                 the footer or clearing your browser cookies.
               </p>

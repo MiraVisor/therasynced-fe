@@ -38,7 +38,7 @@ export default function SubscriptionBadge() {
         <Crown className="h-5 w-5 text-primary flex-shrink-0" />
         <div className="flex-1 min-w-0">
           {currentPlan && (
-            <div className="text-sm font-poppins font-semibold text-gray-900 dark:text-white truncate">
+            <div className="text-sm font-poppins font-semibold text-gray-900 truncate">
               {currentPlan.displayName}
             </div>
           )}

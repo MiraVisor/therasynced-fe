@@ -66,15 +66,15 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
     const isTomorrow =
       bookingDate.toDateString() === new Date(now.getTime() + 86400000).toDateString();
 
-    if (isToday) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-    if (isTomorrow) return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-    return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    if (isToday) return 'bg-blue-100 text-blue-800
+    if (isTomorrow) return 'bg-green-100 text-green-800
+    return 'bg-gray-100 text-gray-800
   };
 
   const LocationIcon = getLocationIcon(booking);
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-all duration-200">
+    <Card className="border border-gray-200 hover:shadow-sm transition-all duration-200">
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Date Badge */}
@@ -91,7 +91,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-poppins font-semibold text-gray-900 dark:text-white truncate">
+                <h3 className="font-poppins font-semibold text-gray-900 truncate">
                   {getExpertName(booking)}
                 </h3>
                 <VerificationBadge
@@ -110,7 +110,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
                   size="sm"
                 />
               </div>
-              <div className="flex items-center gap-3 text-sm font-inter text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-3 text-sm font-inter text-gray-600
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   <span>{getBookingTime(booking)}</span>
@@ -126,7 +126,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
           {/* Price and Actions */}
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="font-poppins font-semibold text-gray-900 dark:text-white">
+              <div className="font-poppins font-semibold text-gray-900
                 EUR {booking?.totalAmount || '0'}
               </div>
             </div>

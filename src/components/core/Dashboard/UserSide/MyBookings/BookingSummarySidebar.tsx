@@ -219,7 +219,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             <h3 className="font-poppins font-bold text-base text-charcoal truncate">
               {therapist?.name}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+            <p className="text-sm text-gray-600 truncate">
               {therapist?.specialty}
             </p>
             <div className="flex items-center gap-1 mt-0.5">
@@ -240,7 +240,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <div className="min-w-0">
-                  <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="font-medium text-gray-900
                     {new Date(selectedDate).toLocaleDateString('en-US', {
                       weekday: 'short',
                       month: 'short',
@@ -266,7 +266,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
               <div className="flex items-center gap-2 text-sm">
                 <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <div className="min-w-0">
-                  <div className="font-medium text-gray-900 dark:text-white">Services</div>
+                  <div className="font-medium text-gray-900
                   <div className="text-xs text-gray-500 truncate">
                     {serviceForm
                       .watch('serviceCategoryIds')
@@ -289,20 +289,20 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             {hasDiscount ? (
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600 dark:text-gray-400">Base:</span>
+                  <span className="text-gray-600
                   <span className="font-medium text-primary">EUR {basePrice.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-green-600 dark:text-green-400">Discount:</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">
+                  <span className="text-green-600
+                  <span className="font-medium text-green-600
                     -EUR {discountAmount.toFixed(2)}
                   </span>
                 </div>
-                <div className="pt-1 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-1 border-t border-gray-200
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-charcoal">Total</span>
                     <div className="flex flex-col items-end">
-                      <span className="text-xl font-bold text-green-600 dark:text-green-400">
+                      <span className="text-xl font-bold text-green-600
                         EUR {finalPrice.toFixed(2)}
                       </span>
                       <span className="text-xs text-gray-500 line-through">
@@ -311,8 +311,8 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="p-1.5 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
-                  <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                <div className="p-1.5 bg-green-50 rounded border border-green-200
+                  <p className="text-xs text-green-700 font-medium">
                     ✓ {discountPercentage}% discount applied
                   </p>
                 </div>
@@ -329,7 +329,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
 
       {/* Complete Booking Button */}
       {currentStep === totalSteps && (
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-6 pt-6 border-t border-gray-200
           <Button
             onClick={onCompleteBooking}
             disabled={isCreatingBooking}

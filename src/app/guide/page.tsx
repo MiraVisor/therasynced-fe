@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 
 export default function GuidePage() {
   return (
-    <div className="w-full bg-white dark:bg-neutral-900 min-h-screen">
+    <div className="w-full bg-white min-h-screen">
       {/* Top / Hero area */}
       <section className="relative w-full px-4 sm:px-6 lg:px-8 pt-10 pb-16 lg:pt-14 lg:pb-20 overflow-hidden">
         {/* Subtle background pattern (same circles used across landing sections) */}
-        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
           <div className="absolute top-20 left-20 w-96 h-96 border border-primary rounded-full" />
           <div className="absolute bottom-20 right-20 w-72 h-72 border border-sage-warm rounded-full" />
         </div>
@@ -35,14 +35,14 @@ export default function GuidePage() {
           {/* Two-column hero: copy + photo */}
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div className="space-y-5">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white font-playfair leading-[1.1]">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 font-playfair leading-[1.1]">
                 How TheraSynced works
               </h1>
-              <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 font-open-sans max-w-xl leading-relaxed">
+              <p className="text-base sm:text-lg text-gray-600 font-open-sans max-w-xl leading-relaxed">
                 A quick tour of the platform for clients and therapists. Pick the view that applies
                 to you, and you will be up and running in a few minutes.
               </p>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2 text-sm font-open-sans text-gray-600 dark:text-neutral-400">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2 text-sm font-open-sans text-gray-600
                 <span className="inline-flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-primary" />
                   Free for clients
@@ -59,7 +59,7 @@ export default function GuidePage() {
             </div>
 
             {/* Hero image */}
-            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-[5/4] shadow-lg border border-gray-100 dark:border-neutral-800">
+            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-[5/4] shadow-lg border border-gray-100
               <Image
                 src="/images/physio/pilates-therapy-session.jpg"
                 alt="A therapist guiding a client through a session"
@@ -76,20 +76,20 @@ export default function GuidePage() {
       </section>
 
       {/* Tabs + Cards */}
-      <section className="relative w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-[#faf9f6] dark:bg-neutral-950/30 overflow-hidden">
+      <section className="relative w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-[#faf9f6] overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <GuideTabs />
         </div>
       </section>
 
       {/* FAQ section */}
-      <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-white dark:bg-neutral-900">
+      <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20 bg-white
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white font-playfair">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 font-playfair">
               Frequently asked
             </h2>
-            <p className="text-base text-gray-600 dark:text-neutral-400 font-open-sans max-w-2xl mx-auto">
+            <p className="text-base text-gray-600 font-open-sans max-w-2xl mx-auto">
               Quick answers to the things people ask most often.
             </p>
           </div>
@@ -135,15 +135,15 @@ export default function GuidePage() {
             ].map((item, idx) => (
               <details
                 key={idx}
-                className="group p-5 lg:p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#faf9f6] dark:bg-neutral-800 shadow-sm open:shadow-md transition-all"
+                className="group p-5 lg:p-6 rounded-2xl border border-gray-100 bg-[#faf9f6] shadow-sm open:shadow-md transition-all"
               >
-                <summary className="flex items-start justify-between gap-4 cursor-pointer list-none font-poppins font-semibold text-gray-900 dark:text-white">
+                <summary className="flex items-start justify-between gap-4 cursor-pointer list-none font-poppins font-semibold text-gray-900
                   <span className="text-base">{item.q}</span>
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg leading-none transition-transform group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <p className="mt-4 text-sm text-gray-600 dark:text-neutral-400 font-open-sans leading-relaxed pr-10">
+                <p className="mt-4 text-sm text-gray-600 font-open-sans leading-relaxed pr-10">
                   {item.a}
                 </p>
               </details>
@@ -156,20 +156,20 @@ export default function GuidePage() {
       <section className="w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="max-w-6xl mx-auto">
           {/* Emergency disclaimer */}
-          <div className="p-6 lg:p-7 rounded-2xl bg-red-50/70 dark:bg-red-950/20 border border-red-200/70 dark:border-red-900/40 mb-6">
+          <div className="p-6 lg:p-7 rounded-2xl bg-red-50/70 border border-red-200/70 mb-6">
             <div className="flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-600 />
               </div>
               <div className="min-w-0">
-                <h3 className="font-poppins font-semibold text-gray-900 dark:text-white text-base mb-1">
+                <h3 className="font-poppins font-semibold text-gray-900 text-base mb-1">
                   TheraSynced is not for emergencies
                 </h3>
-                <p className="text-sm text-gray-700 dark:text-neutral-300 font-open-sans leading-relaxed">
+                <p className="text-sm text-gray-700 font-open-sans leading-relaxed">
                   If you are in crisis or experiencing a medical emergency, please contact local
                   emergency services immediately. In Ireland, dial{' '}
-                  <strong className="text-gray-900 dark:text-white">112</strong> or{' '}
-                  <strong className="text-gray-900 dark:text-white">999</strong>. Our messaging is
+                  <strong className="text-gray-900 or{' '}
+                  <strong className="text-gray-900 Our messaging is
                   not monitored for urgent situations.
                 </p>
               </div>
@@ -180,45 +180,45 @@ export default function GuidePage() {
           <div className="grid gap-5 md:grid-cols-3">
             <Link
               href="/privacy"
-              className="p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#faf9f6] dark:bg-neutral-800 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
+              className="p-6 rounded-2xl border border-gray-100 bg-[#faf9f6] shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
             >
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-4 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all">
                 <Shield className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-poppins font-semibold text-gray-900 dark:text-white mb-1">
+              <h3 className="font-poppins font-semibold text-gray-900 mb-1">
                 Privacy Policy
               </h3>
-              <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
+              <p className="text-sm text-gray-600 font-open-sans">
                 How we collect, use, and protect your personal data.
               </p>
             </Link>
 
             <Link
               href="/terms"
-              className="p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#faf9f6] dark:bg-neutral-800 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
+              className="p-6 rounded-2xl border border-gray-100 bg-[#faf9f6] shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
             >
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-4 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all">
                 <CheckCircle className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-poppins font-semibold text-gray-900 dark:text-white mb-1">
+              <h3 className="font-poppins font-semibold text-gray-900 mb-1">
                 Terms of Service
               </h3>
-              <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
+              <p className="text-sm text-gray-600 font-open-sans">
                 Rules and expectations for using the platform.
               </p>
             </Link>
 
             <Link
               href="/contact"
-              className="p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-[#faf9f6] dark:bg-neutral-800 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
+              className="p-6 rounded-2xl border border-gray-100 bg-[#faf9f6] shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
             >
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-4 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all">
                 <HelpCircle className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-poppins font-semibold text-gray-900 dark:text-white mb-1">
+              <h3 className="font-poppins font-semibold text-gray-900 mb-1">
                 Contact support
               </h3>
-              <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
+              <p className="text-sm text-gray-600 font-open-sans">
                 Questions or issues? Our support team is happy to help.
               </p>
             </Link>

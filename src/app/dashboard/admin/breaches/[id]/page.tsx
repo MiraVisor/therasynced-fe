@@ -296,7 +296,7 @@ const BreachDetailPage = () => {
                             ? 'bg-primary text-primary-foreground border-primary'
                             : isCompleted
                               ? 'bg-green-500 text-white border-green-500'
-                              : 'bg-gray-200 dark:bg-gray-700 text-gray-500 border-gray-300'
+                              : 'bg-gray-200 text-gray-500 border-gray-300'
                         }`}
                       >
                         {isCompleted ? (
@@ -316,7 +316,7 @@ const BreachDetailPage = () => {
                     {index < 3 && (
                       <div
                         className={`h-0.5 w-8 ${
-                          isCompleted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                          isCompleted ? 'bg-green-500' : 'bg-gray-300
                         }`}
                       />
                     )}
@@ -381,8 +381,8 @@ const BreachDetailPage = () => {
           <Card
             className={
               breach.reportedToDpc
-                ? 'border-green-200 dark:border-green-800'
-                : 'border-red-200 dark:border-red-800'
+                ? 'border-green-200
+                : 'border-red-200
             }
           >
             <CardHeader>
@@ -419,8 +419,8 @@ const BreachDetailPage = () => {
           <Card
             className={
               breach.notifiedUsers
-                ? 'border-green-200 dark:border-green-800'
-                : 'border-red-200 dark:border-red-800'
+                ? 'border-green-200
+                : 'border-red-200
             }
           >
             <CardHeader>
@@ -583,8 +583,8 @@ const BreachDetailPage = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-                <p className="font-open-sans text-sm text-amber-800 dark:text-amber-200">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="font-open-sans text-sm text-amber-800
                   <strong>Note:</strong> High-risk breaches must be reported to the DPC within 72
                   hours of detection.
                 </p>

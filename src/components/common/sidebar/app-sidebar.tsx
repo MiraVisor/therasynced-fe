@@ -26,7 +26,6 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
@@ -238,7 +237,6 @@ const navigationLinks: Record<RoleType, NavigationLink[]> = {
 
 export function AppSidebar({ userRole }: AppSidebarProps) {
   const isMobile = useIsMobile();
-  const { resolvedTheme } = useTheme();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -334,7 +332,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                     className={cn(
                       'h-[40px] bg-secondary/20 transition-all duration-200 px-5 cursor-pointer',
                       'hover:bg-accent active:bg-accent/50',
-                      resolvedTheme === 'dark' ? 'text-foreground' : 'text-foreground/90',
+                      'text-foreground/90',
                       'data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground',
                       isMobile &&
                         'group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:hover:bg-transparent group-data-[collapsible=icon]:hover:translate-x-0',
@@ -353,11 +351,11 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                         <item.icon
                           className={cn(
                             'size-5 transition-all duration-200',
-                            resolvedTheme === 'dark' ? 'text-foreground' : 'text-foreground/90',
+                            'text-foreground/90',
                             'group-hover:scale-110',
                             isMobile &&
                               'group-data-[collapsible=icon]:size-6 group-data-[collapsible=icon]:group-hover:scale-110',
-                            isMobile && resolvedTheme === 'dark'
+                            isMobile
                               ? 'group-data-[collapsible=icon]:group-hover:text-accent-foreground'
                               : 'group-data-[collapsible=icon]:group-hover:text-accent-foreground',
                           )}

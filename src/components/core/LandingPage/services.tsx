@@ -1,6 +1,5 @@
 'use client';
 
-import { useTheme } from 'next-themes';
 import Image from 'next/image';
 
 const servicesData = [
@@ -64,7 +63,7 @@ const Services = () => {
             <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary tracking-tight leading-[1.1]">
               Our Services
             </h1>
-            <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto lg:mx-0 leading-relaxed">
               Connect with licensed professionals across multiple specialties. From injury
               rehabilitation to performance enhancement, find the right freelancer for your unique
               needs.
@@ -77,13 +76,13 @@ const Services = () => {
               <div
                 key={service.id}
                 className={`w-full group p-6 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 
-                  bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm
-                  shadow-lg shadow-primary/5 dark:shadow-primary/10
+                  bg-white/80 backdrop-blur-sm
+                  shadow-lg shadow-primary/5
                   `}
               >
                 <div className="flex flex-col justify-between h-full gap-6">
                   {/* Icon */}
-                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-primary/10 dark:bg-primary/20 mx-auto lg:mx-0">
+                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-primary/10 mx-auto lg:mx-0">
                     <Image
                       src={service.icon}
                       alt={service.title}
@@ -94,10 +93,10 @@ const Services = () => {
 
                   {/* Text */}
                   <div className="space-y-2 mt-4 sm:mt-6">
-                    <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-primary dark:text-primary/90 line-clamp-2">
+                    <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-primary line-clamp-2">
                       {service.title}
                     </h3>
-                    <p className="text-sm sm:text-base text-gray-700 dark:text-neutral-300 line-clamp-4">
+                    <p className="text-sm sm:text-base text-gray-700 line-clamp-4">
                       {service.description}
                     </p>
                   </div>

@@ -89,10 +89,10 @@ const Features = () => {
   return (
     <section
       id="features"
-      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-[#f5f4f1] dark:bg-neutral-950/50 relative overflow-hidden"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-[#f5f4f1] relative overflow-hidden"
     >
       {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute top-32 right-16 w-72 h-72 border border-primary rounded-full" />
         <div className="absolute bottom-16 left-16 w-56 h-56 border border-sage-warm rounded-full" />
       </div>
@@ -107,10 +107,10 @@ const Features = () => {
             transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4 max-w-2xl"
           >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white font-playfair">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 font-playfair">
               Why Choose TheraSynced
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 font-open-sans">
+            <p className="text-base sm:text-lg text-gray-600 font-open-sans">
               A simple platform to manage bookings, communicate securely, and focus on what matters.
             </p>
           </motion.div>
@@ -120,14 +120,14 @@ const Features = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: isMobile ? '0px' : '-100px' }}
             transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex bg-white dark:bg-neutral-900 p-1.5 rounded-xl border border-gray-100 dark:border-neutral-800 self-start"
+            className="flex bg-white p-1.5 rounded-xl border border-gray-100 self-start"
           >
             <button
               onClick={() => setActiveTab('client')}
               className={`px-8 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 activeTab === 'client'
-                  ? 'bg-[#f5f4f1] dark:bg-neutral-800 text-primary shadow-md shadow-primary/5'
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'bg-[#f5f4f1] text-primary shadow-md shadow-primary/5'
+                  : 'text-gray-500 hover:text-gray-700
               }`}
             >
               For Clients
@@ -136,8 +136,8 @@ const Features = () => {
               onClick={() => setActiveTab('professional')}
               className={`px-8 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 activeTab === 'professional'
-                  ? 'bg-[#f5f4f1] dark:bg-neutral-800 text-primary shadow-md shadow-primary/5'
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'bg-[#f5f4f1] text-primary shadow-md shadow-primary/5'
+                  : 'text-gray-500 hover:text-gray-700
               }`}
             >
               For Professionals
@@ -165,15 +165,15 @@ const Features = () => {
                     delay: isMobile ? 0 : index * 0.1,
                     duration: isMobile ? 0.2 : 0.5,
                   }}
-                  className="p-6 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-primary/50 transition-all duration-300 group hover:shadow-xl hover:shadow-primary/10"
+                  className="p-6 rounded-2xl border border-gray-100 bg-white hover:border-primary/50 transition-all duration-300 group hover:shadow-xl hover:shadow-primary/10"
                 >
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-5 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all duration-300">
                     <feature.icon className="w-7 h-7 text-primary transition-colors duration-300" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-poppins">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 font-poppins">
                     {feature.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans">
+                  <p className="text-sm text-gray-600 leading-relaxed font-open-sans">
                     {feature.description}
                   </p>
                 </motion.div>
@@ -190,9 +190,9 @@ const Features = () => {
           transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mt-12 lg:mt-16 flex justify-center"
         >
-          <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-sm">
+          <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-white border border-gray-100 shadow-sm">
             <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-            <p className="text-sm text-gray-600 dark:text-neutral-400 font-open-sans">
+            <p className="text-sm text-gray-600 font-open-sans">
               Encrypted messaging · Verified professionals · GDPR compliant
             </p>
           </div>

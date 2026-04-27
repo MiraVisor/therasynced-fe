@@ -194,14 +194,14 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
       {showDropdown && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-[400px] overflow-y-auto"
+          className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[400px] overflow-y-auto"
         >
           {loadingSuggestions ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : suggestions.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+            <div className="px-4 py-8 text-center text-gray-500
               <p>No freelancers found</p>
               <p className="text-sm mt-1">Try a different search term</p>
             </div>
@@ -216,8 +216,8 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
                     px-4 py-3 cursor-pointer transition-colors
                     ${
                       selectedIndex === index || highlightedFreelancer === freelancer.id
-                        ? 'bg-primary/10 dark:bg-primary/20'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        ? 'bg-primary/10
+                        : 'hover:bg-gray-50
                     }
                   `}
                   onClick={() => handleSuggestionClick(freelancer)}
@@ -233,7 +233,7 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-gray-900 dark:text-white truncate">
+                        <span className="font-semibold text-gray-900 truncate">
                           {freelancer.name}
                         </span>
                         <VerificationBadge
@@ -245,14 +245,14 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
                         )}
                       </div>
                       {freelancer.specialty && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 truncate mb-1">
+                        <p className="text-sm text-gray-600 truncate mb-1">
                           {freelancer.specialty}
                         </p>
                       )}
                       {freelancer.rating && freelancer.rating > 0 && (
                         <div className="flex items-center gap-1">
                           <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs text-gray-600 dark:text-gray-400">
+                          <span className="text-xs text-gray-600
                             {freelancer.rating.toFixed(1)}
                             {freelancer.reviews > 0 && ` (${freelancer.reviews} reviews)`}
                           </span>

@@ -111,7 +111,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         ) : (
           <div className="space-y-6 py-4">
             {/* Booking Details */}
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-3">
+            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 border-2 border-primary/20">
                   {freelancer?.name?.charAt(0).toUpperCase() || 'U'}
@@ -121,7 +121,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                     {freelancer?.name || 'Unknown Professional'}
                   </h3>
                   {bookingDate && (
-                    <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="space-y-1 text-sm text-gray-600
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         <span>{format(bookingDate, 'EEEE, MMMM d, yyyy')}</span>
@@ -141,16 +141,16 @@ export const RatingModal: React.FC<RatingModalProps> = ({
 
             {/* Eligibility Message */}
             {eligibility && !eligibility.canBeRated && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-sm text-yellow-800
                   {eligibility.reason || 'This booking cannot be rated at this time.'}
                 </p>
               </div>
             )}
 
             {eligibility && eligibility.hasRating && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800
                   You have already rated this booking.
                 </p>
               </div>
@@ -172,7 +172,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                     />
                   </div>
                   {rating > 0 && (
-                    <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    <p className="text-center text-sm text-gray-600 mt-2">
                       You selected {rating} star{rating !== 1 ? 's' : ''}
                     </p>
                   )}

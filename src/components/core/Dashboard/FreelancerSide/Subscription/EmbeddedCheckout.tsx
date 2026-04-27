@@ -138,17 +138,17 @@ export function EmbeddedCheckout({
           {isLoading && (
             <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
               <LoadingSpinner size="lg" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">Loading checkout...</p>
+              <p className="text-sm text-gray-600 checkout...</p>
             </div>
           )}
 
           {error && (
-            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 animate-in slide-in-from-top duration-200">
-              <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">Error</p>
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 animate-in slide-in-from-top duration-200">
+              <p className="text-sm font-medium text-red-800 mb-2">Error</p>
+              <p className="text-sm text-red-600
               <button
                 onClick={handleClose}
-                className="mt-3 text-sm text-red-700 dark:text-red-300 hover:underline"
+                className="mt-3 text-sm text-red-700 hover:underline"
               >
                 Close and try again
               </button>

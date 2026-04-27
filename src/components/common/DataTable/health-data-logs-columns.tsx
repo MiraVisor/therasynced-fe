@@ -125,7 +125,7 @@ export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : null}
             <span
               className={`font-inter font-medium text-sm ${
-                isThirdParty ? 'text-amber-700 dark:text-amber-400' : 'text-charcoal'
+                isThirdParty ? 'text-amber-700 : 'text-charcoal'
               }`}
             >
               {isSelfAccess ? 'You (Self)' : accessedBy.name}
@@ -137,7 +137,7 @@ export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : (
               <Badge
                 variant="secondary"
-                className="font-inter text-xs text-amber-700 dark:text-amber-400"
+                className="font-inter text-xs text-amber-700
               >
                 Third-Party Access
               </Badge>
@@ -227,7 +227,7 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : null}
             <span
               className={`font-inter font-medium text-sm ${
-                isThirdParty ? 'text-amber-700 dark:text-amber-400' : 'text-charcoal'
+                isThirdParty ? 'text-amber-700 : 'text-charcoal'
               }`}
             >
               {isSelfAccess ? 'You (Self)' : accessedBy.name}
@@ -239,7 +239,7 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : (
               <Badge
                 variant="secondary"
-                className="font-inter text-xs text-amber-700 dark:text-amber-400"
+                className="font-inter text-xs text-amber-700
               >
                 Third-Party Access
               </Badge>

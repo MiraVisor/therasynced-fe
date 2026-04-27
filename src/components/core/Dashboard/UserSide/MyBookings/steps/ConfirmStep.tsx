@@ -49,14 +49,14 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
       {/* Header */}
       <div className="text-center space-y-3">
         <h2 className="text-2xl font-poppins font-bold text-charcoal">Confirm your booking</h2>
-        <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
+        <p className="text-gray-600 text-lg font-inter">
           Review your appointment details and complete your booking
         </p>
       </div>
 
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Appointment Summary Card */}
-        <Card className="border-2 border-primary bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/10">
+        <Card className="border-2 border-primary bg-gradient-to-br from-white to-green-50/30
           <CardContent className="p-8">
             {/* Therapist Info */}
             <div className="flex items-center gap-4 mb-6">
@@ -68,7 +68,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
               </Avatar>
               <div className="flex-1">
                 <h3 className="text-xl font-poppins font-bold text-charcoal">{therapist?.name}</h3>
-                <p className="text-gray-600 dark:text-gray-400 font-inter font-medium">
+                <p className="text-gray-600 font-inter font-medium">
                   {therapist?.specialty}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
@@ -96,7 +96,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
                   <h4 className="font-poppins font-semibold text-charcoal">Date & Time</h4>
                 </div>
                 <div className="pl-7">
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-gray-900
                     {selectedDate &&
                       new Date(selectedDate).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -131,14 +131,14 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
                       {serviceForm.watch('serviceCategoryIds')?.map((id: string) => {
                         const service = therapist?.services?.find((s) => s.id === id);
                         return (
-                          <p key={id} className="text-gray-900 dark:text-white font-medium">
+                          <p key={id} className="text-gray-900 font-medium">
                             {service?.name || 'Unknown Service'}
                           </p>
                         );
                       })}
                     </div>
                   ) : (
-                    <p className="text-gray-600 dark:text-gray-400">General therapy session</p>
+                    <p className="text-gray-600 therapy session</p>
                   )}
                 </div>
               </div>
@@ -146,27 +146,27 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
 
             {/* Additional Details */}
             {(detailsForm.watch('notes') || detailsForm.watch('clientAddress')) && (
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-6 pt-6 border-t border-gray-200
                 <h4 className="font-poppins font-semibold text-charcoal mb-3">
                   Additional Details
                 </h4>
                 <div className="space-y-3">
                   {detailsForm.watch('notes') && (
                     <div>
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <span className="text-sm font-medium text-gray-600
                         Notes:
                       </span>
-                      <p className="text-gray-900 dark:text-white mt-1">
+                      <p className="text-gray-900 mt-1">
                         {detailsForm.watch('notes')}
                       </p>
                     </div>
                   )}
                   {detailsForm.watch('clientAddress') && (
                     <div>
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <span className="text-sm font-medium text-gray-600
                         Address:
                       </span>
-                      <p className="text-gray-900 dark:text-white mt-1">
+                      <p className="text-gray-900 mt-1">
                         {detailsForm.watch('clientAddress')}
                       </p>
                     </div>
@@ -176,7 +176,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
             )}
 
             {/* Price */}
-            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-6 pt-6 border-t border-gray-200
               <div className="space-y-2">
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-lg font-poppins font-semibold text-charcoal">
@@ -192,15 +192,15 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
         </Card>
 
         {/* Important Information */}
-        <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
+        <Card className="bg-blue-50 border border-blue-200
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                <h4 className="font-semibold text-blue-900 mb-2">
                   Important Information
                 </h4>
-                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Your slot is reserved for 5 minutes. Complete your booking to confirm.</li>
                   <li>• You&apos;ll receive a confirmation email with session details.</li>
                   <li>• Cancellation is free up to 24 hours before your appointment.</li>

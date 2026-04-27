@@ -260,13 +260,13 @@ export function GuideTabs() {
         transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="flex justify-center mb-12"
       >
-        <div className="inline-flex bg-white dark:bg-neutral-900 p-1.5 rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm">
+        <div className="inline-flex bg-white p-1.5 rounded-xl border border-gray-100 shadow-sm">
           <button
             onClick={() => setActiveTab('client')}
             className={`px-8 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
               activeTab === 'client'
-                ? 'bg-[#f5f4f1] dark:bg-neutral-800 text-primary shadow-md shadow-primary/5'
-                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                ? 'bg-[#f5f4f1] text-primary shadow-md shadow-primary/5'
+                : 'text-gray-500 hover:text-gray-700
             }`}
           >
             For Clients
@@ -275,8 +275,8 @@ export function GuideTabs() {
             onClick={() => setActiveTab('therapist')}
             className={`px-8 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
               activeTab === 'therapist'
-                ? 'bg-[#f5f4f1] dark:bg-neutral-800 text-primary shadow-md shadow-primary/5'
-                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                ? 'bg-[#f5f4f1] text-primary shadow-md shadow-primary/5'
+                : 'text-gray-500 hover:text-gray-700
             }`}
           >
             For Therapists
@@ -303,7 +303,7 @@ export function GuideTabs() {
                 delay: isMobile ? 0 : idx * 0.06,
                 duration: isMobile ? 0.2 : 0.5,
               }}
-              className="p-7 lg:p-10 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm"
+              className="p-7 lg:p-10 rounded-2xl border border-gray-100 bg-white shadow-sm"
             >
               <div className="flex items-start gap-5 mb-5">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center flex-shrink-0">
@@ -314,11 +314,11 @@ export function GuideTabs() {
                     <span className="text-xs font-bold text-primary uppercase tracking-widest font-inter">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white font-playfair">
+                    <h3 className="text-xl lg:text-2xl font-bold text-gray-900 font-playfair">
                       {topic.title}
                     </h3>
                   </div>
-                  <p className="text-sm lg:text-base text-gray-600 dark:text-neutral-400 font-open-sans leading-relaxed">
+                  <p className="text-sm lg:text-base text-gray-600 font-open-sans leading-relaxed">
                     {topic.description}
                   </p>
                 </div>
@@ -327,14 +327,14 @@ export function GuideTabs() {
               <div className="grid md:grid-cols-2 gap-6 mt-6 pl-0 md:pl-[76px]">
                 {/* Steps */}
                 <div>
-                  <h4 className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-widest mb-4 font-inter">
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 font-inter">
                     How it works
                   </h4>
                   <ol className="space-y-3">
                     {topic.steps.map((step, stepIdx) => (
                       <li
                         key={stepIdx}
-                        className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans leading-relaxed"
+                        className="flex items-start gap-3 text-sm text-gray-700 font-open-sans leading-relaxed"
                       >
                         <span className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/10 text-primary text-[11px] font-bold flex items-center justify-center font-poppins">
                           {stepIdx + 1}
@@ -347,14 +347,14 @@ export function GuideTabs() {
 
                 {/* Tips */}
                 <div>
-                  <h4 className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-widest mb-4 font-inter">
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 font-inter">
                     Tips
                   </h4>
                   <ul className="space-y-3">
                     {topic.tips.map((tip, tipIdx) => (
                       <li
                         key={tipIdx}
-                        className="flex items-start gap-3 text-sm text-gray-700 dark:text-neutral-300 font-open-sans leading-relaxed"
+                        className="flex items-start gap-3 text-sm text-gray-700 font-open-sans leading-relaxed"
                       >
                         <span className="flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full bg-primary" />
                         <span className="flex-1">{tip}</span>

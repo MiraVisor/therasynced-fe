@@ -14,11 +14,11 @@ export function SidebarSkeleton({ className }: SidebarSkeletonProps) {
         className,
       )}
     >
-      <div className="flex h-full w-full flex-col bg-sidebar rounded-md dark:border dark:border-[#007745] px-2">
+      <div className="flex h-full w-full flex-col bg-sidebar rounded-md px-2">
         {/* Header skeleton - Logo */}
         <div className="mx-auto w-full mt-8 mb-6 px-2 py-8">
           <div className="flex items-center justify-center px-2 mx-auto cursor-pointer min-h-[40px]">
-            <div className="h-[40px] w-[150px] bg-gray-200 dark:bg-gray-700/30 rounded-md animate-pulse" />
+            <div className="h-[40px] w-[150px] bg-gray-200 rounded-md animate-pulse" />
           </div>
         </div>
 
@@ -33,10 +33,10 @@ export function SidebarSkeleton({ className }: SidebarSkeletonProps) {
               <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
               {/* Icon skeleton */}
-              <div className="h-5 w-5 bg-gray-300 dark:bg-gray-600/40 rounded" />
+              <div className="h-5 w-5 bg-gray-300 rounded" />
               {/* Text skeleton */}
               <div
-                className="h-4 bg-gray-300 dark:bg-gray-600/40 rounded flex-1"
+                className="h-4 bg-gray-300 rounded flex-1"
                 style={{ width: `${Math.random() * 30 + 50}%` }}
               />
             </div>
@@ -50,8 +50,8 @@ export function SidebarSkeleton({ className }: SidebarSkeletonProps) {
             {/* Shimmer effect */}
             <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-            <div className="h-4 w-4 bg-gray-300 dark:bg-gray-600/40 rounded" />
-            <div className="h-4 w-20 bg-gray-300 dark:bg-gray-600/40 rounded" />
+            <div className="h-4 w-4 bg-gray-300 rounded" />
+            <div className="h-4 w-20 bg-gray-300 rounded" />
           </div>
         </div>
       </div>
@@ -63,7 +63,7 @@ export function SidebarSkeleton({ className }: SidebarSkeletonProps) {
 export function SidebarSkeletonMobile({ className }: SidebarSkeletonProps) {
   return (
     <div className={cn('flex md:hidden items-center justify-center p-4', className)}>
-      <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700/30 rounded-md animate-pulse" />
+      <div className="h-10 w-10 bg-gray-200 rounded-md animate-pulse" />
     </div>
   );
 }

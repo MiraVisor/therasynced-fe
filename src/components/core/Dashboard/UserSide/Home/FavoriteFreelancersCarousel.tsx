@@ -43,21 +43,21 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-64 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4 overflow-hidden relative"
+                className="flex-shrink-0 w-64 border border-gray-200 rounded-lg p-4 space-y-4 overflow-hidden relative"
               >
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                  <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1 animate-pulse" />
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2 animate-pulse" />
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-1 animate-pulse" />
+                    <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-full animate-pulse" />
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700/60 rounded w-2/3 animate-pulse" />
+                  <div className="h-3 bg-gray-200 rounded w-full animate-pulse" />
+                  <div className="h-3 bg-gray-200 rounded w-2/3 animate-pulse" />
                 </div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full animate-pulse" />
+                <div className="h-8 bg-gray-200 rounded w-full animate-pulse" />
               </div>
             ))}
           </div>
@@ -77,9 +77,9 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
-            <Heart className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">No favorite freelancers yet</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <Heart className="w-12 h-12 text-gray-300 mb-2" />
+            <p className="text-sm text-gray-500 favorite freelancers yet</p>
+            <p className="text-xs text-gray-400 mt-1">
               Add some favorites from the explore page to see them here
             </p>
           </div>
@@ -124,9 +124,9 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-48 text-center">
-            <Heart className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">No favorite freelancers yet</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <Heart className="w-12 h-12 text-gray-300 mb-2" />
+            <p className="text-sm text-gray-500 favorite freelancers yet</p>
+            <p className="text-xs text-gray-400 mt-1">
               Add some favorites from the explore page to see them here
             </p>
             <Button

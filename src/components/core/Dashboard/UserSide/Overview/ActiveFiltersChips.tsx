@@ -125,7 +125,7 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active filters:</span>
+      <span className="text-sm font-medium text-gray-700 filters:</span>
       {chips.map((chip, index) => (
         <Badge
           key={`${chip.key}-${chip.value || index}`}
@@ -136,7 +136,7 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
           <button
             type="button"
             onClick={() => handleRemove(chip)}
-            className="ml-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 p-0.5"
+            className="ml-1 rounded-full hover:bg-gray-300 p-0.5"
             aria-label={`Remove ${chip.label}`}
           >
             <X className="h-3 w-3" />

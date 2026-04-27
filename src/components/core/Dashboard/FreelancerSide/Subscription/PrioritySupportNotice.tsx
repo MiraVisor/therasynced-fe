@@ -39,22 +39,22 @@ function PrioritySupportNoticeAuthed() {
   if (!isGold) return null;
 
   return (
-    <div className="mb-6 rounded-xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 p-5">
+    <div className="mb-6 rounded-xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-5">
       <div className="flex items-start gap-3">
-        <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex-shrink-0">
-          <Crown className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+        <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
+          <Crown className="w-5 h-5 text-amber-700 />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-poppins font-semibold text-gray-900 dark:text-white mb-1">
+          <h3 className="font-poppins font-semibold text-gray-900 mb-1">
             Priority Support - Gold members
           </h3>
-          <p className="text-sm text-gray-700 dark:text-gray-300 font-inter mb-3">
+          <p className="text-sm text-gray-700 font-inter mb-3">
             As a Gold member, your requests are routed to our priority queue with a 24-hour response
             guarantee during business days.
           </p>
           <a
             href="mailto:priority-support@therasynced.com"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-amber-700 hover:underline"
           >
             <Mail className="w-4 h-4" />
             priority-support@therasynced.com

@@ -91,11 +91,11 @@ const FreelancerFormsPage = () => {
       <div className="space-y-6 lg:space-y-8">
         {/* Tier gate: Bronze sees upgrade prompt instead of the page */}
         {!isLoadingSubscription && !canAccessForms ? (
-          <div className="border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-2xl py-16 px-6 text-center bg-white dark:bg-neutral-900/50">
+          <div className="border-2 border-dashed border-gray-200 rounded-2xl py-16 px-6 text-center bg-white
             <div className="w-14 h-14 rounded-full bg-primary/10 mx-auto flex items-center justify-center mb-4">
               <Lock className="w-7 h-7 text-primary" />
             </div>
-            <h2 className="text-xl font-poppins font-bold text-charcoal dark:text-white mb-2">
+            <h2 className="text-xl font-poppins font-bold text-charcoal mb-2">
               Custom intake forms require Silver or Gold
             </h2>
             <p className="text-sm font-inter text-muted-foreground max-w-md mx-auto mb-6">

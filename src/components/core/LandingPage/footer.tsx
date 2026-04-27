@@ -1,7 +1,6 @@
 'use client';
 
 import { Facebook, Instagram, Linkedin } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -24,7 +23,7 @@ const socialLinks = [
     href: 'https://x.com/therasynced',
     label: 'X (Twitter)',
     icon: XIcon,
-    hoverClass: 'hover:text-black dark:hover:text-white',
+    hoverClass: 'hover:text-black
   },
   {
     href: 'https://www.instagram.com/therasynced',
@@ -41,17 +40,16 @@ const socialLinks = [
 ];
 
 const Footer = () => {
-  const { resolvedTheme } = useTheme();
 
   return (
-    <footer className="w-full bg-[#faf9f6] dark:bg-black border-t border-gray-100 dark:border-neutral-900">
+    <footer className="w-full bg-[#faf9f6] border-t border-gray-100
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="col-span-2 space-y-4">
             <Link href="/" className="inline-block">
               <Image
-                src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
+                src="/svgs/NewLogoDark.svg"
                 alt="TheraSynced"
                 width={120}
                 height={32}
@@ -83,7 +81,7 @@ const Footer = () => {
 
           {/* Platform Links */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 font-inter">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 font-inter">
               Platform
             </h3>
             <ul className="space-y-2.5 text-sm text-gray-500 font-open-sans">
@@ -120,7 +118,7 @@ const Footer = () => {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 font-inter">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 font-inter">
               Legal
             </h3>
             <ul className="space-y-2.5 text-sm text-gray-500 font-open-sans">
@@ -157,7 +155,7 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 font-inter">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 font-inter">
               Contact
             </h3>
             <ul className="space-y-2.5 text-sm text-gray-500 font-open-sans">
@@ -192,7 +190,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-10 pt-6 border-t border-gray-100 dark:border-neutral-900 flex flex-col sm:flex-row justify-between gap-4">
+        <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between gap-4">
           <p className="text-xs text-gray-400 font-inter">
             © {new Date().getFullYear()} TheraSynced. All rights reserved.
           </p>

@@ -24,14 +24,14 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
 
   if (Array.isArray(bookings) && bookings.length === 0) {
     return (
-      <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
+      <Card className="h-full bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg">
         <CardContent className="flex items-center justify-center h-64">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
               <span className="text-2xl">📅</span>
             </div>
             <h3 className="text-lg font-poppins font-semibold text-charcoal">No appointments</h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-md">
+            <p className="text-gray-500 max-w-md">
               No upcoming appointments found for this date.
             </p>
           </div>
@@ -68,7 +68,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
   };
 
   return (
-    <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 border-0 shadow-lg">
+    <Card className="h-full bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-poppins font-bold text-charcoal">
@@ -99,7 +99,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
               <h4 className="font-poppins font-bold text-lg text-charcoal">
                 {expert.name || 'Unknown Freelancer'}
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-gray-600
                 {expert.cardInfo?.mainService || 'N/A'}
               </p>
             </div>
@@ -120,13 +120,13 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
         </div>
 
         {/* Appointment details */}
-        <div className="space-y-3 py-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+        <div className="space-y-3 py-4 border-t border-gray-200
+          <div className="flex items-center gap-3 text-gray-600
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-sm">📅</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-gray-900
                 {new Date(booking.slot?.startTime).toLocaleDateString('en-US', {
                   weekday: 'long',
                   year: 'numeric',
@@ -136,26 +136,26 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+          <div className="flex items-center gap-3 text-gray-600
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
               <span className="text-sm">⏰</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-gray-900
                 {format(new Date(booking.slot?.startTime), 'HH:mm')}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
               <span className="text-sm">✓</span>
             </div>
             <Badge
               variant={status === 'confirmed' ? 'default' : 'secondary'}
               className={`text-xs ${
                 status === 'confirmed'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                  ? 'bg-green-100 text-green-800
+                  : 'bg-yellow-100 text-yellow-800
               }`}
             >
               {status}
@@ -168,13 +168,13 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
           <Button
             variant="outline"
             onClick={handleReschedule}
-            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50
           >
             Reschedule
           </Button>
           <Button
             variant="outline"
-            className="flex-1 border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+            className="flex-1 border-red-600 text-red-600 hover:bg-red-50
             onClick={() => {}}
           >
             Cancel

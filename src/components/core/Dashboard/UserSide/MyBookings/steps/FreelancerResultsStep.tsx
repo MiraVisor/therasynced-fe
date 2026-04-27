@@ -44,10 +44,10 @@ export const FreelancerResultsStep: React.FC<FreelancerResultsStepProps> = ({
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
           <Search className="w-8 h-8 text-red-500" />
         </div>
-        <h3 className="text-lg font-poppins font-semibold text-charcoal dark:text-white mb-2">
+        <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
           Error loading freelancers
         </h3>
         <p className="font-inter text-muted-foreground mb-4">
@@ -63,10 +63,10 @@ export const FreelancerResultsStep: React.FC<FreelancerResultsStepProps> = ({
   if (freelancers.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
           <Search className="w-8 h-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-poppins font-semibold text-charcoal dark:text-white mb-2">
+        <h3 className="text-lg font-poppins font-semibold text-charcoal mb-2">
           No freelancers found
         </h3>
         <p className="font-inter text-muted-foreground mb-4">
@@ -83,10 +83,10 @@ export const FreelancerResultsStep: React.FC<FreelancerResultsStepProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-poppins font-bold text-charcoal dark:text-white">
+        <h2 className="text-3xl font-poppins font-bold text-charcoal
           Available Freelancers
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-lg font-inter">
+        <p className="text-gray-600 text-lg font-inter">
           {freelancers.length} {freelancers.length === 1 ? 'freelancer' : 'freelancers'} found
           {freelancerSearchQuery && ` matching "${freelancerSearchQuery}"`}
         </p>
@@ -131,7 +131,7 @@ const FreelancerWithSlots: React.FC<{
 
   if (isLoading) {
     return (
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="border border-gray-200 rounded-lg p-6">
         <LoadingSpinner size="md" />
       </div>
     );

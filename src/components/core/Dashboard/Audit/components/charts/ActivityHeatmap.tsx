@@ -76,10 +76,10 @@ export function ActivityHeatmap({ data, title, description, loading }: ActivityH
   const getIntensity = (value: number) => {
     if (value === 0) return 'bg-muted';
     const intensity = Math.min(value / maxValue, 1);
-    if (intensity < 0.25) return 'bg-blue-200 dark:bg-blue-900';
-    if (intensity < 0.5) return 'bg-blue-400 dark:bg-blue-700';
-    if (intensity < 0.75) return 'bg-blue-600 dark:bg-blue-500';
-    return 'bg-blue-800 dark:bg-blue-300';
+    if (intensity < 0.25) return 'bg-blue-200
+    if (intensity < 0.5) return 'bg-blue-400
+    if (intensity < 0.75) return 'bg-blue-600
+    return 'bg-blue-800
   };
 
   return (
@@ -109,10 +109,10 @@ export function ActivityHeatmap({ data, title, description, loading }: ActivityH
             <span>Less</span>
             <div className="flex gap-1">
               <div className="w-3 h-3 rounded-sm bg-muted" />
-              <div className="w-3 h-3 rounded-sm bg-blue-200 dark:bg-blue-900" />
-              <div className="w-3 h-3 rounded-sm bg-blue-400 dark:bg-blue-700" />
-              <div className="w-3 h-3 rounded-sm bg-blue-600 dark:bg-blue-500" />
-              <div className="w-3 h-3 rounded-sm bg-blue-800 dark:bg-blue-300" />
+              <div className="w-3 h-3 rounded-sm bg-blue-200 />
+              <div className="w-3 h-3 rounded-sm bg-blue-400 />
+              <div className="w-3 h-3 rounded-sm bg-blue-600 />
+              <div className="w-3 h-3 rounded-sm bg-blue-800 />
             </div>
             <span>More</span>
           </div>
