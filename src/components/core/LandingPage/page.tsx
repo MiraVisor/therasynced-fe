@@ -12,7 +12,7 @@ import Navbar from './navbar';
 // Lazy load below-the-fold components to improve initial load time
 const ForWho = dynamic(() => import('./for-who'), {
   ssr: true,
-  loading: () => <div className="h-[600px] bg-[#f5f4f1] />,
+  loading: () => <div className="h-[600px] bg-[#f5f4f1]" />,
 });
 
 const HowItWorks = dynamic(() => import('./how-it-works'), {
@@ -22,13 +22,13 @@ const HowItWorks = dynamic(() => import('./how-it-works'), {
 
 const Features = dynamic(() => import('./features'), {
   ssr: true,
-  loading: () => <div className="h-[600px] bg-[#f5f4f1] />,
+  loading: () => <div className="h-[600px] bg-[#f5f4f1]" />,
 });
 
 // Temporarily hidden - uncomment when ready to show
 // const WhyChooseUs = dynamic(() => import('./why-choose-us'), {
 //   ssr: true,
-//   loading: () => <div className="h-[600px] bg-[#f5f4f1] />,
+//   loading: () => <div className="h-[600px] bg-[#f5f4f1]" />,
 // });
 
 const Pricing = dynamic(() => import('./pricing'), {
