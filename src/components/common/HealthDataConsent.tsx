@@ -122,12 +122,12 @@ export function HealthDataConsent({
     return (
       <div className={className}>
         {consentGranted ? (
-          <Alert className="border-green-200 bg-green-50"
-            <CheckCircle2 className="h-4 w-4 text-green-600 />
-            <AlertTitle className="text-green-900"
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertTitle className="text-green-900">
               Client Consent Granted
             </AlertTitle>
-            <AlertDescription className="text-green-800"
+            <AlertDescription className="text-green-800">
               The client has granted consent for {consentType.replace(/_/g, ' ').toLowerCase()} data
               processing.
               {consentTimestamp && (

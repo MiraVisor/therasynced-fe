@@ -119,7 +119,7 @@ const Freelancers = () => {
         <div className="w-full max-w-7xl mx-auto transform lg:translate-y-24 relative z-20">
           <div className="overflow-hidden">
             <div
-              className="marquee flex gap-2 items-stretch will-change-transform px-2"
+              className="marquee flex gap-2 items-stretch will-change-transform px-2">
               aria-hidden
             >
               {repeatedExperts.map((expert, idx) => (
@@ -275,9 +275,9 @@ const Freelancers = () => {
                   <div className="relative w-full aspect-square rounded-xl overflow-hidden">
                     <Image
                       src={'/images/physio/chiropractor-provides-aid-patient.jpg'}
-                      alt="Expert specialist caring for patient"
+                      alt="Expert specialist caring for patient">
                       fill
-                      className="object-cover object-center"
+                      className="object-cover object-center">
                       priority
                     />
                   </div>

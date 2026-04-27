@@ -24,7 +24,7 @@ export const BookingCardSkeleton = ({ className }: BookingCardSkeletonProps) => 
         {/* Main content skeleton */}
         <div className="flex items-start gap-3 mb-4">
           {/* Time badge skeleton */}
-          <div className="flex flex-col items-center justify-center bg-gray-100 rounded-lg p-3 min-w-[60px] border border-gray-200"
+          <div className="flex flex-col items-center justify-center bg-gray-100 rounded-lg p-3 min-w-[60px] border border-gray-200">
             <div className="h-5 bg-gray-200 rounded animate-pulse w-8 mb-1" />
             <div className="h-3 bg-gray-200 rounded animate-pulse w-6" />
           </div>

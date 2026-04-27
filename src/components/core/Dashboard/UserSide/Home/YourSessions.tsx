@@ -93,13 +93,13 @@ const YourSessions = () => {
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'CONFIRMED':
-        return 'bg-green-100 text-green-800
+        return 'bg-green-100 text-green-800'
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800
+        return 'bg-red-100 text-red-800'
       case 'RESCHEDULED':
-        return 'bg-yellow-100 text-yellow-800
+        return 'bg-yellow-100 text-yellow-800'
       default:
-        return 'bg-gray-100 text-gray-800
+        return 'bg-gray-100 text-gray-800'
     }
   };
 
@@ -150,7 +150,7 @@ const YourSessions = () => {
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <Calendar className="w-12 h-12 text-gray-300 mb-2" />
-            <p className="text-sm font-inter text-gray-500 sessions yet</p>"
+            <p className="text-sm font-inter text-gray-500 sessions yet</p>">
             <p className="text-xs font-inter text-gray-400 mt-1">
               Your booking history will appear here
             </p>
@@ -206,7 +206,7 @@ const YourSessions = () => {
                           </h4>
                           <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600"
+                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{formatDate(booking.slot.startTime)}</span>
@@ -222,7 +222,7 @@ const YourSessions = () => {
                         </div>
                         {booking.totalAmount && (
                           <div className="mt-2">
-                            <span className="text-sm font-poppins font-semibold text-gray-900"
+                            <span className="text-sm font-poppins font-semibold text-gray-900">
                               EUR {booking.totalAmount}
                             </span>
                           </div>
@@ -257,7 +257,7 @@ const YourSessions = () => {
                           </h4>
                           <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600"
+                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{formatDate(booking.slot.startTime)}</span>
@@ -273,7 +273,7 @@ const YourSessions = () => {
                         </div>
                         {booking.totalAmount && (
                           <div className="mt-2">
-                            <span className="text-sm font-poppins font-semibold text-gray-900"
+                            <span className="text-sm font-poppins font-semibold text-gray-900">
                               EUR {booking.totalAmount}
                             </span>
                           </div>

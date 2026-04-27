@@ -435,7 +435,7 @@ export function ProfileSection() {
               placeholder="Enter your email"
               value={formData.email || ''}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className="h-11 text-sm font-inter border-gray-300 bg-gray-50 cursor-not-allowed text-charcoal"
+              className="h-11 text-sm font-inter border-gray-300 bg-gray-50 cursor-not-allowed text-charcoal">
               disabled
             />
           </div>
@@ -456,7 +456,7 @@ export function ProfileSection() {
                       ? 'Admin'
                       : 'Unknown'
               }
-              className="h-11 text-sm font-inter border-gray-300 bg-gray-50 cursor-not-allowed text-charcoal"
+              className="h-11 text-sm font-inter border-gray-300 bg-gray-50 cursor-not-allowed text-charcoal">
               disabled
             />
             <p className="text-xs text-gray-500">Role cannot be changed</p>

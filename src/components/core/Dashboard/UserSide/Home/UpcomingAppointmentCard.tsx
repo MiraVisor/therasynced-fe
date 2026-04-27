@@ -68,7 +68,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
 
     if (isToday) return 'bg-blue-100 text-blue-800
     if (isTomorrow) return 'bg-green-100 text-green-800
-    return 'bg-gray-100 text-gray-800
+    return 'bg-gray-100 text-gray-800'
   };
 
   const LocationIcon = getLocationIcon(booking);
@@ -110,7 +110,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
                   size="sm"
                 />
               </div>
-              <div className="flex items-center gap-3 text-sm font-inter text-gray-600"
+              <div className="flex items-center gap-3 text-sm font-inter text-gray-600">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   <span>{getBookingTime(booking)}</span>
@@ -126,7 +126,7 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
           {/* Price and Actions */}
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="font-poppins font-semibold text-gray-900"
+              <div className="font-poppins font-semibold text-gray-900">
                 EUR {booking?.totalAmount || '0'}
               </div>
             </div>

@@ -43,7 +43,7 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
 
   if (ratings.length === 0 && !loading) {
     return (
-      <div className="text-center py-8 text-gray-500"
+      <div className="text-center py-8 text-gray-500">
         <RatingDisplay rating={0} reviewCount={0} size="sm" showCount={false} />
       </div>
     );
@@ -71,7 +71,7 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
                       <p className="font-poppins font-semibold text-charcoal text-sm">
                         {patient?.name || 'Anonymous'}
                       </p>
-                      <p className="text-xs text-gray-500"
+                      <p className="text-xs text-gray-500">
                         {createdAt ? format(new Date(createdAt), 'MMM d, yyyy') : 'Unknown date'}
                       </p>
                     </div>
@@ -84,7 +84,7 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
                       className={`w-4 h-4 ${
                         star <= (ratingValue || 0)
                           ? 'fill-yellow-400 text-yellow-400'
-                          : 'fill-gray-200 text-gray-300
+                          : 'fill-gray-200 text-gray-300'
                       }`}
                     />
                   ))}
@@ -96,8 +96,8 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200"
-          <p className="text-sm text-gray-600"
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600">
             Showing {ratings.length} of {pagination.total} ratings
           </p>
           <div className="flex items-center gap-2">
@@ -109,7 +109,7 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
             >
               Previous
             </Button>
-            <span className="text-sm text-gray-600"
+            <span className="text-sm text-gray-600">
               Page {page} of {pagination.totalPages}
             </span>
             <Button
@@ -126,7 +126,7 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
 
       {loading && (
         <div className="text-center py-4">
-          <p className="text-sm text-gray-500 ratings...</p>"
+          <p className="text-sm text-gray-500 ratings...</p>">
         </div>
       )}
     </div>

@@ -112,7 +112,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-3">
-        <h2 className="text-3xl font-poppins font-bold text-charcoal"
+        <h2 className="text-3xl font-poppins font-bold text-charcoal">
           Tell us what you need
         </h2>
         <p className="text-gray-600 text-lg font-inter">
@@ -124,7 +124,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Preferred Date */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal"
+          <Label className="text-lg font-poppins font-semibold text-charcoal">
             When would you like your appointment? <span className="text-red-500">*</span>
           </Label>
           <Popover>
@@ -154,7 +154,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Service Categories */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal"
+          <Label className="text-lg font-poppins font-semibold text-charcoal">
             What type of services do you need? (Optional)
           </Label>
           {loadingCategories ? (
@@ -181,7 +181,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
             </div>
           )}
           {serviceCategories.length > 10 && (
-            <p className="text-xs text-gray-500"
+            <p className="text-xs text-gray-500">
               Showing first 10 categories. More will be available after search.
             </p>
           )}
@@ -189,7 +189,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Booking For */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal"
+          <Label className="text-lg font-poppins font-semibold text-charcoal">
             Who is this booking for?
           </Label>
           <RadioGroup
@@ -213,7 +213,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Location Preference */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal"
+          <Label className="text-lg font-poppins font-semibold text-charcoal">
             Location preference (Optional)
           </Label>
           <RadioGroup
@@ -243,7 +243,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
 
         {/* Freelancer Name Search */}
         <div className="space-y-3">
-          <Label className="text-lg font-poppins font-semibold text-charcoal"
+          <Label className="text-lg font-poppins font-semibold text-charcoal">
             Search for a specific freelancer (Optional)
           </Label>
           <div className="relative">
@@ -281,11 +281,11 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
                   >
                     <User className="w-5 h-5 text-gray-400" />
                     <div>
-                      <div className="font-medium text-gray-900"
+                      <div className="font-medium text-gray-900">
                         {freelancer.name}
                       </div>
                       {freelancer.specialty && (
-                        <div className="text-sm text-gray-500"
+                        <div className="text-sm text-gray-500">
                           {freelancer.specialty}
                         </div>
                       )}

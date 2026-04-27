@@ -47,7 +47,7 @@ export function BillingSummary({
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm font-medium text-gray-600"
+                <p className="text-sm font-medium text-gray-600">
                   Next Billing Date
                 </p>
                 <p className="text-lg font-poppins font-semibold text-charcoal">
@@ -67,7 +67,7 @@ export function BillingSummary({
           <div className="flex items-center gap-3">
             <CreditCard className="h-5 w-5 text-gray-400" />
             <div>
-              <p className="text-sm font-medium text-gray-600 Amount</p>"
+              <p className="text-sm font-medium text-gray-600 Amount</p>">
               <p className="text-lg font-poppins font-semibold text-charcoal">
                 EUR {plan.price.toFixed(2)} / month
               </p>
@@ -76,8 +76,8 @@ export function BillingSummary({
         </div>
 
         {isCanceled && nextBillingDate && (
-          <div className="rounded-lg border border-orange-500 bg-orange-50 p-4"
-            <p className="text-sm font-medium text-orange-800"
+          <div className="rounded-lg border border-orange-500 bg-orange-50 p-4">
+            <p className="text-sm font-medium text-orange-800">
               Your subscription will end on{' '}
               {nextBillingDate.toLocaleDateString('en-US', {
                 year: 'numeric',

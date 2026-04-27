@@ -58,12 +58,12 @@ export default function TrialBanner() {
   // Determine color based on days remaining
   const getColorClass = () => {
     if (daysRemaining === null)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50'
     if (daysRemaining > 7)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50'
     if (daysRemaining > 3)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-orange-100
-    return 'border-orange-600 bg-gradient-to-r from-orange-100 to-red-50
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-orange-100'
+    return 'border-orange-600 bg-gradient-to-r from-orange-100 to-red-50'
   };
 
   return (
@@ -71,13 +71,13 @@ export default function TrialBanner() {
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1">
           <div className="p-1.5 rounded-lg bg-orange-100 flex-shrink-0 mt-0.5">
-            <Sparkles className="h-4 w-4 text-orange-600 />
+            <Sparkles className="h-4 w-4 text-orange-600" />
           </div>
           <div className="flex-1">
             <AlertTitle className="font-semibold text-gray-900 flex items-center gap-2 mb-2">
               Free Trial Active
               {daysRemaining !== null && (
-                <span className="flex items-center gap-1 text-sm font-normal text-orange-700"
+                <span className="flex items-center gap-1 text-sm font-normal text-orange-700">
                   {daysRemaining === 0
                     ? 'Expires today'
                     : `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left`}
@@ -97,7 +97,7 @@ export default function TrialBanner() {
                 </div>
               </div>
             )}
-            <AlertDescription className="mt-2 space-y-2 text-gray-700"
+            <AlertDescription className="mt-2 space-y-2 text-gray-700">
               {isCanceledDuringTrial ? (
                 <p>
                   Your subscription has been canceled. You&apos;ll continue with trial access until{' '}

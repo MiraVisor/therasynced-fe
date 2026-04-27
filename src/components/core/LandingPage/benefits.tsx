@@ -227,7 +227,7 @@ const Benefits = () => {
             <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               What Our Clients Say
             </h3>
-            <p className="text-gray-600"
+            <p className="text-gray-600">
               Real stories from people who found their perfect match
             </p>
           </div>
@@ -264,10 +264,10 @@ const Benefits = () => {
                       </span>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900"
+                      <div className="font-semibold text-gray-900">
                         {testimonial.author}
                       </div>
-                      <div className="text-sm text-gray-500"
+                      <div className="text-sm text-gray-500">
                         {testimonial.role}
                       </div>
                     </div>

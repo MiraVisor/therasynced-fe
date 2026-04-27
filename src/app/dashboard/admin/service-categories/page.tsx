@@ -290,7 +290,7 @@ const ServiceCategoriesPage = () => {
           data={serviceCategories}
           title="Service Categories"
           searchKey="name"
-          searchPlaceholder="Search categories..."
+          searchPlaceholder="Search categories...">
           enableSorting
           enableFiltering
           enablePagination={true}
@@ -331,7 +331,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Sports massage"
-                  className="font-inter mt-2"
+                  className="font-inter mt-2">
                   required
                 />
               </div>
@@ -408,7 +408,7 @@ const ServiceCategoriesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Sports massage"
-                  className="font-inter mt-2"
+                  className="font-inter mt-2">
                   required
                 />
               </div>

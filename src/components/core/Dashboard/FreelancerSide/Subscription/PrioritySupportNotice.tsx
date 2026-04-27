@@ -42,7 +42,7 @@ function PrioritySupportNoticeAuthed() {
     <div className="mb-6 rounded-xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-5">
       <div className="flex items-start gap-3">
         <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
-          <Crown className="w-5 h-5 text-amber-700 />
+          <Crown className="w-5 h-5 text-amber-700" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-poppins font-semibold text-gray-900 mb-1">

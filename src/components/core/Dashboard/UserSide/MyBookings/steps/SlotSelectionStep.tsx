@@ -83,10 +83,10 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
           </AvatarFallback>
         </Avatar>
         <div>
-          <h3 className="font-poppins font-semibold text-lg text-charcoal"
+          <h3 className="font-poppins font-semibold text-lg text-charcoal">
             {freelancer.name}
           </h3>
-          <p className="text-sm text-gray-600"
+          <p className="text-sm text-gray-600">
             {format(new Date(`${selectedDate}T00:00:00`), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
@@ -176,8 +176,8 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
           <div className="flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-green-900 Selected</div>"
-              <div className="text-sm text-green-700"
+              <div className="font-medium text-green-900 Selected</div>">
+              <div className="text-sm text-green-700">
                 {format(new Date(selectedSlot.startTime), 'h:mm a')} -{' '}
                 {format(new Date(selectedSlot.endTime), 'h:mm a')}
               </div>
@@ -211,7 +211,7 @@ const SlotButton: React.FC<{
         'p-3 rounded-lg border-2 font-medium text-sm transition-all',
         isSelected
           ? 'border-primary bg-primary text-white shadow-lg'
-          : 'border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5
+          : 'border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5'
       )}
     >
       <div className="text-center">

@@ -33,10 +33,10 @@ const CtaSection = () => {
     <section className="w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 bg-gradient-to-br from-cream via-mint-light/50 to-sage-warm/30 relative overflow-hidden">
       {/* Background Image with Gradient Overlay */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 opacity-20"
+        <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/physio/close-up-man-training-with-elastic-band.jpg"
-            alt="An active session using a resistance band"
+            alt="An active session using a resistance band">
             fill
             className="object-cover"
             sizes="100vw"
@@ -150,7 +150,7 @@ const CtaSection = () => {
         {/* Divider */}
         <div className="relative mb-12">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 />
+            <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center">
             <span className="px-4 bg-gradient-to-br from-cream via-mint-light/50 to-sage-warm/30 text-sm text-gray-500 font-inter">

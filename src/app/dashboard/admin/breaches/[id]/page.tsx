@@ -316,7 +316,7 @@ const BreachDetailPage = () => {
                     {index < 3 && (
                       <div
                         className={`h-0.5 w-8 ${
-                          isCompleted ? 'bg-green-500' : 'bg-gray-300
+                          isCompleted ? 'bg-green-500' : 'bg-gray-300'
                         }`}
                       />
                     )}
@@ -382,7 +382,7 @@ const BreachDetailPage = () => {
             className={
               breach.reportedToDpc
                 ? 'border-green-200
-                : 'border-red-200
+                : 'border-red-200'
             }
           >
             <CardHeader>
@@ -420,7 +420,7 @@ const BreachDetailPage = () => {
             className={
               breach.notifiedUsers
                 ? 'border-green-200
-                : 'border-red-200
+                : 'border-red-200'
             }
           >
             <CardHeader>
@@ -584,7 +584,7 @@ const BreachDetailPage = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="font-open-sans text-sm text-amber-800"
+                <p className="font-open-sans text-sm text-amber-800">
                   <strong>Note:</strong> High-risk breaches must be reported to the DPC within 72
                   hours of detection.
                 </p>

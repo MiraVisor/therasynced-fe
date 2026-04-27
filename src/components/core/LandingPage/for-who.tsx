@@ -49,10 +49,10 @@ const ForWho = () => {
             className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
           >
             {/* Hero photo for this card */}
-            <div className="relative w-full aspect-[16/9] bg-gray-100"
+            <div className="relative w-full aspect-[16/9] bg-gray-100">
               <Image
                 src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
-                alt="A therapist providing sports recovery support"
+                alt="A therapist providing sports recovery support">
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -109,10 +109,10 @@ const ForWho = () => {
             className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
           >
             {/* Hero photo for this card */}
-            <div className="relative w-full aspect-[16/9] bg-gray-100"
+            <div className="relative w-full aspect-[16/9] bg-gray-100">
               <Image
                 src="/images/physio/woman-working-with-personal-trainer.jpg"
-                alt="A client training with a personal trainer"
+                alt="A client training with a personal trainer">
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"

@@ -55,19 +55,19 @@ export function TransactionTable({
     const statusConfig: Record<string, { label: string; className: string }> = {
       PAID: {
         label: 'Paid',
-        className: 'bg-green-100 text-green-800
+        className: 'bg-green-100 text-green-800'
       },
       PENDING: {
         label: 'Pending',
-        className: 'bg-yellow-100 text-yellow-800
+        className: 'bg-yellow-100 text-yellow-800'
       },
       FAILED: {
         label: 'Failed',
-        className: 'bg-red-100 text-red-800
+        className: 'bg-red-100 text-red-800'
       },
       REFUNDED: {
         label: 'Refunded',
-        className: 'bg-gray-100 text-gray-800
+        className: 'bg-gray-100 text-gray-800'
       },
     };
 

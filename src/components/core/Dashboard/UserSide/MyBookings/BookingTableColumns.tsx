@@ -40,10 +40,10 @@ export const createBookingColumns = ({
         const startTime = parseISO(row.original.slot.startTime);
         return (
           <div className="flex flex-col">
-            <span className="font-medium text-charcoal"
+            <span className="font-medium text-charcoal">
               {format(startTime, 'MMM d, yyyy')}
             </span>
-            <span className="text-sm text-gray-600"
+            <span className="text-sm text-gray-600">
               {format(startTime, 'h:mm a')}
             </span>
           </div>
@@ -58,7 +58,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal"
+              <span className="font-medium text-charcoal">
               {freelancer.averageRating && (
                 <span className="text-xs text-gray-600"
                   ⭐ {freelancer.averageRating.toFixed(1)}
@@ -77,7 +77,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal"
+              <span className="font-medium text-charcoal">
             </div>
           </div>
         );
@@ -94,7 +94,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex flex-col gap-1">
             {serviceCategories.slice(0, 2).map((service, idx) => (
-              <span key={idx} className="text-sm text-charcoal"
+              <span key={idx} className="text-sm text-charcoal">
                 {service.name}
               </span>
             ))}
@@ -137,16 +137,16 @@ export const createBookingColumns = ({
 
         if (isUpcoming) {
           statusLabel = 'CONFIRMED';
-          statusClass = 'bg-blue-100 text-blue-800
+          statusClass = 'bg-blue-100 text-blue-800'
         } else if (status === 'COMPLETED' || (status === 'CONFIRMED' && isPast)) {
           statusLabel = 'COMPLETED';
-          statusClass = 'bg-green-100 text-green-800
+          statusClass = 'bg-green-100 text-green-800'
         } else if (status === 'CANCELLED') {
           statusLabel = 'CANCELLED';
-          statusClass = 'bg-red-100 text-red-800
+          statusClass = 'bg-red-100 text-red-800'
         } else if (status === 'RESCHEDULED') {
           statusLabel = 'RESCHEDULED';
-          statusClass = 'bg-yellow-100 text-yellow-800
+          statusClass = 'bg-yellow-100 text-yellow-800'
         }
 
         return <Badge className={cn('font-semibold', statusClass)}>{statusLabel}</Badge>;

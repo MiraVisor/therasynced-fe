@@ -52,11 +52,11 @@ const PaymentForm = ({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600"
+      <p className="text-sm text-gray-600">
         Complete your payment to activate your <strong>{planType}</strong> subscription.
       </p>
 
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4"
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
         <p className="text-xs text-gray-500">Stripe payment integration will be added here</p>
       </div>
 

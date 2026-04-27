@@ -25,38 +25,38 @@ const Teams = () => {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-12">
-            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50"
+            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Team Management
               </h3>
-              <p className="text-sm text-gray-600"
+              <p className="text-sm text-gray-600">
                 Manage your entire team from one dashboard
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50"
+            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <Calendar className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Unified Scheduling
               </h3>
-              <p className="text-sm text-gray-600"
+              <p className="text-sm text-gray-600">
                 See all appointments across your practice
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50"
+            <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <Clock className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Performance Insights
               </h3>
-              <p className="text-sm text-gray-600"
+              <p className="text-sm text-gray-600">
                 Track how your team is doing
               </p>
             </div>

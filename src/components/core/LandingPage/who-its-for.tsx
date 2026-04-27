@@ -105,7 +105,7 @@ const WhoItsFor = () => {
                 <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                   {audience[0]?.badge}
                 </span>
-                <h3 className="text-base sm:text-lg font-semibold text-primary"
+                <h3 className="text-base sm:text-lg font-semibold text-primary">
                   {audience[0]?.title}
                 </h3>
               </div>
@@ -114,7 +114,7 @@ const WhoItsFor = () => {
                   src={audience[0]?.image ?? ''}
                   alt={audience[0]?.alt ?? ''}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105">
                   priority
                 />
               </div>
@@ -141,12 +141,12 @@ const WhoItsFor = () => {
               data-aos-mirror="true"
               data-aos-delay="400"
             >
-              <article className="xl:absolute xl:top-[240px] xl:left-1/2 xl:-translate-x-1/2 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5"
+              <article className="xl:absolute xl:top-[240px] xl:left-1/2 xl:-translate-x-1/2 xl:w-[380px] 2xl:w-[420px] group p-4 sm:p-5 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg shadow-primary/5">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                     {audience[1]?.badge}
                   </span>
-                  <h3 className="text-base sm:text-lg font-semibold text-primary"
+                  <h3 className="text-base sm:text-lg font-semibold text-primary">
                     {audience[1]?.title}
                   </h3>
                 </div>
@@ -155,7 +155,7 @@ const WhoItsFor = () => {
                     src={audience[1]?.image ?? ''}
                     alt={audience[1]?.alt ?? ''}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105">
                     priority
                   />
                 </div>
@@ -188,7 +188,7 @@ const WhoItsFor = () => {
                 <span className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold">
                   {audience[2]?.badge}
                 </span>
-                <h3 className="text-base sm:text-lg font-semibold text-primary"
+                <h3 className="text-base sm:text-lg font-semibold text-primary">
                   {audience[2]?.title}
                 </h3>
               </div>
@@ -197,7 +197,7 @@ const WhoItsFor = () => {
                   src={audience[2]?.image ?? ''}
                   alt={audience[2]?.alt ?? ''}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105">
                   priority
                 />
               </div>

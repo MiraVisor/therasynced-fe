@@ -63,19 +63,19 @@ export function BillingHistoryTable() {
     const statusConfig: Record<string, { label: string; className: string }> = {
       paid: {
         label: 'Paid',
-        className: 'bg-green-100 text-green-800
+        className: 'bg-green-100 text-green-800'
       },
       pending: {
         label: 'Pending',
-        className: 'bg-yellow-100 text-yellow-800
+        className: 'bg-yellow-100 text-yellow-800'
       },
       failed: {
         label: 'Failed',
-        className: 'bg-red-100 text-red-800
+        className: 'bg-red-100 text-red-800'
       },
       refunded: {
         label: 'Refunded',
-        className: 'bg-gray-100 text-gray-800
+        className: 'bg-gray-100 text-gray-800'
       },
     };
 
@@ -124,7 +124,7 @@ export function BillingHistoryTable() {
         {/* Header */}
         <div className="mb-6">
           <h3 className="text-xl font-poppins font-bold text-charcoal mb-2">Billing History</h3>
-          <p className="text-sm text-gray-600"
+          <p className="text-sm text-gray-600">
             View and download your past invoices
           </p>
         </div>
@@ -148,7 +148,7 @@ export function BillingHistoryTable() {
             <h4 className="text-lg font-poppins font-semibold text-charcoal mb-2">
               {searchQuery ? 'No Results Found' : 'No Billing History'}
             </h4>
-            <p className="text-sm text-gray-600"
+            <p className="text-sm text-gray-600">
               {searchQuery
                 ? 'No transactions found matching your search.'
                 : 'Your billing history will appear here once you make your first payment.'}
@@ -159,7 +159,7 @@ export function BillingHistoryTable() {
             <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b-2 border-gray-200"
+                  <TableRow className="border-b-2 border-gray-200">
                     <TableHead className="font-poppins font-semibold text-charcoal">Date</TableHead>
                     <TableHead className="font-poppins font-semibold text-charcoal">
                       Period
@@ -188,7 +188,7 @@ export function BillingHistoryTable() {
                       <TableCell className="font-inter py-4">
                         {formatDate(transaction.date)}
                       </TableCell>
-                      <TableCell className="font-inter text-sm py-4 text-gray-600"
+                      <TableCell className="font-inter text-sm py-4 text-gray-600">
                         {transaction.periodStart} - {transaction.periodEnd}
                       </TableCell>
                       <TableCell className="font-inter font-medium capitalize py-4">
@@ -200,7 +200,7 @@ export function BillingHistoryTable() {
                       <TableCell className="py-4">
                         <div className="flex items-center gap-2">
                           {getPaymentMethodIcon(transaction.paymentMethodType)}
-                          <span className="text-sm capitalize text-gray-600"
+                          <span className="text-sm capitalize text-gray-600">
                             {transaction.paymentMethodType || 'N/A'}
                           </span>
                         </div>

@@ -68,7 +68,7 @@ const Navbar = () => {
             alt="TheraSynced"
             width={180}
             height={45}
-            className="h-14 w-auto transition-opacity hover:opacity-80"
+            className="h-14 w-auto transition-opacity hover:opacity-80">
             priority
             sizes="(max-width: 768px) 150px, 180px"
           />

@@ -140,7 +140,7 @@ export function AccountSetupStep() {
               Full Name
             </label>
             <input
-              type="text"
+              type="text">
               {...register('name')}
               id="name"
               aria-label="Full name"
@@ -152,7 +152,7 @@ export function AccountSetupStep() {
                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                   : 'border-gray-300 focus:border-primary',
               )}
-              placeholder="Enter your full name"
+              placeholder="Enter your full name">
               autoFocus
             />
             {errors.name && (
@@ -168,7 +168,7 @@ export function AccountSetupStep() {
               Email Address
             </label>
             <input
-              type="email"
+              type="email">
               {...register('email')}
               id="email"
               aria-label="Email address"

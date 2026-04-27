@@ -145,7 +145,7 @@ const Pricing = () => {
                       </div>
 
                       {/* Price */}
-                      <div className="mb-6 pb-6 border-b border-gray-200"
+                      <div className="mb-6 pb-6 border-b border-gray-200">
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-bold text-gray-900 font-playfair">
                             €
@@ -195,7 +195,7 @@ const Pricing = () => {
                         className={`w-full h-12 font-semibold rounded-lg transition-all duration-300 ${
                           isGold
                             ? 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20'
-                            : 'bg-white text-gray-900 border border-gray-200 hover:border-primary/50 hover:bg-gray-50
+                            : 'bg-white text-gray-900 border border-gray-200 hover:border-primary/50 hover:bg-gray-50'
                         }`}
                       >
                         Start free trial

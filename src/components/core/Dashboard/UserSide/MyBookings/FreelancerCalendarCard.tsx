@@ -64,7 +64,7 @@ export const FreelancerCalendarCard: React.FC<{
               {freelancer.rating !== undefined && freelancer.rating > 0 && (
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium text-gray-700"
+                  <span className="text-sm font-medium text-gray-700">
                     {freelancer.rating.toFixed(1)}
                   </span>
                   {freelancer.reviews !== undefined && freelancer.reviews > 0 && (
@@ -76,7 +76,7 @@ export const FreelancerCalendarCard: React.FC<{
               )}
             </div>
             {freelancer.location && (
-              <div className="flex items-center gap-1 mt-2 text-sm text-gray-600"
+              <div className="flex items-center gap-1 mt-2 text-sm text-gray-600">
                 <MapPin className="w-4 h-4" />
                 <span>{freelancer.location}</span>
               </div>
@@ -86,7 +86,7 @@ export const FreelancerCalendarCard: React.FC<{
 
         {/* Calendar Grid */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700"
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <Calendar className="w-4 h-4" />
             <span>Available Dates</span>
           </div>

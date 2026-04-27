@@ -60,7 +60,7 @@ export function FeatureComparison({
   const renderFeatureValue = (value: boolean | string) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <CheckCircle2 className="h-5 w-5 text-green-600 />
+        <CheckCircle2 className="h-5 w-5 text-green-600" />
       ) : (
         <X className="h-5 w-5 text-gray-400" />
       );
@@ -71,11 +71,11 @@ export function FeatureComparison({
   const getPlanColor = (planName: PlanType) => {
     switch (planName) {
       case 'BRONZE':
-        return 'border-amber-600 bg-amber-50
+        return 'border-amber-600 bg-amber-50'
       case 'SILVER':
-        return 'border-gray-400 bg-gray-50
+        return 'border-gray-400 bg-gray-50'
       case 'GOLD':
-        return 'border-yellow-500 bg-yellow-50
+        return 'border-yellow-500 bg-yellow-50'
       default:
         return '';
     }
@@ -95,7 +95,7 @@ export function FeatureComparison({
               className={`border transition-all ${
                 isCurrent
                   ? 'border-2 border-primary shadow-md'
-                  : 'border-gray-200
+                  : 'border-gray-200'
               } ${getPlanColor(plan.name)}`}
             >
               <CardHeader
@@ -131,12 +131,12 @@ export function FeatureComparison({
                         className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
                       >
                         <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900"
+                          <span className="text-sm font-medium text-gray-900">
                             {feature}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 />
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
                         </div>
                       </div>
                     ))
@@ -169,7 +169,7 @@ export function FeatureComparison({
         <div className="overflow-x-auto -mx-6 px-6">
           <Table>
             <TableHeader>
-              <TableRow className="border-b-2 border-gray-200"
+              <TableRow className="border-b-2 border-gray-200">
                 <TableHead className="w-[220px] font-poppins font-semibold text-charcoal">
                   Feature
                 </TableHead>
@@ -200,9 +200,9 @@ export function FeatureComparison({
               {features.length > 0 ? (
                 features.map((feature, idx) => {
                   return (
-                    <TableRow key={idx} className="border-b border-gray-100"
+                    <TableRow key={idx} className="border-b border-gray-100">
                       <TableCell className="font-medium py-4">
-                        <span className="text-sm text-gray-900"
+                        <span className="text-sm text-gray-900">
                           {feature.name}
                         </span>
                       </TableCell>

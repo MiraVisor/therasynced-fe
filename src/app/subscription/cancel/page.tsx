@@ -13,8 +13,8 @@ export default function SubscriptionCancelPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100"
-            <XCircle className="h-8 w-8 text-orange-600 />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
+            <XCircle className="h-8 w-8 text-orange-600" />
           </div>
           <CardTitle className="text-2xl">Payment Cancelled</CardTitle>
           <CardDescription className="mt-2">

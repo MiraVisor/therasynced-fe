@@ -92,7 +92,7 @@ const ChatMessageInput: React.FC<ChatMessageInputProps> = ({
       {!isUnlimited && messagesLimit !== null && (
         <div className="mb-2 space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-600 this billing cycle</span>"
+            <span className="text-gray-600 this billing cycle</span>">
             <span
               className={cn(
                 'font-semibold',

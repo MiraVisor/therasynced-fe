@@ -107,7 +107,7 @@ export const CalendarWrapper = ({
         eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
           `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`,
       }}
-      dayLayoutAlgorithm="no-overlap"
+      dayLayoutAlgorithm="no-overlap">
       popup
       selectable
       onSelectSlot={() => {}}

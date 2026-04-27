@@ -318,7 +318,7 @@ export function RefundRequestDialog({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png"
+                accept="image/jpeg,image/jpg,image/png">
                 multiple
                 onChange={(e) => {
                   handleImageSelect(e.target.files);

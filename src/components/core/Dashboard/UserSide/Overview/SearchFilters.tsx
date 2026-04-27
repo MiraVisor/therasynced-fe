@@ -119,7 +119,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
       {isOpen && (
         <div className="mt-4 p-6 bg-white border border-gray-200 rounded-lg space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 Results</h3>"
+            <h3 className="text-lg font-semibold text-gray-900 Results</h3>">
             {activeFilterCount > 0 && (
               <Button
                 type="button"

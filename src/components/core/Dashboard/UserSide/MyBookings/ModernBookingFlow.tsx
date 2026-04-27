@@ -569,7 +569,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   return (
     <div className="min-h-screen">
       {/* Header with Progress */}
-      <div className="border-b border-gray-200 bg-white"
+      <div className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             {/* Back Button */}
@@ -593,7 +593,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                         currentStep >= step.id
                           ? 'bg-primary text-white shadow-md'
-                          : 'bg-gray-100 text-gray-400
+                          : 'bg-gray-100 text-gray-400'
                       }`}
                     >
                       {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : step.id}
@@ -603,12 +603,12 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                         className={`text-sm font-medium ${
                           currentStep >= step.id
                             ? 'text-charcoal
-                            : 'text-gray-400
+                            : 'text-gray-400'
                         }`}
                       >
                         {step.title}
                       </div>
-                      <div className="text-xs text-gray-500"
+                      <div className="text-xs text-gray-500">
                         {step.description}
                       </div>
                     </div>
@@ -616,7 +616,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                   {index < steps.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-2 transition-all ${
-                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200
+                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
                       }`}
                     />
                   )}

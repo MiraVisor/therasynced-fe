@@ -42,7 +42,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-2xl font-poppins font-bold text-charcoal"
+        <h2 className="text-2xl font-poppins font-bold text-charcoal">
           Choose Location
         </h2>
         <p className="text-gray-600 text-lg font-inter">
@@ -84,7 +84,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
                     placeholder="Enter your full address"
                     value={clientAddress}
                     onChange={(e) => setClientAddress(e.target.value)}
-                    className="mt-2"
+                    className="mt-2">
                     required
                   />
                 </div>
@@ -109,7 +109,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
               </p>
               {slot.location && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-900"
+                  <p className="text-sm font-medium text-gray-900">
                     {slot.location.name}
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
@@ -130,7 +130,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
       {/* Validation Message */}
       {selectedLocationType === LocationType.HOME && !clientAddress.trim() && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-800"
+          <p className="text-sm text-yellow-800">
             Please provide your address for home visit appointments.
           </p>
         </div>

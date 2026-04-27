@@ -260,7 +260,7 @@ export default function FreelancerProfilePage() {
 
                   <div className="flex-1 min-w-0 space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900"
+                      <h1 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900">
                         {freelancerName}
                       </h1>
                       <VerificationBadge
@@ -287,7 +287,7 @@ export default function FreelancerProfilePage() {
                       </div>
 
                       {(expert.county || expert.cityTown) && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600"
+                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
                           <MapPin className="h-4 w-4" />
                           <span>
                             {expert.cityTown && expert.county
@@ -340,7 +340,7 @@ export default function FreelancerProfilePage() {
                           <span className="inline-block w-full">
                             <Button
                               variant="outline"
-                              className="w-full h-14 text-lg font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl"
+                              className="w-full h-14 text-lg font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl">
                               disabled
                             >
                               <CalendarDays className="h-5 w-5 mr-2" />
@@ -394,30 +394,30 @@ export default function FreelancerProfilePage() {
             </div>
 
             {/* Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-200 bg-gray-50"
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-200 bg-gray-50">
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {slotStats.availableSlots}
                 </div>
-                <div className="text-xs font-inter text-gray-500"
+                <div className="text-xs font-inter text-gray-500">
                   Available Slots
                 </div>
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">{totalRatings}</div>
-                <div className="text-xs font-inter text-gray-500"
+                <div className="text-xs font-inter text-gray-500">
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {displayRating > 0 ? displayRating.toFixed(1) : '—'}
                 </div>
-                <div className="text-xs font-inter text-gray-500"
+                <div className="text-xs font-inter text-gray-500">
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {slotStats.thisWeekSlots}
                 </div>
-                <div className="text-xs font-inter text-gray-500 Week</div>"
+                <div className="text-xs font-inter text-gray-500 Week</div>">
               </div>
             </div>
           </Card>
@@ -495,7 +495,7 @@ export default function FreelancerProfilePage() {
                             >
                               <div className="flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-primary" />
-                                <span className="font-inter text-sm text-gray-900"
+                                <span className="font-inter text-sm text-gray-900">
                                   {service.serviceName}
                                 </span>
                               </div>
@@ -554,7 +554,7 @@ export default function FreelancerProfilePage() {
                               return (
                                 <div key={stars} className="flex items-center gap-3">
                                   <div className="flex items-center gap-1 w-12">
-                                    <span className="text-sm font-medium text-gray-700"
+                                    <span className="text-sm font-medium text-gray-700">
                                       {stars}
                                     </span>
                                     <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
@@ -596,7 +596,7 @@ export default function FreelancerProfilePage() {
                           expert.verificationStatus === 'verified') && (
                           <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700"
+                            <span className="text-sm text-green-700">
                               Verified Professional
                             </span>
                           </div>
@@ -604,7 +604,7 @@ export default function FreelancerProfilePage() {
                         {expert.firstAidCertificateStatus === 'APPROVED' && (
                           <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700"
+                            <span className="text-sm text-green-700">
                               First Aid Certified
                             </span>
                           </div>
@@ -692,7 +692,7 @@ export default function FreelancerProfilePage() {
                                 </span>
                               </div>
                               <div>
-                                <p className="font-medium text-gray-900"
+                                <p className="font-medium text-gray-900">
                                   {format(slotDate, 'EEEE')}
                                 </p>
                                 <p className="text-sm text-gray-500">
@@ -732,33 +732,33 @@ export default function FreelancerProfilePage() {
 
               {/* Availability Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-blue-50 border-blue-200"
+                <Card className="bg-blue-50 border-blue-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-100 rounded-lg">
-                        <Clock className="h-5 w-5 text-blue-600 />
+                        <Clock className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-blue-700"
+                        <p className="text-2xl font-bold text-blue-700">
                           {slotStats.todaySlots}
                         </p>
-                        <p className="text-sm text-blue-600 Today</p>"
+                        <p className="text-sm text-blue-600 Today</p>">
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-green-50 border-green-200"
+                <Card className="bg-green-50 border-green-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-green-100 rounded-lg">
-                        <TrendingUp className="h-5 w-5 text-green-600 />
+                        <TrendingUp className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-green-700"
+                        <p className="text-2xl font-bold text-green-700">
                           {slotStats.tomorrowSlots}
                         </p>
-                        <p className="text-sm text-green-600"
+                        <p className="text-sm text-green-600">
                           Available Tomorrow
                         </p>
                       </div>
@@ -766,17 +766,17 @@ export default function FreelancerProfilePage() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-purple-50 border-purple-200"
+                <Card className="bg-purple-50 border-purple-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-purple-100 rounded-lg">
-                        <CalendarDays className="h-5 w-5 text-purple-600 />
+                        <CalendarDays className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-purple-700"
+                        <p className="text-2xl font-bold text-purple-700">
                           {slotStats.thisWeekSlots}
                         </p>
-                        <p className="text-sm text-purple-600 Week</p>"
+                        <p className="text-sm text-purple-600 Week</p>">
                       </div>
                     </div>
                   </CardContent>
@@ -793,7 +793,7 @@ export default function FreelancerProfilePage() {
                     <CardContent className="p-6">
                       <div className="flex flex-col sm:flex-row items-center gap-6">
                         <div className="text-center">
-                          <div className="text-5xl font-poppins font-bold text-gray-900"
+                          <div className="text-5xl font-poppins font-bold text-gray-900">
                             {displayRating.toFixed(1)}
                           </div>
                           <div className="flex items-center justify-center gap-1 mt-2">
@@ -874,7 +874,7 @@ export default function FreelancerProfilePage() {
                                     </AvatarFallback>
                                   </Avatar>
                                   <div>
-                                    <p className="font-poppins font-medium text-gray-900"
+                                    <p className="font-poppins font-medium text-gray-900">
                                       {patient?.name || 'Anonymous'}
                                     </p>
                                     <p className="text-xs text-gray-500">
@@ -898,7 +898,7 @@ export default function FreelancerProfilePage() {
                                 </div>
                               </div>
                               {comment && (
-                                <p className="text-sm text-gray-600"
+                                <p className="text-sm text-gray-600">
                                   {comment}
                                 </p>
                               )}
@@ -972,7 +972,7 @@ export default function FreelancerProfilePage() {
                           className="p-4 bg-gray-50 rounded-xl border border-gray-200"
                         >
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-poppins font-semibold text-gray-900"
+                            <h4 className="font-poppins font-semibold text-gray-900">
                               {sp.serviceName}
                             </h4>
                             <span className="text-lg font-poppins font-bold text-primary">
@@ -989,7 +989,7 @@ export default function FreelancerProfilePage() {
                                 >
                                   <div className="flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-gray-400" />
-                                    <span className="text-sm text-gray-600"
+                                    <span className="text-sm text-gray-600">
                                       {location.locationType === 'HOME'
                                         ? 'Home Visit'
                                         : 'At Clinic'}
@@ -1031,10 +1031,10 @@ export default function FreelancerProfilePage() {
           <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 md:-mx-8 shadow-lg mt-8">
             <div className="max-w-5xl mx-auto flex items-center justify-between">
               <div>
-                <p className="font-poppins font-semibold text-gray-900"
+                <p className="font-poppins font-semibold text-gray-900">
                   {freelancerName}
                 </p>
-                <p className="text-sm text-gray-600"
+                <p className="text-sm text-gray-600">
                   {hasAvailableSlots
                     ? `${slotStats.availableSlots} slots available`
                     : 'No slots available'}
@@ -1050,7 +1050,7 @@ export default function FreelancerProfilePage() {
               ) : (
                 <Button
                   variant="outline"
-                  className="h-12 px-8 text-base font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl"
+                  className="h-12 px-8 text-base font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl">
                   disabled
                 >
                   No Slots Available

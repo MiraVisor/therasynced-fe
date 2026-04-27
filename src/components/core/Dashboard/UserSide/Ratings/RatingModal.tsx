@@ -121,7 +121,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                     {freelancer?.name || 'Unknown Professional'}
                   </h3>
                   {bookingDate && (
-                    <div className="space-y-1 text-sm text-gray-600"
+                    <div className="space-y-1 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         <span>{format(bookingDate, 'EEEE, MMMM d, yyyy')}</span>
@@ -142,7 +142,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
             {/* Eligibility Message */}
             {eligibility && !eligibility.canBeRated && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-yellow-800"
+                <p className="text-sm text-yellow-800">
                   {eligibility.reason || 'This booking cannot be rated at this time.'}
                 </p>
               </div>
@@ -150,7 +150,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
 
             {eligibility && eligibility.hasRating && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800"
+                <p className="text-sm text-blue-800">
                   You have already rated this booking.
                 </p>
               </div>

@@ -36,10 +36,10 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
 
   if (loading) {
     return (
-      <Card className="border border-gray-200"
+      <Card className="border border-gray-200">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-poppins font-semibold text-gray-900"
+            <h2 className="text-xl font-poppins font-semibold text-gray-900">
               Book Your Next Session
             </h2>
           </div>
@@ -69,7 +69,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
 
   if (!freelancers || freelancers.length === 0) {
     return (
-      <Card className="border border-gray-200"
+      <Card className="border border-gray-200">
         <CardContent className="p-6 text-center">
           <h2 className="text-xl font-poppins font-semibold text-gray-900 mb-2">
             Book Your Next Session
@@ -86,10 +86,10 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
   }
 
   return (
-    <Card className="border border-gray-200"
+    <Card className="border border-gray-200">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900"
+          <h2 className="text-xl font-semibold text-gray-900">
             Book Your Next Session
           </h2>
           <Button
@@ -163,7 +163,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
                         From €{freelancer.pricing.online.min}/session
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-500"
+                      <div className="text-sm text-gray-500">
                         Contact for pricing
                       </div>
                     )}

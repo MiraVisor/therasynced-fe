@@ -58,9 +58,9 @@ const Hero = () => {
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
-          alt="A therapist taping an athlete for sports recovery"
+          alt="A therapist taping an athlete for sports recovery">
           fill
-          className="object-cover object-center opacity-[0.08]"
+          className="object-cover object-center opacity-[0.08]">
           priority
           quality={75}
           sizes="100vw"

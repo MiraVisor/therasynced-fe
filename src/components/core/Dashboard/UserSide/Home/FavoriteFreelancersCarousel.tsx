@@ -78,7 +78,7 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <Heart className="w-12 h-12 text-gray-300 mb-2" />
-            <p className="text-sm text-gray-500 favorite freelancers yet</p>"
+            <p className="text-sm text-gray-500 favorite freelancers yet</p>">
             <p className="text-xs text-gray-400 mt-1">
               Add some favorites from the explore page to see them here
             </p>
@@ -125,7 +125,7 @@ const FavoriteFreelancersCarousel = ({ className }: FavoriteFreelancersCarouselP
         ) : (
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <Heart className="w-12 h-12 text-gray-300 mb-2" />
-            <p className="text-sm text-gray-500 favorite freelancers yet</p>"
+            <p className="text-sm text-gray-500 favorite freelancers yet</p>">
             <p className="text-xs text-gray-400 mt-1">
               Add some favorites from the explore page to see them here
             </p>

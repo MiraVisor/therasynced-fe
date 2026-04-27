@@ -299,10 +299,10 @@ export function UnifiedConsentManager({
                 return (
                   <div
                     key={type}
-                    className={`flex items-start space-x-3 rounded-lg border ${paddingClass} bg-gray-50
+                    className={`flex items-start space-x-3 rounded-lg border ${paddingClass} bg-gray-50`}
                   >
                     <div className="flex items-center justify-center mt-0.5 w-5 h-5">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 />
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -397,9 +397,9 @@ export function UnifiedConsentManager({
 
           {/* Info box explaining withdrawal = account deletion */}
           {!requiredOnly && (
-            <Alert className="border-blue-500 bg-blue-50"
-              <Info className="h-4 w-4 text-blue-600 />
-              <AlertDescription className="text-blue-800"
+            <Alert className="border-blue-500 bg-blue-50">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
                 <div>
                   <p className="font-medium">Withdrawing Required Agreements</p>
                   <p className="text-sm mt-1">
@@ -579,16 +579,16 @@ export function UnifiedConsentManager({
             <AlertDialogDescription className="space-y-3 pt-2">
               {withdrawalDialog.type === 'FIRST_AID_CERTIFICATE' ? (
                 <>
-                  <p className="text-sm font-medium text-red-600"
+                  <p className="text-sm font-medium text-red-600">
                     Withdrawing this consent will permanently delete your uploaded first aid
                     certificate and revoke any verification based on it. This action cannot be
                     undone.
                   </p>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
-                    <p className="text-sm font-semibold text-red-800"
+                    <p className="text-sm font-semibold text-red-800">
                       What will happen:
                     </p>
-                    <ul className="list-disc pl-5 space-y-1 text-xs text-red-700"
+                    <ul className="list-disc pl-5 space-y-1 text-xs text-red-700">
                       <li>Your first aid certificate will be permanently deleted</li>
                       <li>Any verification based on this certificate will be revoked</li>
                       <li>Your verified status may change to REJECTED</li>
@@ -598,16 +598,16 @@ export function UnifiedConsentManager({
                 </>
               ) : (
                 <>
-                  <p className="text-sm font-medium text-amber-600"
+                  <p className="text-sm font-medium text-amber-600">
                     Withdrawing this consent will remove your verified status and may limit your
                     ability to receive bookings. Your documents will be retained for audit purposes
                     but will no longer be used for verification.
                   </p>
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
-                    <p className="text-sm font-semibold text-amber-800"
+                    <p className="text-sm font-semibold text-amber-800">
                       What will happen:
                     </p>
-                    <ul className="list-disc pl-5 space-y-1 text-xs text-amber-700"
+                    <ul className="list-disc pl-5 space-y-1 text-xs text-amber-700">
                       <li>Your verification status will change to REJECTED</li>
                       <li>You will lose your verified status</li>
                       <li>You may not be able to accept new bookings</li>

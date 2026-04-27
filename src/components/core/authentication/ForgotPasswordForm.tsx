@@ -58,7 +58,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToSignIn 
               className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white text-sm font-inter"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email address"
+              placeholder="Enter your email address">
               required
               disabled={loading}
             />

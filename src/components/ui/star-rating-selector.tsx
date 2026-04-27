@@ -76,7 +76,7 @@ export const StarRatingSelector: React.FC<StarRatingSelectorProps> = ({
                 sizeClasses[size],
                 isFilled
                   ? 'fill-yellow-400 text-yellow-400'
-                  : 'fill-gray-200 text-gray-300
+                  : 'fill-gray-200 text-gray-300'
                 'transition-colors duration-150',
               )}
             />

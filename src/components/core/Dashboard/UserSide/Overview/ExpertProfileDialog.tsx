@@ -171,7 +171,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {availableSlots || 0}
                   </div>
-                  <div className="text-sm font-inter text-gray-600"
+                  <div className="text-sm font-inter text-gray-600">
                     Available Slots
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {cardInfo?.totalRatings || 0}
                   </div>
-                  <div className="text-sm font-inter text-gray-600"
+                  <div className="text-sm font-inter text-gray-600">
                     Total Reviews
                   </div>
                 </div>
@@ -241,7 +241,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                                 key={idx}
                                 className="flex items-center justify-between p-2 bg-gray-50 rounded"
                               >
-                                <span className="text-sm font-inter text-gray-600"
+                                <span className="text-sm font-inter text-gray-600">
                                   {location.locationType === 'HOME' ? 'Home Visit' : 'Clinic'}
                                 </span>
                                 <span className="text-base font-poppins font-bold text-primary">
@@ -252,7 +252,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                           </div>
                         ) : (
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-sm font-inter text-gray-600"
+                            <span className="text-sm font-inter text-gray-600">
                               Standard Price
                             </span>
                             <span className="text-base font-poppins font-bold text-primary">
@@ -275,31 +275,31 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {pricing.online && (
-                      <div className="bg-white rounded-lg p-3 border border-gray-200"
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
                         <div className="text-sm font-inter text-gray-600 mb-1">
                           Online Sessions
                         </div>
-                        <div className="text-lg font-poppins font-bold text-gray-900"
+                        <div className="text-lg font-poppins font-bold text-gray-900">
                           EUR {pricing.online.min} - {pricing.online.max}
                         </div>
                       </div>
                     )}
                     {pricing.office && (
-                      <div className="bg-white rounded-lg p-3 border border-gray-200"
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
                         <div className="text-sm font-inter text-gray-600 mb-1">
                           Office Sessions
                         </div>
-                        <div className="text-lg font-poppins font-bold text-gray-900"
+                        <div className="text-lg font-poppins font-bold text-gray-900">
                           EUR {pricing.office.min} - {pricing.office.max}
                         </div>
                       </div>
                     )}
                     {pricing.home && (
-                      <div className="bg-white rounded-lg p-3 border border-gray-200"
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
                         <div className="text-sm font-inter text-gray-600 mb-1">
                           Home Visits
                         </div>
-                        <div className="text-lg font-poppins font-bold text-gray-900"
+                        <div className="text-lg font-poppins font-bold text-gray-900">
                           EUR {pricing.home.min} - {pricing.home.max}
                         </div>
                       </div>
@@ -340,7 +340,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
               )}
 
               {/* Action Buttons */}
-              <div className="space-y-4 pt-4 border-t border-gray-200"
+              <div className="space-y-4 pt-4 border-t border-gray-200">
                 {/* View Full Profile Button */}
                 <Button
                   variant="outline"
@@ -375,7 +375,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                         <span className="inline-block w-full">
                           <Button
                             variant="outline"
-                            className="w-full h-12 text-base font-semibold shadow-md bg-gray-100 text-gray-600 border-2 border-gray-300 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
+                            className="w-full h-12 text-base font-semibold shadow-md bg-gray-100 text-gray-600 border-2 border-gray-300 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600">
                             disabled
                             tabIndex={1}
                             autoFocus

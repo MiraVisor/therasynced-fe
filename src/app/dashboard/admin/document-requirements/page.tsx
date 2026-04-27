@@ -378,7 +378,7 @@ const DocumentRequirementsPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., CORU Registration"
-                  className="font-inter mt-2"
+                  className="font-inter mt-2">
                   required
                 />
               </div>
@@ -458,7 +458,7 @@ const DocumentRequirementsPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., CORU Registration"
-                  className="font-inter mt-2"
+                  className="font-inter mt-2">
                   required
                 />
               </div>

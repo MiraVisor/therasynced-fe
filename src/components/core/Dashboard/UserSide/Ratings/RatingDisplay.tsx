@@ -36,7 +36,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
             key={star}
             className={cn(
               sizeClasses[size],
-              'fill-gray-200 text-gray-300
+              'fill-gray-200 text-gray-300'
             )}
           />
         ))}
@@ -67,7 +67,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
                 <Star
                   className={cn(
                     sizeClasses[size],
-                    'fill-gray-200 text-gray-300
+                    'fill-gray-200 text-gray-300'
                   )}
                 />
                 {/* Half-filled star - clipped to left half */}
@@ -85,14 +85,14 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
                 sizeClasses[size],
                 isFilled
                   ? 'fill-yellow-400 text-yellow-400'
-                  : 'fill-gray-200 text-gray-300
+                  : 'fill-gray-200 text-gray-300'
               )}
             />
           );
         })}
       </div>
       {showCount && (
-        <span className="text-sm text-gray-600"
+        <span className="text-sm text-gray-600">
           {numericRating.toFixed(1)}{' '}
           {reviewCount > 0 && `(${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`}
         </span>

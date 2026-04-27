@@ -48,10 +48,10 @@ const DashboardWidget: React.FC<DashboardWidgetProps> = ({
           </div>
 
           <div className="space-y-1">
-            <div className="text-2xl font-poppins font-bold text-gray-900"
+            <div className="text-2xl font-poppins font-bold text-gray-900">
               {value}
             </div>
-            <div className="text-sm font-inter font-medium text-gray-600"
+            <div className="text-sm font-inter font-medium text-gray-600">
               {title}
             </div>
             {subtitle && (

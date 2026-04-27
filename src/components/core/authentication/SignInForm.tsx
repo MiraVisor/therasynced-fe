@@ -68,7 +68,7 @@ const SignInForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
           <div className="space-y-1">
             <label className="text-xs font-inter font-medium text-gray-700">Email Address</label>
             <input
-              type="email"
+              type="email">
               {...register('email')}
               className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-white text-sm font-inter"
               placeholder="Enter your email address"

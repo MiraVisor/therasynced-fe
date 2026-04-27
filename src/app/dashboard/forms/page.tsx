@@ -91,7 +91,7 @@ const FreelancerFormsPage = () => {
       <div className="space-y-6 lg:space-y-8">
         {/* Tier gate: Bronze sees upgrade prompt instead of the page */}
         {!isLoadingSubscription && !canAccessForms ? (
-          <div className="border-2 border-dashed border-gray-200 rounded-2xl py-16 px-6 text-center bg-white"
+          <div className="border-2 border-dashed border-gray-200 rounded-2xl py-16 px-6 text-center bg-white">
             <div className="w-14 h-14 rounded-full bg-primary/10 mx-auto flex items-center justify-center mb-4">
               <Lock className="w-7 h-7 text-primary" />
             </div>
@@ -159,7 +159,7 @@ const FreelancerFormsPage = () => {
             {filteredTemplates.map((template) => (
               <EnhancedCard
                 key={template.id}
-                variant="default"
+                variant="default">
                 interactive
                 className="group border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-md transition-all"
               >

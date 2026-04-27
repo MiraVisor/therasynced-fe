@@ -291,7 +291,7 @@ export default function VerificationPage() {
             className={
               category === 'FIRST_AID_CERTIFICATE'
                 ? 'bg-red-50 text-red-700 border-red-200
-                : 'bg-blue-50 text-blue-700 border-blue-200
+                : 'bg-blue-50 text-blue-700 border-blue-200'
             }
           >
             {category === 'FIRST_AID_CERTIFICATE' ? 'EFR Certificate' : 'Verification'}

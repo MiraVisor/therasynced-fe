@@ -52,7 +52,7 @@ const TrustIndicators = () => {
             >
               {/* Icon */}
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <item.icon className="w-8 h-8 text-primary />
+                <item.icon className="w-8 h-8 text-primary" />
               </div>
 
               {/* Content */}

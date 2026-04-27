@@ -241,7 +241,7 @@ export function ProfileBookingDialog({
       <div>
         <div className="flex items-center gap-2 mb-2">
           {icon}
-          <span className="text-sm font-medium text-gray-600"
+          <span className="text-sm font-medium text-gray-600">
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {slotsList.map((slot) => {
@@ -280,7 +280,7 @@ export function ProfileBookingDialog({
               </AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-xl font-poppins font-bold text-gray-900"
+              <h2 className="text-xl font-poppins font-bold text-gray-900">
                 Book with {expert.name}
               </h2>
               {expert.jobTitle?.name && (
@@ -291,7 +291,7 @@ export function ProfileBookingDialog({
         </DialogHeader>
 
         {/* Step Progress */}
-        <div className="px-6 py-4 bg-gray-50"
+        <div className="px-6 py-4 bg-gray-50">
           <div className="flex items-center justify-between">
             {STEPS.filter((s) => hasServices || s !== 'services').map((s, i, arr) => {
               const stepIndex = STEPS.indexOf(s);
@@ -328,7 +328,7 @@ export function ProfileBookingDialog({
                   {i < arr.length - 1 && (
                     <div
                       className={`w-8 sm:w-12 h-0.5 mx-1 ${
-                        isCompleted ? 'bg-green-500' : 'bg-gray-200
+                        isCompleted ? 'bg-green-500' : 'bg-gray-200'
                       }`}
                     />
                   )}
@@ -655,7 +655,7 @@ export function ProfileBookingDialog({
         </div>
 
         {/* Actions */}
-        <div className="p-6 pt-4 border-t bg-gray-50"
+        <div className="p-6 pt-4 border-t bg-gray-50">
           <div className="flex gap-3">
             {step !== 'date' && (
               <Button variant="outline" onClick={goToPrevStep} className="flex-shrink-0">

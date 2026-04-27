@@ -47,9 +47,9 @@ const Services = () => {
         <div className="relative w-full max-w-[400px] mx-0 aspect-[9/16] rounded-2xl overflow-hidden hidden lg:block">
           <Image
             src={'/images/rehabilitation.jpg'}
-            alt="Wellness Services"
+            alt="Wellness Services">
             fill
-            className="object-cover transition-transform duration-500 hover:scale-105"
+            className="object-cover transition-transform duration-500 hover:scale-105">
             priority
           />
         </div>

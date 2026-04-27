@@ -49,7 +49,7 @@ export function AdminRevenueChart({
   return (
     <div className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-soft">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="font-poppins text-xl font-semibold text-charcoal"
+        <h2 className="font-poppins text-xl font-semibold text-charcoal">
           {title}
         </h2>
         {showSelector && months.length > 1 && (

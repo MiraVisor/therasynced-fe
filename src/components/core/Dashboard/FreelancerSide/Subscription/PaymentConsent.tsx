@@ -40,9 +40,9 @@ export function PaymentConsent({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <Alert className="border-blue-500 bg-blue-50"
-        <Info className="h-4 w-4 text-blue-600 />
-        <AlertDescription className="text-blue-800"
+      <Alert className="border-blue-500 bg-blue-50">
+        <Info className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-blue-800">
           <div className="space-y-2">
             <p className="font-medium">Payment Authorization & Billing Agreement</p>
             <p className="text-sm">
@@ -67,7 +67,7 @@ export function PaymentConsent({
               </Link>
               . This authorisation remains valid until you cancel.
             </p>
-            <p className="text-xs text-blue-700"
+            <p className="text-xs text-blue-700">
               Your payment information is securely processed by Stripe, a PCI DSS Level 1 certified
               payment processor. We do not store your card details on our servers.
             </p>

@@ -119,8 +119,8 @@ export function TrialExpiredModal() {
       >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-full bg-red-100"
-              <AlertCircle className="h-6 w-6 text-red-600 />
+            <div className="p-2 rounded-full bg-red-100">
+              <AlertCircle className="h-6 w-6 text-red-600" />
             </div>
             <DialogTitle className="text-2xl font-poppins font-bold text-charcoal">
               Trial Expired
@@ -134,7 +134,7 @@ export function TrialExpiredModal() {
 
         <div className="py-4">
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <p className="text-sm font-medium text-gray-900"
+            <p className="text-sm font-medium text-gray-900">
               What happens next?
             </p>
             <ul className="text-sm text-gray-600 space-y-1.5 list-disc list-inside">

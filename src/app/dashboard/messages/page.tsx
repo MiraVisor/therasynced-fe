@@ -347,11 +347,11 @@ const MessagesPageContent = () => {
           <h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>
           {messagesLimit !== null && role === 'FREELANCER' && (
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600"
+              <span className="text-gray-600">
               <span
                 className={cn(
                   'font-semibold',
-                  isAtLimit ? 'text-red-600' : 'text-gray-900
+                  isAtLimit ? 'text-red-600' : 'text-gray-900'
                 )}
               >
                 {messagesUsed}/{formatLimit(messagesLimit)}

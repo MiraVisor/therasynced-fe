@@ -38,7 +38,7 @@ export function RoleSelectionStep() {
             )}
           >
             <input
-              type="radio"
+              type="radio">
               {...register('role')}
               value={option.value}
               className="h-4 w-4 text-primary focus:ring-primary border-gray-300"

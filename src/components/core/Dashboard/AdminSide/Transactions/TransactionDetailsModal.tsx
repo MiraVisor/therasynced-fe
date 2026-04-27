@@ -54,19 +54,19 @@ export function TransactionDetailsModal({
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 ID</p>"
+                  <p className="text-xs text-gray-500 ID</p>">
                   <p className="font-mono text-sm font-medium">{transaction.transactionId}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 ID</p>"
+                  <p className="text-xs text-gray-500 ID</p>">
                   <p className="font-mono text-sm font-medium">{transaction.invoiceId}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500"
+                  <p className="text-xs text-gray-500">
                   <p className="text-sm font-medium">{formatDate(transaction.date)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500"
+                  <p className="text-xs text-gray-500">
                   <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       transaction.status === 'PAID'
@@ -93,11 +93,11 @@ export function TransactionDetailsModal({
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500"
+                  <p className="text-xs text-gray-500">
                   <p className="text-sm font-medium">{transaction.freelancerName}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500"
+                  <p className="text-xs text-gray-500">
                   <p className="text-sm font-medium">{transaction.freelancerEmail}</p>
                 </div>
               </div>
