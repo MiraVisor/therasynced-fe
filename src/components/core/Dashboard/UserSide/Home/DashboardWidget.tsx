@@ -36,8 +36,8 @@ const DashboardWidget: React.FC<DashboardWidgetProps> = ({
 
   const isClickable = !!(href || onClick);
   const cardClassName = isClickable
-    ? `border border-gray-200 cursor-pointer group ${className}`
-    : `border border-gray-200 ${className}`;
+    ? `border border-gray-200  cursor-pointer group ${className}`
+    : `border border-gray-200  ${className}`;
 
   return (
     <Card className={cardClassName} onClick={isClickable ? handleClick : undefined}>
@@ -55,7 +55,7 @@ const DashboardWidget: React.FC<DashboardWidgetProps> = ({
               {title}
             </div>
             {subtitle && (
-              <div className="text-xs font-inter text-gray-500"
+              <div className="text-xs font-inter text-gray-500">{subtitle}</div>
             )}
           </div>
 

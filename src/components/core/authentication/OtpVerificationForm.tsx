@@ -66,7 +66,7 @@ export default function OtpVerificationForm({
                 setOtp(value);
                 setError('');
               }}
-              placeholder="Enter 6-digit code">
+              placeholder="Enter 6-digit code"
               required
               disabled={isLoading}
               maxLength={6}

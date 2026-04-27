@@ -336,7 +336,7 @@ export function RescheduleBookingDialog({
                         'flex items-start gap-3 p-4 border rounded-lg transition-all cursor-pointer',
                         isSelected
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 hover:border-primary/50',
+                          : 'border-gray-200  hover:border-primary/50',
                       )}
                       onClick={() => setSelectedServiceCategoryId(service.id)}
                       role="button"

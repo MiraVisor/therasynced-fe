@@ -124,8 +124,8 @@ const Pricing = () => {
                     <div
                       className={`relative flex flex-col h-full rounded-2xl p-8 lg:p-10 transition-all duration-300 ${
                         isGold
-                          ? 'bg-[#faf9f6] border-2 border-primary/30 shadow-lg hover:shadow-xl hover:border-primary/50'
-                          : 'bg-[#faf9f6] border border-gray-100 shadow-sm hover:shadow-lg hover:border-primary/20'
+                          ? 'bg-[#faf9f6]  border-2 border-primary/30 shadow-lg hover:shadow-xl hover:border-primary/50'
+                          : 'bg-[#faf9f6]  border border-gray-100  shadow-sm hover:shadow-lg hover:border-primary/20'
                       }`}
                     >
                       {isGold && (
@@ -195,7 +195,7 @@ const Pricing = () => {
                         className={`w-full h-12 font-semibold rounded-lg transition-all duration-300 ${
                           isGold
                             ? 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20'
-                            : 'bg-white text-gray-900 border border-gray-200 hover:border-primary/50 hover:bg-gray-50'
+                            : 'bg-white  text-gray-900  border border-gray-200  hover:border-primary/50 hover:bg-gray-50 '
                         }`}
                       >
                         Start free trial

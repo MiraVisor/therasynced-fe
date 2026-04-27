@@ -232,7 +232,7 @@ export function DataRightsSection() {
           <CardContent>
             <Alert className="mb-4 border-red-200">
               <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertTitle className="text-red-600">
+              <AlertTitle className="text-red-600">Warning</AlertTitle>
               <AlertDescription>
                 This action cannot be undone. All your data, including bookings, messages, and
                 profile information, will be permanently deleted. We may retain certain data for

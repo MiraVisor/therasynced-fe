@@ -83,7 +83,7 @@ const HowItWorks = () => {
                 <div className="flex flex-col items-center text-center space-y-5">
                   {/* Icon */}
                   <div
-                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} border border-gray-100 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:border-primary/30 transition-all duration-300 group-hover:scale-105`}
+                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} border border-gray-100  flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:border-primary/30 transition-all duration-300 group-hover:scale-105`}
                   >
                     <step.icon className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
                   </div>

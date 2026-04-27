@@ -32,22 +32,22 @@ export const PlanCard = ({
       case 'BRONZE':
         return {
           border: 'border-amber-600',
-          bg: 'bg-amber-50'
-          text: 'text-amber-700'
+          bg: 'bg-amber-50 ',
+          text: 'text-amber-700 ',
           accent: 'bg-amber-600',
         };
       case 'SILVER':
         return {
           border: 'border-gray-400',
-          bg: 'bg-gray-50'
-          text: 'text-gray-700'
+          bg: 'bg-gray-50 ',
+          text: 'text-gray-700 ',
           accent: 'bg-gray-400',
         };
       case 'GOLD':
         return {
           border: 'border-yellow-500',
-          bg: 'bg-yellow-50'
-          text: 'text-yellow-700'
+          bg: 'bg-yellow-50 ',
+          text: 'text-yellow-700 ',
           accent: 'bg-yellow-500',
         };
       default:
@@ -88,7 +88,7 @@ export const PlanCard = ({
       className={`group relative flex h-full flex-col transition-all duration-300 ${
         isCurrentPlan
           ? `border-2 ${planColors.border} ${planColors.bg} shadow-md`
-          : 'border border-gray-200 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02]'
+          : 'border border-gray-200  hover:border-primary/50 hover:shadow-lg hover:scale-[1.02]'
       } ${isRecommended && !isCurrentPlan ? 'ring-2 ring-primary/30 ring-offset-2' : ''}`}
     >
       {isRecommended && !isCurrentPlan && (
@@ -111,8 +111,8 @@ export const PlanCard = ({
             variant="outline"
             className={`flex items-center gap-1 ${
               upgradeDowngrade.type === 'upgrade'
-                ? 'border-green-500 text-green-700
-                : 'border-orange-500 text-orange-700'
+                ? 'border-green-500 text-green-700 '
+                : 'border-orange-500 text-orange-700 '
             }`}
           >
             {upgradeDowngrade.type === 'upgrade' ? (
@@ -147,7 +147,7 @@ export const PlanCard = ({
             >
               EUR {plan.price.toFixed(2)}
             </span>
-            <span className="text-lg font-inter text-gray-600">
+            <span className="text-lg font-inter text-gray-600">/month</span>
           </div>
         </div>
       </CardHeader>
@@ -188,7 +188,7 @@ export const PlanCard = ({
             disabled={isCurrentPlan || isLoading}
             className={`w-full transition-all duration-200 font-medium ${
               isCurrentPlan
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                ? 'bg-gray-300  text-gray-500  cursor-not-allowed opacity-60'
                 : 'bg-primary hover:bg-primary/90 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] text-white'
             }`}
             size="lg"

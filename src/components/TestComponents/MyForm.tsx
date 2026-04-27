@@ -87,7 +87,7 @@ const MyForm = () => {
         <CustomInput
           title="Email"
           placeholder="Enter your email"
-          type="email">
+          type="email"
           {...register('email')}
           errorMessage={errors.email?.message}
           ariaInvalid={!!errors.email}
@@ -95,7 +95,7 @@ const MyForm = () => {
         <CustomInput
           title="Password"
           placeholder="Enter your password"
-          type="password">
+          type="password"
           {...register('password')}
           errorMessage={errors.password?.message}
           ariaInvalid={!!errors.password}

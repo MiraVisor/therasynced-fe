@@ -84,7 +84,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
                     placeholder="Enter your full address"
                     value={clientAddress}
                     onChange={(e) => setClientAddress(e.target.value)}
-                    className="mt-2">
+                    className="mt-2"
                     required
                   />
                 </div>

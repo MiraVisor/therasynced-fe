@@ -71,11 +71,11 @@ export function FeatureComparison({
   const getPlanColor = (planName: PlanType) => {
     switch (planName) {
       case 'BRONZE':
-        return 'border-amber-600 bg-amber-50'
+        return 'border-amber-600 bg-amber-50 ';
       case 'SILVER':
-        return 'border-gray-400 bg-gray-50'
+        return 'border-gray-400 bg-gray-50 ';
       case 'GOLD':
-        return 'border-yellow-500 bg-yellow-50'
+        return 'border-yellow-500 bg-yellow-50 ';
       default:
         return '';
     }
@@ -95,7 +95,7 @@ export function FeatureComparison({
               className={`border transition-all ${
                 isCurrent
                   ? 'border-2 border-primary shadow-md'
-                  : 'border-gray-200'
+                  : 'border-gray-200 '
               } ${getPlanColor(plan.name)}`}
             >
               <CardHeader
@@ -156,7 +156,7 @@ export function FeatureComparison({
 
   // Desktop: Table layout
   return (
-    <Card className={`border border-gray-200 shadow-sm ${className}`}>
+    <Card className={`border border-gray-200  shadow-sm ${className}`}>
       <CardHeader className="pb-4">
         <CardTitle className="text-xl font-poppins font-bold text-charcoal">
           Plan Comparison

@@ -67,7 +67,7 @@ export const UpgradeModal = ({
               className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4"
             >
               <div className="flex-1">
-                <h4 className="font-semibold text-gray-900">
+                <h4 className="font-semibold text-gray-900">{plan.displayName}</h4>
                 <p className="text-sm text-gray-600">
                   {plan.maxSlots === null ? 'Unlimited slots' : `Up to ${plan.maxSlots} slots`}
                 </p>

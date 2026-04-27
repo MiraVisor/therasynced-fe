@@ -283,7 +283,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Calendar className="w-5 h-5 text-primary" />
-                <h4 className="font-semibold text-charcoal & Time</h4>">
+                <h4 className="font-semibold text-charcoal">Date & Time</h4>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-gray-700">
@@ -312,7 +312,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   {selectedServices.map((service) => (
                     <div key={service.id} className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span className="text-gray-700">
+                      <span className="text-gray-700">{service.name}</span>
                     </div>
                   ))}
                 </div>
@@ -325,14 +325,14 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <MapPin className="w-5 h-5 text-primary" />
-                <h4 className="font-semibold text-charcoal">
+                <h4 className="font-semibold text-charcoal">Location</h4>
               </div>
               {selectedLocationType === LocationType.HOME ? (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-1">
                     At Home
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600">{clientAddress}</p>
                 </div>
               ) : (
                 <div>
@@ -362,12 +362,12 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               <h4 className="font-semibold text-charcoal mb-4">Price Summary</h4>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 Price</span>">
+                  <span className="text-gray-600">Base Price</span>
                   <span className="font-medium">€{basePrice.toFixed(2)}</span>
                 </div>
                 {servicePriceTotal > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 Price</span>">
+                    <span className="text-gray-600">Service Price</span>
                     <span className="font-medium">€{servicePriceTotal.toFixed(2)}</span>
                   </div>
                 )}
@@ -382,7 +382,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 After Discount</span>">
+                      <span className="text-gray-600">Price After Discount</span>
                       <span className="font-medium">€{finalPrice.toFixed(2)}</span>
                     </div>
                   </>
@@ -391,7 +391,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   selectedLocationType === LocationType.CLINIC &&
                   slot.location.additionalFee > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 Fee</span>">
+                      <span className="text-gray-600">Location Fee</span>
                       <span className="font-medium">€{slot.location.additionalFee.toFixed(2)}</span>
                     </div>
                   )}
@@ -436,7 +436,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           {/* Debug Information */}
           <Card className="mt-6 border-2 border-yellow-300 bg-yellow-50">
             <CardContent className="p-4">
-              <h5 className="font-semibold text-sm mb-3 text-yellow-800"
+              <h5 className="font-semibold text-sm mb-3 text-yellow-800">
                 🔍 Debug Information
               </h5>
               <div className="space-y-2 text-xs font-mono">

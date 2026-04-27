@@ -97,7 +97,7 @@ export const DeleteDaySlotsSection = () => {
                 mode="single"
                 selected={selectedDate}
                 onSelect={handleDateSelect}
-                captionLayout="dropdown">
+                captionLayout="dropdown"
                 initialFocus
               />
             </PopoverContent>

@@ -340,7 +340,7 @@ export default function FreelancerProfilePage() {
                           <span className="inline-block w-full">
                             <Button
                               variant="outline"
-                              className="w-full h-14 text-lg font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl">
+                              className="w-full h-14 text-lg font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl"
                               disabled
                             >
                               <CalendarDays className="h-5 w-5 mr-2" />
@@ -405,19 +405,19 @@ export default function FreelancerProfilePage() {
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">{totalRatings}</div>
-                <div className="text-xs font-inter text-gray-500">
+                <div className="text-xs font-inter text-gray-500">Reviews</div>
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {displayRating > 0 ? displayRating.toFixed(1) : '—'}
                 </div>
-                <div className="text-xs font-inter text-gray-500">
+                <div className="text-xs font-inter text-gray-500">Rating</div>
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {slotStats.thisWeekSlots}
                 </div>
-                <div className="text-xs font-inter text-gray-500 Week</div>">
+                <div className="text-xs font-inter text-gray-500">This Week</div>
               </div>
             </div>
           </Card>
@@ -742,7 +742,7 @@ export default function FreelancerProfilePage() {
                         <p className="text-2xl font-bold text-blue-700">
                           {slotStats.todaySlots}
                         </p>
-                        <p className="text-sm text-blue-600 Today</p>">
+                        <p className="text-sm text-blue-600">Available Today</p>
                       </div>
                     </div>
                   </CardContent>
@@ -776,7 +776,7 @@ export default function FreelancerProfilePage() {
                         <p className="text-2xl font-bold text-purple-700">
                           {slotStats.thisWeekSlots}
                         </p>
-                        <p className="text-sm text-purple-600 Week</p>">
+                        <p className="text-sm text-purple-600">This Week</p>
                       </div>
                     </div>
                   </CardContent>
@@ -1050,7 +1050,7 @@ export default function FreelancerProfilePage() {
               ) : (
                 <Button
                   variant="outline"
-                  className="h-12 px-8 text-base font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl">
+                  className="h-12 px-8 text-base font-semibold shadow-md bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed rounded-xl"
                   disabled
                 >
                   No Slots Available

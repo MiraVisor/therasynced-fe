@@ -124,9 +124,9 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
   const isWithin24Hours = bookingDate.getTime() - now.getTime() <= 24 * 60 * 60 * 1000;
 
   const getUrgencyColor = () => {
-    if (isToday) return 'border-blue-500 bg-blue-50
-    if (isTomorrow) return 'border-blue-300 bg-blue-50/50
-    return 'border-gray-200'
+    if (isToday) return 'border-blue-500 bg-blue-50 ';
+    if (isTomorrow) return 'border-blue-300 bg-blue-50/50 ';
+    return 'border-gray-200 ';
   };
 
   // Unused function removed - was: const _getUrgencyText = () => { ... };

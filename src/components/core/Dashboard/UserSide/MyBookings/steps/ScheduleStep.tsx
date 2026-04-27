@@ -110,7 +110,7 @@ export const ScheduleStep: React.FC<ScheduleStepProps> = ({
                             ? 'border-red-200 bg-red-50 text-red-400 cursor-not-allowed opacity-60'
                             : isReservedByOthers
                               ? 'border-yellow-200 bg-yellow-50 text-yellow-600 cursor-not-allowed opacity-60'
-                              : 'border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5'
+                              : 'border-gray-200 bg-white text-gray-900 hover:border-primary hover:bg-primary/5   '
                       }`}
                       onClick={() => {
                         if (!isReservedByOthers && !isBooked) {

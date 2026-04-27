@@ -56,7 +56,7 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-200 border-b ${
         scrolled
-          ? 'bg-white/80 backdrop-blur-md border-gray-100 py-3'
+          ? 'bg-white/80  backdrop-blur-md border-gray-100  py-3'
           : 'bg-transparent border-transparent py-5'
       }`}
     >
@@ -68,7 +68,7 @@ const Navbar = () => {
             alt="TheraSynced"
             width={180}
             height={45}
-            className="h-14 w-auto transition-opacity hover:opacity-80">
+            className="h-14 w-auto transition-opacity hover:opacity-80"
             priority
             sizes="(max-width: 768px) 150px, 180px"
           />

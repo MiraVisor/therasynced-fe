@@ -308,11 +308,11 @@ export function OverviewTab({
       {/* Hero Section - Current Plan Card */}
       {hasPlan && plan && (
         <Card
-          className={`border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 ${
+          className={`border border-gray-200  shadow-sm overflow-hidden transition-all duration-300 ${
             isCanceledButActive
-              ? 'border-orange-300
+              ? 'border-orange-300 '
               : isPastDue || inGracePeriod
-                ? 'border-red-300 animate-pulse'
+                ? 'border-red-300  animate-pulse'
                 : ''
           }`}
         >
@@ -383,7 +383,7 @@ export function OverviewTab({
                       <span className="text-5xl font-poppins font-bold text-charcoal">
                         EUR {plan.price.toFixed(2)}
                       </span>
-                      <span className="text-lg font-inter text-gray-600"
+                      <span className="text-lg font-inter text-gray-600">
                         /month
                       </span>
                     </div>
@@ -505,7 +505,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 used</span>">
+                      <span className="text-sm text-gray-600">Slots used</span>
                       <span className="text-sm font-semibold text-primary">
                         {subscription.slotsUsed ?? 0} / Unlimited
                       </span>
@@ -532,7 +532,7 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 used</span>">
+                        <span className="text-sm text-gray-600">Slots used</span>
                         <span className="text-sm font-semibold">
                           {subscription.slotsUsed ?? 0}/{formatLimit(subscription.slotsLimit)}
                         </span>

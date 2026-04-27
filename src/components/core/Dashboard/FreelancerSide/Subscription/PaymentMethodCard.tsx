@@ -65,8 +65,8 @@ export function PaymentMethodCard() {
                 key={paymentMethod.id}
                 className={`relative p-5 rounded-xl border-2 transition-all ${
                   paymentMethod.isDefault
-                    ? 'border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    ? 'border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10   shadow-sm'
+                    : 'border-gray-200  bg-white  hover:border-gray-300 '
                 }`}
               >
                 {/* Credit Card Visual Style */}
@@ -75,8 +75,8 @@ export function PaymentMethodCard() {
                     <div
                       className={`p-3 rounded-lg ${
                         paymentMethod.isDefault
-                          ? 'bg-primary/20
-                          : 'bg-gray-100'
+                          ? 'bg-primary/20 '
+                          : 'bg-gray-100 '
                       }`}
                     >
                       {paymentMethod.type === 'card' ? (
@@ -84,7 +84,7 @@ export function PaymentMethodCard() {
                           className={`h-6 w-6 ${
                             paymentMethod.isDefault
                               ? 'text-primary'
-                              : 'text-gray-600'
+                              : 'text-gray-600 '
                           }`}
                         />
                       ) : (

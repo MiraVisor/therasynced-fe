@@ -42,12 +42,12 @@ export function UsageMeter({
 
   const getStatusIcon = () => {
     if (isAtLimit || !canCreateSlots) {
-      return <XCircle className="h-4 w-4 text-red-600" />;"
+      return <XCircle className="h-4 w-4 text-red-600" />;
     }
     if (isNearLimit) {
-      return <AlertTriangle className="h-4 w-4 text-orange-600" />;"
+      return <AlertTriangle className="h-4 w-4 text-orange-600" />;
     }
-    return <CheckCircle2 className="h-4 w-4 text-green-600" />;"
+    return <CheckCircle2 className="h-4 w-4 text-green-600" />;
   };
 
   return (
@@ -55,7 +55,7 @@ export function UsageMeter({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           {getStatusIcon()}
-          <span className="text-sm font-semibold text-gray-900 Usage</span>">
+          <span className="text-sm font-semibold text-gray-900">Slot Usage</span>
         </div>
         <div className="text-sm font-medium text-gray-700">
           {isUnlimited ? (
@@ -63,7 +63,7 @@ export function UsageMeter({
           ) : slotsLimit !== null ? (
             <span>
               <span className="font-bold text-charcoal">{slotsUsed}</span> /{' '}
-              <span className="text-gray-600 slots">
+              <span className="text-gray-600">{slotsLimit}</span> slots
             </span>
           ) : (
             <span className="font-semibold text-gray-600">

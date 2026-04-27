@@ -987,7 +987,7 @@ export function EnhancedBookingSearch() {
                               'py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200',
                               isSelected
                                 ? 'bg-primary text-white shadow-md'
-                                : 'bg-white border border-gray-200 hover:border-primary/50 text-charcoal'
+                                : 'bg-white  border border-gray-200  hover:border-primary/50 text-charcoal ',
                             )}
                           >
                             {format(slotTime, 'h:mm a')}
@@ -1030,7 +1030,7 @@ export function EnhancedBookingSearch() {
                         'flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all duration-200',
                         selectedService === service.id
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 hover:border-primary/50 bg-white'
+                          : 'border-gray-200  hover:border-primary/50 bg-white ',
                       )}
                       onClick={() => {
                         setSelectedService(service.id);
@@ -1079,14 +1079,14 @@ export function EnhancedBookingSearch() {
                         'flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all duration-200',
                         locationType === LocationType.HOME
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 hover:border-primary/50 bg-white'
+                          : 'border-gray-200  hover:border-primary/50 bg-white ',
                       )}
                       onClick={() => setLocationType(LocationType.HOME)}
                     >
                       <RadioGroupItem value={LocationType.HOME} id="home" />
                       <Home className="w-5 h-5 text-gray-500" />
                       <Label htmlFor="home" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-charcoal Home</span>">
+                        <span className="font-medium text-charcoal">At Home</span>
                       </Label>
                     </div>
                   )}
@@ -1096,14 +1096,14 @@ export function EnhancedBookingSearch() {
                         'flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all duration-200',
                         locationType === LocationType.CLINIC
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 hover:border-primary/50 bg-white'
+                          : 'border-gray-200  hover:border-primary/50 bg-white ',
                       )}
                       onClick={() => setLocationType(LocationType.CLINIC)}
                     >
                       <RadioGroupItem value={LocationType.CLINIC} id="clinic" />
                       <Building2 className="w-5 h-5 text-gray-500" />
                       <Label htmlFor="clinic" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-charcoal Clinic</span>">
+                        <span className="font-medium text-charcoal">At Clinic</span>
                       </Label>
                     </div>
                   )}
@@ -1117,7 +1117,7 @@ export function EnhancedBookingSearch() {
                       value={homeAddress}
                       onChange={(e) => setHomeAddress(e.target.value)}
                       className={cn(
-                        'bg-white
+                        'bg-white ',
                         !homeAddress.trim() &&
                           'border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500/20',
                       )}
@@ -1157,7 +1157,7 @@ export function EnhancedBookingSearch() {
                     <div className="space-y-3 mb-6">
                       {selectedFreelancer && (
                         <div className="flex justify-between py-2 border-b border-gray-200">
-                          <span className="text-gray-600">
+                          <span className="text-gray-600">Freelancer:</span>
                           <span className="font-medium text-charcoal">
                             {selectedFreelancer.name}
                           </span>
@@ -1165,7 +1165,7 @@ export function EnhancedBookingSearch() {
                       )}
                       {selectedDate && selectedSlotData && (
                         <div className="flex justify-between py-2 border-b border-gray-200">
-                          <span className="text-gray-600 & Time:</span>">
+                          <span className="text-gray-600">Date & Time:</span>
                           <span className="font-medium text-charcoal">
                             {format(parseISO(selectedSlotData.startTime), 'MMM d, h:mm a')}
                           </span>
@@ -1173,7 +1173,7 @@ export function EnhancedBookingSearch() {
                       )}
                       {selectedServiceData && (
                         <div className="flex justify-between py-2 border-b border-gray-200">
-                          <span className="text-gray-600">
+                          <span className="text-gray-600">Service:</span>
                           <span className="font-medium text-charcoal">
                             {selectedServiceData.name}
                           </span>
@@ -1181,7 +1181,7 @@ export function EnhancedBookingSearch() {
                       )}
                       {locationType && (
                         <div className="flex justify-between py-2 border-b border-gray-200">
-                          <span className="text-gray-600">
+                          <span className="text-gray-600">Location:</span>
                           <span className="font-medium text-charcoal">
                             {locationType === LocationType.HOME ? 'At Home' : 'At Clinic'}
                           </span>
@@ -1189,7 +1189,7 @@ export function EnhancedBookingSearch() {
                       )}
                       {locationType === LocationType.HOME && homeAddress && (
                         <div className="flex justify-between py-2 border-b border-gray-200">
-                          <span className="text-gray-600">
+                          <span className="text-gray-600">Address:</span>
                           <span className="font-medium text-charcoal text-right max-w-[60%]">
                             {homeAddress}
                           </span>

@@ -82,22 +82,22 @@ export default function AdminRefundsPage() {
     const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
       PENDING: {
         label: 'Pending',
-        className: 'bg-yellow-100 text-yellow-800'
+        className: 'bg-yellow-100 text-yellow-800  ',
         icon: Clock,
       },
       APPROVED: {
         label: 'Approved',
-        className: 'bg-green-100 text-green-800'
+        className: 'bg-green-100 text-green-800  ',
         icon: CheckCircle2,
       },
       REJECTED: {
         label: 'Rejected',
-        className: 'bg-red-100 text-red-800'
+        className: 'bg-red-100 text-red-800  ',
         icon: XCircle,
       },
       PROCESSED: {
         label: 'Processed',
-        className: 'bg-blue-100 text-blue-800'
+        className: 'bg-blue-100 text-blue-800  ',
         icon: CheckCircle2,
       },
     };
@@ -160,25 +160,25 @@ export default function AdminRefundsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600 Requests</div>">
+              <div className="text-sm text-gray-600">Total Requests</div>
               <div className="text-2xl font-bold">{stats.total}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600">Pending</div>
               <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600">Approved</div>
               <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600">Rejected</div>
               <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
             </CardContent>
           </Card>

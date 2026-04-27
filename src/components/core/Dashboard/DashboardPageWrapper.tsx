@@ -1,6 +1,5 @@
 'use client';
 
-
 import { NotificationPopover } from '@/components/common/notifications';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useNotificationsWithCount } from '@/hooks/queries/useNotifications';

@@ -266,7 +266,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
               <div className="flex items-center gap-2 text-sm">
                 <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <div className="min-w-0">
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-gray-900">Services</div>
                   <div className="text-xs text-gray-500 truncate">
                     {serviceForm
                       .watch('serviceCategoryIds')
@@ -289,12 +289,12 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             {hasDiscount ? (
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">
+                  <span className="text-gray-600">Base:</span>
                   <span className="font-medium text-primary">EUR {basePrice.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-green-600">
-                  <span className="font-medium text-green-600"
+                  <span className="text-green-600">Discount:</span>
+                  <span className="font-medium text-green-600">
                     -EUR {discountAmount.toFixed(2)}
                   </span>
                 </div>

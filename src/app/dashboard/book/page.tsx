@@ -724,8 +724,8 @@ export default function BookingPage() {
                             className={cn(
                               'px-4 py-3 cursor-pointer transition-all duration-150',
                               selectedIndex === index
-                                ? 'bg-primary/10
-                                : 'hover:bg-gray-50'
+                                ? 'bg-primary/10 '
+                                : 'hover:bg-gray-50 ',
                             )}
                             onClick={() => handleSelectFreelancer(freelancer)}
                             onMouseEnter={() => setSelectedIndex(index)}
@@ -816,8 +816,8 @@ export default function BookingPage() {
                             className={cn(
                               'p-4 border rounded-lg cursor-pointer transition-all duration-200',
                               isSelected
-                                ? 'border-primary bg-primary/5 shadow-md'
-                                : 'border-gray-200 hover:bg-gray-50'
+                                ? 'border-primary bg-primary/5  shadow-md'
+                                : 'border-gray-200  hover:bg-gray-50 ',
                             )}
                           >
                             <div className="flex items-center justify-between">
@@ -1158,7 +1158,7 @@ export default function BookingPage() {
                                             'py-3 md:py-2 px-3 rounded-lg text-sm md:text-sm font-medium transition-all duration-200 min-h-[44px] md:min-h-0',
                                             isSelected
                                               ? 'bg-primary text-white shadow-md'
-                                              : 'bg-white border border-gray-200 hover:border-primary/50 text-charcoal'
+                                              : 'bg-white  border border-gray-200  hover:border-primary/50 text-charcoal ',
                                           )}
                                         >
                                           {format(slotTime, 'h:mm a')}
@@ -1196,7 +1196,7 @@ export default function BookingPage() {
                                           'flex items-center gap-3 p-4 md:p-3 rounded-lg border cursor-pointer transition-all duration-200 min-h-[56px] md:min-h-0',
                                           selectedService === service.id
                                             ? 'border-primary bg-primary/5'
-                                            : 'border-gray-200 hover:border-primary/50 bg-white'
+                                            : 'border-gray-200  hover:border-primary/50 bg-white ',
                                         )}
                                         onClick={() => {
                                           setSelectedService(service.id);
@@ -1242,7 +1242,7 @@ export default function BookingPage() {
                                           'flex items-center gap-3 p-4 md:p-3 rounded-lg border cursor-pointer transition-all duration-200 min-h-[56px] md:min-h-0',
                                           locationType === LocationType.HOME
                                             ? 'border-primary bg-primary/5'
-                                            : 'border-gray-200 hover:border-primary/50 bg-white'
+                                            : 'border-gray-200  hover:border-primary/50 bg-white ',
                                         )}
                                         onClick={() => setLocationType(LocationType.HOME)}
                                       >
@@ -1261,7 +1261,7 @@ export default function BookingPage() {
                                           'flex items-center gap-3 p-4 md:p-3 rounded-lg border cursor-pointer transition-all duration-200 min-h-[56px] md:min-h-0',
                                           locationType === LocationType.CLINIC
                                             ? 'border-primary bg-primary/5'
-                                            : 'border-gray-200 hover:border-primary/50 bg-white'
+                                            : 'border-gray-200  hover:border-primary/50 bg-white ',
                                         )}
                                         onClick={() => setLocationType(LocationType.CLINIC)}
                                       >
@@ -1284,7 +1284,7 @@ export default function BookingPage() {
                                         value={homeAddress}
                                         onChange={(e) => setHomeAddress(e.target.value)}
                                         className={cn(
-                                          'bg-white
+                                          'bg-white ',
                                           !homeAddress.trim() &&
                                             'border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500/20',
                                         )}

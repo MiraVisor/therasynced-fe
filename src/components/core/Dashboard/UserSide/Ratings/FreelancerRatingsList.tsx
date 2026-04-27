@@ -84,7 +84,7 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
                       className={`w-4 h-4 ${
                         star <= (ratingValue || 0)
                           ? 'fill-yellow-400 text-yellow-400'
-                          : 'fill-gray-200 text-gray-300'
+                          : 'fill-gray-200 text-gray-300  '
                       }`}
                     />
                   ))}
@@ -126,7 +126,7 @@ export const FreelancerRatingsList: React.FC<FreelancerRatingsListProps> = ({
 
       {loading && (
         <div className="text-center py-4">
-          <p className="text-sm text-gray-500 ratings...</p>">
+          <p className="text-sm text-gray-500">Loading ratings...</p>
         </div>
       )}
     </div>

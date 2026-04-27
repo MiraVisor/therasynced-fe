@@ -117,8 +117,8 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
             <button
               className={`p-2.5 rounded-full flex-shrink-0 transition-all duration-200 ${
                 freelancer.isFavorite
-                  ? 'text-red-500 bg-gradient-to-br from-red-50 to-red-100 shadow-md'
-                  : 'text-gray-400 hover:text-red-400 hover:bg-gray-100'
+                  ? 'text-red-500 bg-gradient-to-br from-red-50 to-red-100   shadow-md'
+                  : 'text-gray-400 hover:text-red-400 hover:bg-gray-100 '
               } ${isFavoriteLoading ? 'cursor-not-allowed opacity-50' : 'hover:scale-110'}`}
               onClick={handleFavorite}
               disabled={isFavoriteLoading}
@@ -138,7 +138,7 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
           <div className="mb-5 space-y-3 bg-gradient-to-br from-primary/8 via-primary/5 to-transparent rounded-xl p-4 border border-primary/20 shadow-sm">
             {freelancer.reviews && freelancer.reviews > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="font-inter text-gray-600">
+                <span className="font-inter text-gray-600">Reviews:</span>
                 <span className="font-poppins font-bold text-gray-900">
                   {freelancer.reviews}
                 </span>
@@ -146,7 +146,7 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
             )}
             {(freelancer.availableSlots || 0) > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="font-inter text-gray-600">
+                <span className="font-inter text-gray-600">Availability:</span>
                 <span className="font-poppins font-bold text-green-600">
                   {freelancer.availableSlots || 0} slots
                 </span>

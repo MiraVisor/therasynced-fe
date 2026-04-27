@@ -159,7 +159,7 @@ const FreelancerFormsPage = () => {
             {filteredTemplates.map((template) => (
               <EnhancedCard
                 key={template.id}
-                variant="default">
+                variant="default"
                 interactive
                 className="group border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-xl hover:shadow-md transition-all"
               >

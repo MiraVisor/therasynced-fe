@@ -275,7 +275,7 @@ export function ImprovedDatePicker({
               disabled={(date) => date > minAge || date < new Date(minYear, 0, 1)}
               month={selectedMonth}
               onMonthChange={(date) => setSelectedMonth(date)}
-              captionLayout="label">
+              captionLayout="label"
               initialFocus
             />
           </div>

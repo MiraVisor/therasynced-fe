@@ -48,14 +48,14 @@ const chartConfig = {
     label: 'This Month',
     theme: {
       light: '#5E54F3',
-      '#7C74FF',
+      dark: '#7C74FF',
     },
   },
   secondary: {
     label: 'Last Month',
     theme: {
       light: '#E0E0E0',
-      '#AAAAAA',
+      dark: '#AAAAAA',
     },
   },
 } satisfies ChartConfig;

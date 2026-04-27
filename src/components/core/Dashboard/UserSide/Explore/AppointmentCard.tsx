@@ -154,8 +154,8 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
               variant={status === 'confirmed' ? 'default' : 'secondary'}
               className={`text-xs ${
                 status === 'confirmed'
-                  ? 'bg-green-100 text-green-800
-                  : 'bg-yellow-100 text-yellow-800'
+                  ? 'bg-green-100 text-green-800  '
+                  : 'bg-yellow-100 text-yellow-800  '
               }`}
             >
               {status}

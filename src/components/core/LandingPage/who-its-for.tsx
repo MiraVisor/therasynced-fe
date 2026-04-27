@@ -42,7 +42,7 @@ const WhoItsFor = () => {
       data-aos="fade-up"
       data-aos-once="false"
       data-aos-mirror="true"
-      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16  transition-all duration-500"
+      className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16 transition-all duration-500"
     >
       <div className="max-w-screen-xl mx-auto relative">
         {/* Decorative star shapes */}
@@ -81,7 +81,7 @@ const WhoItsFor = () => {
         {/* Main layout container */}
         <div className="relative xl:min-h-[750px]">
           {/* Heading - positioned above card 03 (left side) */}
-          <div className="xl:absolute xl:top-0 xl:left-0 xl:max-w-[600px]  mb-10 xl:mb-0 z-10 text-center lg:text-left ">
+          <div className="xl:absolute xl:top-0 xl:left-0 xl:max-w-[600px] mb-10 xl:mb-0 z-10 text-center lg:text-left">
             <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary tracking-tight leading-[1.1]">
               How <span className="text-primary/70">our</span> Platform Works
             </h1>
@@ -114,7 +114,7 @@ const WhoItsFor = () => {
                   src={audience[0]?.image ?? ''}
                   alt={audience[0]?.alt ?? ''}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105">
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
                   priority
                 />
               </div>
@@ -155,7 +155,7 @@ const WhoItsFor = () => {
                     src={audience[1]?.image ?? ''}
                     alt={audience[1]?.alt ?? ''}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105">
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                     priority
                   />
                 </div>
@@ -197,7 +197,7 @@ const WhoItsFor = () => {
                   src={audience[2]?.image ?? ''}
                   alt={audience[2]?.alt ?? ''}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105">
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
                   priority
                 />
               </div>

@@ -67,7 +67,7 @@ export function BillingSummary({
           <div className="flex items-center gap-3">
             <CreditCard className="h-5 w-5 text-gray-400" />
             <div>
-              <p className="text-sm font-medium text-gray-600 Amount</p>">
+              <p className="text-sm font-medium text-gray-600">Billing Amount</p>
               <p className="text-lg font-poppins font-semibold text-charcoal">
                 EUR {plan.price.toFixed(2)} / month
               </p>

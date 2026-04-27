@@ -125,7 +125,7 @@ export const userHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : null}
             <span
               className={`font-inter font-medium text-sm ${
-                isThirdParty ? 'text-amber-700' : 'text-charcoal'
+                isThirdParty ? 'text-amber-700 ' : 'text-charcoal'
               }`}
             >
               {isSelfAccess ? 'You (Self)' : accessedBy.name}
@@ -227,7 +227,7 @@ export const adminHealthDataLogsColumns: ColumnDef<HealthDataAccessLog>[] = [
             ) : null}
             <span
               className={`font-inter font-medium text-sm ${
-                isThirdParty ? 'text-amber-700' : 'text-charcoal'
+                isThirdParty ? 'text-amber-700 ' : 'text-charcoal'
               }`}
             >
               {isSelfAccess ? 'You (Self)' : accessedBy.name}

@@ -47,7 +47,7 @@ function SubscriptionSuccessContent() {
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-sm text-gray-600 your payment...</p>">
+          <p className="mt-4 text-sm text-gray-600">Verifying your payment...</p>
         </div>
       </div>
     );
@@ -76,8 +76,8 @@ function SubscriptionSuccessContent() {
         <CardContent className="space-y-4">
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-800">
-              <p className="mt-1 text-sm text-red-600">
+              <p className="text-sm font-medium text-red-800">Error</p>
+              <p className="mt-1 text-sm text-red-600">{error}</p>
               <p className="mt-2 text-xs text-red-600">
                 If your payment was successful, please contact support with your session ID.
               </p>
@@ -92,7 +92,7 @@ function SubscriptionSuccessContent() {
               </div>
               {subscription.plan && (
                 <div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600">Plan</p>
                   <p className="font-poppins font-semibold text-lg">
                     {subscription.plan.displayName}
                   </p>
@@ -102,7 +102,7 @@ function SubscriptionSuccessContent() {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-sm text-gray-600 billing date</p>">
+                    <p className="text-sm text-gray-600">Next billing date</p>
                     <p className="font-medium">
                       {nextBillingDate.toLocaleDateString('en-US', {
                         year: 'numeric',

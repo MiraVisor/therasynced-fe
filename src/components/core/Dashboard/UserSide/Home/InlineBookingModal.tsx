@@ -123,7 +123,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                       className={`cursor-pointer transition-all duration-200 ${
                         isSelected
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 hover:border-primary/50'
+                          : 'border-gray-200  hover:border-primary/50'
                       }`}
                       onClick={() => setSelectedSlot(slot)}
                     >

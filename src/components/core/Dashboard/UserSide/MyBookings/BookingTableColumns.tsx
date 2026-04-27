@@ -58,9 +58,9 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal">
+              <span className="font-medium text-charcoal">{freelancer.name}</span>
               {freelancer.averageRating && (
-                <span className="text-xs text-gray-600"
+                <span className="text-xs text-gray-600">
                   ⭐ {freelancer.averageRating.toFixed(1)}
                 </span>
               )}
@@ -77,7 +77,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal">
+              <span className="font-medium text-charcoal">{freelancer.email}</span>
             </div>
           </div>
         );
@@ -137,16 +137,16 @@ export const createBookingColumns = ({
 
         if (isUpcoming) {
           statusLabel = 'CONFIRMED';
-          statusClass = 'bg-blue-100 text-blue-800'
+          statusClass = 'bg-blue-100 text-blue-800  ';
         } else if (status === 'COMPLETED' || (status === 'CONFIRMED' && isPast)) {
           statusLabel = 'COMPLETED';
-          statusClass = 'bg-green-100 text-green-800'
+          statusClass = 'bg-green-100 text-green-800  ';
         } else if (status === 'CANCELLED') {
           statusLabel = 'CANCELLED';
-          statusClass = 'bg-red-100 text-red-800'
+          statusClass = 'bg-red-100 text-red-800  ';
         } else if (status === 'RESCHEDULED') {
           statusLabel = 'RESCHEDULED';
-          statusClass = 'bg-yellow-100 text-yellow-800'
+          statusClass = 'bg-yellow-100 text-yellow-800  ';
         }
 
         return <Badge className={cn('font-semibold', statusClass)}>{statusLabel}</Badge>;
@@ -157,7 +157,7 @@ export const createBookingColumns = ({
       header: 'Amount',
       cell: ({ row }) => {
         return (
-          <span className="font-semibold text-charcoal"
+          <span className="font-semibold text-charcoal">
             €{row.original.totalAmount.toFixed(2)}
           </span>
         );

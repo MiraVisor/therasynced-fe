@@ -63,19 +63,19 @@ export function BillingHistoryTable() {
     const statusConfig: Record<string, { label: string; className: string }> = {
       paid: {
         label: 'Paid',
-        className: 'bg-green-100 text-green-800'
+        className: 'bg-green-100 text-green-800  ',
       },
       pending: {
         label: 'Pending',
-        className: 'bg-yellow-100 text-yellow-800'
+        className: 'bg-yellow-100 text-yellow-800  ',
       },
       failed: {
         label: 'Failed',
-        className: 'bg-red-100 text-red-800'
+        className: 'bg-red-100 text-red-800  ',
       },
       refunded: {
         label: 'Refunded',
-        className: 'bg-gray-100 text-gray-800'
+        className: 'bg-gray-100 text-gray-800  ',
       },
     };
 

@@ -375,7 +375,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                         <span className="inline-block w-full">
                           <Button
                             variant="outline"
-                            className="w-full h-12 text-base font-semibold shadow-md bg-gray-100 text-gray-600 border-2 border-gray-300 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600">
+                            className="w-full h-12 text-base font-semibold shadow-md bg-gray-100 text-gray-600 border-2 border-gray-300 cursor-not-allowed hover:bg-gray-100 hover:text-gray-600"
                             disabled
                             tabIndex={1}
                             autoFocus

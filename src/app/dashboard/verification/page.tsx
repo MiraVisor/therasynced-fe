@@ -290,8 +290,8 @@ export default function VerificationPage() {
             variant="outline"
             className={
               category === 'FIRST_AID_CERTIFICATE'
-                ? 'bg-red-50 text-red-700 border-red-200
-                : 'bg-blue-50 text-blue-700 border-blue-200'
+                ? 'bg-red-50 text-red-700 border-red-200  '
+                : 'bg-blue-50 text-blue-700 border-blue-200  '
             }
           >
             {category === 'FIRST_AID_CERTIFICATE' ? 'EFR Certificate' : 'Verification'}
@@ -502,9 +502,9 @@ export default function VerificationPage() {
                     key={item.requirement.id}
                     className={`flex items-center justify-between p-3 rounded-lg border ${
                       item.uploaded
-                        ? 'bg-green-50/50 border-green-200
+                        ? 'bg-green-50/50 border-green-200 '
                         : item.requirement.isMandatory
-                          ? 'bg-amber-50/50 border-amber-200
+                          ? 'bg-amber-50/50 border-amber-200 '
                           : 'bg-muted/30 border-border'
                     }`}
                   >

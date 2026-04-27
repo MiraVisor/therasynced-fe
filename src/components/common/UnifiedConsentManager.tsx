@@ -299,7 +299,7 @@ export function UnifiedConsentManager({
                 return (
                   <div
                     key={type}
-                    className={`flex items-start space-x-3 rounded-lg border ${paddingClass} bg-gray-50`}
+                    className={`flex items-start space-x-3 rounded-lg border ${paddingClass} bg-gray-50 `}
                   >
                     <div className="flex items-center justify-center mt-0.5 w-5 h-5">
                       <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -357,7 +357,7 @@ export function UnifiedConsentManager({
                 <div
                   key={type}
                   onClick={() => !isDisabled && handleConsentChange(type, !isGranted)}
-                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50 ${
+                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50  ${
                     isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
@@ -439,7 +439,7 @@ export function UnifiedConsentManager({
                 <div
                   key={type}
                   onClick={() => !isDisabled && handleConsentChange(type, !isGranted)}
-                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50 ${
+                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50  ${
                     isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
@@ -505,7 +505,7 @@ export function UnifiedConsentManager({
                 <div
                   key={type}
                   onClick={() => !isDisabled && handleConsentChange(type, !isGranted)}
-                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50 ${
+                  className={`flex items-start space-x-3 rounded-lg border ${paddingClass} relative cursor-pointer transition-all hover:bg-gray-50  ${
                     isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >

@@ -528,7 +528,7 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add notes about this slot..."
-                  className="min-h-[80px] font-inter text-sm">
+                  className="min-h-[80px] font-inter text-sm"
                   autoFocus
                 />
                 <div className="flex items-center justify-end gap-2">

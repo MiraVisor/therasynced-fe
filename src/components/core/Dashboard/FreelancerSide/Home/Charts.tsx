@@ -39,7 +39,7 @@ const ChartTooltipContent = ({ active, payload, label }: ChartTooltipProps) => {
               <span className="text-gray-600">
                 {entry.dataKey === 'current' ? 'This Week' : 'Last Week'}:
               </span>
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900">{entry.value}</span>
             </div>
           ))}
         </div>
@@ -109,14 +109,14 @@ const Charts = ({ dashboardData, isLoading = false }: ChartsProps) => {
           <div className="flex items-center gap-6 text-sm font-inter">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-primary" />
-              <span className="text-gray-600 Week</span>">
+              <span className="text-gray-600">This Week</span>
               <span className="font-poppins font-semibold text-gray-900">
                 {totalCurrent}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gray-200" />
-              <span className="text-gray-600 Week</span>">
+              <span className="text-gray-600">Last Week</span>
               <span className="font-poppins font-semibold text-gray-900">
                 {totalLast}
               </span>

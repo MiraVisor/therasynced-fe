@@ -139,7 +139,7 @@ const UserExploreMain = () => {
       userRole="PATIENT"
       header={
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-gray-900 👋</h1>">
+          <h1 className="text-2xl font-bold text-gray-900">Welcome! 👋</h1>
         </div>
       }
     >

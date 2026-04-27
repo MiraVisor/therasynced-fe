@@ -98,7 +98,7 @@ export const ProfileCompletionWidget = () => {
             key={item.key}
             className={cn(
               'flex items-center gap-2.5 p-2 rounded-md transition-colors',
-              !item.completed && 'hover:bg-gray-50 cursor-pointer',
+              !item.completed && 'hover:bg-gray-50  cursor-pointer',
             )}
             onClick={() => {
               if (!item.completed && item.actionUrl) {
@@ -114,7 +114,7 @@ export const ProfileCompletionWidget = () => {
             <span
               className={cn(
                 'text-xs font-inter flex-1 min-w-0 truncate',
-                item.completed ? 'text-gray-400 line-through' : 'text-gray-900'
+                item.completed ? 'text-gray-400 line-through' : 'text-gray-900 ',
               )}
             >
               {item.label}

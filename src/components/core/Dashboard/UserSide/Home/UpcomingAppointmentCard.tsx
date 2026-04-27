@@ -66,9 +66,9 @@ const UpcomingAppointmentCard: React.FC<UpcomingAppointmentCardProps> = ({ booki
     const isTomorrow =
       bookingDate.toDateString() === new Date(now.getTime() + 86400000).toDateString();
 
-    if (isToday) return 'bg-blue-100 text-blue-800
-    if (isTomorrow) return 'bg-green-100 text-green-800
-    return 'bg-gray-100 text-gray-800'
+    if (isToday) return 'bg-blue-100 text-blue-800  ';
+    if (isTomorrow) return 'bg-green-100 text-green-800  ';
+    return 'bg-gray-100 text-gray-800  ';
   };
 
   const LocationIcon = getLocationIcon(booking);

@@ -296,7 +296,7 @@ const BreachDetailPage = () => {
                             ? 'bg-primary text-primary-foreground border-primary'
                             : isCompleted
                               ? 'bg-green-500 text-white border-green-500'
-                              : 'bg-gray-200 text-gray-500 border-gray-300'
+                              : 'bg-gray-200  text-gray-500 border-gray-300'
                         }`}
                       >
                         {isCompleted ? (
@@ -316,7 +316,7 @@ const BreachDetailPage = () => {
                     {index < 3 && (
                       <div
                         className={`h-0.5 w-8 ${
-                          isCompleted ? 'bg-green-500' : 'bg-gray-300'
+                          isCompleted ? 'bg-green-500' : 'bg-gray-300 '
                         }`}
                       />
                     )}
@@ -381,8 +381,8 @@ const BreachDetailPage = () => {
           <Card
             className={
               breach.reportedToDpc
-                ? 'border-green-200
-                : 'border-red-200'
+                ? 'border-green-200 '
+                : 'border-red-200 '
             }
           >
             <CardHeader>
@@ -419,8 +419,8 @@ const BreachDetailPage = () => {
           <Card
             className={
               breach.notifiedUsers
-                ? 'border-green-200
-                : 'border-red-200'
+                ? 'border-green-200 '
+                : 'border-red-200 '
             }
           >
             <CardHeader>

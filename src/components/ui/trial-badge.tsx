@@ -53,7 +53,7 @@ export const TrialBadge: React.FC<TrialBadgeProps> = ({ trialEndsAt, size = 'sm'
     <Badge
       variant="outline"
       className={cn(
-        'inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border-blue-200
+        'inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border-blue-200   ',
         sizeClasses[size],
         className,
       )}

@@ -138,7 +138,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
                       })}
                     </div>
                   ) : (
-                    <p className="text-gray-600 therapy session</p>"
+                    <p className="text-gray-600">General therapy session</p>
                   )}
                 </div>
               </div>

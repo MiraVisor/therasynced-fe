@@ -155,7 +155,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
                 </div>
 
                 <div className="space-y-3">
-                  <div className="text-sm text-gray-600 Tomorrow 2pm</div>"
+                  <div className="text-sm text-gray-600">Next: Tomorrow 2pm</div>
 
                   <div className="flex items-center justify-between">
                     {freelancer.pricing?.online?.min ? (

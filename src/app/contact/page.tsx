@@ -37,7 +37,7 @@ const socials = [
     label: 'X (Twitter)',
     icon: XIcon,
     hoverClass:
-      'hover:text-black hover:border-black/40'
+      'hover:text-black  hover:border-black/40 ',
   },
   {
     href: 'https://www.instagram.com/therasynced',
@@ -197,8 +197,8 @@ export default function ContactPage() {
               </li>
               <li>
                 In an emergency, please contact local emergency services. In Ireland, dial{' '}
-                <strong className="text-gray-900 or{' '}">
-                <strong className="text-gray-900 TheraSynced is not">
+                <strong className="text-gray-900">112</strong> or{' '}
+                <strong className="text-gray-900">999</strong>. TheraSynced is not
                 intended for urgent or crisis situations.
               </li>
             </ul>
@@ -217,7 +217,7 @@ export default function ContactPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className={`w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-500 transition-colors ${social.hoverClass}`}
+                  className={`w-11 h-11 rounded-full border border-gray-200  bg-white  flex items-center justify-center text-gray-500 transition-colors ${social.hoverClass}`}
                 >
                   <social.icon className="w-4 h-4" />
                 </a>

@@ -190,7 +190,7 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
           <Textarea
             id="notes"
             placeholder="e.g., I'd like to focus on anxiety management techniques..."
-            className="min-h-[120px] resize-none">
+            className="min-h-[120px] resize-none"
             {...detailsForm.register('notes')}
           />
         </div>
@@ -216,7 +216,7 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
               <Input
                 id="clientAddress"
                 placeholder="Enter your full address"
-                className="bg-white border-blue-200">
+                className="bg-white border-blue-200"
                 {...detailsForm.register('clientAddress')}
               />
             </div>

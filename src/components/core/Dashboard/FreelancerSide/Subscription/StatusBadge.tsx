@@ -58,7 +58,7 @@ export function StatusBadge({
       case 'ACTIVE':
         return {
           color:
-            'bg-green-100 text-green-800 border-green-300
+            'bg-green-100 text-green-800   border-green-300 ',
           icon: Crown,
           label: 'Active',
         };
@@ -67,7 +67,7 @@ export function StatusBadge({
         const isCanceledDuringTrial = subscription?.cancelAtPeriodEnd === true;
         return {
           color:
-            'bg-orange-100 text-orange-800 border-orange-300
+            'bg-orange-100 text-orange-800   border-orange-300 ',
           icon: Clock,
           label: isCanceledDuringTrial
             ? 'Trial Active - Subscription Canceled'
@@ -76,42 +76,42 @@ export function StatusBadge({
       case 'TRIAL_EXPIRED':
         return {
           color:
-            'bg-red-100 text-red-800 border-red-300
+            'bg-red-100 text-red-800   border-red-300 ',
           icon: XCircle,
           label: 'Trial Expired',
         };
       case 'PAST_DUE':
         return {
           color:
-            'bg-red-100 text-red-800 border-red-300 animate-pulse',
+            'bg-red-100 text-red-800   border-red-300  animate-pulse',
           icon: AlertCircle,
           label: 'Past Due',
         };
       case 'INACTIVE':
         return {
           color:
-            'bg-gray-100 text-gray-800 border-gray-300
+            'bg-gray-100 text-gray-800   border-gray-300 ',
           icon: XCircle,
           label: 'Inactive',
         };
       case 'CANCELED':
         return {
           color:
-            'bg-gray-100 text-gray-800 border-gray-300
+            'bg-gray-100 text-gray-800   border-gray-300 ',
           icon: XCircle,
           label: 'Canceled',
         };
       case 'UNPAID':
         return {
           color:
-            'bg-red-100 text-red-800 border-red-300
+            'bg-red-100 text-red-800   border-red-300 ',
           icon: AlertCircle,
           label: 'Unpaid',
         };
       default:
         return {
           color:
-            'bg-gray-100 text-gray-800 border-gray-300
+            'bg-gray-100 text-gray-800   border-gray-300 ',
           icon: Clock,
           label: status,
         };

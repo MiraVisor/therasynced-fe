@@ -593,7 +593,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                         currentStep >= step.id
                           ? 'bg-primary text-white shadow-md'
-                          : 'bg-gray-100 text-gray-400'
+                          : 'bg-gray-100 text-gray-400  '
                       }`}
                     >
                       {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : step.id}
@@ -602,8 +602,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                       <div
                         className={`text-sm font-medium ${
                           currentStep >= step.id
-                            ? 'text-charcoal
-                            : 'text-gray-400'
+                            ? 'text-charcoal '
+                            : 'text-gray-400 '
                         }`}
                       >
                         {step.title}
@@ -616,7 +616,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                   {index < steps.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-2 transition-all ${
-                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
+                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200 '
                       }`}
                     />
                   )}

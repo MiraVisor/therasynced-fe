@@ -347,11 +347,11 @@ const MessagesPageContent = () => {
           <h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>
           {messagesLimit !== null && role === 'FREELANCER' && (
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">
+              <span className="text-gray-600">Messages:</span>
               <span
                 className={cn(
                   'font-semibold',
-                  isAtLimit ? 'text-red-600' : 'text-gray-900'
+                  isAtLimit ? 'text-red-600' : 'text-gray-900 ',
                 )}
               >
                 {messagesUsed}/{formatLimit(messagesLimit)}
@@ -444,7 +444,7 @@ const MessagesPageContent = () => {
             {selectedContact ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b  flex items-center justify-between">
+                <div className="p-4 border-b flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     {isMobile && (
                       <Button
@@ -510,7 +510,7 @@ const MessagesPageContent = () => {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t ">
+                <div className="p-4 border-t">
                   <div className="flex space-x-2">
                     <Input
                       placeholder={isConnected ? 'Type a message...' : 'Connecting...'}

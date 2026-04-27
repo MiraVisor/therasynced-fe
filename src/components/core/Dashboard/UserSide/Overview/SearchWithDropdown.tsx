@@ -216,8 +216,8 @@ export const SearchWithDropdown: React.FC<SearchWithDropdownProps> = ({
                     px-4 py-3 cursor-pointer transition-colors
                     ${
                       selectedIndex === index || highlightedFreelancer === freelancer.id
-                        ? 'bg-primary/10
-                        : 'hover:bg-gray-50'
+                        ? 'bg-primary/10 '
+                        : 'hover:bg-gray-50 '
                     }
                   `}
                   onClick={() => handleSuggestionClick(freelancer)}

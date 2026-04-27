@@ -103,7 +103,7 @@ const Freelancers = () => {
       <div className="flex flex-col items-center gap-8 sm:gap-6 lg:gap-8">
         {/* Header */}
         <div
-          className="text-center space-y-3 sm:space-y-4 lg:space-y-6 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 "
+          className="text-center space-y-3 sm:space-y-4 lg:space-y-6 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"
           data-aos="fade-up"
         >
           <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
@@ -119,7 +119,7 @@ const Freelancers = () => {
         <div className="w-full max-w-7xl mx-auto transform lg:translate-y-24 relative z-20">
           <div className="overflow-hidden">
             <div
-              className="marquee flex gap-2 items-stretch will-change-transform px-2">
+              className="marquee flex gap-2 items-stretch will-change-transform px-2"
               aria-hidden
             >
               {repeatedExperts.map((expert, idx) => (
@@ -179,7 +179,7 @@ const Freelancers = () => {
         </div>
 
         {/* Professional Healthcare Section - Softer green background that cards overlap into */}
-        <div className="w-full  bg-[#007745]/80  -mt-12 lg:-mt-20 relative z-0 pt-12 lg:pt-20 pb-12 lg:pb-24">
+        <div className="w-full bg-[#007745]/80 -mt-12 lg:-mt-20 relative z-0 pt-12 lg:pt-20 pb-12 lg:pb-24">
           <div className="max-w-6xl mx-auto py-6 md:py-12 lg:py-20 lg:min-h-[500px] grid grid-cols-1 lg:grid-cols-2 gap-10 items-start relative overflow-visible mt-10">
             {/* Left Column - FAQ Section */}
             <div
@@ -275,9 +275,9 @@ const Freelancers = () => {
                   <div className="relative w-full aspect-square rounded-xl overflow-hidden">
                     <Image
                       src={'/images/physio/chiropractor-provides-aid-patient.jpg'}
-                      alt="Expert specialist caring for patient">
+                      alt="Expert specialist caring for patient"
                       fill
-                      className="object-cover object-center">
+                      className="object-cover object-center"
                       priority
                     />
                   </div>

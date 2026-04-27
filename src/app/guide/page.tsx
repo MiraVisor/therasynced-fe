@@ -62,10 +62,10 @@ export default function GuidePage() {
             <div className="relative rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-[5/4] shadow-lg border border-gray-100">
               <Image
                 src="/images/physio/pilates-therapy-session.jpg"
-                alt="A therapist guiding a client through a session">
+                alt="A therapist guiding a client through a session"
                 fill
                 className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw">
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />
               {/* subtle primary-tinted overlay so the image blends with the page palette */}
@@ -168,8 +168,8 @@ export default function GuidePage() {
                 <p className="text-sm text-gray-700 font-open-sans leading-relaxed">
                   If you are in crisis or experiencing a medical emergency, please contact local
                   emergency services immediately. In Ireland, dial{' '}
-                  <strong className="text-gray-900 or{' '}">
-                  <strong className="text-gray-900 Our messaging is">
+                  <strong className="text-gray-900">112</strong> or{' '}
+                  <strong className="text-gray-900">999</strong>. Our messaging is
                   not monitored for urgent situations.
                 </p>
               </div>

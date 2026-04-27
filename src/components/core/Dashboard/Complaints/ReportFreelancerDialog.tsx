@@ -120,7 +120,7 @@ export const ReportFreelancerDialog = ({
           {/* Category Selection */}
           <div className="space-y-2">
             <Label htmlFor="category">
-              Category <span className="text-red-600">
+              Category <span className="text-red-600">*</span>
             </Label>
             <Select
               value={watch('category') ?? undefined}
@@ -159,10 +159,10 @@ export const ReportFreelancerDialog = ({
           {/* Reason */}
           <div className="space-y-2">
             <Label htmlFor="reason">
-              Brief Reason <span className="text-red-600">
+              Brief Reason <span className="text-red-600">*</span>
             </Label>
             <Input
-              id="reason">
+              id="reason"
               {...register('reason')}
               placeholder="e.g., Arrived 30 minutes late"
               className={errors.reason ? 'border-red-500' : ''}
@@ -186,10 +186,10 @@ export const ReportFreelancerDialog = ({
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">
-              Detailed Description <span className="text-red-600">
+              Detailed Description <span className="text-red-600">*</span>
             </Label>
             <Textarea
-              id="description">
+              id="description"
               {...register('description')}
               placeholder="Please provide a detailed explanation of the incident..."
               rows={5}

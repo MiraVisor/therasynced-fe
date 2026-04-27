@@ -76,10 +76,10 @@ export function ActivityHeatmap({ data, title, description, loading }: ActivityH
   const getIntensity = (value: number) => {
     if (value === 0) return 'bg-muted';
     const intensity = Math.min(value / maxValue, 1);
-    if (intensity < 0.25) return 'bg-blue-200
-    if (intensity < 0.5) return 'bg-blue-400
-    if (intensity < 0.75) return 'bg-blue-600
-    return 'bg-blue-800'
+    if (intensity < 0.25) return 'bg-blue-200 ';
+    if (intensity < 0.5) return 'bg-blue-400 ';
+    if (intensity < 0.75) return 'bg-blue-600 ';
+    return 'bg-blue-800 ';
   };
 
   return (

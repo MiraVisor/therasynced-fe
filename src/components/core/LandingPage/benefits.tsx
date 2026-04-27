@@ -189,7 +189,7 @@ const Benefits = () => {
           {benefits.map((benefit, index) => (
             <div
               key={benefit.id}
-              className={`group relative p-6 lg:p-8 rounded-2xl border border-gray-200 bg-white hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-default overflow-hidden ${
+              className={`group relative p-6 lg:p-8 rounded-2xl border border-gray-200  bg-white  hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-default overflow-hidden ${
                 visibleItems.includes(index)
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-6'
@@ -286,7 +286,7 @@ const Benefits = () => {
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                   index === activeTestimonial
                     ? 'w-8 bg-primary'
-                    : 'bg-gray-300 hover:bg-primary/50'
+                    : 'bg-gray-300  hover:bg-primary/50'
                 }`}
               />
             ))}

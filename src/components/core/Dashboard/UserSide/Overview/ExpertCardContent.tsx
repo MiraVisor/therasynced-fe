@@ -115,7 +115,7 @@ export const ExpertCardContent = memo(
       <TooltipProvider>
         <Card
           className={cn(
-            'group overflow-hidden bg-white/80 backdrop-blur-sm shadow-soft min-h-[320px] flex flex-col border-gray-200/80'
+            'group overflow-hidden bg-white/80  backdrop-blur-sm shadow-soft min-h-[320px] flex flex-col border-gray-200/80 ',
           )}
         >
           <CardHeader className="pb-3 px-4">
@@ -164,7 +164,7 @@ export const ExpertCardContent = memo(
 
               <button
                 className={`p-2 rounded-full flex-shrink-0 ${
-                  isFavorite ? 'text-red-500 bg-red-50' : 'text-gray-400'
+                  isFavorite ? 'text-red-500 bg-red-50 ' : 'text-gray-400'
                 } ${isFavoriteLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                 onClick={handleFavorite}
                 disabled={isFavoriteLoading}
@@ -205,7 +205,7 @@ export const ExpertCardContent = memo(
               <div className="flex flex-col md:flex-row gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1 border-primary text-primary  h-9 text-sm"
+                  className="flex-1 border-primary text-primary h-9 text-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     onViewProfile();
@@ -231,7 +231,7 @@ export const ExpertCardContent = memo(
                           <TooltipTrigger asChild>
                             <span className="flex-1">
                               <Button
-                                className="w-full !bg-primary/50 !text-white shadow-sm h-9 text-sm opacity-60 cursor-not-allowed hover:!bg-primary/50">
+                                className="w-full !bg-primary/50 !text-white shadow-sm h-9 text-sm opacity-60 cursor-not-allowed hover:!bg-primary/50"
                                 disabled
                                 style={{ cursor: 'disabled' }}
                                 onClick={(e) => e.stopPropagation()}

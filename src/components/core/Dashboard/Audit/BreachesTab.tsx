@@ -461,7 +461,7 @@ export function BreachesTab() {
                   })
                 }
                 placeholder="e.g., 150, 1000, 5000"
-                className="font-open-sans mt-2">
+                className="font-open-sans mt-2"
                 required
               />
               <p className="text-xs text-muted-foreground mt-1">

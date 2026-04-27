@@ -58,9 +58,9 @@ const Hero = () => {
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/physio/doctor-glues-tepee-athlete-hospital.jpg"
-          alt="A therapist taping an athlete for sports recovery">
+          alt="A therapist taping an athlete for sports recovery"
           fill
-          className="object-cover object-center opacity-[0.08]">
+          className="object-cover object-center opacity-[0.08]"
           priority
           quality={75}
           sizes="100vw"
@@ -124,7 +124,7 @@ const Hero = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
                   onClick={() => handleServiceTypeClick(type.id)}
-                  className={`group relative p-5 rounded-xl bg-white/80 backdrop-blur-md border border-gray-100 hover:border-primary/40 transition-all duration-300 text-left shadow-sm hover:shadow-lg hover:scale-[1.02]`}
+                  className={`group relative p-5 rounded-xl bg-white/80  backdrop-blur-md border border-gray-100  hover:border-primary/40 transition-all duration-300 text-left shadow-sm hover:shadow-lg hover:scale-[1.02]`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">

@@ -68,7 +68,7 @@ export const FreelancerCalendarCard: React.FC<{
                     {freelancer.rating.toFixed(1)}
                   </span>
                   {freelancer.reviews !== undefined && freelancer.reviews > 0 && (
-                    <span className="text-xs text-gray-500"
+                    <span className="text-xs text-gray-500">
                       ({freelancer.reviews})
                     </span>
                   )}
@@ -106,8 +106,8 @@ export const FreelancerCalendarCard: React.FC<{
                     aspect-square text-xs font-medium rounded-md transition-all
                     ${
                       available
-                        ? 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-green-100  text-green-800  hover:bg-green-200  cursor-pointer'
+                        : 'bg-gray-100  text-gray-400  cursor-not-allowed'
                     }
                     ${isToday ? 'ring-2 ring-primary' : ''}
                   `}

@@ -58,12 +58,12 @@ export default function TrialBanner() {
   // Determine color based on days remaining
   const getColorClass = () => {
     if (daysRemaining === null)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50'
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50  ';
     if (daysRemaining > 7)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50'
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50  ';
     if (daysRemaining > 3)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-orange-100'
-    return 'border-orange-600 bg-gradient-to-r from-orange-100 to-red-50'
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-orange-100  ';
+    return 'border-orange-600 bg-gradient-to-r from-orange-100 to-red-50  ';
   };
 
   return (

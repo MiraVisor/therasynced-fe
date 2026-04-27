@@ -125,7 +125,7 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm font-medium text-gray-700 filters:</span>">
+      <span className="text-sm font-medium text-gray-700">Active filters:</span>
       {chips.map((chip, index) => (
         <Badge
           key={`${chip.key}-${chip.value || index}`}

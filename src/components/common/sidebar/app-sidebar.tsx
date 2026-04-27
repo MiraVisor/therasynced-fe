@@ -300,8 +300,8 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   };
 
   return (
-    <Sidebar variant="sidebar" collapsible={'icon'} className="p-4 bg-dashboard !border-r-0 ">
-      <SidebarHeader className="mx-auto w-full ">
+    <Sidebar variant="sidebar" collapsible={'icon'} className="p-4 bg-dashboard !border-r-0">
+      <SidebarHeader className="mx-auto w-full">
         <div
           className="flex items-center justify-center px-2 mx-auto cursor-pointer min-h-[40px]"
           onClick={() => router.push('/dashboard')}
@@ -355,9 +355,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
                             'group-hover:scale-110',
                             isMobile &&
                               'group-data-[collapsible=icon]:size-6 group-data-[collapsible=icon]:group-hover:scale-110',
-                            isMobile
-                              ? 'group-data-[collapsible=icon]:group-hover:text-accent-foreground'
-                              : 'group-data-[collapsible=icon]:group-hover:text-accent-foreground',
+                            'group-data-[collapsible=icon]:group-hover:text-accent-foreground',
                           )}
                         />
                       </div>

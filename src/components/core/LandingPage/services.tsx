@@ -47,9 +47,9 @@ const Services = () => {
         <div className="relative w-full max-w-[400px] mx-0 aspect-[9/16] rounded-2xl overflow-hidden hidden lg:block">
           <Image
             src={'/images/rehabilitation.jpg'}
-            alt="Wellness Services">
+            alt="Wellness Services"
             fill
-            className="object-cover transition-transform duration-500 hover:scale-105">
+            className="object-cover transition-transform duration-500 hover:scale-105"
             priority
           />
         </div>
@@ -74,8 +74,8 @@ const Services = () => {
               <div
                 key={service.id}
                 className={`w-full group p-6 rounded-2xl border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 
-                  bg-white/80 backdrop-blur-sm
-                  shadow-lg shadow-primary/5
+                  bg-white/80  backdrop-blur-sm
+                  shadow-lg shadow-primary/5 
                   `}
               >
                 <div className="flex flex-col justify-between h-full gap-6">

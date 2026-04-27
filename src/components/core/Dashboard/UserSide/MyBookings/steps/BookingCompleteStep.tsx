@@ -56,14 +56,14 @@ export const BookingCompleteStep: React.FC<BookingCompleteStepProps> = ({ bookin
 
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600">Freelancer</p>
                 <p className="font-medium text-charcoal">
                   {booking.slot.freelancer.name}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 & Time</p>">
+                <p className="text-sm text-gray-600">Date & Time</p>
                 <p className="font-medium text-charcoal">
                   {format(new Date(booking.slot.startTime), 'EEEE, MMMM d, yyyy')} at{' '}
                   {format(new Date(booking.slot.startTime), 'h:mm a')}
@@ -72,7 +72,7 @@ export const BookingCompleteStep: React.FC<BookingCompleteStepProps> = ({ bookin
 
               {booking.serviceCategories && booking.serviceCategories.length > 0 && (
                 <div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600">Services</p>
                   <div className="mt-1">
                     {booking.serviceCategories.map((service, index) => (
                       <span key={service.id} className="font-medium text-charcoal">
@@ -85,13 +85,13 @@ export const BookingCompleteStep: React.FC<BookingCompleteStepProps> = ({ bookin
               )}
 
               <div>
-                <p className="text-sm text-gray-600 Amount</p>">
+                <p className="text-sm text-gray-600">Total Amount</p>
                 <p className="font-bold text-lg text-primary">€{booking.totalAmount.toFixed(2)}</p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 ID</p>">
-                <p className="font-mono text-sm text-gray-700">
+                <p className="text-sm text-gray-600">Booking ID</p>
+                <p className="font-mono text-sm text-gray-700">{booking.id}</p>
               </div>
             </div>
           </div>

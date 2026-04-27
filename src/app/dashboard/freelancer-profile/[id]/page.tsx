@@ -299,19 +299,19 @@ export default function FreelancerProfilePage() {
             <TabsList className="bg-gray-50 border border-gray-200 p-1 rounded-xl w-full justify-start gap-1 h-auto">
               <TabsTrigger
                 value="overview"
-                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 =inactive]:text-gray-400 =inactive]:hover:text-gray-200"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="availability"
-                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 =inactive]:text-gray-400 =inactive]:hover:text-gray-200"
               >
                 Availability
               </TabsTrigger>
               <TabsTrigger
                 value="pricing"
-                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+                className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 =inactive]:text-gray-400 =inactive]:hover:text-gray-200"
               >
                 Pricing
               </TabsTrigger>
@@ -607,7 +607,7 @@ export default function FreelancerProfilePage() {
                         <p className="text-2xl font-bold text-blue-700">
                           {slotStats.todaySlots}
                         </p>
-                        <p className="text-sm text-blue-600 Today</p>">
+                        <p className="text-sm text-blue-600">Available Today</p>
                       </div>
                     </div>
                   </CardContent>
@@ -641,7 +641,7 @@ export default function FreelancerProfilePage() {
                         <p className="text-2xl font-bold text-purple-700">
                           {slotStats.thisWeekSlots}
                         </p>
-                        <p className="text-sm text-purple-600 Week</p>">
+                        <p className="text-sm text-purple-600">This Week</p>
                       </div>
                     </div>
                   </CardContent>
