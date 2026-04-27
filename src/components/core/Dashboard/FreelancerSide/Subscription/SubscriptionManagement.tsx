@@ -1,8 +1,9 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, CreditCard, Info, Shield } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,6 +18,7 @@ import {
   useResumeSubscription,
   useSubscriptionPlans,
   useUpdateSubscription,
+  useVerifyCheckoutSession,
 } from '@/hooks/queries/useSubscription';
 import { getDecodedToken } from '@/lib/utils';
 import { PlanType, SubscriptionStatus } from '@/types/types';
@@ -38,11 +40,14 @@ import { SubscriptionTabs } from './SubscriptionTabs';
 export default function SubscriptionManagement() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
+  const [checkoutSessionId, setCheckoutSessionId] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isCancellationDialogOpen, setIsCancellationDialogOpen] = useState(false);
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanType | null>(null);
   const [showPreCheckoutSummary, setShowPreCheckoutSummary] = useState(false);
+  const verifyAttemptedRef = useRef(false);
 
   // Get default tab from URL query param
   const viewParam = searchParams.get('view');
@@ -65,20 +70,42 @@ export default function SubscriptionManagement() {
 
   // For billing portal, we need to use query with enabled: false and refetch
   const { refetch: refetchBillingPortal } = useBillingPortal();
+  const { mutateAsync: verifyCheckout } = useVerifyCheckoutSession();
 
-  // Refetch subscription data when returning from Stripe checkout
+  // Handle checkout success: verify with backend and invalidate cache
+  const handleCheckoutSuccess = useCallback(
+    async (sessionId?: string | null) => {
+      try {
+        if (sessionId) {
+          await verifyCheckout(sessionId);
+        }
+      } catch {
+        // Verification may fail if webhook already processed it - that's OK
+      }
+      // Always invalidate and refetch subscription data to get latest state
+      await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      toast.success('Payment successful! Your subscription is now active.');
+    },
+    [verifyCheckout, queryClient],
+  );
+
+  // Refetch subscription data when returning from Stripe checkout (URL redirect flow)
   useEffect(() => {
     const subscriptionSuccess = searchParams.get('subscription');
+    const sessionId = searchParams.get('session_id');
 
-    // If coming from successful subscription, refetch data
-    if (subscriptionSuccess === 'success') {
-      void refetchSubscription();
-      // Clean up URL param after refetching
-      const url = new URL(window.location.href);
-      url.searchParams.delete('subscription');
-      window.history.replaceState({}, '', url.toString());
+    // If coming from successful subscription, verify and refetch data
+    if (subscriptionSuccess === 'success' && !verifyAttemptedRef.current) {
+      verifyAttemptedRef.current = true;
+      void handleCheckoutSuccess(sessionId).finally(() => {
+        // Clean up URL params after verification
+        const url = new URL(window.location.href);
+        url.searchParams.delete('subscription');
+        url.searchParams.delete('session_id');
+        window.history.replaceState({}, '', url.toString());
+      });
     }
-  }, [searchParams, refetchSubscription]);
+  }, [searchParams, handleCheckoutSuccess]);
 
   // Refetch subscription data when window regains focus (user returns from Stripe)
   useEffect(() => {
@@ -165,10 +192,15 @@ export default function SubscriptionManagement() {
       onSuccess: (checkoutData: unknown) => {
         const data =
           checkoutData && typeof checkoutData === 'object' && 'data' in checkoutData
-            ? (checkoutData as { data: { clientSecret?: string; sessionUrl?: string } }).data
-            : (checkoutData as { clientSecret?: string; sessionUrl?: string });
+            ? (
+                checkoutData as {
+                  data: { clientSecret?: string; sessionUrl?: string; sessionId?: string };
+                }
+              ).data
+            : (checkoutData as { clientSecret?: string; sessionUrl?: string; sessionId?: string });
         if (data?.clientSecret) {
           setCheckoutClientSecret(data.clientSecret);
+          setCheckoutSessionId(data.sessionId ?? null);
           setIsCheckoutOpen(true);
         } else if (data?.sessionUrl) {
           window.location.href = data.sessionUrl;
@@ -607,14 +639,14 @@ export default function SubscriptionManagement() {
           onClose={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
+            setCheckoutSessionId(null);
           }}
           onSuccess={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            toast.success('Payment successful! Your subscription is now active.');
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
+            const sessionId = checkoutSessionId;
+            setCheckoutSessionId(null);
+            void handleCheckoutSuccess(sessionId);
           }}
         />
       )}
