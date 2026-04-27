@@ -36,8 +36,6 @@ const audience = [
 ];
 
 const WhoItsFor = () => {
-  useTheme();
-
   return (
     <section
       id="who-its-for"

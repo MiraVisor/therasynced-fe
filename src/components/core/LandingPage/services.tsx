@@ -34,8 +34,6 @@ const servicesData = [
 ];
 
 const Services = () => {
-  useTheme();
-
   return (
     <section
       id="services"
