@@ -24,9 +24,7 @@ const ChartTooltipContent = ({ active, payload, label }: ChartTooltipProps) => {
   if (active && payload?.length) {
     return (
       <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-        <p className="text-sm font-poppins font-semibold text-gray-900 mb-2">
-          {label}
-        </p>
+        <p className="text-sm font-poppins font-semibold text-gray-900 mb-2">{label}</p>
         <div className="space-y-1">
           {payload.map((entry) => (
             <div key={entry.dataKey} className="flex items-center gap-2 text-sm font-inter">
@@ -110,16 +108,12 @@ const Charts = ({ dashboardData, isLoading = false }: ChartsProps) => {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-primary" />
               <span className="text-gray-600">This Week</span>
-              <span className="font-poppins font-semibold text-gray-900">
-                {totalCurrent}
-              </span>
+              <span className="font-poppins font-semibold text-gray-900">{totalCurrent}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gray-200" />
               <span className="text-gray-600">Last Week</span>
-              <span className="font-poppins font-semibold text-gray-900">
-                {totalLast}
-              </span>
+              <span className="font-poppins font-semibold text-gray-900">{totalLast}</span>
             </div>
           </div>
         </div>

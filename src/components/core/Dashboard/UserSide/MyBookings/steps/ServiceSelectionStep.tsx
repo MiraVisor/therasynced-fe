@@ -47,9 +47,7 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({ slot
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-2xl font-poppins font-bold text-charcoal">
-          Select Services
-        </h2>
+        <h2 className="text-2xl font-poppins font-bold text-charcoal">Select Services</h2>
         <p className="text-gray-600 text-lg font-inter">
           Choose the services you need for this appointment (optional)
         </p>
@@ -69,21 +67,14 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({ slot
               className="mt-1"
             />
             <div className="flex-1">
-              <Label
-                htmlFor={service.id}
-                className="font-medium text-gray-900 cursor-pointer"
-              >
+              <Label htmlFor={service.id} className="font-medium text-gray-900 cursor-pointer">
                 {service.name}
               </Label>
               {service.description && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {service.description}
-                </p>
+                <p className="text-sm text-gray-600 mt-1">{service.description}</p>
               )}
               {service.jobTitle && (
-                <p className="text-xs text-gray-500 mt-1">
-                  {service.jobTitle.name}
-                </p>
+                <p className="text-xs text-gray-500 mt-1">{service.jobTitle.name}</p>
               )}
             </div>
           </div>

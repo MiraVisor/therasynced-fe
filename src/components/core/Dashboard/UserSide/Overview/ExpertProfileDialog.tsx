@@ -171,18 +171,14 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {availableSlots || 0}
                   </div>
-                  <div className="text-sm font-inter text-gray-600">
-                    Available Slots
-                  </div>
+                  <div className="text-sm font-inter text-gray-600">Available Slots</div>
                 </div>
 
                 <div className="bg-white rounded-lg p-4 border border-gray-200 text-center">
                   <div className="text-2xl font-poppins font-bold text-primary mb-1">
                     {cardInfo?.totalRatings || 0}
                   </div>
-                  <div className="text-sm font-inter text-gray-600">
-                    Total Reviews
-                  </div>
+                  <div className="text-sm font-inter text-gray-600">Total Reviews</div>
                 </div>
               </div>
 
@@ -208,9 +204,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                             €{dp.price.toFixed(2)}
                           </div>
                           {dp.currency && dp.currency !== 'EUR' && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {dp.currency}
-                            </div>
+                            <div className="text-xs text-gray-500 mt-1">{dp.currency}</div>
                           )}
                         </div>
                       ))}
@@ -252,9 +246,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                           </div>
                         ) : (
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-sm font-inter text-gray-600">
-                              Standard Price
-                            </span>
+                            <span className="text-sm font-inter text-gray-600">Standard Price</span>
                             <span className="text-base font-poppins font-bold text-primary">
                               €{sp.price.toFixed(2)}
                             </span>
@@ -276,9 +268,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {pricing.online && (
                       <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <div className="text-sm font-inter text-gray-600 mb-1">
-                          Online Sessions
-                        </div>
+                        <div className="text-sm font-inter text-gray-600 mb-1">Online Sessions</div>
                         <div className="text-lg font-poppins font-bold text-gray-900">
                           EUR {pricing.online.min} - {pricing.online.max}
                         </div>
@@ -286,9 +276,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                     )}
                     {pricing.office && (
                       <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <div className="text-sm font-inter text-gray-600 mb-1">
-                          Office Sessions
-                        </div>
+                        <div className="text-sm font-inter text-gray-600 mb-1">Office Sessions</div>
                         <div className="text-lg font-poppins font-bold text-gray-900">
                           EUR {pricing.office.min} - {pricing.office.max}
                         </div>
@@ -296,9 +284,7 @@ export function ExpertProfileDialog({ isOpen, onClose, expert }: ExpertProfileDi
                     )}
                     {pricing.home && (
                       <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <div className="text-sm font-inter text-gray-600 mb-1">
-                          Home Visits
-                        </div>
+                        <div className="text-sm font-inter text-gray-600 mb-1">Home Visits</div>
                         <div className="text-lg font-poppins font-bold text-gray-900">
                           EUR {pricing.home.min} - {pricing.home.max}
                         </div>

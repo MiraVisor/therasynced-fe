@@ -91,9 +91,7 @@ export function RatingVisibilityToggle({
         disabled={isPending}
         aria-label={`Toggle rating visibility (currently ${isVisible ? 'visible' : 'hidden'})`}
       />
-      <span className="text-xs text-gray-600">
-        {isVisible ? 'Visible' : 'Hidden'}
-      </span>
+      <span className="text-xs text-gray-600">{isVisible ? 'Visible' : 'Hidden'}</span>
     </div>
   );
 }

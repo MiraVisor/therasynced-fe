@@ -66,9 +66,7 @@ export function UsageMeter({
               <span className="text-gray-600">{slotsLimit}</span> slots
             </span>
           ) : (
-            <span className="font-semibold text-gray-600">
-              {slotsUsed} slots active
-            </span>
+            <span className="font-semibold text-gray-600">{slotsUsed} slots active</span>
           )}
         </div>
       </div>

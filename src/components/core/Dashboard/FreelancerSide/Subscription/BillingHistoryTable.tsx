@@ -124,9 +124,7 @@ export function BillingHistoryTable() {
         {/* Header */}
         <div className="mb-6">
           <h3 className="text-xl font-poppins font-bold text-charcoal mb-2">Billing History</h3>
-          <p className="text-sm text-gray-600">
-            View and download your past invoices
-          </p>
+          <p className="text-sm text-gray-600">View and download your past invoices</p>
         </div>
 
         {/* Search */}

@@ -43,7 +43,8 @@ export interface UserProfileData {
   profilePicture?: string;
   role: string;
   dob: string;
-  city: string;
+  county?: string;
+  cityTown?: string;
   description?: string; // Bio/description field
   isEmailVerified: boolean;
   authProvider: string;

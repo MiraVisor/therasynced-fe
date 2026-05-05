@@ -147,9 +147,7 @@ const Pricing = () => {
                       {/* Price */}
                       <div className="mb-6 pb-6 border-b border-gray-200">
                         <div className="flex items-baseline gap-1">
-                          <span className="text-xl font-bold text-gray-900 font-playfair">
-                            €
-                          </span>
+                          <span className="text-xl font-bold text-gray-900 font-playfair">€</span>
                           <span className="text-5xl font-bold text-gray-900 font-playfair leading-none">
                             {Math.floor(plan.price)}
                           </span>
@@ -158,9 +156,7 @@ const Pricing = () => {
                               .{String(plan.price).split('.')[1]?.padEnd(2, '0').slice(0, 2)}
                             </span>
                           )}
-                          <span className="text-sm text-gray-500 font-open-sans ml-2">
-                            /month
-                          </span>
+                          <span className="text-sm text-gray-500 font-open-sans ml-2">/month</span>
                         </div>
                         <p className="text-xs text-gray-500 font-open-sans mt-2">
                           Billed monthly after your free trial

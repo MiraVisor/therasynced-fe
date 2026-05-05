@@ -165,10 +165,7 @@ export const PlanCard = ({
               update the seed (scripts/seed-subscription-plans.ts) instead.
             */}
             {plan.features.map((feature, index) => (
-              <li
-                key={index}
-                className="flex items-start gap-3 text-sm font-inter text-gray-700"
-              >
+              <li key={index} className="flex items-start gap-3 text-sm font-inter text-gray-700">
                 <CheckCircle2
                   className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
                     isCurrentPlan ? planColors.text : 'text-primary'

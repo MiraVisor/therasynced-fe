@@ -169,8 +169,8 @@ export const ServicePricingSection = () => {
             return true;
           }
         }
-        const apiLocationTypes = new Set(sp.locations.map((l) => l.locationType));
-        const currentLocationTypes = new Set(Object.keys(currentPrices));
+        const apiLocationTypes = new Set<string>(sp.locations.map((l) => l.locationType));
+        const currentLocationTypes = new Set<string>(Object.keys(currentPrices));
         if (apiLocationTypes.size !== currentLocationTypes.size) {
           return true;
         }

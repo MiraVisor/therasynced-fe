@@ -41,7 +41,6 @@ export const SERVICE_CATEGORIES = {
     'Therapeutic massage',
   ],
   [JobTitleEnum.STRENGTH_AND_CONDITIONING_COACHING]: [
-    'Personal training',
     'Group fitness classes',
     'Strength training programs',
     'Conditioning & cardio',
@@ -49,9 +48,19 @@ export const SERVICE_CATEGORIES = {
     'Sport-specific conditioning',
     'Injury prevention training',
     'Post-rehabilitation training',
-    'Nutrition guidance',
     'Performance testing & assessment',
     'Equipment training',
+  ],
+  [JobTitleEnum.PERSONAL_TRAINING]: [
+    'Personal training',
+    '1:1 coaching sessions',
+    'Tailored fitness programmes',
+    'Weight loss coaching',
+    'Strength & toning',
+    'Beginner-friendly training',
+    'Mobility & flexibility',
+    'Nutrition guidance',
+    'Home or gym sessions',
   ],
 } as const;
 
@@ -99,9 +108,15 @@ export const JOB_TITLE_INFO = {
   },
   [JobTitleEnum.STRENGTH_AND_CONDITIONING_COACHING]: {
     displayName: 'Strength & Conditioning',
-    description: 'Personal training and fitness coaching',
+    description: 'Sports performance and conditioning coaching',
     icon: '💪',
     color: 'orange',
+  },
+  [JobTitleEnum.PERSONAL_TRAINING]: {
+    displayName: 'Personal Training',
+    description: '1:1 fitness coaching tailored to your goals',
+    icon: '🏋️',
+    color: 'red',
   },
 } as const;
 

@@ -15,9 +15,7 @@ export default function PrivacyPolicyPage() {
 
         <div className="prose prose-lg max-w-none">
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Who We Are
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Who We Are</h2>
             <p className="text-gray-700 mb-4">
               TheraSynced (&quot;Platform&quot;, &quot;we&quot;, &quot;us&quot;) is operated by
               [Legal Entity Name], a company established in Ireland. The Platform is intended for
@@ -31,9 +29,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Roles Under GDPR
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Roles Under GDPR</h2>
             <p className="text-gray-700 mb-4">
               For the purposes of the General Data Protection Regulation (GDPR):
             </p>
@@ -59,16 +55,12 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Personal Data We Process
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Personal Data We Process</h2>
             <p className="text-gray-700 mb-4">
               We process the following categories of personal data:
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Account Data
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Account Data</h3>
             <p className="text-gray-700 mb-4">
               Name, email address, password hash, account role (user or therapist).
             </p>
@@ -163,9 +155,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Consent Mechanics
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Consent Mechanics</h2>
             <p className="text-gray-700 mb-4">
               Before accessing in-platform messaging, users must provide explicit consent to the
               processing of any health-related data they choose to share. Consent is obtained
@@ -181,9 +171,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Data Retention
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Retention</h2>
             <ul className="list-disc pl-6 text-gray-700 mb-4">
               <li>
                 Account and billing records are retained for up to 7 years in accordance with Irish
@@ -202,9 +190,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Data Sharing
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Sharing</h2>
             <p className="text-gray-700 mb-4">
               Personal data may be shared with the following categories of recipients:
             </p>
@@ -238,9 +224,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              International Transfers
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">International Transfers</h2>
             <p className="text-gray-700 mb-4">
               Where personal data is processed outside the European Economic Area, appropriate
               safeguards such as Standard Contractual Clauses are in place.
@@ -248,9 +232,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Your Rights
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Rights</h2>
             <p className="text-gray-700 mb-4">
               You have the right to access, rectify, erase, restrict, object to processing, request
               data portability, withdraw consent, and lodge a complaint with the Irish Data
@@ -260,9 +242,7 @@ export default function PrivacyPolicyPage() {
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact</h2>
-            <p className="text-gray-700 mb-4">
-              Privacy queries: [privacy@yourdomain.ie]
-            </p>
+            <p className="text-gray-700 mb-4">Privacy queries: [privacy@yourdomain.ie]</p>
           </section>
         </div>
       </div>

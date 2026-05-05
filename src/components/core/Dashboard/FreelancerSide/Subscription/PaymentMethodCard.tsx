@@ -74,17 +74,13 @@ export function PaymentMethodCard() {
                   <div className="flex items-center gap-4">
                     <div
                       className={`p-3 rounded-lg ${
-                        paymentMethod.isDefault
-                          ? 'bg-primary/20 '
-                          : 'bg-gray-100 '
+                        paymentMethod.isDefault ? 'bg-primary/20 ' : 'bg-gray-100 '
                       }`}
                     >
                       {paymentMethod.type === 'card' ? (
                         <CreditCard
                           className={`h-6 w-6 ${
-                            paymentMethod.isDefault
-                              ? 'text-primary'
-                              : 'text-gray-600 '
+                            paymentMethod.isDefault ? 'text-primary' : 'text-gray-600 '
                           }`}
                         />
                       ) : (

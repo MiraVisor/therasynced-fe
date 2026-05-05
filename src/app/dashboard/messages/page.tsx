@@ -348,12 +348,7 @@ const MessagesPageContent = () => {
           {messagesLimit !== null && role === 'FREELANCER' && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-600">Messages:</span>
-              <span
-                className={cn(
-                  'font-semibold',
-                  isAtLimit ? 'text-red-600' : 'text-gray-900 ',
-                )}
-              >
+              <span className={cn('font-semibold', isAtLimit ? 'text-red-600' : 'text-gray-900 ')}>
                 {messagesUsed}/{formatLimit(messagesLimit)}
               </span>
               {billingCycleEnd && daysUntilReset !== null && (

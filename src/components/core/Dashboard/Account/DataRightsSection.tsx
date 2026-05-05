@@ -404,9 +404,7 @@ export function DataRightsSection() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <p className="text-sm text-gray-600 mb-4">
-              The export will include:
-            </p>
+            <p className="text-sm text-gray-600 mb-4">The export will include:</p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600 mb-6">
               <li>Profile information</li>
               <li>Booking history</li>
@@ -604,9 +602,7 @@ export function DataRightsSection() {
 
             <Alert className="border-green-200 bg-green-50">
               <Info className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-900">
-                Decryption Information
-              </AlertTitle>
+              <AlertTitle className="text-green-900">Decryption Information</AlertTitle>
               <AlertDescription className="text-green-800 space-y-2">
                 <p>
                   The export key above is the decryption key for this specific export. It is

@@ -74,9 +74,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
           <h2 className="text-xl font-poppins font-semibold text-gray-900 mb-2">
             Book Your Next Session
           </h2>
-          <p className="text-gray-600 mb-4">
-            No freelancers available at the moment.
-          </p>
+          <p className="text-gray-600 mb-4">No freelancers available at the moment.</p>
           <Button onClick={handleViewAll} variant="outline">
             Explore All Freelancers
           </Button>
@@ -89,9 +87,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
     <Card className="border border-gray-200">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Book Your Next Session
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900">Book Your Next Session</h2>
           <Button
             onClick={handleViewAll}
             variant="ghost"
@@ -117,22 +113,16 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 truncate">
-                        {freelancer.name}
-                      </h3>
+                      <h3 className="font-semibold text-gray-900 truncate">{freelancer.name}</h3>
                       <VerificationBadge
                         status={freelancer.verificationStatus || 'unverified'}
                         size="sm"
                       />
                     </div>
                     {freelancer.jobTitle?.name ? (
-                      <p className="text-sm text-gray-600 truncate">
-                        {freelancer.jobTitle.name}
-                      </p>
+                      <p className="text-sm text-gray-600 truncate">{freelancer.jobTitle.name}</p>
                     ) : freelancer.specialty ? (
-                      <p className="text-sm text-gray-600 truncate">
-                        {freelancer.specialty}
-                      </p>
+                      <p className="text-sm text-gray-600 truncate">{freelancer.specialty}</p>
                     ) : null}
                     {freelancer.rating && freelancer.rating > 0 ? (
                       <div className="flex items-center gap-1 mt-1">
@@ -142,14 +132,10 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
                             className={`w-3 h-3 ${i < Math.floor(freelancer.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                           />
                         ))}
-                        <span className="text-xs text-gray-500 ml-1">
-                          ({freelancer.rating})
-                        </span>
+                        <span className="text-xs text-gray-500 ml-1">({freelancer.rating})</span>
                       </div>
                     ) : (
-                      <div className="text-xs text-gray-500 mt-1">
-                        No ratings yet
-                      </div>
+                      <div className="text-xs text-gray-500 mt-1">No ratings yet</div>
                     )}
                   </div>
                 </div>
@@ -163,9 +149,7 @@ const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({
                         From €{freelancer.pricing.online.min}/session
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-500">
-                        Contact for pricing
-                      </div>
+                      <div className="text-sm text-gray-500">Contact for pricing</div>
                     )}
                     <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
                       Book Now

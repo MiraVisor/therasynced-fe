@@ -1,4 +1,5 @@
 // Import pricing types for use in Expert interface
+import { LocationType } from './enums';
 import type { DurationPricing, ServicePricing } from './pricing';
 
 // Re-export data rights types
@@ -112,7 +113,7 @@ export interface ServiceCategory {
     id: string;
     name: string;
   };
-  locationTypes?: ('HOME' | 'CLINIC')[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
+  locationTypes?: LocationType[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
 }
 
 /**
@@ -429,16 +430,6 @@ export type FreelancerStatCardType = {
 
 export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 
-export enum LocationType {
-  HOME = 'HOME',
-  CLINIC = 'CLINIC',
-  CORPORATE = 'CORPORATE',
-  GYM = 'GYM',
-  TRAINING = 'TRAINING',
-  PITCHSIDE = 'PITCHSIDE',
-  EVENT = 'EVENT',
-}
-
 export interface Appointment {
   id: string;
   title: string;
@@ -451,7 +442,7 @@ export interface Appointment {
   location: LocationType;
   notes: string;
   // Additional fields for address display
-  locationType?: 'CLINIC' | 'HOME' | 'ONLINE';
+  locationType?: LocationType;
   clientAddress?: string | null;
   freelancer?: {
     clinicAddress?: string | null;
@@ -539,31 +530,23 @@ export interface Slot {
       id: string;
       name: string;
     };
-    locationTypes: ('HOME' | 'CLINIC')[]; // REQUIRED: Location types this service supports
-    pricing?: {
-      HOME?: {
-        price: number;
-        currency: string;
-        discount?: {
-          applicable: boolean;
-          subtotal?: number; // basePrice + service price (total before discount)
-          discountPercentage: number;
-          discountAmount: number;
-          finalAmount: number; // Final price after discount
-        };
-      };
-      CLINIC?: {
-        price: number;
-        currency: string;
-        discount?: {
-          applicable: boolean;
-          subtotal?: number; // basePrice + service price (total before discount)
-          discountPercentage: number;
-          discountAmount: number;
-          finalAmount: number; // Final price after discount
-        };
-      };
-    };
+    locationTypes: LocationType[]; // REQUIRED: Location types this service supports
+    pricing?: Partial<
+      Record<
+        LocationType,
+        {
+          price: number;
+          currency: string;
+          discount?: {
+            applicable: boolean;
+            subtotal?: number;
+            discountPercentage: number;
+            discountAmount: number;
+            finalAmount: number;
+          };
+        }
+      >
+    >;
   }>; // Service categories available for this slot (includes pricing with discounts)
   booking?: {
     id: string;
@@ -666,7 +649,7 @@ export interface CreateServiceDto {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
 }
@@ -730,7 +713,7 @@ export interface BackendApiResponse<T = unknown> {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
 }
@@ -739,7 +722,7 @@ export interface RescheduleBookingDto {
   bookingId: string;
   newSlotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
   cancellationReason?: string;

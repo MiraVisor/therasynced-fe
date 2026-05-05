@@ -96,9 +96,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   if (slotsError && !freelancer) {
     return (
       <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-        <p className="text-gray-600">
-          Failed to load booking information. Please try again.
-        </p>
+        <p className="text-gray-600">Failed to load booking information. Please try again.</p>
         <Button
           onClick={() => window.location.reload()}
           className="bg-primary hover:bg-primary/90 text-white"

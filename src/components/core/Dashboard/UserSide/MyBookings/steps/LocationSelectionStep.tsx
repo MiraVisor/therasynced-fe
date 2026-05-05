@@ -42,9 +42,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-2xl font-poppins font-bold text-charcoal">
-          Choose Location
-        </h2>
+        <h2 className="text-2xl font-poppins font-bold text-charcoal">Choose Location</h2>
         <p className="text-gray-600 text-lg font-inter">
           Where would you like to have your appointment?
         </p>
@@ -72,10 +70,7 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
               </p>
               {selectedLocationType === LocationType.HOME && (
                 <div className="mt-4">
-                  <Label
-                    htmlFor="address"
-                    className="text-sm font-medium text-gray-700"
-                  >
+                  <Label htmlFor="address" className="text-sm font-medium text-gray-700">
                     Your Address <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -104,17 +99,11 @@ export const LocationSelectionStep: React.FC<LocationSelectionStepProps> = ({ sl
                 <MapPin className="w-5 h-5" />
                 At Clinic
               </Label>
-              <p className="text-sm text-gray-600 mt-1">
-                Visit the freelancer's clinic location
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Visit the freelancer's clinic location</p>
               {slot.location && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-900">
-                    {slot.location.name}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {slot.location.address}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">{slot.location.name}</p>
+                  <p className="text-sm text-gray-600 mt-1">{slot.location.address}</p>
                   {slot.location.additionalFee > 0 && (
                     <p className="text-xs text-gray-500 mt-1">
                       Additional fee: €{slot.location.additionalFee}

@@ -71,9 +71,7 @@ export const ProfileCompletionWidget = () => {
     <div className="fixed bottom-6 right-6 z-40 w-[calc(100vw-3rem)] sm:w-[360px] max-h-[calc(100vh-3rem)] flex flex-col bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
       <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 border-b border-gray-100">
         <div className="min-w-0">
-          <h3 className="text-sm font-poppins font-bold text-charcoal">
-            Complete your profile
-          </h3>
+          <h3 className="text-sm font-poppins font-bold text-charcoal">Complete your profile</h3>
           <p className="text-xs text-muted-foreground font-inter mt-0.5">
             {completedCount} of {total} done · {completionPercentage}%
           </p>

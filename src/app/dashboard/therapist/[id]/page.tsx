@@ -301,19 +301,13 @@ export default function FreelancerProfilePage() {
                     {/* Quick Stats Pills */}
                     <div className="flex flex-wrap gap-2 pt-1">
                       {slotStats.nextAvailable && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-green-100 text-green-800 gap-1.5"
-                        >
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 gap-1.5">
                           <Clock className="h-3.5 w-3.5" />
                           Next: {formatNextAvailable(slotStats.nextAvailable)}
                         </Badge>
                       )}
                       {slotStats.todaySlots > 0 && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-blue-100 text-blue-800 gap-1.5"
-                        >
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 gap-1.5">
                           <Calendar className="h-3.5 w-3.5" />
                           {slotStats.todaySlots} slot{slotStats.todaySlots > 1 ? 's' : ''} today
                         </Badge>
@@ -399,9 +393,7 @@ export default function FreelancerProfilePage() {
                 <div className="text-2xl font-poppins font-bold text-primary">
                   {slotStats.availableSlots}
                 </div>
-                <div className="text-xs font-inter text-gray-500">
-                  Available Slots
-                </div>
+                <div className="text-xs font-inter text-gray-500">Available Slots</div>
               </div>
               <div className="p-4 text-center">
                 <div className="text-2xl font-poppins font-bold text-primary">{totalRatings}</div>
@@ -596,17 +588,13 @@ export default function FreelancerProfilePage() {
                           expert.verificationStatus === 'verified') && (
                           <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700">
-                              Verified Professional
-                            </span>
+                            <span className="text-sm text-green-700">Verified Professional</span>
                           </div>
                         )}
                         {expert.firstAidCertificateStatus === 'APPROVED' && (
                           <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700">
-                              First Aid Certified
-                            </span>
+                            <span className="text-sm text-green-700">First Aid Certified</span>
                           </div>
                         )}
                       </CardContent>
@@ -739,9 +727,7 @@ export default function FreelancerProfilePage() {
                         <Clock className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-blue-700">
-                          {slotStats.todaySlots}
-                        </p>
+                        <p className="text-2xl font-bold text-blue-700">{slotStats.todaySlots}</p>
                         <p className="text-sm text-blue-600">Available Today</p>
                       </div>
                     </div>
@@ -758,9 +744,7 @@ export default function FreelancerProfilePage() {
                         <p className="text-2xl font-bold text-green-700">
                           {slotStats.tomorrowSlots}
                         </p>
-                        <p className="text-sm text-green-600">
-                          Available Tomorrow
-                        </p>
+                        <p className="text-sm text-green-600">Available Tomorrow</p>
                       </div>
                     </div>
                   </CardContent>
@@ -897,11 +881,7 @@ export default function FreelancerProfilePage() {
                                   ))}
                                 </div>
                               </div>
-                              {comment && (
-                                <p className="text-sm text-gray-600">
-                                  {comment}
-                                </p>
-                              )}
+                              {comment && <p className="text-sm text-gray-600">{comment}</p>}
                             </div>
                           );
                         })}
@@ -913,9 +893,7 @@ export default function FreelancerProfilePage() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Star className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No Reviews Yet
-                    </h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Reviews Yet</h3>
                     <p className="text-gray-500">Be the first to review {freelancerName}!</p>
                   </CardContent>
                 </Card>
@@ -1015,9 +993,7 @@ export default function FreelancerProfilePage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Pricing Not Set
-                      </h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Pricing Not Set</h3>
                       <p className="text-gray-500">
                         Contact {freelancerName} for pricing information
                       </p>
@@ -1031,9 +1007,7 @@ export default function FreelancerProfilePage() {
           <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 md:-mx-8 shadow-lg mt-8">
             <div className="max-w-5xl mx-auto flex items-center justify-between">
               <div>
-                <p className="font-poppins font-semibold text-gray-900">
-                  {freelancerName}
-                </p>
+                <p className="font-poppins font-semibold text-gray-900">{freelancerName}</p>
                 <p className="text-sm text-gray-600">
                   {hasAvailableSlots
                     ? `${slotStats.availableSlots} slots available`

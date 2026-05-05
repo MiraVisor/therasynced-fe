@@ -112,9 +112,7 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-3">
-        <h2 className="text-3xl font-poppins font-bold text-charcoal">
-          Tell us what you need
-        </h2>
+        <h2 className="text-3xl font-poppins font-bold text-charcoal">Tell us what you need</h2>
         <p className="text-gray-600 text-lg font-inter">
           We'll help you find the perfect freelancer
         </p>
@@ -281,13 +279,9 @@ export const QuestionnaireStep: React.FC<QuestionnaireStepProps> = ({ onSearch }
                   >
                     <User className="w-5 h-5 text-gray-400" />
                     <div>
-                      <div className="font-medium text-gray-900">
-                        {freelancer.name}
-                      </div>
+                      <div className="font-medium text-gray-900">{freelancer.name}</div>
                       {freelancer.specialty && (
-                        <div className="text-sm text-gray-500">
-                          {freelancer.specialty}
-                        </div>
+                        <div className="text-sm text-gray-500">{freelancer.specialty}</div>
                       )}
                     </div>
                   </button>

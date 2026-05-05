@@ -15,9 +15,7 @@ export default function CookiePolicyPage() {
 
         <div className="prose prose-lg max-w-none">
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              1. What Are Cookies
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. What Are Cookies</h2>
             <p className="text-gray-700 mb-4">
               Cookies are small text files placed on your device when you access the Platform. They
               are used to enable essential functionality, improve user experience, and allow the
@@ -26,9 +24,7 @@ export default function CookiePolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              2. Cookies We Use
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Cookies We Use</h2>
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
               Strictly Necessary Cookies
@@ -60,17 +56,13 @@ export default function CookiePolicyPage() {
               .
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Functional Cookies
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Functional Cookies</h3>
             <p className="text-gray-700 mb-4">
               Functional cookies store user preferences, such as display settings or language
               selection, to provide a more personalised and convenient experience on the Platform.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Analytics Cookies
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Analytics Cookies</h3>
             <p className="text-gray-700 mb-4">
               Analytics cookies are used to collect information about how users interact with the
               Platform in an aggregated and anonymised form. This helps us understand platform
@@ -80,9 +72,7 @@ export default function CookiePolicyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              3. Consent
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. Consent</h2>
             <p className="text-gray-700 mb-4">
               Non-essential cookies, including functional and analytics cookies, are only used if
               the user provides explicit opt-in consent via the cookie banner. Users may review,

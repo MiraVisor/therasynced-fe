@@ -534,9 +534,7 @@ export function EnhancedBookingSearch() {
               <h2 className="text-3xl font-bold text-charcoal mb-3">
                 How would you like to find your freelancer?
               </h2>
-              <p className="text-gray-600">
-                Choose your preferred search method to get started
-              </p>
+              <p className="text-gray-600">Choose your preferred search method to get started</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -550,9 +548,7 @@ export function EnhancedBookingSearch() {
                     <Search className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-charcoal mb-2">
-                      Search by Name
-                    </h3>
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">Search by Name</h3>
                     <p className="text-sm text-gray-600">
                       Know who you're looking for? Type their name to find them quickly.
                     </p>
@@ -571,9 +567,7 @@ export function EnhancedBookingSearch() {
                     <MapPin className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-charcoal mb-2">
-                      Search by Location
-                    </h3>
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">Search by Location</h3>
                     <p className="text-sm text-gray-600">
                       Find freelancers near you or in a specific city or area.
                     </p>
@@ -592,9 +586,7 @@ export function EnhancedBookingSearch() {
                     <Calendar className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-charcoal mb-2">
-                      Browse by Date
-                    </h3>
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">Browse by Date</h3>
                     <p className="text-sm text-gray-600">
                       See who's available on a specific date. Perfect for planning ahead.
                     </p>
@@ -744,12 +736,8 @@ export function EnhancedBookingSearch() {
               <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <Search className="w-6 h-6 text-gray-400" />
               </div>
-              <h3 className="text-base font-semibold text-charcoal mb-2">
-                No freelancers found
-              </h3>
-              <p className="text-sm text-gray-600">
-                Try adjusting your search criteria
-              </p>
+              <h3 className="text-base font-semibold text-charcoal mb-2">No freelancers found</h3>
+              <p className="text-sm text-gray-600">Try adjusting your search criteria</p>
             </CardContent>
           </Card>
         )}
@@ -808,10 +796,14 @@ export function EnhancedBookingSearch() {
                             size="sm"
                             showCount={true}
                           />
-                          {freelancer.city && (
+                          {(freelancer.cityTown || freelancer.county) && (
                             <div className="flex items-center gap-1.5 text-sm text-gray-600">
                               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="truncate">{freelancer.city}</span>
+                              <span className="truncate">
+                                {[freelancer.cityTown, freelancer.county]
+                                  .filter(Boolean)
+                                  .join(', ')}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -870,9 +862,7 @@ export function EnhancedBookingSearch() {
           </Button>
           <div className="h-6 w-px bg-gray-300" />
           <div>
-            <h2 className="text-xl font-semibold text-charcoal">
-              {selectedFreelancer.name}
-            </h2>
+            <h2 className="text-xl font-semibold text-charcoal">{selectedFreelancer.name}</h2>
             <p className="text-sm text-gray-500">
               {selectedFreelancer.jobTitle?.name || 'Freelancer'}
             </p>
@@ -881,9 +871,7 @@ export function EnhancedBookingSearch() {
 
         <Card className="border-2 border-primary/20 shadow-lg">
           <CardContent className="p-6">
-            <Label className="text-sm font-medium text-gray-700 mb-4 block">
-              Select a Date
-            </Label>
+            <Label className="text-sm font-medium text-gray-700 mb-4 block">Select a Date</Label>
             <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
               <PopoverTrigger asChild>
                 <div className="relative cursor-pointer">
@@ -926,9 +914,7 @@ export function EnhancedBookingSearch() {
           </Button>
           <div className="h-6 w-px bg-gray-300" />
           <div>
-            <h2 className="text-xl font-semibold text-charcoal">
-              {selectedFreelancer.name}
-            </h2>
+            <h2 className="text-xl font-semibold text-charcoal">{selectedFreelancer.name}</h2>
             <p className="text-sm text-gray-500">
               {selectedDate && format(selectedDate, 'MMMM d, yyyy')}
             </p>
@@ -942,9 +928,7 @@ export function EnhancedBookingSearch() {
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Clock className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal">
-                    Select Time
-                  </h3>
+                  <h3 className="font-semibold text-lg text-charcoal">Select Time</h3>
                 </div>
                 {isLoadingSlots || (isFetchingSlots && availableSlots.length === 0) ? (
                   <div className="space-y-4">
@@ -1011,9 +995,7 @@ export function EnhancedBookingSearch() {
               <div className="animate-in slide-in-from-right-2 duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal">
-                    Select Service
-                  </h3>
+                  <h3 className="font-semibold text-lg text-charcoal">Select Service</h3>
                 </div>
                 <RadioGroup
                   value={selectedService}
@@ -1039,9 +1021,7 @@ export function EnhancedBookingSearch() {
                     >
                       <RadioGroupItem value={service.id} id={service.id} />
                       <Label htmlFor={service.id} className="flex-1 cursor-pointer">
-                        <span className="font-medium text-charcoal">
-                          {service.name}
-                        </span>
+                        <span className="font-medium text-charcoal">{service.name}</span>
                       </Label>
                     </div>
                   ))}
@@ -1064,9 +1044,7 @@ export function EnhancedBookingSearch() {
               <div className="animate-in slide-in-from-right-2 duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <MapPin className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal">
-                    Select Location
-                  </h3>
+                  <h3 className="font-semibold text-lg text-charcoal">Select Location</h3>
                 </div>
                 <RadioGroup
                   value={locationType || undefined}
@@ -1148,9 +1126,7 @@ export function EnhancedBookingSearch() {
               <div className="animate-in slide-in-from-right-2 duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg text-charcoal">
-                    Review & Confirm
-                  </h3>
+                  <h3 className="font-semibold text-lg text-charcoal">Review & Confirm</h3>
                 </div>
                 {canConfirmBooking ? (
                   <>
@@ -1196,9 +1172,7 @@ export function EnhancedBookingSearch() {
                         </div>
                       )}
                       <div className="flex justify-between pt-4">
-                        <span className="text-lg font-semibold text-charcoal">
-                          Total:
-                        </span>
+                        <span className="text-lg font-semibold text-charcoal">Total:</span>
                         <span className="text-2xl font-bold text-primary">
                           €{totalPrice.toFixed(2)}
                         </span>

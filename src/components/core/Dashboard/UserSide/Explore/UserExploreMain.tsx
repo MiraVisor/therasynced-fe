@@ -9,6 +9,7 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { useExplorePatientBookings } from '@/hooks/queries/useExplore';
 import { useFavoriteFreelancers, useFreelancers } from '@/hooks/queries/useFreelancers';
 import { useAuth } from '@/hooks/useAuthZustand';
+import { useChatStore } from '@/stores/chatStore';
 import type { Booking } from '@/types/booking';
 import type { Expert, Freelancer } from '@/types/types';
 import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
@@ -112,8 +113,8 @@ const UserExploreMain = () => {
     }).length ?? 0;
   const favoriteFreelancers = favoritesList?.length ?? 0;
 
-  // Calculate actual unread messages from others (not from user)
-  const unreadMessages = 0; // TODO: Implement real unread message count from API
+  const unreadCounts = useChatStore((state) => state.unreadCounts);
+  const unreadMessages = Object.values(unreadCounts).reduce((sum, n) => sum + n, 0);
 
   const handleFreelancerClick = (freelancer: Expert) => {
     setSelectedFreelancer(freelancer);
@@ -121,7 +122,6 @@ const UserExploreMain = () => {
   };
 
   const handleBookSession = () => {
-    // TODO: Implement actual booking logic
     setIsBookingModalOpen(false);
     setSelectedFreelancer(null);
   };
@@ -213,12 +213,8 @@ const UserExploreMain = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <Heart className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No favorites yet
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Add freelancers to favorites to see them here
-              </p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
+              <p className="text-gray-600 mb-4">Add freelancers to favorites to see them here</p>
               <button
                 onClick={() => router.push('/dashboard/explore')}
                 className="text-primary hover:text-primary/80 font-medium"
@@ -256,12 +252,8 @@ const UserExploreMain = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <Calendar className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No upcoming appointments
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Book a session to see your appointments here
-              </p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming appointments</h3>
+              <p className="text-gray-600 mb-4">Book a session to see your appointments here</p>
               <button
                 onClick={() => router.push('/dashboard/explore')}
                 className="text-primary hover:text-primary/80 font-medium"

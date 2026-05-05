@@ -139,9 +139,7 @@ const FavoriteFreelancerCard: React.FC<FavoriteFreelancerCardProps> = ({ freelan
             {freelancer.reviews && freelancer.reviews > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="font-inter text-gray-600">Reviews:</span>
-                <span className="font-poppins font-bold text-gray-900">
-                  {freelancer.reviews}
-                </span>
+                <span className="font-poppins font-bold text-gray-900">{freelancer.reviews}</span>
               </div>
             )}
             {(freelancer.availableSlots || 0) > 0 && (

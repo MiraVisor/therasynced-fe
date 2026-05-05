@@ -108,10 +108,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button
-          className="md:hidden p-2 text-gray-600"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+        <button className="md:hidden p-2 text-gray-600" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>

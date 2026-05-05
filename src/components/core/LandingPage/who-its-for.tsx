@@ -118,9 +118,7 @@ const WhoItsFor = () => {
                   priority
                 />
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                {audience[0]?.subtitle}
-              </p>
+              <p className="text-sm text-gray-700 leading-relaxed mb-3">{audience[0]?.subtitle}</p>
               <ul className="flex flex-wrap gap-2">
                 {audience[0]?.bullets.map((bullet) => (
                   <li
@@ -201,9 +199,7 @@ const WhoItsFor = () => {
                   priority
                 />
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                {audience[2]?.subtitle}
-              </p>
+              <p className="text-sm text-gray-700 leading-relaxed mb-3">{audience[2]?.subtitle}</p>
               <ul className="flex flex-wrap gap-2">
                 {audience[2]?.bullets.map((bullet) => (
                   <li

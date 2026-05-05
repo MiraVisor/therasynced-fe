@@ -131,7 +131,8 @@ export interface FreelancerDetailResponse {
     name: string;
     email: string;
     profilePicture: string | null;
-    city: string | null;
+    county: string | null;
+    cityTown: string | null;
     description: string | null;
     gender: string;
     dob: string | null; // ISO date string

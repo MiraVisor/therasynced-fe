@@ -158,9 +158,7 @@ export function CancellationDialog({
 
           {!isTrialing && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="mb-2 text-sm font-semibold text-red-800">
-                What you'll lose:
-              </p>
+              <p className="mb-2 text-sm font-semibold text-red-800">What you'll lose:</p>
               <ul className="space-y-1 text-sm text-red-700">
                 {featuresLost.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2">

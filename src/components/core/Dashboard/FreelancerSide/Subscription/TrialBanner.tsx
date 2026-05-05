@@ -151,9 +151,7 @@ export default function TrialBanner() {
                       <>
                         {slotsUsed}/{slotsLimit} active slots
                         {slotsUsed >= slotsLimit && (
-                          <span className="ml-2 text-orange-600 font-medium">
-                            (Limit reached)
-                          </span>
+                          <span className="ml-2 text-orange-600 font-medium">(Limit reached)</span>
                         )}
                       </>
                     )}

@@ -47,9 +47,7 @@ export function BillingSummary({
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Next Billing Date
-                </p>
+                <p className="text-sm font-medium text-gray-600">Next Billing Date</p>
                 <p className="text-lg font-poppins font-semibold text-charcoal">
                   {nextBillingDate.toLocaleDateString('en-US', {
                     weekday: 'long',

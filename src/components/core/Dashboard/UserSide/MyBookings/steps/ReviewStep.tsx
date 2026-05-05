@@ -239,9 +239,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-poppins font-bold text-charcoal">
-          Review Your Booking
-        </h2>
+        <h2 className="text-3xl font-poppins font-bold text-charcoal">Review Your Booking</h2>
         <p className="text-gray-600 text-lg font-inter">
           Please review your booking details before confirming
         </p>
@@ -269,9 +267,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                     {freelancer.name}
                   </h3>
                   {freelancer.specialty && (
-                    <p className="text-sm text-gray-600">
-                      {freelancer.specialty}
-                    </p>
+                    <p className="text-sm text-gray-600">{freelancer.specialty}</p>
                   )}
                 </div>
               </div>
@@ -305,9 +301,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           {selectedServices.length > 0 && (
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold text-charcoal mb-4">
-                  Selected Services
-                </h4>
+                <h4 className="font-semibold text-charcoal mb-4">Selected Services</h4>
                 <div className="space-y-2">
                   {selectedServices.map((service) => (
                     <div key={service.id} className="flex items-center gap-2">
@@ -329,24 +323,16 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               </div>
               {selectedLocationType === LocationType.HOME ? (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">
-                    At Home
-                  </p>
+                  <p className="text-sm font-medium text-gray-700 mb-1">At Home</p>
                   <p className="text-sm text-gray-600">{clientAddress}</p>
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">
-                    At Clinic
-                  </p>
+                  <p className="text-sm font-medium text-gray-700 mb-1">At Clinic</p>
                   {slot.location && (
                     <>
-                      <p className="text-sm font-medium text-gray-900">
-                        {slot.location.name}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {slot.location.address}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900">{slot.location.name}</p>
+                      <p className="text-sm text-gray-600">{slot.location.address}</p>
                     </>
                   )}
                 </div>
@@ -397,9 +383,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                   )}
                 <div className="border-t border-gray-200 pt-3 mt-3">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-lg text-charcoal">
-                      Total
-                    </span>
+                    <span className="font-semibold text-lg text-charcoal">Total</span>
                     <div className="flex flex-col items-end">
                       <span className="font-bold text-lg text-primary">
                         €{totalPrice.toFixed(2)}
@@ -436,9 +420,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           {/* Debug Information */}
           <Card className="mt-6 border-2 border-yellow-300 bg-yellow-50">
             <CardContent className="p-4">
-              <h5 className="font-semibold text-sm mb-3 text-yellow-800">
-                🔍 Debug Information
-              </h5>
+              <h5 className="font-semibold text-sm mb-3 text-yellow-800">🔍 Debug Information</h5>
               <div className="space-y-2 text-xs font-mono">
                 <div>
                   <strong>Selected Services:</strong>{' '}

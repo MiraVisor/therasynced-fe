@@ -147,9 +147,7 @@ const RecentBookingActivity = ({ className }: RecentBookingActivityProps) => {
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <Calendar className="w-12 h-12 text-gray-300 mb-2" />
-            <p className="text-sm font-inter text-gray-500">
-              No recent bookings
-            </p>
+            <p className="text-sm font-inter text-gray-500">No recent bookings</p>
             <p className="text-xs font-inter text-gray-400 mt-1">
               Your booking history will appear here
             </p>

@@ -169,8 +169,8 @@ export default function GuidePage() {
                   If you are in crisis or experiencing a medical emergency, please contact local
                   emergency services immediately. In Ireland, dial{' '}
                   <strong className="text-gray-900">112</strong> or{' '}
-                  <strong className="text-gray-900">999</strong>. Our messaging is
-                  not monitored for urgent situations.
+                  <strong className="text-gray-900">999</strong>. Our messaging is not monitored for
+                  urgent situations.
                 </p>
               </div>
             </div>
@@ -185,9 +185,7 @@ export default function GuidePage() {
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-4 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all">
                 <Shield className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-poppins font-semibold text-gray-900 mb-1">
-                Privacy Policy
-              </h3>
+              <h3 className="font-poppins font-semibold text-gray-900 mb-1">Privacy Policy</h3>
               <p className="text-sm text-gray-600 font-open-sans">
                 How we collect, use, and protect your personal data.
               </p>
@@ -200,9 +198,7 @@ export default function GuidePage() {
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-4 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all">
                 <CheckCircle className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-poppins font-semibold text-gray-900 mb-1">
-                Terms of Service
-              </h3>
+              <h3 className="font-poppins font-semibold text-gray-900 mb-1">Terms of Service</h3>
               <p className="text-sm text-gray-600 font-open-sans">
                 Rules and expectations for using the platform.
               </p>
@@ -215,9 +211,7 @@ export default function GuidePage() {
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-4 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all">
                 <HelpCircle className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-poppins font-semibold text-gray-900 mb-1">
-                Contact support
-              </h3>
+              <h3 className="font-poppins font-semibold text-gray-900 mb-1">Contact support</h3>
               <p className="text-sm text-gray-600 font-open-sans">
                 Questions or issues? Our support team is happy to help.
               </p>

@@ -31,9 +31,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
               <span className="text-2xl">📅</span>
             </div>
             <h3 className="text-lg font-poppins font-semibold text-charcoal">No appointments</h3>
-            <p className="text-gray-500 max-w-md">
-              No upcoming appointments found for this date.
-            </p>
+            <p className="text-gray-500 max-w-md">No upcoming appointments found for this date.</p>
           </div>
         </CardContent>
       </Card>
@@ -99,9 +97,7 @@ export const AppointmentCard: React.FC<{ date: Date | undefined; bookings?: Book
               <h4 className="font-poppins font-bold text-lg text-charcoal">
                 {expert.name || 'Unknown Freelancer'}
               </h4>
-              <p className="text-sm text-gray-600">
-                {expert.cardInfo?.mainService || 'N/A'}
-              </p>
+              <p className="text-sm text-gray-600">{expert.cardInfo?.mainService || 'N/A'}</p>
             </div>
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (

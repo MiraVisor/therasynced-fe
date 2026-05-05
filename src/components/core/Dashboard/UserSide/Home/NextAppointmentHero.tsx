@@ -202,9 +202,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Date</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {getBookingDate(booking)}
-                </p>
+                <p className="text-sm font-semibold text-gray-900">{getBookingDate(booking)}</p>
               </div>
             </div>
 
@@ -215,13 +213,9 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Time</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {getBookingTime(booking)}
-                </p>
+                <p className="text-sm font-semibold text-gray-900">{getBookingTime(booking)}</p>
                 {isWithin24Hours && timeUntil && (
-                  <p className="text-xs text-green-600 font-medium mt-0.5">
-                    {timeUntil}
-                  </p>
+                  <p className="text-xs text-green-600 font-medium mt-0.5">{timeUntil}</p>
                 )}
               </div>
             </div>
@@ -233,9 +227,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Location</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {getBookingLocation(booking)}
-                </p>
+                <p className="text-sm font-semibold text-gray-900">{getBookingLocation(booking)}</p>
               </div>
             </div>
           </div>
@@ -244,9 +236,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
           <div className="flex flex-col items-end justify-between gap-4 md:border-l md:pl-6 md:border-gray-200">
             {booking?.totalAmount && (
               <div className="text-center">
-                <p className="text-xs font-inter text-gray-500 mb-1">
-                  Total Amount
-                </p>
+                <p className="text-xs font-inter text-gray-500 mb-1">Total Amount</p>
                 <div className="flex items-center gap-1 text-2xl font-poppins font-bold text-primary">
                   <span>EUR {booking.totalAmount}</span>
                 </div>
@@ -262,19 +252,6 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
                 View Details
                 <ExternalLink className="w-4 h-4 ml-2" />
               </Button>
-              {isWithin24Hours && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-green-500 text-green-600 hover:bg-green-50"
-                  onClick={() => {
-                    // TODO: Implement join session logic
-                  }}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Join Session
-                </Button>
-              )}
             </div>
           </div>
         </div>

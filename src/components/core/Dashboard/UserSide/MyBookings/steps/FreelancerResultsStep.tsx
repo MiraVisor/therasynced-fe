@@ -83,9 +83,7 @@ export const FreelancerResultsStep: React.FC<FreelancerResultsStepProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-poppins font-bold text-charcoal">
-          Available Freelancers
-        </h2>
+        <h2 className="text-3xl font-poppins font-bold text-charcoal">Available Freelancers</h2>
         <p className="text-gray-600 text-lg font-inter">
           {freelancers.length} {freelancers.length === 1 ? 'freelancer' : 'freelancers'} found
           {freelancerSearchQuery && ` matching "${freelancerSearchQuery}"`}

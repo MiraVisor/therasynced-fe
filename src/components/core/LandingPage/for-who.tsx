@@ -64,9 +64,7 @@ const ForWho = () => {
             </div>
 
             <div className="p-8 lg:p-10">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">
-                Freelancers
-              </h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">Freelancers</h3>
               <p className="text-gray-600 leading-relaxed font-open-sans mb-6">
                 Create your profile, set your availability and rates, and let clients book you for
                 freelance and locum work across clinics, sports teams, gyms, and organisations.
@@ -124,9 +122,7 @@ const ForWho = () => {
             </div>
 
             <div className="p-8 lg:p-10">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">
-                Clients
-              </h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4 font-playfair">Clients</h3>
               <p className="text-gray-600 leading-relaxed font-open-sans mb-6">
                 Find and book qualified therapists, coaches, and trainers with ease. Whether you
                 need clinic cover, event support, or a private session, discover trusted

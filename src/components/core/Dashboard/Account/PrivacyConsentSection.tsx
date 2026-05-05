@@ -178,12 +178,8 @@ export function PrivacyConsentSection() {
 
           <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
             <div>
-              <h4 className="font-semibold text-sm text-red-800">
-                Delete Account
-              </h4>
-              <p className="text-xs text-red-600">
-                Permanently delete your account
-              </p>
+              <h4 className="font-semibold text-sm text-red-800">Delete Account</h4>
+              <p className="text-xs text-red-600">Permanently delete your account</p>
             </div>
             <Button
               onClick={() => setShowDeleteDialog(true)}
@@ -209,9 +205,7 @@ export function PrivacyConsentSection() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <p className="text-sm text-gray-600 mb-4">
-              The export will include:
-            </p>
+            <p className="text-sm text-gray-600 mb-4">The export will include:</p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600 mb-6">
               <li>Profile information</li>
               <li>Booking history</li>

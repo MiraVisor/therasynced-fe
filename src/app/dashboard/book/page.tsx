@@ -707,12 +707,8 @@ export default function BookingPage() {
                         <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
                           <Search className="w-6 h-6 text-gray-400" />
                         </div>
-                        <p className="text-gray-500 font-medium">
-                          No freelancers found
-                        </p>
-                        <p className="text-sm text-gray-400 mt-1">
-                          Try a different search term
-                        </p>
+                        <p className="text-gray-500 font-medium">No freelancers found</p>
+                        <p className="text-sm text-gray-400 mt-1">Try a different search term</p>
                       </div>
                     ) : (
                       <ul className="py-2" role="listbox">
@@ -723,9 +719,7 @@ export default function BookingPage() {
                             aria-selected={selectedIndex === index}
                             className={cn(
                               'px-4 py-3 cursor-pointer transition-all duration-150',
-                              selectedIndex === index
-                                ? 'bg-primary/10 '
-                                : 'hover:bg-gray-50 ',
+                              selectedIndex === index ? 'bg-primary/10 ' : 'hover:bg-gray-50 ',
                             )}
                             onClick={() => handleSelectFreelancer(freelancer)}
                             onMouseEnter={() => setSelectedIndex(index)}
@@ -794,9 +788,7 @@ export default function BookingPage() {
                   ) : favoriteFreelancers.length === 0 ? (
                     <div className="flex flex-col items-center py-8">
                       <Heart className="w-12 h-12 text-gray-300 mb-2" />
-                      <p className="text-sm text-gray-500 mb-4">
-                        No favorite freelancers yet
-                      </p>
+                      <p className="text-sm text-gray-500 mb-4">No favorite freelancers yet</p>
                       <Button variant="outline" onClick={() => setShowFavorites(false)}>
                         Search Freelancers
                       </Button>
@@ -878,9 +870,7 @@ export default function BookingPage() {
             {/* Divider */}
             <div className="flex items-center gap-4 max-w-2xl mx-auto">
               <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-sm text-gray-500 font-medium">
-                or browse by date
-              </span>
+              <span className="text-sm text-gray-500 font-medium">or browse by date</span>
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
@@ -987,9 +977,7 @@ export default function BookingPage() {
                             <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
                               <Calendar className="w-8 h-8 text-primary" />
                             </div>
-                            <p className="text-gray-600 font-medium">
-                              Now select a date
-                            </p>
+                            <p className="text-gray-600 font-medium">Now select a date</p>
                             <p className="text-sm text-gray-500 mt-1">
                               to see {selectedFreelancerData?.name}&apos;s available times
                             </p>
@@ -1038,9 +1026,7 @@ export default function BookingPage() {
                             </div>
                           ) : freelancersWithSlots.length === 0 ? (
                             <div className="text-center py-8">
-                              <p className="text-gray-500">
-                                No freelancers available on this date
-                              </p>
+                              <p className="text-gray-500">No freelancers available on this date</p>
                               <Button
                                 variant="link"
                                 onClick={() => setSelectedDate(null)}
@@ -1118,9 +1104,7 @@ export default function BookingPage() {
                               <div className="h-full flex flex-col">
                                 <div className="flex items-center gap-2 mb-4">
                                   <Clock className="w-5 h-5 text-primary" />
-                                  <h3 className="font-semibold text-charcoal">
-                                    Select Time
-                                  </h3>
+                                  <h3 className="font-semibold text-charcoal">Select Time</h3>
                                 </div>
                                 {isLoadingFreelancerSlots ? (
                                   <div className="space-y-3">
@@ -1137,9 +1121,7 @@ export default function BookingPage() {
                                     </p>
                                   </div>
                                 ) : availableSlots.length === 0 ? (
-                                  <p className="text-gray-500 text-sm">
-                                    No available slots
-                                  </p>
+                                  <p className="text-gray-500 text-sm">No available slots</p>
                                 ) : (
                                   <div className="grid grid-cols-3 gap-3 md:gap-2 flex-1">
                                     {availableSlots.map((slot) => {
@@ -1177,9 +1159,7 @@ export default function BookingPage() {
                                 <div className="animate-in slide-in-from-right-2 duration-300">
                                   <div className="flex items-center gap-2 mb-4">
                                     <Sparkles className="w-5 h-5 text-primary" />
-                                    <h3 className="font-semibold text-charcoal">
-                                      Select Service
-                                    </h3>
+                                    <h3 className="font-semibold text-charcoal">Select Service</h3>
                                   </div>
                                   <RadioGroup
                                     value={selectedService}
@@ -1225,9 +1205,7 @@ export default function BookingPage() {
                                 <div className="animate-in slide-in-from-right-2 duration-300">
                                   <div className="flex items-center gap-2 mb-4">
                                     <MapPin className="w-5 h-5 text-primary" />
-                                    <h3 className="font-semibold text-charcoal">
-                                      Select Location
-                                    </h3>
+                                    <h3 className="font-semibold text-charcoal">Select Location</h3>
                                   </div>
                                   <RadioGroup
                                     value={locationType || undefined}
@@ -1249,9 +1227,7 @@ export default function BookingPage() {
                                         <RadioGroupItem value={LocationType.HOME} id="home" />
                                         <Home className="w-5 h-5 text-gray-500" />
                                         <Label htmlFor="home" className="flex-1 cursor-pointer">
-                                          <span className="font-medium text-charcoal">
-                                            At Home
-                                          </span>
+                                          <span className="font-medium text-charcoal">At Home</span>
                                         </Label>
                                       </div>
                                     )}
@@ -1304,18 +1280,14 @@ export default function BookingPage() {
                               <div className="animate-in slide-in-from-right-2 duration-300">
                                 <div className="flex items-center gap-2 mb-4">
                                   <CheckCircle className="w-5 h-5 text-primary" />
-                                  <h3 className="font-semibold text-charcoal">
-                                    Review & Confirm
-                                  </h3>
+                                  <h3 className="font-semibold text-charcoal">Review & Confirm</h3>
                                 </div>
                                 {canConfirmBooking ? (
                                   <>
                                     <div className="space-y-3 mb-4">
                                       {selectedFreelancerData && (
                                         <div className="flex justify-between py-2 border-b border-gray-200">
-                                          <span className="text-gray-600">
-                                            Freelancer:
-                                          </span>
+                                          <span className="text-gray-600">Freelancer:</span>
                                           <span className="font-medium text-charcoal">
                                             {selectedFreelancerData.name}
                                           </span>
@@ -1323,9 +1295,7 @@ export default function BookingPage() {
                                       )}
                                       {selectedDate && selectedSlotData && (
                                         <div className="flex justify-between py-2 border-b border-gray-200">
-                                          <span className="text-gray-600">
-                                            Date & Time:
-                                          </span>
+                                          <span className="text-gray-600">Date & Time:</span>
                                           <span className="font-medium text-charcoal">
                                             {format(
                                               parseISO(selectedSlotData.startTime),
@@ -1336,9 +1306,7 @@ export default function BookingPage() {
                                       )}
                                       {selectedServiceData && (
                                         <div className="flex justify-between py-2 border-b border-gray-200">
-                                          <span className="text-gray-600">
-                                            Service:
-                                          </span>
+                                          <span className="text-gray-600">Service:</span>
                                           <span className="font-medium text-charcoal">
                                             {selectedServiceData.name}
                                           </span>
@@ -1346,9 +1314,7 @@ export default function BookingPage() {
                                       )}
                                       {locationType && (
                                         <div className="flex justify-between py-2 border-b border-gray-200">
-                                          <span className="text-gray-600">
-                                            Location:
-                                          </span>
+                                          <span className="text-gray-600">Location:</span>
                                           <span className="font-medium text-charcoal">
                                             {locationType === LocationType.HOME
                                               ? 'At Home'
@@ -1358,9 +1324,7 @@ export default function BookingPage() {
                                       )}
                                       {locationType === LocationType.HOME && homeAddress && (
                                         <div className="flex justify-between py-2 border-b border-gray-200">
-                                          <span className="text-gray-600">
-                                            Address:
-                                          </span>
+                                          <span className="text-gray-600">Address:</span>
                                           <span className="font-medium text-charcoal text-right max-w-[60%]">
                                             {homeAddress}
                                           </span>
@@ -1370,18 +1334,14 @@ export default function BookingPage() {
                                       {/* Price Breakdown */}
                                       <div className="pt-4 border-t border-gray-200 space-y-2">
                                         <div className="flex justify-between text-sm">
-                                          <span className="text-gray-600">
-                                            Base Price:
-                                          </span>
+                                          <span className="text-gray-600">Base Price:</span>
                                           <span className="font-medium">
                                             €{priceCalculation.basePrice.toFixed(2)}
                                           </span>
                                         </div>
                                         {priceCalculation.servicePrice > 0 && (
                                           <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">
-                                              Service Price:
-                                            </span>
+                                            <span className="text-gray-600">Service Price:</span>
                                             <span className="font-medium">
                                               €{priceCalculation.servicePrice.toFixed(2)}
                                             </span>
@@ -1410,9 +1370,7 @@ export default function BookingPage() {
                                         )}
                                         {priceCalculation.locationFee > 0 && (
                                           <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">
-                                              Location Fee:
-                                            </span>
+                                            <span className="text-gray-600">Location Fee:</span>
                                             <span className="font-medium">
                                               €{priceCalculation.locationFee.toFixed(2)}
                                             </span>

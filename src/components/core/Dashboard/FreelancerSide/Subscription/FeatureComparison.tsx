@@ -93,9 +93,7 @@ export function FeatureComparison({
             <Card
               key={plan.id}
               className={`border transition-all ${
-                isCurrent
-                  ? 'border-2 border-primary shadow-md'
-                  : 'border-gray-200 '
+                isCurrent ? 'border-2 border-primary shadow-md' : 'border-gray-200 '
               } ${getPlanColor(plan.name)}`}
             >
               <CardHeader
@@ -131,9 +129,7 @@ export function FeatureComparison({
                         className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
                       >
                         <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900">
-                            {feature}
-                          </span>
+                          <span className="text-sm font-medium text-gray-900">{feature}</span>
                         </div>
                         <div className="ml-4">
                           <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -202,9 +198,7 @@ export function FeatureComparison({
                   return (
                     <TableRow key={idx} className="border-b border-gray-100">
                       <TableCell className="font-medium py-4">
-                        <span className="text-sm text-gray-900">
-                          {feature.name}
-                        </span>
+                        <span className="text-sm text-gray-900">{feature.name}</span>
                       </TableCell>
                       <TableCell
                         className={`text-center py-4 ${

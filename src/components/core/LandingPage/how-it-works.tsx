@@ -90,9 +90,7 @@ const HowItWorks = () => {
 
                   {/* Content */}
                   <div className="space-y-3">
-                    <h3 className="text-xl font-bold text-gray-900 font-poppins">
-                      {step.title}
-                    </h3>
+                    <h3 className="text-xl font-bold text-gray-900 font-poppins">{step.title}</h3>
                     <p className="text-sm text-gray-600 leading-relaxed font-open-sans">
                       {step.description}
                     </p>

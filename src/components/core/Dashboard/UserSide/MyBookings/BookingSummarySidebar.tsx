@@ -219,9 +219,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             <h3 className="font-poppins font-bold text-base text-charcoal truncate">
               {therapist?.name}
             </h3>
-            <p className="text-sm text-gray-600 truncate">
-              {therapist?.specialty}
-            </p>
+            <p className="text-sm text-gray-600 truncate">{therapist?.specialty}</p>
             <div className="flex items-center gap-1 mt-0.5">
               <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
               <span className="text-xs font-medium">{therapist?.rating?.toFixed(1)}</span>

@@ -68,9 +68,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
               </Avatar>
               <div className="flex-1">
                 <h3 className="text-xl font-poppins font-bold text-charcoal">{therapist?.name}</h3>
-                <p className="text-gray-600 font-inter font-medium">
-                  {therapist?.specialty}
-                </p>
+                <p className="text-gray-600 font-inter font-medium">{therapist?.specialty}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
@@ -153,22 +151,14 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
                 <div className="space-y-3">
                   {detailsForm.watch('notes') && (
                     <div>
-                      <span className="text-sm font-medium text-gray-600">
-                        Notes:
-                      </span>
-                      <p className="text-gray-900 mt-1">
-                        {detailsForm.watch('notes')}
-                      </p>
+                      <span className="text-sm font-medium text-gray-600">Notes:</span>
+                      <p className="text-gray-900 mt-1">{detailsForm.watch('notes')}</p>
                     </div>
                   )}
                   {detailsForm.watch('clientAddress') && (
                     <div>
-                      <span className="text-sm font-medium text-gray-600">
-                        Address:
-                      </span>
-                      <p className="text-gray-900 mt-1">
-                        {detailsForm.watch('clientAddress')}
-                      </p>
+                      <span className="text-sm font-medium text-gray-600">Address:</span>
+                      <p className="text-gray-900 mt-1">{detailsForm.watch('clientAddress')}</p>
                     </div>
                   )}
                 </div>
@@ -197,9 +187,7 @@ export const ConfirmStep: React.FC<ConfirmStepProps> = ({
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
-                <h4 className="font-semibold text-blue-900 mb-2">
-                  Important Information
-                </h4>
+                <h4 className="font-semibold text-blue-900 mb-2">Important Information</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Your slot is reserved for 5 minutes. Complete your booking to confirm.</li>
                   <li>• You&apos;ll receive a confirmation email with session details.</li>

@@ -9,9 +9,7 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Terms & Conditions
-        </h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">Terms & Conditions</h1>
         <p className="text-sm text-gray-600 mb-8">Last updated: 7 days ago</p>
 
         <div className="prose prose-lg max-w-none">
@@ -20,9 +18,7 @@ export default function TermsOfServicePage() {
               TERMS & CONDITIONS (USERS)
             </h2>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">
-              1. Platform Role
-            </h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">1. Platform Role</h3>
             <p className="text-gray-700 mb-4">
               The Platform operates as a neutral marketplace and technical intermediary, providing
               tools for users to discover and communicate with independent therapists. The Platform
@@ -30,9 +26,7 @@ export default function TermsOfServicePage() {
               to any professional or therapeutic relationship between users and therapists.
             </p>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">
-              2. User Obligations
-            </h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">2. User Obligations</h3>
             <p className="text-gray-700 mb-4">
               Users agree to provide accurate and complete information when registering and using
               the Platform. Users must use the Platform lawfully, respect all applicable
@@ -74,18 +68,14 @@ export default function TermsOfServicePage() {
               therapist.
             </p>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">
-              6. Eligibility
-            </h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">6. Eligibility</h3>
             <p className="text-gray-700 mb-4">
               The Platform is intended for adults aged 18 years or older. The Platform does not
               knowingly allow access to minors. Therapists are responsible for verifying user
               eligibility where required by professional or regulatory standards.
             </p>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">
-              7. Governing Law
-            </h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">7. Governing Law</h3>
             <p className="text-gray-700 mb-4">
               These Terms and Conditions are governed by, and construed in accordance with, the laws
               of Ireland. Any disputes arising under or in connection with these Terms shall be
@@ -98,16 +88,12 @@ export default function TermsOfServicePage() {
               PLATFORM RULES / ACCEPTABLE USE POLICY
             </h2>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Purpose
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Purpose</h3>
             <p className="text-gray-700 mb-4">
               These rules ensure a safe, professional, and lawful platform environment.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Prohibited Conduct
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Prohibited Conduct</h3>
             <p className="text-gray-700 mb-4">Users must not:</p>
             <ul className="list-disc pl-6 text-gray-700 mb-4">
               <li>Misrepresent identity or professional qualifications</li>
@@ -120,9 +106,7 @@ export default function TermsOfServicePage() {
               </li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Enforcement
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Enforcement</h3>
             <p className="text-gray-700 mb-4">
               Violations may result in suspension or termination of access.
             </p>
@@ -133,9 +117,7 @@ export default function TermsOfServicePage() {
               SUBSCRIPTION & BILLING TERMS (THERAPISTS)
             </h2>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              5.1 Subscription Fees
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">5.1 Subscription Fees</h3>
             <p className="text-gray-700 mb-4">
               Therapists pay a recurring subscription fee billed in advance on a monthly or annual
               basis. Subscription pricing is displayed on the Platform and may be updated from time
@@ -154,9 +136,7 @@ export default function TermsOfServicePage() {
               for ensuring that your payment details are accurate and up to date.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              5.3 Free Trials
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">5.3 Free Trials</h3>
             <p className="text-gray-700 mb-4">
               Certain subscription plans may include a free trial period. At the end of the trial,
               your subscription will automatically convert to a paid plan and your payment method
@@ -164,9 +144,7 @@ export default function TermsOfServicePage() {
               limited to one per therapist account.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              5.4 Plan Changes
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">5.4 Plan Changes</h3>
             <p className="text-gray-700 mb-4">
               You may upgrade or downgrade your subscription plan at any time through the Platform.
               Upgrades take effect immediately and are prorated for the remainder of the current
@@ -175,9 +153,7 @@ export default function TermsOfServicePage() {
               of the annual period.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              5.5 Cancellation
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">5.5 Cancellation</h3>
             <p className="text-gray-700 mb-4">
               You may cancel your subscription at any time through your account settings.
               Cancellation takes effect at the end of the current billing cycle, and you will retain
@@ -185,9 +161,7 @@ export default function TermsOfServicePage() {
               portions of a billing period.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              5.6 Refunds
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">5.6 Refunds</h3>
             <p className="text-gray-700 mb-4">
               Except where required by applicable law (including EU consumer protection
               regulations), subscription fees are non-refundable. If you believe you have been
@@ -256,9 +230,7 @@ export default function TermsOfServicePage() {
               , and we will work with Stripe to resolve the matter.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              5.9 Currency & Taxes
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">5.9 Currency & Taxes</h3>
             <p className="text-gray-700 mb-4">
               All prices displayed on the Platform are in Euros (€). Prices are inclusive of
               applicable VAT unless otherwise stated. You are responsible for any additional taxes,
@@ -267,9 +239,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section className="mb-8 mt-12">
-            <h2 className="text-3xl font-semibold text-gray-900 mb-6">
-              THERAPIST AGREEMENT
-            </h2>
+            <h2 className="text-3xl font-semibold text-gray-900 mb-6">THERAPIST AGREEMENT</h2>
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
               Independent Contractor Status
@@ -289,25 +259,19 @@ export default function TermsOfServicePage() {
               <li>Comply with applicable professional codes of conduct and ethical standards</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Data Protection
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Data Protection</h3>
             <p className="text-gray-700 mb-4">
               Therapists act as independent Data Controllers for health and therapeutic data. The
               Platform acts as a Data Processor for in-platform communications only.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Breach Notification
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Breach Notification</h3>
             <p className="text-gray-700 mb-4">
               Therapists must notify the Platform without undue delay and, where feasible, within 48
               hours of becoming aware of a personal data breach involving platform data.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              Audit & Verification
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">Audit & Verification</h3>
             <p className="text-gray-700 mb-4">
               The Platform may verify therapist credentials, insurance, and compliance on a
               reasonable basis.
@@ -361,9 +325,7 @@ export default function TermsOfServicePage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
               4. Processor Obligations
             </h3>
-            <p className="text-gray-700 mb-4">
-              The Platform, acting as a data processor, shall:
-            </p>
+            <p className="text-gray-700 mb-4">The Platform, acting as a data processor, shall:</p>
 
             <h4 className="text-lg font-semibold text-gray-900 mb-2 mt-4">
               4.1 Processing on Instructions
@@ -374,18 +336,14 @@ export default function TermsOfServicePage() {
               therapist of such legal requirement unless prohibited from doing so.
             </p>
 
-            <h4 className="text-lg font-semibold text-gray-900 mb-2 mt-4">
-              4.2 Confidentiality
-            </h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2 mt-4">4.2 Confidentiality</h4>
             <p className="text-gray-700 mb-4">
               Ensure that persons authorised to process personal data are bound by appropriate
               confidentiality obligations, whether contractual or statutory, and receive appropriate
               data protection awareness.
             </p>
 
-            <h4 className="text-lg font-semibold text-gray-900 mb-2 mt-4">
-              4.3 Security Measures
-            </h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2 mt-4">4.3 Security Measures</h4>
             <p className="text-gray-700 mb-4">
               Implement appropriate technical and organisational measures to ensure a level of
               security appropriate to the risk, including measures to protect against unauthorised
@@ -419,9 +377,7 @@ export default function TermsOfServicePage() {
               in which case such data shall be securely isolated and protected.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              5. Sub-Processors
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">5. Sub-Processors</h3>
             <p className="text-gray-700 mb-4">
               The Platform may engage sub-processors for the provision of infrastructure, hosting,
               security, or related services, provided that such sub-processors are engaged under
@@ -444,9 +400,7 @@ export default function TermsOfServicePage() {
               users and therapists.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">
-              7. Governing Law
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">7. Governing Law</h3>
             <p className="text-gray-700 mb-4">
               This DPA shall be governed by and construed in accordance with the laws of Ireland.
             </p>

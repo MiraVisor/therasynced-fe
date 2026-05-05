@@ -4,10 +4,7 @@ import { Calendar, Clock, Users } from 'lucide-react';
 
 const Teams = () => {
   return (
-    <section
-      id="teams"
-      className="w-full px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 bg-white"
-    >
+    <section id="teams" className="w-full px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 bg-white">
       <div className="max-w-4xl mx-auto">
         <div className="text-center space-y-6 sm:space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
@@ -29,36 +26,24 @@ const Teams = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Team Management
-              </h3>
-              <p className="text-sm text-gray-600">
-                Manage your entire team from one dashboard
-              </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Team Management</h3>
+              <p className="text-sm text-gray-600">Manage your entire team from one dashboard</p>
             </div>
 
             <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <Calendar className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Unified Scheduling
-              </h3>
-              <p className="text-sm text-gray-600">
-                See all appointments across your practice
-              </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Unified Scheduling</h3>
+              <p className="text-sm text-gray-600">See all appointments across your practice</p>
             </div>
 
             <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-gray-50">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <Clock className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Performance Insights
-              </h3>
-              <p className="text-sm text-gray-600">
-                Track how your team is doing
-              </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Performance Insights</h3>
+              <p className="text-sm text-gray-600">Track how your team is doing</p>
             </div>
           </div>
 

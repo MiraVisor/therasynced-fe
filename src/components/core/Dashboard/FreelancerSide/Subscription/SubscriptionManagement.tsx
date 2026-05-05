@@ -406,9 +406,7 @@ export default function SubscriptionManagement() {
       <div>
         <div className="mb-6">
           <h3 className="text-2xl font-poppins font-bold text-charcoal mb-2">Choose Your Plan</h3>
-          <p className="text-sm text-gray-600">
-            Select the plan that best fits your needs
-          </p>
+          <p className="text-sm text-gray-600">Select the plan that best fits your needs</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {plans.map((plan) => (
@@ -571,9 +569,7 @@ export default function SubscriptionManagement() {
               <CardContent className="space-y-4">
                 <div className="rounded-lg border p-4">
                   <h3 className="font-poppins font-semibold text-lg">{selectedPlan.displayName}</h3>
-                  <p className="text-sm text-gray-600">
-                    {selectedPlan.description}
-                  </p>
+                  <p className="text-sm text-gray-600">{selectedPlan.description}</p>
                   <p className="mt-2 text-2xl font-poppins font-bold text-primary">
                     EUR {selectedPlan.price}/month
                   </p>

@@ -498,9 +498,7 @@ export default function FreelancerProfilePage() {
                         <CardContent className="space-y-2">
                           <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700">
-                              Verified Professional
-                            </span>
+                            <span className="text-sm text-green-700">Verified Professional</span>
                           </div>
                         </CardContent>
                       </Card>
@@ -556,10 +554,7 @@ export default function FreelancerProfilePage() {
                         );
 
                         return (
-                          <div
-                            key={slot.id}
-                            className="p-4 border border-gray-200 rounded-xl"
-                          >
+                          <div key={slot.id} className="p-4 border border-gray-200 rounded-xl">
                             <div className="flex items-center gap-3 mb-2">
                               <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
                                 <span className="text-xs font-medium text-primary uppercase">
@@ -604,9 +599,7 @@ export default function FreelancerProfilePage() {
                         <Clock className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-blue-700">
-                          {slotStats.todaySlots}
-                        </p>
+                        <p className="text-2xl font-bold text-blue-700">{slotStats.todaySlots}</p>
                         <p className="text-sm text-blue-600">Available Today</p>
                       </div>
                     </div>
@@ -623,9 +616,7 @@ export default function FreelancerProfilePage() {
                         <p className="text-2xl font-bold text-green-700">
                           {slotStats.tomorrowSlots}
                         </p>
-                        <p className="text-sm text-green-600">
-                          Available Tomorrow
-                        </p>
+                        <p className="text-sm text-green-600">Available Tomorrow</p>
                       </div>
                     </div>
                   </CardContent>
@@ -744,9 +735,7 @@ export default function FreelancerProfilePage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Pricing Not Set
-                      </h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Pricing Not Set</h3>
                       <p className="text-gray-500">
                         Contact {freelancerName} for pricing information
                       </p>

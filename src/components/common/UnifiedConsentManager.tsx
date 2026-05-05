@@ -585,9 +585,7 @@ export function UnifiedConsentManager({
                     undone.
                   </p>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
-                    <p className="text-sm font-semibold text-red-800">
-                      What will happen:
-                    </p>
+                    <p className="text-sm font-semibold text-red-800">What will happen:</p>
                     <ul className="list-disc pl-5 space-y-1 text-xs text-red-700">
                       <li>Your first aid certificate will be permanently deleted</li>
                       <li>Any verification based on this certificate will be revoked</li>
@@ -604,9 +602,7 @@ export function UnifiedConsentManager({
                     but will no longer be used for verification.
                   </p>
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
-                    <p className="text-sm font-semibold text-amber-800">
-                      What will happen:
-                    </p>
+                    <p className="text-sm font-semibold text-amber-800">What will happen:</p>
                     <ul className="list-disc pl-5 space-y-1 text-xs text-amber-700">
                       <li>Your verification status will change to REJECTED</li>
                       <li>You will lose your verified status</li>

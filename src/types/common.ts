@@ -1,3 +1,5 @@
+import { LocationType } from './types';
+
 // Helper types for common patterns
 export type Timestamp = string; // ISO date string
 export type UUID = string;
@@ -68,7 +70,7 @@ export interface ServiceCategory {
     id: string;
     name: string;
   };
-  locationTypes?: ('HOME' | 'CLINIC')[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
+  locationTypes?: LocationType[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
 }
 
 /**

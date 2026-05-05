@@ -16,15 +16,17 @@ export enum JobTitleEnum {
   STRENGTH_AND_CONDITIONING_COACHING = 'STRENGTH_AND_CONDITIONING_COACHING',
 }
 
-export enum LocationType {
-  HOME = 'HOME',
-  CLINIC = 'CLINIC',
-  CORPORATE = 'CORPORATE',
-  GYM = 'GYM',
-  TRAINING = 'TRAINING',
-  PITCHSIDE = 'PITCHSIDE',
-  EVENT = 'EVENT',
-}
+export const LocationType = {
+  HOME: 'HOME',
+  CLINIC: 'CLINIC',
+  CORPORATE: 'CORPORATE',
+  GYM: 'GYM',
+  TRAINING: 'TRAINING',
+  PITCHSIDE: 'PITCHSIDE',
+  EVENT: 'EVENT',
+} as const;
+
+export type LocationType = (typeof LocationType)[keyof typeof LocationType];
 
 export type RoleType = 'PATIENT' | 'FREELANCER' | 'ADMIN';
 

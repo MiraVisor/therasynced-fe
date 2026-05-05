@@ -10,10 +10,7 @@ const ExpertCardSkeleton = () => (
           <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
           <div className="flex space-x-1">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="w-3 h-3 bg-gray-200 rounded animate-pulse"
-              />
+              <div key={i} className="w-3 h-3 bg-gray-200 rounded animate-pulse" />
             ))}
           </div>
           <div className="h-5 bg-gray-200 rounded w-16 animate-pulse" />

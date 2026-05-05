@@ -34,9 +34,7 @@ export const BookingCompleteStep: React.FC<BookingCompleteStepProps> = ({ bookin
           <CheckCircle className="w-12 h-12 text-green-600" />
         </div>
         <div>
-          <h2 className="text-3xl font-poppins font-bold text-charcoal mb-2">
-            Booking Confirmed!
-          </h2>
+          <h2 className="text-3xl font-poppins font-bold text-charcoal mb-2">Booking Confirmed!</h2>
           <p className="text-gray-600 text-lg font-inter">
             Your appointment has been successfully booked
           </p>
@@ -49,17 +47,13 @@ export const BookingCompleteStep: React.FC<BookingCompleteStepProps> = ({ bookin
           <div className="space-y-4">
             <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
               <Calendar className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-lg text-charcoal">
-                Booking Details
-              </h3>
+              <h3 className="font-semibold text-lg text-charcoal">Booking Details</h3>
             </div>
 
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-gray-600">Freelancer</p>
-                <p className="font-medium text-charcoal">
-                  {booking.slot.freelancer.name}
-                </p>
+                <p className="font-medium text-charcoal">{booking.slot.freelancer.name}</p>
               </div>
 
               <div>

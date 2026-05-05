@@ -56,9 +56,7 @@ export const FreelancerCalendarCard: React.FC<{
               {freelancer.name}
             </h3>
             {freelancer.specialty && (
-              <p className="text-sm text-gray-600 mt-1">
-                {freelancer.specialty}
-              </p>
+              <p className="text-sm text-gray-600 mt-1">{freelancer.specialty}</p>
             )}
             <div className="flex items-center gap-2 mt-2">
               {freelancer.rating !== undefined && freelancer.rating > 0 && (
@@ -68,9 +66,7 @@ export const FreelancerCalendarCard: React.FC<{
                     {freelancer.rating.toFixed(1)}
                   </span>
                   {freelancer.reviews !== undefined && freelancer.reviews > 0 && (
-                    <span className="text-xs text-gray-500">
-                      ({freelancer.reviews})
-                    </span>
+                    <span className="text-xs text-gray-500">({freelancer.reviews})</span>
                   )}
                 </div>
               )}
@@ -119,9 +115,7 @@ export const FreelancerCalendarCard: React.FC<{
             })}
           </div>
           {availableDates.length === 0 && (
-            <p className="text-sm text-gray-500 text-center py-2">
-              No available dates
-            </p>
+            <p className="text-sm text-gray-500 text-center py-2">No available dates</p>
           )}
         </div>
       </CardContent>

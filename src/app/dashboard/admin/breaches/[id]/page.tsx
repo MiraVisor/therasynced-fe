@@ -315,9 +315,7 @@ const BreachDetailPage = () => {
                     </div>
                     {index < 3 && (
                       <div
-                        className={`h-0.5 w-8 ${
-                          isCompleted ? 'bg-green-500' : 'bg-gray-300 '
-                        }`}
+                        className={`h-0.5 w-8 ${isCompleted ? 'bg-green-500' : 'bg-gray-300 '}`}
                       />
                     )}
                   </div>
@@ -378,13 +376,7 @@ const BreachDetailPage = () => {
 
         {/* Compliance Indicators */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card
-            className={
-              breach.reportedToDpc
-                ? 'border-green-200 '
-                : 'border-red-200 '
-            }
-          >
+          <Card className={breach.reportedToDpc ? 'border-green-200 ' : 'border-red-200 '}>
             <CardHeader>
               <CardTitle className="font-poppins font-semibold flex items-center gap-2">
                 {breach.reportedToDpc ? (
@@ -416,13 +408,7 @@ const BreachDetailPage = () => {
             </CardContent>
           </Card>
 
-          <Card
-            className={
-              breach.notifiedUsers
-                ? 'border-green-200 '
-                : 'border-red-200 '
-            }
-          >
+          <Card className={breach.notifiedUsers ? 'border-green-200 ' : 'border-red-200 '}>
             <CardHeader>
               <CardTitle className="font-poppins font-semibold flex items-center gap-2">
                 {breach.notifiedUsers ? (

@@ -56,9 +56,7 @@ const TrustIndicators = () => {
               </div>
 
               {/* Content */}
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
-                {item.title}
-              </h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">{item.title}</h3>
               <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
                 {item.description}
               </p>

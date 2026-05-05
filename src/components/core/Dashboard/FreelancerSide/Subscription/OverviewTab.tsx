@@ -160,9 +160,7 @@ export function OverviewTab({
                 {gracePeriodDaysRemaining !== null && gracePeriodDaysRemaining > 0 && (
                   <div className="mb-4 p-3 rounded-lg bg-red-200/50">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-red-900">
-                        Grace Period
-                      </span>
+                      <span className="text-sm font-medium text-red-900">Grace Period</span>
                       <span className="text-sm font-bold text-red-900">
                         {gracePeriodDaysRemaining} {gracePeriodDaysRemaining === 1 ? 'day' : 'days'}{' '}
                         left
@@ -383,9 +381,7 @@ export function OverviewTab({
                       <span className="text-5xl font-poppins font-bold text-charcoal">
                         EUR {plan.price.toFixed(2)}
                       </span>
-                      <span className="text-lg font-inter text-gray-600">
-                        /month
-                      </span>
+                      <span className="text-lg font-inter text-gray-600">/month</span>
                     </div>
                   </div>
                 )}
@@ -486,9 +482,7 @@ export function OverviewTab({
         <div className="space-y-6">
           <div>
             <h3 className="text-xl font-poppins font-bold text-charcoal mb-1">Usage & Limits</h3>
-            <p className="text-sm text-gray-600">
-              Monitor your subscription usage and limits
-            </p>
+            <p className="text-sm text-gray-600">Monitor your subscription usage and limits</p>
           </div>
           <div className="grid grid-cols-1 gap-6">
             {/* Slots Limit */}
@@ -565,9 +559,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        Days used this week
-                      </span>
+                      <span className="text-sm text-gray-600">Days used this week</span>
                       <span className="text-sm font-semibold text-primary">
                         {subscription.daysUsed ?? 0} / Unlimited
                       </span>
@@ -594,9 +586,7 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
-                          Days used this week
-                        </span>
+                        <span className="text-sm text-gray-600">Days used this week</span>
                         <span className="text-sm font-semibold">
                           {subscription.daysUsed ?? 0}/{formatLimit(subscription.maxDaysPerWeek)}
                         </span>
@@ -633,9 +623,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        Messages used
-                      </span>
+                      <span className="text-sm text-gray-600">Messages used</span>
                       <span className="text-sm font-semibold text-primary">
                         {subscription.messagesUsed ?? 0} / Unlimited
                       </span>
@@ -662,9 +650,7 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
-                          Messages used
-                        </span>
+                        <span className="text-sm text-gray-600">Messages used</span>
                         <span className="text-sm font-semibold">
                           {subscription.messagesUsed ?? 0}/
                           {formatLimit(subscription.maxMessagesPerBillingCycle)}

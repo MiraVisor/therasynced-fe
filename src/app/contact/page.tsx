@@ -36,8 +36,7 @@ const socials = [
     href: 'https://x.com/therasynced',
     label: 'X (Twitter)',
     icon: XIcon,
-    hoverClass:
-      'hover:text-black  hover:border-black/40 ',
+    hoverClass: 'hover:text-black  hover:border-black/40 ',
   },
   {
     href: 'https://www.instagram.com/therasynced',
@@ -101,9 +100,7 @@ export default function ContactPage() {
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-sage-warm/10 flex items-center justify-center mb-5 group-hover:from-primary/20 group-hover:to-sage-warm/20 transition-all">
                 <LifeBuoy className="w-5 h-5 text-primary" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900 mb-2 font-poppins">
-                Support
-              </h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-2 font-poppins">Support</h2>
               <p className="text-sm text-gray-600 font-open-sans leading-relaxed mb-5">
                 Having trouble with your account, a booking, or something else on the platform? Our
                 support team is here to help.
@@ -198,8 +195,8 @@ export default function ContactPage() {
               <li>
                 In an emergency, please contact local emergency services. In Ireland, dial{' '}
                 <strong className="text-gray-900">112</strong> or{' '}
-                <strong className="text-gray-900">999</strong>. TheraSynced is not
-                intended for urgent or crisis situations.
+                <strong className="text-gray-900">999</strong>. TheraSynced is not intended for
+                urgent or crisis situations.
               </li>
             </ul>
           </div>

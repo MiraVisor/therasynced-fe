@@ -83,9 +83,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
           </AvatarFallback>
         </Avatar>
         <div>
-          <h3 className="font-poppins font-semibold text-lg text-charcoal">
-            {freelancer.name}
-          </h3>
+          <h3 className="font-poppins font-semibold text-lg text-charcoal">{freelancer.name}</h3>
           <p className="text-sm text-gray-600">
             {format(new Date(`${selectedDate}T00:00:00`), 'EEEE, MMMM d, yyyy')}
           </p>
@@ -107,9 +105,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
         <div className="space-y-6">
           {morningSlots.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                Morning
-              </h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Morning</h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                 {morningSlots.map((slot) => (
                   <SlotButton
@@ -128,9 +124,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
 
           {afternoonSlots.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                Afternoon
-              </h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Afternoon</h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                 {afternoonSlots.map((slot) => (
                   <SlotButton
@@ -149,9 +143,7 @@ export const SlotSelectionStep: React.FC<SlotSelectionStepProps> = ({
 
           {eveningSlots.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                Evening
-              </h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Evening</h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                 {eveningSlots.map((slot) => (
                   <SlotButton

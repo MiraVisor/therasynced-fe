@@ -187,9 +187,7 @@ export default function CookieConsent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Cookie Consent
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Cookie Consent</h3>
               <p className="text-sm text-gray-600">
                 We use cookies to enhance your experience, analyse site usage, and assist in our
                 marketing efforts. Essential cookies are required for the site to function properly.

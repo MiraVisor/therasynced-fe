@@ -2,6 +2,7 @@
  * Booking-related types
  */
 import type { CardInfo } from './common';
+import type { LocationType } from './enums';
 import type { BookingRating } from './rating';
 
 export interface Booking {
@@ -84,7 +85,7 @@ export interface BookingStats {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
 }
@@ -93,7 +94,7 @@ export interface RescheduleBookingDto {
   bookingId: string;
   newSlotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
   cancellationReason?: string;

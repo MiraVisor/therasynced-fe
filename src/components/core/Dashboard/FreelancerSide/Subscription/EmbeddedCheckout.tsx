@@ -146,10 +146,7 @@ export function EmbeddedCheckout({
             <div className="p-4 rounded-lg bg-red-50 border border-red-200 animate-in slide-in-from-top duration-200">
               <p className="text-sm font-medium text-red-800 mb-2">Error</p>
               <p className="text-sm text-red-600">{error}</p>
-              <button
-                onClick={handleClose}
-                className="mt-3 text-sm text-red-700 hover:underline"
-              >
+              <button onClick={handleClose} className="mt-3 text-sm text-red-700 hover:underline">
                 Close and try again
               </button>
             </div>

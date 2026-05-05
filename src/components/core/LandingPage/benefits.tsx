@@ -176,9 +176,7 @@ const Benefits = () => {
                 <h3 className="text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors">
                   {block.title}
                 </h3>
-                <p className="text-base text-gray-600 leading-relaxed">
-                  {block.description}
-                </p>
+                <p className="text-base text-gray-600 leading-relaxed">{block.description}</p>
               </div>
             </div>
           ))}
@@ -210,9 +208,7 @@ const Benefits = () => {
                 <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
                   {benefit.title}
                 </h3>
-                <p className="text-base text-gray-600 leading-relaxed">
-                  {benefit.description}
-                </p>
+                <p className="text-base text-gray-600 leading-relaxed">{benefit.description}</p>
               </div>
             </div>
           ))}
@@ -227,9 +223,7 @@ const Benefits = () => {
             <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               What Our Clients Say
             </h3>
-            <p className="text-gray-600">
-              Real stories from people who found their perfect match
-            </p>
+            <p className="text-gray-600">Real stories from people who found their perfect match</p>
           </div>
 
           {/* Testimonial Cards */}
@@ -264,12 +258,8 @@ const Benefits = () => {
                       </span>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900">
-                        {testimonial.author}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {testimonial.role}
-                      </div>
+                      <div className="font-semibold text-gray-900">{testimonial.author}</div>
+                      <div className="text-sm text-gray-500">{testimonial.role}</div>
                     </div>
                   </div>
                 </div>

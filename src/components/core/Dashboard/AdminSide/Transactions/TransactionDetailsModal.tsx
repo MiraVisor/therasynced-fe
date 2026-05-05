@@ -49,9 +49,7 @@ export function TransactionDetailsModal({
           {/* Transaction Info */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-3">
-                Transaction Information
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Transaction Information</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500">Transaction ID</p>
@@ -88,9 +86,7 @@ export function TransactionDetailsModal({
 
             {/* Freelancer Info */}
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-3">
-                Freelancer Information
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Freelancer Information</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500">Name</p>
@@ -107,9 +103,7 @@ export function TransactionDetailsModal({
 
             {/* Payment Breakdown */}
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-3">
-                Payment Breakdown
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Payment Breakdown</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm">Plan</span>
@@ -132,9 +126,7 @@ export function TransactionDetailsModal({
 
             {/* Payment Method */}
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-3">
-                Payment Method
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Payment Method</h3>
               <p className="text-sm font-medium capitalize">{transaction.paymentMethod}</p>
             </div>
           </div>

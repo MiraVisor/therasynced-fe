@@ -100,13 +100,9 @@ export const DetailsStep: React.FC<DetailsStepProps> = ({
                       }}
                     />
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">
-                        {service.name}
-                      </div>
+                      <div className="font-medium text-gray-900">{service.name}</div>
                       {service.description && (
-                        <div className="text-sm text-gray-600 mt-1">
-                          {service.description}
-                        </div>
+                        <div className="text-sm text-gray-600 mt-1">{service.description}</div>
                       )}
                     </div>
                   </label>

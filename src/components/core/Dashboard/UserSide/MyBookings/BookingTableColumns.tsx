@@ -40,12 +40,8 @@ export const createBookingColumns = ({
         const startTime = parseISO(row.original.slot.startTime);
         return (
           <div className="flex flex-col">
-            <span className="font-medium text-charcoal">
-              {format(startTime, 'MMM d, yyyy')}
-            </span>
-            <span className="text-sm text-gray-600">
-              {format(startTime, 'h:mm a')}
-            </span>
+            <span className="font-medium text-charcoal">{format(startTime, 'MMM d, yyyy')}</span>
+            <span className="text-sm text-gray-600">{format(startTime, 'h:mm a')}</span>
           </div>
         );
       },
@@ -116,9 +112,7 @@ export const createBookingColumns = ({
             <Badge variant="outline" className="w-fit">
               {locationType === 'HOME' ? 'Home' : 'Clinic'}
             </Badge>
-            {location && (
-              <span className="text-xs text-gray-600 mt-1">{location.name}</span>
-            )}
+            {location && <span className="text-xs text-gray-600 mt-1">{location.name}</span>}
           </div>
         );
       },

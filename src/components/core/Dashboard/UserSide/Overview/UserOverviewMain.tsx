@@ -35,10 +35,7 @@ const ExpertCardSkeleton = () => (
           <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
           <div className="flex space-x-1">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="w-3 h-3 bg-gray-200 rounded animate-pulse"
-              />
+              <div key={i} className="w-3 h-3 bg-gray-200 rounded animate-pulse" />
             ))}
           </div>
           <div className="h-5 bg-gray-200 rounded w-16 animate-pulse" />
@@ -241,9 +238,7 @@ const UserOverview = () => {
 
           {/* Sort Dropdown */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-              Sort by:
-            </span>
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</span>
             <Select value={sortBy} onValueChange={handleSortChange}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue />

@@ -86,9 +86,7 @@ const InlineBookingModal: React.FC<InlineBookingModalProps> = ({
                 />
               </div>
               {freelancer.specialty && (
-                <p className="text-sm font-inter text-gray-600">
-                  {freelancer.specialty}
-                </p>
+                <p className="text-sm font-inter text-gray-600">{freelancer.specialty}</p>
               )}
             </div>
           </DialogTitle>

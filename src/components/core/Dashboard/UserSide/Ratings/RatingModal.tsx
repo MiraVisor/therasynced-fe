@@ -150,9 +150,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
 
             {eligibility && eligibility.hasRating && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  You have already rated this booking.
-                </p>
+                <p className="text-sm text-blue-800">You have already rated this booking.</p>
               </div>
             )}
 

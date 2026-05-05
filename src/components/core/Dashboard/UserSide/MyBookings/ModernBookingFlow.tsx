@@ -17,7 +17,7 @@ import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { useBookingStore } from '@/stores/bookingStore';
 import { getApiErrorMessage, type ServiceCategory } from '@/types/common';
-import type { LocationType } from '@/types/pricing';
+import { LocationType } from '@/types/pricing';
 import type { Expert, Slot } from '@/types/types';
 
 import { BookingSummarySidebar } from './BookingSummarySidebar';
@@ -55,10 +55,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   const { data: slots = [] } = useAvailableSlots(freelancerId ?? null);
   const { mutate: createBooking, isPending: isCreatingBooking } = useCreateBooking();
   const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(null);
-  // Note: useFreelancerPricing fetches pricing for logged-in freelancer
-  // In booking flow, we're booking with a different freelancer
-  // For now, pricing will be optional and we'll use slot's basePrice as fallback
-  // TODO: Add endpoint to fetch pricing for a specific freelancer if needed
+  // useFreelancerPricing fetches pricing for the logged-in freelancer; in the
+  // client booking flow we fall back to slot.basePrice when pricing isn't available.
   const { data: pricing } = useFreelancerPricing();
 
   // Location selection state
@@ -157,17 +155,17 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     if (selectedCategoryIds.length === 0) {
       // No categories selected - use slot's locationType or default to CLINIC
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     // If pricing is not available, use slot's locationType or default to CLINIC
     if (!pricing?.servicePricing) {
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     // Find common location types across all selected categories
@@ -192,9 +190,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     if (locationSets.length === 0) {
       // If no locations found, fall back to slot's locationType
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     const commonLocations = locationSets.reduce((intersection, locationSet) => {
@@ -206,9 +204,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     // If no common locations, fall back to slot's locationType or CLINIC
     if (result.length === 0) {
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     return result;
@@ -601,16 +599,12 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                     <div className="hidden sm:block">
                       <div
                         className={`text-sm font-medium ${
-                          currentStep >= step.id
-                            ? 'text-charcoal '
-                            : 'text-gray-400 '
+                          currentStep >= step.id ? 'text-charcoal ' : 'text-gray-400 '
                         }`}
                       >
                         {step.title}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {step.description}
-                      </div>
+                      <div className="text-xs text-gray-500">{step.description}</div>
                     </div>
                   </div>
                   {index < steps.length - 1 && (

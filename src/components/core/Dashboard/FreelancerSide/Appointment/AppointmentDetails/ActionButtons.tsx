@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Flag } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -73,23 +73,10 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
     );
   };
 
-  const handleReportUser = () => {
-    // TODO: Implement report user functionality
-    toast.success('User reported successfully', {
-      position: 'top-right',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-    closeEventDialog();
-  };
-
   return (
     <>
       <div
-        className={`w-full flex flex-col lg:grid ${isCancelled || isCompleted ? 'grid-cols-2' : 'grid-cols-3'} gap-4`}
+        className={`w-full flex flex-col lg:grid ${isCancelled || isCompleted ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}
       >
         {/* Generate Invoice Button - Always visible */}
         <Button
@@ -101,32 +88,6 @@ export const ActionButtons = ({ appointment }: ActionButtonsProps) => {
           <FileText className="h-4 w-4" />
           Generate Invoice
         </Button>
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full gap-2 border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Flag className="h-4 w-4" />
-              Report User
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Report User</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to report {appointment.clientName}? This action cannot be
-                undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleReportUser}>Report</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
         {!isCancelled && !isCompleted && (
           <AlertDialog>

@@ -218,9 +218,7 @@ export function RescheduleBookingDialog({
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <AlertCircle className="h-4 w-4 text-red-600" />
-              <span className="text-sm font-medium text-red-800">
-                Current Appointment
-              </span>
+              <span className="text-sm font-medium text-red-800">Current Appointment</span>
             </div>
             <div className="space-y-1 text-sm">
               <div className="flex items-center gap-2">
@@ -358,9 +356,7 @@ export function RescheduleBookingDialog({
                           {service.name}
                         </Label>
                         {service.description && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            {service.description}
-                          </p>
+                          <p className="text-sm text-gray-600 mt-1">{service.description}</p>
                         )}
                         {service.locationTypes && service.locationTypes.length > 0 && (
                           <div className="flex items-center gap-2 mt-2">

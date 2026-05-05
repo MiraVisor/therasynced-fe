@@ -30,6 +30,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { invalidateBookingStatsQueries } from '@/hooks/queries/useBookings';
+import { slotNoteService } from '@/services/draftStorage.service';
 import { Appointment, LocationType, Slot } from '@/types/types';
 
 interface SlotDetailsDialogProps {
@@ -102,12 +103,11 @@ export const SlotDetailsDialog: React.FC<SlotDetailsDialogProps> = ({
   const handleSaveNotes = async () => {
     setIsSaving(true);
     try {
-      // TODO: Call API to update slot notes
-      // await dispatch(updateSlot({ id: slot.id, notes }));
+      await slotNoteService.saveNote(slot.id, { content: notes });
       setIsEditingNotes(false);
-      // toast.success('Notes saved successfully');
-    } catch (error) {
-      console.error('Failed to save notes:', error);
+      toast.success('Notes saved');
+    } catch {
+      toast.error('Failed to save notes. Please try again.');
     } finally {
       setIsSaving(false);
     }

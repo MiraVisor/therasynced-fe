@@ -470,9 +470,7 @@ export default function AdminExportsPage() {
 
             <Alert className="border-green-200 bg-green-50">
               <Info className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-900">
-                Decryption Information
-              </AlertTitle>
+              <AlertTitle className="text-green-900">Decryption Information</AlertTitle>
               <AlertDescription className="text-green-800 space-y-2">
                 <p>
                   The export key above is the decryption key for this specific export. It is

@@ -13,15 +13,16 @@ import { LocationType, Slot } from '@/types/types';
 
 // Location type configuration using LocationType enum
 const getLocationTypeConfig = (locationType: LocationType) => {
-  const configs = {
-    [LocationType.HOME]: {
-      label: 'Home Visit',
-    },
-    [LocationType.CLINIC]: {
-      label: 'Clinic',
-    },
+  const configs: Record<LocationType, { label: string }> = {
+    [LocationType.HOME]: { label: 'Home Visit' },
+    [LocationType.CLINIC]: { label: 'Clinic' },
+    [LocationType.CORPORATE]: { label: 'Corporate Wellness' },
+    [LocationType.GYM]: { label: 'Gym Session' },
+    [LocationType.TRAINING]: { label: 'Training Session' },
+    [LocationType.PITCHSIDE]: { label: 'Pitch-Side / Game Day' },
+    [LocationType.EVENT]: { label: 'Sporting Event' },
   };
-  return configs[locationType];
+  return configs[locationType] ?? { label: locationType };
 };
 
 export const createSlotsColumns = (

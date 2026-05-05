@@ -134,9 +134,7 @@ export function TrialExpiredModal() {
 
         <div className="py-4">
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <p className="text-sm font-medium text-gray-900">
-              What happens next?
-            </p>
+            <p className="text-sm font-medium text-gray-900">What happens next?</p>
             <ul className="text-sm text-gray-600 space-y-1.5 list-disc list-inside">
               <li>Subscribe to a plan to regain full platform access</li>
               <li>Choose from Bronze, Silver, or Gold tiers</li>

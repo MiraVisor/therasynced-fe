@@ -659,9 +659,7 @@ const Appointments = () => {
                         <p className="text-sm font-medium text-gray-900">Location</p>
                         {(() => {
                           // Show appropriate location based on type
-                          if (selectedAppointment.locationType === 'ONLINE') {
-                            return <p className="text-sm text-gray-600">Online</p>;
-                          } else if (
+                          if (
                             selectedAppointment.locationType === 'CLINIC' &&
                             selectedAppointment.freelancer?.clinicAddress
                           ) {
