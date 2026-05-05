@@ -393,7 +393,7 @@ export default function BookingPage() {
   // Get available location types
   const availableLocationTypes = useMemo(() => {
     if (!selectedServiceData?.locationTypes) return [];
-    return selectedServiceData.locationTypes as LocationType[];
+    return selectedServiceData.locationTypes;
   }, [selectedServiceData]);
 
   // Auto-select location if only one option
