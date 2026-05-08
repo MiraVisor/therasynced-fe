@@ -2,6 +2,7 @@
 
 import { format, parseISO, startOfToday } from 'date-fns';
 import {
+  Briefcase,
   Building2,
   Calendar,
   CheckCircle,
@@ -33,6 +34,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TierBadge } from '@/components/ui/tier-badge';
 import { VerificationBadge } from '@/components/ui/verification-badge';
 import { useCreateBooking } from '@/hooks/queries/useBookings';
+import { useJobTitles } from '@/hooks/queries/useJobTitles';
 import { useProfile } from '@/hooks/queries/useProfile';
 import { useAvailableSlotsByDate, useFreelancersByDate } from '@/hooks/queries/useSlots';
 import { cn } from '@/lib/utils';
@@ -56,9 +58,10 @@ export function EnhancedBookingSearch() {
   const today = startOfToday();
 
   // Search state
-  const [searchMethod, setSearchMethod] = useState<'name' | 'location' | 'date' | null>(null);
+  const [searchMethod, setSearchMethod] = useState<'name' | 'location' | 'date' | 'profession' | null>(null);
   const [nameQuery, setNameQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState('');
+  const [selectedJobTitleId, setSelectedJobTitleId] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<Expert[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -90,6 +93,7 @@ export function EnhancedBookingSearch() {
 
   const { mutate: createBooking, isPending: isCreating } = useCreateBooking();
   const { data: userProfile } = useProfile();
+  const { data: jobTitles = [] } = useJobTitles();
 
   // Get freelancers available on selected date (for date browse method)
   const { data: freelancersByDate = [], isLoading: isLoadingByDate } = useFreelancersByDate({
@@ -174,6 +178,12 @@ export function EnhancedBookingSearch() {
         return;
       }
 
+      if (searchMethod === 'profession' && !selectedJobTitleId) {
+        setSearchResults([]);
+        setPagination(null);
+        return;
+      }
+
       setIsSearching(true);
 
       try {
@@ -190,6 +200,10 @@ export function EnhancedBookingSearch() {
 
         if (hasLocationQuery) {
           params.location = locationQuery.trim();
+        }
+
+        if (selectedJobTitleId) {
+          params.specialty = selectedJobTitleId;
         }
 
         const response = await searchFreelancers(params);
@@ -224,7 +238,7 @@ export function EnhancedBookingSearch() {
         setIsSearching(false);
       }
     },
-    [nameQuery, locationQuery, searchMethod],
+    [nameQuery, locationQuery, selectedJobTitleId, searchMethod],
   );
 
   // Debounced search (only for first page)
@@ -238,6 +252,11 @@ export function EnhancedBookingSearch() {
         setCurrentPage(1);
         performSearch(1);
       }, 300);
+    }
+
+    if (searchMethod === 'profession' && selectedJobTitleId) {
+      setCurrentPage(1);
+      performSearch(1);
     }
 
     return () => {
@@ -269,11 +288,12 @@ export function EnhancedBookingSearch() {
   };
 
   // Handle method selection
-  const handleMethodSelect = (method: 'name' | 'location' | 'date') => {
+  const handleMethodSelect = (method: 'name' | 'location' | 'date' | 'profession') => {
     setSearchMethod(method);
     setBookingStep('search');
     setNameQuery('');
     setLocationQuery('');
+    setSelectedJobTitleId(null);
     setSelectedDate(null);
     setSearchResults([]);
     setCurrentPage(1);
@@ -347,6 +367,7 @@ export function EnhancedBookingSearch() {
     setSearchMethod(null);
     setNameQuery('');
     setLocationQuery('');
+    setSelectedJobTitleId(null);
     setSelectedDate(null);
     setSearchResults([]);
     setCurrentPage(1);
@@ -537,20 +558,22 @@ export function EnhancedBookingSearch() {
               <p className="text-gray-600">Choose your preferred search method to get started</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {/* Search by Name */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {/* Search by Profession */}
               <button
-                onClick={() => handleMethodSelect('name')}
+                onClick={() => handleMethodSelect('profession')}
                 className="group relative p-8 bg-white rounded-xl border-2 border-gray-200 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <Search className="w-8 h-8 text-primary" />
+                    <Briefcase className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-charcoal mb-2">Search by Name</h3>
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">
+                      Search by Profession
+                    </h3>
                     <p className="text-sm text-gray-600">
-                      Know who you're looking for? Type their name to find them quickly.
+                      Find a physiotherapist, massage therapist, or other specialist.
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
@@ -594,6 +617,25 @@ export function EnhancedBookingSearch() {
                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
                 </div>
               </button>
+
+              {/* Search by Name */}
+              <button
+                onClick={() => handleMethodSelect('name')}
+                className="group relative p-8 bg-white rounded-xl border-2 border-gray-200 hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                    <Search className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-charcoal mb-2">Search by Name</h3>
+                    <p className="text-sm text-gray-600">
+                      Already know who you need? Type their name to find them directly.
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
+                </div>
+              </button>
             </div>
           </CardContent>
         </Card>
@@ -614,6 +656,7 @@ export function EnhancedBookingSearch() {
           <div className="h-6 w-px bg-gray-300" />
           <div>
             <h2 className="text-xl font-semibold text-charcoal">
+              {searchMethod === 'profession' && 'Search by Profession'}
               {searchMethod === 'name' && 'Search by Name'}
               {searchMethod === 'location' && 'Search by Location'}
               {searchMethod === 'date' && 'Browse by Date'}
@@ -623,6 +666,40 @@ export function EnhancedBookingSearch() {
 
         {/* Search Input */}
         <div className="mb-8">
+          {searchMethod === 'profession' && (
+            <Card className="border-2 border-primary/20 shadow-lg">
+              <CardContent className="p-6">
+                <p className="text-sm text-gray-600 mb-4">
+                  Select a profession to see available freelancers
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {jobTitles.map((jt) => (
+                    <button
+                      key={jt.id}
+                      onClick={() => setSelectedJobTitleId(jt.id)}
+                      className={cn(
+                        'p-4 rounded-xl border-2 text-left transition-all duration-200 hover:shadow-md',
+                        selectedJobTitleId === jt.id
+                          ? 'border-primary bg-primary/5 shadow-md'
+                          : 'border-gray-200 hover:border-primary/40',
+                      )}
+                    >
+                      <h4 className="font-semibold text-charcoal">{jt.name}</h4>
+                      {jt.description && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{jt.description}</p>
+                      )}
+                    </button>
+                  ))}
+                  {jobTitles.length === 0 && (
+                    <p className="text-sm text-gray-500 col-span-full text-center py-4">
+                      No professions available yet.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {searchMethod === 'name' && (
             <Card className="border-2 border-primary/20 shadow-lg">
               <CardContent className="p-6">
