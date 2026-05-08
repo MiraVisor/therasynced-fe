@@ -138,7 +138,7 @@ export const DaySlotModal = ({
       const [sh, sm] = singleStartTime.split(':').map(Number);
       if (sh === undefined || sm === undefined) return windows;
       const start = new Date(baseDate);
-      start.setHours(sh, sm, 0, 0);
+      start.setUTCHours(sh, sm, 0, 0);
       const end = addMinutes(start, slotDuration);
       windows.push({ start, end });
     } else {
@@ -148,9 +148,9 @@ export const DaySlotModal = ({
         return windows;
       }
       const rangeStart = new Date(baseDate);
-      rangeStart.setHours(sh, sm, 0, 0);
+      rangeStart.setUTCHours(sh, sm, 0, 0);
       const rangeEnd = new Date(baseDate);
-      rangeEnd.setHours(eh, em, 0, 0);
+      rangeEnd.setUTCHours(eh, em, 0, 0);
       let cursor = rangeStart;
       while (addMinutes(cursor, slotDuration) <= rangeEnd) {
         const end = addMinutes(cursor, slotDuration);
@@ -270,9 +270,9 @@ export const DaySlotModal = ({
     const [sh, sm] = editStart.split(':').map(Number);
     const [eh, em] = editEnd.split(':').map(Number);
     const newStart = new Date(baseDate);
-    newStart.setHours(sh ?? 0, sm ?? 0, 0, 0);
+    newStart.setUTCHours(sh ?? 0, sm ?? 0, 0, 0);
     const newEnd = new Date(baseDate);
-    newEnd.setHours(eh ?? 0, em ?? 0, 0, 0);
+    newEnd.setUTCHours(eh ?? 0, em ?? 0, 0, 0);
 
     updateSlot(
       {

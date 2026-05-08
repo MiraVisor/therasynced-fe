@@ -232,10 +232,10 @@ export const CreateSlotWizard = ({ onSuccess }: CreateSlotWizardProps) => {
 
           // Create datetime objects for break times using the slot's date
           const breakFromDate = new Date(slotDate);
-          breakFromDate.setHours(breakFromHour || 0, breakFromMinute || 0, 0, 0);
+          breakFromDate.setUTCHours(breakFromHour || 0, breakFromMinute || 0, 0, 0);
 
           const breakTillDate = new Date(slotDate);
-          breakTillDate.setHours(breakTillHour || 0, breakTillMinute || 0, 0, 0);
+          breakTillDate.setUTCHours(breakTillHour || 0, breakTillMinute || 0, 0, 0);
 
           return {
             ...slot,

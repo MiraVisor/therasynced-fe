@@ -58,7 +58,9 @@ export function EnhancedBookingSearch() {
   const today = startOfToday();
 
   // Search state
-  const [searchMethod, setSearchMethod] = useState<'name' | 'location' | 'date' | 'profession' | null>(null);
+  const [searchMethod, setSearchMethod] = useState<
+    'name' | 'location' | 'date' | 'profession' | null
+  >(null);
   const [nameQuery, setNameQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState('');
   const [selectedJobTitleId, setSelectedJobTitleId] = useState<string | null>(null);

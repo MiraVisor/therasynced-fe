@@ -204,11 +204,11 @@ export const BulkCreateSlotsModal = ({
       const dayIndex = DAYS.findIndex((d) => d.key === dayKey);
       if (dayIndex === -1) continue;
       const base = addDays(weekStart, dayIndex);
-      base.setHours(0, 0, 0, 0);
+      base.setUTCHours(0, 0, 0, 0);
 
       if (createKind === 'single') {
         const slotStart = new Date(base);
-        slotStart.setHours(sh, sm, 0, 0);
+        slotStart.setUTCHours(sh, sm, 0, 0);
         const slotEnd = addMinutes(slotStart, slotDuration);
         const hasOverlap = activeDaySlots.some(
           (s) => new Date(s.startTime) < slotEnd && new Date(s.endTime) > slotStart,
@@ -218,9 +218,9 @@ export const BulkCreateSlotsModal = ({
         const [eh, em] = endTime.split(':').map(Number);
         if (eh === undefined || em === undefined) continue;
         const rangeStart = new Date(base);
-        rangeStart.setHours(sh, sm, 0, 0);
+        rangeStart.setUTCHours(sh, sm, 0, 0);
         const rangeEnd = new Date(base);
-        rangeEnd.setHours(eh, em, 0, 0);
+        rangeEnd.setUTCHours(eh, em, 0, 0);
         let cursor = rangeStart;
         while (addMinutes(cursor, slotDuration) <= rangeEnd) {
           const end = addMinutes(cursor, slotDuration);
