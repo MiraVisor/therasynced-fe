@@ -97,7 +97,7 @@ const CtaSection = () => {
           transition={{ delay: 0.2, duration: 0.6 }}
           className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight font-playfair"
         >
-          Ready to start your wellness journey?
+          Ready to get started?
         </motion.h2>
 
         <motion.p
@@ -107,8 +107,8 @@ const CtaSection = () => {
           transition={{ delay: 0.3, duration: 0.6 }}
           className="text-xl sm:text-2xl text-gray-700 mb-10 max-w-3xl mx-auto leading-relaxed font-open-sans"
         >
-          Join thousands of clients who've found their perfect therapist match. Your wellness
-          journey is just a click away.
+          Find qualified freelancers for your clinic, team, or organisation. Connect, book, and
+          manage — all in one place.
         </motion.p>
 
         {/* Primary CTA */}

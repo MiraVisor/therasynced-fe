@@ -149,8 +149,8 @@ const Benefits = () => {
             Built for <span className="text-primary">You</span>
           </h2>
           <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            We're not just another booking platform. We're your partner in wellness, designed to
-            make finding and connecting with the right therapist effortless.
+            We're not just another booking platform. We make finding and connecting with the
+            right professional effortless.
           </p>
         </div>
 

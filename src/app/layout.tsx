@@ -36,20 +36,20 @@ const playfairDisplay = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: 'TheraSynced - Professional Therapy & Wellness Services',
+    default: 'TheraSynced - Connect. Work. Thrive.',
     template: '%s | TheraSynced',
   },
   description:
-    'Connect with licensed freelancers, wellness professionals, and healthcare professionals online. Book appointments instantly, get personalised care, and improve your mental and physical health with TheraSynced.',
+    'TheraSynced connects you with qualified physiotherapists, athletic therapists, massage therapists, and fitness professionals. Book freelance sessions for clinics, teams, events, and more.',
   keywords: [
-    'online therapy',
-    'mental health',
-    'wellness services',
-    'professional freelancers',
-    'healthcare booking',
-    'telehealth',
-    'counseling',
-    'psychotherapy',
+    'physiotherapy',
+    'freelance therapist',
+    'athletic therapy',
+    'massage therapy',
+    'sports rehabilitation',
+    'therapist booking',
+    'healthcare freelancer',
+    'locum physiotherapist',
   ],
   authors: [{ name: 'TheraSynced Team' }],
   creator: 'TheraSynced',
@@ -68,23 +68,23 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://therasynced.com',
     siteName: 'TheraSynced',
-    title: 'TheraSynced - Professional Therapy & Wellness Services',
+    title: 'TheraSynced - Connect. Work. Thrive.',
     description:
-      'Connect with licensed freelancers and wellness professionals online. Book appointments instantly and get personalised care.',
+      'Find qualified physiotherapists, athletic therapists, and fitness professionals for freelance bookings. Clinics, teams, events, and more.',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'TheraSynced - Professional Therapy & Wellness Services',
+        alt: 'TheraSynced - Connect. Work. Thrive.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TheraSynced - Professional Therapy & Wellness Services',
+    title: 'TheraSynced - Connect. Work. Thrive.',
     description:
-      'Connect with licensed freelancers and wellness professionals online. Book appointments instantly and get personalised care.',
+      'Find qualified physiotherapists, athletic therapists, and fitness professionals for freelance bookings.',
     images: ['/og-image.jpg'],
     creator: '@therasynced',
   },

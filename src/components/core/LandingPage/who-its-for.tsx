@@ -28,7 +28,7 @@ const audience = [
     badge: '03',
     title: 'Get Support & Track Progress',
     subtitle:
-      'Receive professional guidance, track appointments, and manage your wellness journey.',
+      'Track appointments, manage bookings, and stay connected with your professionals.',
     bullets: ['Session reminders', 'Follow-ups & updates', 'Track your progress'],
     image: '/images/physio/woman-working-with-personal-trainer.jpg',
     alt: 'User tracking sessions and progress on the platform',
