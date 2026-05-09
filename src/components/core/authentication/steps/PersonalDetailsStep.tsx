@@ -90,66 +90,60 @@ export function PersonalDetailsStep() {
       return;
     }
 
-    // Step 2: reverse-geocode the coordinates into a county/city via the
-    // third-party BigDataCloud endpoint. Keep this try/catch separate
-    // from the geolocation one so we can tell which phase failed.
+    // Step 2: reverse-geocode coordinates to county/city.
+    // Try OpenStreetMap Nominatim first (no API key, reliable), fall back to BigDataCloud.
+    const { latitude, longitude } = position.coords;
+    let countyName = '';
+    let cityTownName = '';
+
     try {
-      const response = await fetch(
-        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
+      // Primary: OpenStreetMap Nominatim (free, no key, reliable)
+      const osmResponse = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1&accept-language=en`,
+        { headers: { 'User-Agent': 'TheraSynced/1.0' } },
       );
-      if (!response.ok) {
-        throw new Error(`Reverse geocode returned HTTP ${response.status}`);
+      if (osmResponse.ok) {
+        const osmData = await osmResponse.json();
+        const addr = osmData.address || {};
+        // For Ireland: county is in addr.county, city/town in addr.city or addr.town or addr.village
+        countyName = (addr.county || addr.state || '').replace(/^County\s+/i, '');
+        cityTownName = addr.city || addr.town || addr.village || addr.suburb || '';
       }
-      const data = await response.json();
-
-      // Extract county from administrative divisions (more accurate than
-      // principalSubdivision which returns province e.g. "Leinster" not "Westmeath")
-      const adminLevels: Array<{ name: string; order: number }> =
-        data.localityInfo?.administrative || [];
-
-      // Sort by order descending — lower order = broader area
-      // Typical Ireland response: order 2=Ireland, 4=Leinster, 6=County Westmeath, 8=Town
-      const sortedLevels = [...adminLevels].sort((a, b) => a.order - b.order);
-
-      // Find county: look for entries containing "County" or use order 6 level
-      let countyName =
-        sortedLevels.find((l) => l.name.toLowerCase().startsWith('county'))?.name ||
-        sortedLevels.find((l) => l.order === 6)?.name ||
-        data.principalSubdivision ||
-        '';
-
-      // Clean up "County " prefix for cleaner display (e.g. "County Westmeath" → "Westmeath")
-      countyName = countyName.replace(/^County\s+/i, '');
-
-      // Get city/town: prefer locality (most specific), then city
-      const cityTownName = data.locality || data.city || '';
-
-      if (countyName) {
-        setValue('county', countyName);
-        setLocationPermissionGranted(true);
-        if (cityTownName && cityTownName !== countyName) {
-          setValue('cityTown', cityTownName);
-          toast.success(`Location found: ${cityTownName}, ${countyName}`);
-        } else {
-          toast.success(`Location found: ${countyName}`);
-        }
-      } else if (cityTownName) {
-        setValue('cityTown', cityTownName);
-        setLocationPermissionGranted(true);
-        toast.success(`Location found: ${cityTownName}`);
-      } else {
-        toast.info(
-          "We couldn't match your coordinates to a location. Please enter your county and town manually.",
+    } catch {
+      // Nominatim failed, try BigDataCloud as fallback
+      try {
+        const bdcResponse = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
         );
+        if (bdcResponse.ok) {
+          const data = await bdcResponse.json();
+          const adminLevels: Array<{ name: string; order: number }> =
+            data.localityInfo?.administrative || [];
+          const sorted = [...adminLevels].sort((a, b) => a.order - b.order);
+          countyName = (
+            sorted.find((l) => l.name.toLowerCase().startsWith('county'))?.name ||
+            sorted.find((l) => l.order === 6)?.name ||
+            data.principalSubdivision ||
+            ''
+          ).replace(/^County\s+/i, '');
+          cityTownName = data.locality || data.city || '';
+        }
+      } catch {
+        // Both APIs failed
       }
-    } catch (geocodeError) {
-      console.error('[PersonalDetailsStep] Reverse geocode failed', geocodeError);
-      toast.error(
-        "We couldn't look up your town right now. Please enter your county and town manually.",
-      );
-    } finally {
-      setIsRequestingLocation(false);
     }
+
+    if (countyName || cityTownName) {
+      if (countyName) setValue('county', countyName);
+      if (cityTownName) setValue('cityTown', cityTownName);
+      setLocationPermissionGranted(true);
+      const display = [cityTownName, countyName].filter(Boolean).join(', ');
+      toast.success(`Location found: ${display}`);
+    } else {
+      toast.info('Could not detect your location. Please enter your county and town manually.');
+    }
+
+    setIsRequestingLocation(false);
   };
   return (
     <div className="w-full space-y-2">
