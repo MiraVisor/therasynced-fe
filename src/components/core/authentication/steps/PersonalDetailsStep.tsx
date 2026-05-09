@@ -101,9 +101,29 @@ export function PersonalDetailsStep() {
         throw new Error(`Reverse geocode returned HTTP ${response.status}`);
       }
       const data = await response.json();
-      // Try to get county from principalSubdivision or locality
-      const countyName = data.principalSubdivision || data.locality;
-      const cityTownName = data.city || data.locality;
+
+      // Extract county from administrative divisions (more accurate than
+      // principalSubdivision which returns province e.g. "Leinster" not "Westmeath")
+      const adminLevels: Array<{ name: string; order: number }> =
+        data.localityInfo?.administrative || [];
+
+      // Sort by order descending — lower order = broader area
+      // Typical Ireland response: order 2=Ireland, 4=Leinster, 6=County Westmeath, 8=Town
+      const sortedLevels = [...adminLevels].sort((a, b) => a.order - b.order);
+
+      // Find county: look for entries containing "County" or use order 6 level
+      let countyName =
+        sortedLevels.find((l) => l.name.toLowerCase().startsWith('county'))?.name ||
+        sortedLevels.find((l) => l.order === 6)?.name ||
+        data.principalSubdivision ||
+        '';
+
+      // Clean up "County " prefix for cleaner display (e.g. "County Westmeath" → "Westmeath")
+      countyName = countyName.replace(/^County\s+/i, '');
+
+      // Get city/town: prefer locality (most specific), then city
+      const cityTownName = data.locality || data.city || '';
+
       if (countyName) {
         setValue('county', countyName);
         setLocationPermissionGranted(true);
@@ -113,9 +133,13 @@ export function PersonalDetailsStep() {
         } else {
           toast.success(`Location found: ${countyName}`);
         }
+      } else if (cityTownName) {
+        setValue('cityTown', cityTownName);
+        setLocationPermissionGranted(true);
+        toast.success(`Location found: ${cityTownName}`);
       } else {
         toast.info(
-          "We couldn't match your coordinates to a county. Please enter your county and town manually.",
+          "We couldn't match your coordinates to a location. Please enter your county and town manually.",
         );
       }
     } catch (geocodeError) {
