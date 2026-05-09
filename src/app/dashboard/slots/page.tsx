@@ -11,15 +11,19 @@ import { DaySlotModal } from '@/components/core/Dashboard/FreelancerSide/SlotMan
 import { SlotDetailsDialog } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/SlotDetailsDialog';
 import { TabbedSlotsView } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/TabbedSlotsView';
 import { WeeklyCalendarGrid } from '@/components/core/Dashboard/FreelancerSide/SlotManagement/WeeklyCalendarGrid';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedStatCard } from '@/components/ui/enhanced-stat-card';
+import { useProfile } from '@/hooks/queries/useProfile';
 import { useDeleteSlot, useMySlots, useSlotStats } from '@/hooks/queries/useSlots';
 import { useAuth } from '@/hooks/useAuthZustand';
 import { Slot } from '@/types/types';
 
 const SlotsPage = () => {
   const { role } = useAuth();
+  const { data: profile } = useProfile();
+  const isVerified = profile?.verificationStatus === 'APPROVED';
 
   const [currentWeekStart, setCurrentWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -53,6 +57,10 @@ const SlotsPage = () => {
   }, [statsError, slotStats]);
 
   const handleDayClick = (date: Date) => {
+    if (!isVerified) {
+      toast.error('Please complete verification before creating slots.');
+      return;
+    }
     setSelectedDate(date);
     setShowDayModal(true);
   };
@@ -100,7 +108,7 @@ const SlotsPage = () => {
                 Click a day to create, view, or manage your slots
               </p>
             </div>
-            <Button onClick={() => setShowBulkCreate(true)}>
+            <Button onClick={() => setShowBulkCreate(true)} disabled={!isVerified}>
               <Plus className="h-4 w-4 mr-2" />
               Create Slots
             </Button>
@@ -109,6 +117,27 @@ const SlotsPage = () => {
       }
     >
       <div className="space-y-6 pb-6">
+        {!isVerified && profile && (
+          <Alert className="border-amber-300 bg-amber-50">
+            <AlertDescription className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-amber-900">Verification required</p>
+                <p className="text-sm text-amber-800">
+                  Your account must be verified before you can create slots and accept bookings.
+                  Please upload your documents on the Verification page.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-4 border-amber-400 text-amber-900 hover:bg-amber-100 whitespace-nowrap"
+                onClick={() => (window.location.href = '/dashboard/verification')}
+              >
+                Go to Verification
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <EnhancedStatCard
             title="Total Slots"
