@@ -237,7 +237,7 @@ const Benefits = () => {
                     : 'opacity-0 absolute inset-0 translate-x-8'
                 }`}
               >
-                <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-lg">
                   {/* Stars */}
                   <div className="flex items-center gap-1 mb-4">
                     {Array.from({ length: testimonial.rating }).map((_, i) => (

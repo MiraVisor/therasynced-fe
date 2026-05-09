@@ -552,7 +552,7 @@ export function EnhancedBookingSearch() {
     return (
       <div className="w-full">
         <Card className="border-0 shadow-xl bg-gradient-to-br from-primary/5 via-white to-mint/5">
-          <CardContent className="p-12">
+          <CardContent className="p-6 sm:p-12">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-charcoal mb-3">
                 How would you like to find your freelancer?

@@ -122,7 +122,7 @@ const CtaSection = () => {
           <Button
             onClick={handleCTAClick}
             size="lg"
-            className="group w-full sm:w-auto min-w-[280px] h-16 text-xl font-semibold bg-primary text-white hover:bg-primary/90 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+            className="group w-full sm:w-auto sm:min-w-[280px] h-14 sm:h-16 text-lg sm:text-xl font-semibold bg-primary text-white hover:bg-primary/90 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95"
           >
             {hasValidToken ? 'Go to Dashboard' : 'Get Started Free'}
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
