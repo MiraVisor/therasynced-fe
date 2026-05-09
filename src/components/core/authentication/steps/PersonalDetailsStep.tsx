@@ -281,27 +281,13 @@ export function PersonalDetailsStep() {
         {/* County Field */}
         <div className="space-y-1">
           <label className="text-xs font-inter font-medium text-gray-700">County</label>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <LocationDropdown
-                value={watch('county') || ''}
-                onValueChange={(value) => setValue('county', value)}
-                placeholder="Select your county"
-                searchPlaceholder="Search counties..."
-                emptyMessage="No county found."
-              />
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onRequestLocation}
-              disabled={isRequestingLocation || locationPermissionGranted}
-              className="h-10 px-3 border-gray-300"
-              title="Get location"
-            >
-              <MapPin className="h-4 w-4" />
-            </Button>
-          </div>
+          <LocationDropdown
+            value={watch('county') || ''}
+            onValueChange={(value) => setValue('county', value)}
+            placeholder="Select your county"
+            searchPlaceholder="Search counties..."
+            emptyMessage="No county found."
+          />
           {errors.county && (
             <p className="text-red-500 text-xs font-inter mt-0.5">{errors.county.message}</p>
           )}
@@ -313,14 +299,30 @@ export function PersonalDetailsStep() {
             City/Town
             <span className="text-gray-500 ml-1">(Optional)</span>
           </label>
-          <Input
-            id="cityTown"
-            type="text"
-            placeholder="Enter your city or town"
-            value={watch('cityTown') || ''}
-            onChange={(e) => setValue('cityTown', e.target.value)}
-            className="h-10 text-sm font-inter"
-          />
+          <div className="flex gap-2">
+            <Input
+              id="cityTown"
+              type="text"
+              placeholder="Enter your city or town"
+              value={watch('cityTown') || ''}
+              onChange={(e) => setValue('cityTown', e.target.value)}
+              className="h-10 text-sm font-inter flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onRequestLocation}
+              disabled={isRequestingLocation || locationPermissionGranted}
+              className="h-10 px-3 border-gray-300"
+              title="Detect my location"
+            >
+              {isRequestingLocation ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary" />
+              ) : (
+                <MapPin className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Home Address Field - Only for patients */}
