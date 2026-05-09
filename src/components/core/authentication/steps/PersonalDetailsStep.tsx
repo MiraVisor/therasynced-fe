@@ -1,7 +1,6 @@
 'use client';
 
 import { format } from 'date-fns';
-import { MapPin } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
@@ -18,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useSignupUIStore } from '@/stores/signupUIStore';
 
 import { SignupFormData } from '../MultiStepSignup';
 
@@ -39,112 +37,6 @@ export function PersonalDetailsStep() {
 
   const selectedDob = watch('dob');
 
-  const {
-    isRequestingLocation,
-    locationPermissionGranted,
-    setIsRequestingLocation,
-    setLocationPermissionGranted,
-  } = useSignupUIStore();
-
-  const onRequestLocation = async () => {
-    setIsRequestingLocation(true);
-
-    if (!('geolocation' in navigator)) {
-      toast.error(
-        'Geolocation is not supported by your browser. Please enter your county and town manually.',
-      );
-      setIsRequestingLocation(false);
-      return;
-    }
-
-    // Step 1: ask the browser for the user's coordinates. Handle each
-    // GeolocationPositionError code separately so the user sees a
-    // specific, actionable message instead of a generic "failed."
-    let position: GeolocationPosition;
-    try {
-      position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: false,
-          timeout: 15000,
-          maximumAge: 60000,
-        });
-      });
-    } catch (geoError) {
-      const code = (geoError as GeolocationPositionError)?.code;
-      if (code === 1 /* PERMISSION_DENIED */) {
-        toast.error(
-          'Location access was blocked. Please allow location in your browser settings, or enter your county and town manually below.',
-        );
-      } else if (code === 2 /* POSITION_UNAVAILABLE */) {
-        toast.error(
-          "We couldn't determine your location right now. Please try again or enter your county and town manually.",
-        );
-      } else if (code === 3 /* TIMEOUT */) {
-        toast.error(
-          'Location request timed out. Please try again or enter your county and town manually.',
-        );
-      } else {
-        toast.error('Location lookup failed. Please enter your county and town manually.');
-      }
-      setIsRequestingLocation(false);
-      return;
-    }
-
-    // Step 2: reverse-geocode coordinates to county/city.
-    // Try OpenStreetMap Nominatim first (no API key, reliable), fall back to BigDataCloud.
-    const { latitude, longitude } = position.coords;
-    let countyName = '';
-    let cityTownName = '';
-
-    try {
-      // Primary: OpenStreetMap Nominatim (free, no key, reliable)
-      const osmResponse = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1&accept-language=en`,
-        { headers: { 'User-Agent': 'TheraSynced/1.0' } },
-      );
-      if (osmResponse.ok) {
-        const osmData = await osmResponse.json();
-        const addr = osmData.address || {};
-        // For Ireland: county is in addr.county, city/town in addr.city or addr.town or addr.village
-        countyName = (addr.county || addr.state || '').replace(/^County\s+/i, '');
-        cityTownName = addr.city || addr.town || addr.village || addr.suburb || '';
-      }
-    } catch {
-      // Nominatim failed, try BigDataCloud as fallback
-      try {
-        const bdcResponse = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
-        );
-        if (bdcResponse.ok) {
-          const data = await bdcResponse.json();
-          const adminLevels: Array<{ name: string; order: number }> =
-            data.localityInfo?.administrative || [];
-          const sorted = [...adminLevels].sort((a, b) => a.order - b.order);
-          countyName = (
-            sorted.find((l) => l.name.toLowerCase().startsWith('county'))?.name ||
-            sorted.find((l) => l.order === 6)?.name ||
-            data.principalSubdivision ||
-            ''
-          ).replace(/^County\s+/i, '');
-          cityTownName = data.locality || data.city || '';
-        }
-      } catch {
-        // Both APIs failed
-      }
-    }
-
-    if (countyName || cityTownName) {
-      if (countyName) setValue('county', countyName);
-      if (cityTownName) setValue('cityTown', cityTownName);
-      setLocationPermissionGranted(true);
-      const display = [cityTownName, countyName].filter(Boolean).join(', ');
-      toast.success(`Location found: ${display}`);
-    } else {
-      toast.info('Could not detect your location. Please enter your county and town manually.');
-    }
-
-    setIsRequestingLocation(false);
-  };
   return (
     <div className="w-full space-y-2">
       {/* Header */}
@@ -293,30 +185,14 @@ export function PersonalDetailsStep() {
             City/Town
             <span className="text-gray-500 ml-1">(Optional)</span>
           </label>
-          <div className="flex gap-2">
-            <Input
-              id="cityTown"
-              type="text"
-              placeholder="Enter your city or town"
-              value={watch('cityTown') || ''}
-              onChange={(e) => setValue('cityTown', e.target.value)}
-              className="h-10 text-sm font-inter flex-1"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onRequestLocation}
-              disabled={isRequestingLocation || locationPermissionGranted}
-              className="h-10 px-3 border-gray-300"
-              title="Detect my location"
-            >
-              {isRequestingLocation ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary" />
-              ) : (
-                <MapPin className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <Input
+            id="cityTown"
+            type="text"
+            placeholder="Enter your city or town"
+            value={watch('cityTown') || ''}
+            onChange={(e) => setValue('cityTown', e.target.value)}
+            className="h-10 text-sm font-inter"
+          />
         </div>
 
         {/* Home Address Field - Only for patients */}
