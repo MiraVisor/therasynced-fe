@@ -123,15 +123,16 @@ const VerificationDetailPage = () => {
 
   // Total uploaded docs (all categories)
   const totalUploadedDocs = requirementsStatus?.filter((r) => r.uploaded).length ?? 0;
+  const totalRequirements = requirementsStatus?.length ?? 0;
 
-  // Both buttons disabled if no docs uploaded or fewer than 5
-  const hasEnoughDocs = totalUploadedDocs >= 5;
+  // All mandatory documents must be uploaded (not a hardcoded number)
+  const hasEnoughDocs = allMandatoryUploaded;
 
-  // Approve: needs enough docs + all mandatory uploaded + all mandatory reviewed
-  const canApprove = hasEnoughDocs && allMandatoryUploaded && allMandatoryReviewed;
+  // Approve: needs all mandatory uploaded + all mandatory reviewed
+  const canApprove = hasEnoughDocs && allMandatoryReviewed;
 
-  // Reject: only needs enough docs uploaded to evaluate
-  const canReject = hasEnoughDocs;
+  // Reject: only needs at least one doc uploaded to evaluate
+  const canReject = totalUploadedDocs > 0;
 
   const totalMandatory = mandatoryRequirements.length;
   const reviewProgress =
@@ -369,8 +370,8 @@ const VerificationDetailPage = () => {
             {!hasEnoughDocs && (
               <div className="mt-4 pt-3 border-t">
                 <p className="text-xs text-amber-600">
-                  Freelancer has uploaded {totalUploadedDocs} of 5 minimum documents. Actions
-                  disabled until at least 5 are uploaded.
+                  Freelancer has uploaded {totalUploadedDocs} of {totalRequirements} documents. All
+                  mandatory documents must be uploaded before approval.
                 </p>
               </div>
             )}
