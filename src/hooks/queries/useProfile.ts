@@ -54,6 +54,7 @@ export interface UserProfileData {
   mainJobTitleId?: string;
   clinicAddress?: string;
   homeAddress?: string; // NEW: Home address for bookings
+  verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   verificationDocuments?: string[];
   verificationRequestedAt?: Date | null;
   verificationApprovedAt?: Date | null;

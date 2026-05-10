@@ -374,17 +374,20 @@ export function OverviewTab({
                   </Alert>
                 )}
 
-                {/* Pricing - Very Prominent (only show if not in trial) */}
-                {!isTrial && (
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-poppins font-bold text-charcoal">
-                        EUR {plan.price.toFixed(2)}
-                      </span>
-                      <span className="text-lg font-inter text-gray-600">/month</span>
-                    </div>
+                {/* Pricing */}
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-poppins font-bold text-charcoal">
+                      EUR {plan.price.toFixed(2)}
+                    </span>
+                    <span className="text-lg font-inter text-gray-600">/month</span>
                   </div>
-                )}
+                  {isTrial && (
+                    <p className="text-sm text-gray-500 font-inter mt-1">
+                      After your trial ends. All features are unlimited during trial.
+                    </p>
+                  )}
+                </div>
 
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -402,6 +405,19 @@ export function OverviewTab({
                           day: 'numeric',
                           year: 'numeric',
                         })}
+                      </p>
+                    </div>
+                  )}
+                  {isTrial && nextBillingDate && (
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CreditCard className="h-4 w-4 text-primary" />
+                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                          First Charge
+                        </p>
+                      </div>
+                      <p className="text-lg font-poppins font-semibold text-charcoal">
+                        EUR {plan.price.toFixed(2)}
                       </p>
                     </div>
                   )}

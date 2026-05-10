@@ -418,6 +418,7 @@ export default function SubscriptionManagement() {
               onSelectPlan={handleSelectPlan}
               isLoading={isSubscribing || isUpdating}
               hasActiveSubscription={userHasActiveSubscription}
+              isTrial={isTrial}
             />
           ))}
         </div>

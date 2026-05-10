@@ -18,6 +18,7 @@ import { PlanType, SubscriptionPlan } from '@/types/subscription';
 interface FeatureComparisonProps {
   plans: SubscriptionPlan[];
   currentPlanName?: PlanType;
+  isTrial?: boolean;
   className?: string;
 }
 
@@ -32,6 +33,7 @@ interface Feature {
 export function FeatureComparison({
   plans,
   currentPlanName,
+  isTrial = false,
   className = '',
 }: FeatureComparisonProps) {
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -107,7 +109,7 @@ export function FeatureComparison({
                     </CardTitle>
                     {isCurrent && (
                       <span className="inline-block rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white mt-1">
-                        Current Plan
+                        {isTrial ? 'Selected Plan' : 'Current Plan'}
                       </span>
                     )}
                   </div>

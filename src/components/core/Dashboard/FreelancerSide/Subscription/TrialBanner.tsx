@@ -110,19 +110,9 @@ export default function TrialBanner() {
                 </p>
               ) : subscription?.status === 'TRIALING' && subscription?.plan ? (
                 <p>
-                  You&apos;re currently in your trial period. Your{' '}
-                  <strong>{subscription.plan.displayName}</strong> subscription will begin on{' '}
-                  {trialEndDate?.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                  , and you&apos;ll be charged starting then.
-                </p>
-              ) : subscription?.status === 'TRIALING' ? (
-                <p>
-                  You&apos;re currently in your trial period. Your subscription will start after the
-                  trial ends on{' '}
+                  All features are unlimited during your trial. Your{' '}
+                  <strong>{subscription.plan.displayName}</strong> plan (EUR{' '}
+                  {subscription.plan.price?.toFixed(2)}/month) activates on{' '}
                   {trialEndDate?.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -130,12 +120,20 @@ export default function TrialBanner() {
                   })}
                   . You won&apos;t be charged until then.
                 </p>
+              ) : subscription?.status === 'TRIALING' ? (
+                <p>
+                  All features are unlimited during your trial. After your trial ends on{' '}
+                  {trialEndDate?.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                  , your plan limits will apply. You won&apos;t be charged until then.
+                </p>
               ) : (
                 <p>
-                  Your 30-day free trial is active &mdash; you have full access to explore all
-                  features, including analytics and unlimited slots. After your trial, the features
-                  available to you will depend on the plan you choose. Not all plans include
-                  everything you see today.
+                  Your free trial is active — all features are unlimited. After your trial, the
+                  features available to you will depend on the plan you choose.
                 </p>
               )}
               {subscription && (

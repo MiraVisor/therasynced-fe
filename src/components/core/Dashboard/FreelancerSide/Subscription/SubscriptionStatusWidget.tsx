@@ -180,7 +180,7 @@ export function SubscriptionStatusWidget() {
           <div className="space-y-2">
             <p className="text-xs text-gray-600">
               {subscription.status === 'TRIALING'
-                ? 'You are on a free trial'
+                ? `Free trial — ${(subscription as any).plan?.displayName ?? 'plan'} activates when trial ends`
                 : 'No active subscription'}
             </p>
             <Button

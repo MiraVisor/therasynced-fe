@@ -149,7 +149,7 @@ export function BillingHistoryTable() {
             <p className="text-sm text-gray-600">
               {searchQuery
                 ? 'No transactions found matching your search.'
-                : 'Your billing history will appear here once you make your first payment.'}
+                : 'No billing history yet. Billing begins after your trial ends.'}
             </p>
           </div>
         ) : (

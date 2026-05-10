@@ -14,6 +14,7 @@ interface PlanCardProps {
   onSelectPlan?: (planType: PlanType) => void;
   isLoading?: boolean;
   hasActiveSubscription?: boolean;
+  isTrial?: boolean;
 }
 
 export const PlanCard = ({
@@ -23,6 +24,7 @@ export const PlanCard = ({
   onSelectPlan,
   isLoading = false,
   hasActiveSubscription = false,
+  isTrial = false,
 }: PlanCardProps) => {
   const isCurrentPlan = currentPlanName === plan.name;
 
@@ -101,7 +103,9 @@ export const PlanCard = ({
 
       {isCurrentPlan && (
         <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2">
-          <Badge className="bg-primary text-white">Current Plan</Badge>
+          <Badge className="bg-primary text-white">
+            {isTrial ? 'Selected Plan' : 'Current Plan'}
+          </Badge>
         </div>
       )}
 
