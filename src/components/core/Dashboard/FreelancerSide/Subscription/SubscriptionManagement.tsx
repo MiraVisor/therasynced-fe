@@ -539,8 +539,15 @@ export default function SubscriptionManagement() {
               </>
             ) : (
               <>
-                You&apos;re currently in your trial period. Your subscription will start after the
-                trial ends. You won&apos;t be charged until then.
+                All features are unlimited during your trial.{' '}
+                {currentSubscription.plan && (
+                  <>
+                    Your <strong>{currentSubscription.plan.displayName}</strong> plan (EUR{' '}
+                    {currentSubscription.plan.price?.toFixed(2)}/month) activates when your trial
+                    ends.
+                  </>
+                )}{' '}
+                You won&apos;t be charged until then.
               </>
             )}
           </AlertDescription>
