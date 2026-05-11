@@ -134,9 +134,19 @@ const VerificationDetailPage = () => {
   // Reject: only needs at least one doc uploaded to evaluate
   const canReject = totalUploadedDocs > 0;
 
-  const totalMandatory = mandatoryRequirements.length;
+  // Count ALL uploaded documents (mandatory + optional) for review progress
+  const allUploadedDocs = useMemo(
+    () => requirementsStatus?.filter((r) => r.uploaded) ?? [],
+    [requirementsStatus],
+  );
+  const allReviewedDocs = useMemo(
+    () => allUploadedDocs.filter((r) => r.uploadedFile && reviewedDocIds.has(r.uploadedFile.id)),
+    [allUploadedDocs, reviewedDocIds],
+  );
+
+  const totalUploaded = allUploadedDocs.length;
   const reviewProgress =
-    totalMandatory > 0 ? Math.round((mandatoryReviewed.length / totalMandatory) * 100) : 100;
+    totalUploaded > 0 ? Math.round((allReviewedDocs.length / totalUploaded) * 100) : 100;
 
   // ── Handlers ──
   const handleApprove = async () => {
@@ -375,12 +385,12 @@ const VerificationDetailPage = () => {
                 </p>
               </div>
             )}
-            {hasEnoughDocs && totalMandatory > 0 && !allMandatoryReviewed && (
+            {hasEnoughDocs && totalUploaded > 0 && !allMandatoryReviewed && (
               <div className="mt-4 pt-3 border-t">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium text-muted-foreground">Review Progress</span>
                   <span className="text-xs text-muted-foreground">
-                    {mandatoryReviewed.length}/{totalMandatory}
+                    {allReviewedDocs.length}/{totalUploaded}
                   </span>
                 </div>
                 <Progress value={reviewProgress} className="h-1.5" />

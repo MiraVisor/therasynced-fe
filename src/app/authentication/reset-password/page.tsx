@@ -31,7 +31,7 @@ function ResetPasswordContent() {
               <Link href="/" className="inline-block">
                 <img
                   className="h-16 w-auto mx-auto drop-shadow-sm"
-                  src="/svgs/therasynced_logo.svg"
+                  src="/svgs/NewLogoDark.svg"
                   alt="Therasynced"
                 />
               </Link>
