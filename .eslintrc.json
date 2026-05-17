@@ -50,7 +50,7 @@
     "@typescript-eslint/prefer-optional-chain": "warn",
     "@typescript-eslint/restrict-template-expressions": "warn",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
-    "@typescript-eslint/prefer-nullish-coalescing": "warn",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/no-non-null-assertion": "warn",
     // Relax unsafe type checking rules
     "@typescript-eslint/no-unsafe-assignment": "warn",

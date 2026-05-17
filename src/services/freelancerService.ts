@@ -1,7 +1,7 @@
 import api from '@/services/api';
 import { ENDPOINTS } from '@/services/endpoints';
 import type { ProfileCompletionResponse } from '@/types/freelancer';
-import { ApiResponse, Expert } from '@/types/types';
+import { ApiResponse, Expert, LocationType } from '@/types/types';
 
 export const getAllFreelancers = async (params?: {
   page?: number;
@@ -72,7 +72,7 @@ export interface SearchFreelancersParams {
   location?: string;
   priceMin?: number;
   priceMax?: number;
-  sessionType?: ('HOME' | 'CLINIC')[];
+  sessionType?: LocationType[];
   availableThisWeek?: boolean;
   verificationStatus?: string;
   minRating?: number;
@@ -131,7 +131,8 @@ export interface FreelancerDetailResponse {
     name: string;
     email: string;
     profilePicture: string | null;
-    city: string | null;
+    county: string | null;
+    cityTown: string | null;
     description: string | null;
     gender: string;
     dob: string | null; // ISO date string

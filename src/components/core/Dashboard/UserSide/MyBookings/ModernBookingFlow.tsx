@@ -472,7 +472,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     const bookingData = {
       slotId: selectedTime,
       serviceCategoryIds: selectedCategoryIds,
-      locationType: selectedLocationType || undefined,
+      locationType: (selectedLocationType as 'HOME' | 'CLINIC' | undefined) || undefined,
       notes: detailsData.notes ?? '',
       clientAddress: detailsData.clientAddress ?? '',
     };

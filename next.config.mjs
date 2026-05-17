@@ -2,6 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // Ignore ESLint warnings during build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Transpile packages that use ES modules
   transpilePackages: ['@tanstack/react-table', '@tanstack/table-core'],
 

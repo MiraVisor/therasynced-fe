@@ -17,7 +17,7 @@ export const ServiceSelectionStep: React.FC<ServiceSelectionStepProps> = ({ slot
 
   // Get available service categories from slot
   const availableServices: ServiceCategory[] =
-    slot.availableServiceCategories || slot.availableServices || [];
+    ((slot.availableServiceCategories || slot.availableServices) as ServiceCategory[]) || [];
 
   const handleServiceToggle = (serviceId: string) => {
     const current = selectedServiceIds;

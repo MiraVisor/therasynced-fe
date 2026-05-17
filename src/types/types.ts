@@ -112,7 +112,7 @@ export interface ServiceCategory {
     id: string;
     name: string;
   };
-  locationTypes?: ('HOME' | 'CLINIC')[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
+  locationTypes?: LocationType[]; // NEW: Location types this service supports (only included when freelancerId provided in query)
 }
 
 /**
@@ -451,7 +451,7 @@ export interface Appointment {
   location: LocationType;
   notes: string;
   // Additional fields for address display
-  locationType?: 'CLINIC' | 'HOME' | 'ONLINE';
+  locationType?: LocationType;
   clientAddress?: string | null;
   freelancer?: {
     clinicAddress?: string | null;
@@ -539,7 +539,7 @@ export interface Slot {
       id: string;
       name: string;
     };
-    locationTypes: ('HOME' | 'CLINIC')[]; // REQUIRED: Location types this service supports
+    locationTypes: LocationType[]; // REQUIRED: Location types this service supports
     pricing?: {
       HOME?: {
         price: number;
@@ -1384,7 +1384,7 @@ export interface SearchFilters {
   location: string;
   priceMin?: number;
   priceMax?: number;
-  sessionType: ('HOME' | 'CLINIC')[];
+  sessionType: LocationType[];
   availableThisWeek: boolean;
   verificationStatus: ('PENDING' | 'APPROVED' | 'REJECTED')[];
   minRating?: number;

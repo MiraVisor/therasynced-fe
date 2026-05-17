@@ -20,6 +20,21 @@ const getLocationTypeConfig = (locationType: LocationType) => {
     [LocationType.CLINIC]: {
       label: 'Clinic',
     },
+    [LocationType.CORPORATE]: {
+      label: 'Corporate',
+    },
+    [LocationType.GYM]: {
+      label: 'Gym',
+    },
+    [LocationType.TRAINING]: {
+      label: 'Training',
+    },
+    [LocationType.PITCHSIDE]: {
+      label: 'Pitchside',
+    },
+    [LocationType.EVENT]: {
+      label: 'Event',
+    },
   };
   return configs[locationType];
 };

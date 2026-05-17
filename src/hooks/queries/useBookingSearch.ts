@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { useMemo } from 'react';
 
 import { searchFreelancers, SearchFreelancersParams } from '@/services/freelancerService';
+import { LocationType } from '@/types/types';
 
 interface UseBookingSearchParams {
   query?: string;
@@ -35,7 +36,7 @@ export const useBookingSearch = ({
     }
 
     if (locationPreference && locationPreference !== 'BOTH') {
-      params.sessionType = [locationPreference];
+      params.sessionType = [locationPreference as LocationType];
     }
 
     // NEW: Add date parameter if provided (ISO format YYYY-MM-DD)

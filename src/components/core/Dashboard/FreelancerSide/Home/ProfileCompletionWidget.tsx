@@ -27,7 +27,7 @@ export const ProfileCompletionWidget = () => {
     {
       key: 'basicInfo',
       label: 'Complete your basic information',
-      completed: !!(profile?.name && profile?.email && profile?.city),
+      completed: !!(profile?.name && profile?.email && (profile?.county || profile?.cityTown)),
       link: '/dashboard/account?tab=profile',
     },
     {

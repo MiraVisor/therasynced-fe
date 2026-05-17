@@ -79,9 +79,7 @@ export function RescheduleBookingDialog({
       (cat) => cat.id === selectedServiceCategoryId,
     );
     if (!selectedService?.locationTypes) return [];
-    return selectedService.locationTypes.filter(
-      (loc): loc is 'HOME' | 'CLINIC' => loc === 'HOME' || loc === 'CLINIC',
-    );
+    return selectedService.locationTypes.filter((loc) => loc === 'HOME' || loc === 'CLINIC');
   }, [selectedSlot, selectedServiceCategoryId]);
 
   // Auto-select location if only one option

@@ -53,6 +53,18 @@ export const SERVICE_CATEGORIES = {
     'Performance testing & assessment',
     'Equipment training',
   ],
+  [JobTitleEnum.PERSONAL_TRAINING]: [
+    'One-on-one personal training',
+    'Fitness assessment & goal setting',
+    'Strength & muscle building',
+    'Weight loss & body composition',
+    'Athletic performance training',
+    'Functional fitness coaching',
+    'Mobility & flexibility work',
+    'Sport-specific training',
+    'Post-injury fitness coaching',
+    'Nutrition & lifestyle coaching',
+  ],
 } as const;
 
 // Helper function to get categories for a specific job title

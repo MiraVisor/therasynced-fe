@@ -115,7 +115,7 @@ export const PricingSetupPanel = ({ onComplete, onSkip }: PricingSetupPanelProps
   // Auto-expand first category if no pricing exists
   useEffect(() => {
     if (categories.length > 0 && !hasPricing && expandedCategories.size === 0) {
-      setExpandedCategories(new Set([categories[0].id]));
+      setExpandedCategories(new Set([categories[0]!.id]));
     }
   }, [categories, hasPricing, expandedCategories.size]);
 

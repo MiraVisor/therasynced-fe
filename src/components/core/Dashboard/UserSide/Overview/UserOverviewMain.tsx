@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { useInfiniteSearchFreelancers } from '@/hooks/queries/useFreelancers';
 import { useJobTitles } from '@/hooks/queries/useJobTitles';
-import { SearchFilters } from '@/types/types';
+import { LocationType, SearchFilters } from '@/types/types';
 import { mapOneFreelancerToExpert } from '@/utils/freelancerMapper';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
@@ -101,7 +101,7 @@ const UserOverview = () => {
       location?: string;
       priceMin?: number;
       priceMax?: number;
-      sessionType?: ('HOME' | 'CLINIC')[];
+      sessionType?: LocationType[];
       availableThisWeek?: boolean;
       verificationStatus?: string;
       minRating?: number;

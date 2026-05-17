@@ -61,7 +61,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           return;
         }
 
-        const locationPricing = category.pricing[selectedLocationType];
+        const locationPricing = category.pricing?.[selectedLocationType as 'HOME' | 'CLINIC'];
         if (
           locationPricing &&
           locationPricing.price !== null &&
@@ -124,7 +124,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
         continue;
       }
 
-      const locationPricing = category.pricing[selectedLocationType];
+      const locationPricing = category.pricing?.[selectedLocationType as 'HOME' | 'CLINIC'];
       if (
         !locationPricing ||
         locationPricing.price === null ||
@@ -175,7 +175,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       const category = slot.availableServiceCategories.find((cat) => cat.id === service.id);
       if (!category?.pricing) return false;
 
-      const locationPricing = category.pricing[selectedLocationType];
+      const locationPricing = category.pricing?.[selectedLocationType as 'HOME' | 'CLINIC'];
       if (
         !locationPricing ||
         locationPricing.price === null ||
@@ -498,13 +498,16 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                               <div className="ml-4">
                                 <div>
                                   Price:{' '}
-                                  {cat.pricing[selectedLocationType]?.price ?? 'null/undefined'}
+                                  {cat.pricing?.[selectedLocationType as 'HOME' | 'CLINIC']
+                                    ?.price ?? 'null/undefined'}
                                 </div>
                                 <div>
                                   Discount:{' '}
-                                  {cat.pricing[selectedLocationType]?.discount
+                                  {cat.pricing?.[selectedLocationType as 'HOME' | 'CLINIC']
+                                    ?.discount
                                     ? JSON.stringify(
-                                        cat.pricing[selectedLocationType]?.discount,
+                                        cat.pricing?.[selectedLocationType as 'HOME' | 'CLINIC']
+                                          ?.discount,
                                         null,
                                         2,
                                       )

@@ -808,10 +808,14 @@ export function EnhancedBookingSearch() {
                             size="sm"
                             showCount={true}
                           />
-                          {freelancer.city && (
+                          {(freelancer.cityTown || freelancer.county) && (
                             <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
                               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="truncate">{freelancer.city}</span>
+                              <span className="truncate">
+                                {freelancer.cityTown && freelancer.county
+                                  ? `${freelancer.cityTown}, ${freelancer.county}`
+                                  : freelancer.cityTown || freelancer.county}
+                              </span>
                             </div>
                           )}
                         </div>

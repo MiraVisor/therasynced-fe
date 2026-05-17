@@ -175,7 +175,7 @@ export const ServicePricingSection = () => {
           return true;
         }
         for (const locType of Array.from(currentLocationTypes)) {
-          if (!apiLocationTypes.has(locType)) {
+          if (!apiLocationTypes.has(locType as LocationType)) {
             return true;
           }
         }

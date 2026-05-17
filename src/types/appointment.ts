@@ -15,7 +15,7 @@ export interface Appointment {
   location: LocationType;
   notes: string;
   // Additional fields for address display
-  locationType?: 'CLINIC' | 'HOME' | 'ONLINE';
+  locationType?: LocationType;
   clientAddress?: string | null;
   freelancer?: {
     clinicAddress?: string | null;

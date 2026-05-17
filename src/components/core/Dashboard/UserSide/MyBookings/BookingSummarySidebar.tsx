@@ -81,7 +81,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         );
         if (!category?.pricing) return;
 
-        const locationPricing = category.pricing[selectedLocationType];
+        const locationPricing = category.pricing?.[selectedLocationType as 'HOME' | 'CLINIC'];
         if (locationPricing) {
           hasCategoryPricing = true;
           // Always use original price for basePrice calculation (discounts handled separately)
@@ -149,7 +149,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
       );
       if (!category?.pricing) return;
 
-      const locationPricing = category.pricing[selectedLocationType];
+      const locationPricing = category.pricing?.[selectedLocationType as 'HOME' | 'CLINIC'];
       if (locationPricing) {
         totalOriginalPrice += locationPricing.price;
         if (locationPricing.discount?.applicable) {

@@ -190,7 +190,9 @@ export const adminExportUserData = async (
     // Axios normalizes headers to lowercase
     const contentDisposition =
       response.headers['content-disposition'] || response.headers['Content-Disposition'] || null;
-    const contentType = response.headers['content-type'] || response.headers['Content-Type'] || '';
+    const contentType = String(
+      response.headers['content-type'] || response.headers['Content-Type'] || '',
+    );
     const filename = extractFilenameFromHeader(
       contentDisposition,
       data.format,

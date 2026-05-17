@@ -27,7 +27,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { SearchFilters as SearchFiltersType } from '@/types/types';
+import { LocationType, SearchFilters as SearchFiltersType } from '@/types/types';
 
 interface SearchFiltersProps {
   filters: SearchFiltersType;
@@ -261,14 +261,14 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="session-home"
-                    checked={filters.sessionType.includes('HOME')}
+                    checked={filters.sessionType.includes('HOME' as LocationType)}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        toggleArrayFilter('sessionType', 'HOME');
+                        toggleArrayFilter('sessionType', 'HOME' as LocationType);
                       } else {
                         updateFilter(
                           'sessionType',
-                          filters.sessionType.filter((t) => t !== 'HOME'),
+                          filters.sessionType.filter((t) => t !== ('HOME' as LocationType)),
                         );
                       }
                     }}
@@ -280,14 +280,14 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="session-clinic"
-                    checked={filters.sessionType.includes('CLINIC')}
+                    checked={filters.sessionType.includes('CLINIC' as LocationType)}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        toggleArrayFilter('sessionType', 'CLINIC');
+                        toggleArrayFilter('sessionType', 'CLINIC' as LocationType);
                       } else {
                         updateFilter(
                           'sessionType',
-                          filters.sessionType.filter((t) => t !== 'CLINIC'),
+                          filters.sessionType.filter((t) => t !== ('CLINIC' as LocationType)),
                         );
                       }
                     }}

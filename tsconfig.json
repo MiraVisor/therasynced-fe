@@ -30,6 +30,9 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
 
+    // Downlevel iteration support for Set spreading
+    "downlevelIteration": true,
+
     // Path mapping
     "baseUrl": ".",
     "paths": {
