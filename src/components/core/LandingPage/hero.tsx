@@ -101,8 +101,8 @@ const Hero = () => {
             </h1>
 
             <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed font-open-sans font-normal py-8">
-              TheraSynced connects you with qualified health and performance professionals, without
-              the calls, emails, or scheduling hassle.
+              The professional network for sports and wellness practitioners — pitchside cover,
+              clinic locums, wellness programmes, event support, and more.
             </p>
           </motion.div>
 

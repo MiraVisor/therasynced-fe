@@ -33,8 +33,10 @@ const ForWho = () => {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white font-playfair">
             For Freelancers & Clients
           </h2>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto font-open-sans">
-            Whether you&apos;re looking for work or looking to hire, TheraSynced makes it simple.
+          <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-3xl mx-auto font-open-sans">
+            We connect physiotherapists, athletic therapists, massage therapists, personal trainers,
+            and strength &amp; conditioning coaches with sports teams, clinics, gyms, and companies
+            looking for trusted professionals.
           </p>
         </motion.div>
 

@@ -111,7 +111,8 @@ const Features = () => {
               Why Choose TheraSynced
             </h2>
             <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 font-open-sans">
-              A simple platform to manage bookings, communicate securely, and focus on what matters.
+              Whether you&apos;re hiring talent or looking for your next opportunity, TheraSynced
+              makes connecting simple, fast, and reliable.
             </p>
           </motion.div>
 
