@@ -55,19 +55,19 @@ export function TransactionTable({
     const statusConfig: Record<string, { label: string; className: string }> = {
       PAID: {
         label: 'Paid',
-        className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+        className: 'bg-green-100 text-green-800  ',
       },
       PENDING: {
         label: 'Pending',
-        className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+        className: 'bg-yellow-100 text-yellow-800  ',
       },
       FAILED: {
         label: 'Failed',
-        className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        className: 'bg-red-100 text-red-800  ',
       },
       REFUNDED: {
         label: 'Refunded',
-        className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+        className: 'bg-gray-100 text-gray-800  ',
       },
     };
 
@@ -156,31 +156,6 @@ export function TransactionTable({
       },
       cell: ({ row }) => (
         <div className="font-semibold">{formatCurrency(row.getValue('amount'))}</div>
-      ),
-    },
-    {
-      accessorKey: 'commission',
-      header: 'Commission',
-      cell: ({ row }) => formatCurrency(row.getValue('commission')),
-    },
-    {
-      accessorKey: 'netAmount',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="h-8 px-2"
-          >
-            Net Revenue
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="font-semibold text-primary">
-          {formatCurrency(row.getValue('netAmount'))}
-        </div>
       ),
     },
     {

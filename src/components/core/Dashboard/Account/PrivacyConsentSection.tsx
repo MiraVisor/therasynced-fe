@@ -176,14 +176,10 @@ export function PrivacyConsentSection() {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50 dark:bg-red-950/20">
+          <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
             <div>
-              <h4 className="font-semibold text-sm text-red-800 dark:text-red-200">
-                Delete Account
-              </h4>
-              <p className="text-xs text-red-600 dark:text-red-300">
-                Permanently delete your account
-              </p>
+              <h4 className="font-semibold text-sm text-red-800">Delete Account</h4>
+              <p className="text-xs text-red-600">Permanently delete your account</p>
             </div>
             <Button
               onClick={() => setShowDeleteDialog(true)}
@@ -209,10 +205,8 @@ export function PrivacyConsentSection() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              The export will include:
-            </p>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm text-gray-600 mb-4">The export will include:</p>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600 mb-6">
               <li>Profile information</li>
               <li>Booking history</li>
               <li>Messages and communications</li>
@@ -291,7 +285,7 @@ export function PrivacyConsentSection() {
                 <Label htmlFor="encrypt" className="text-sm font-medium cursor-pointer">
                   Encrypt Export (Optional)
                 </Label>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-gray-600">
                   Encrypt the export file for additional security. Encrypted exports require a
                   decryption key to access.
                 </p>
@@ -320,12 +314,12 @@ export function PrivacyConsentSection() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-3">
-            <Alert className="border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20">
-              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <AlertTitle className="text-blue-800 dark:text-blue-200">
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertTitle className="text-blue-800">
                 What happens when you delete your account:
               </AlertTitle>
-              <AlertDescription className="text-blue-700 dark:text-blue-300">
+              <AlertDescription className="text-blue-700">
                 <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
                   <li>Your account will be immediately logged out</li>
                   <li>We will stop processing your data except where legally required</li>
@@ -424,7 +418,7 @@ export function PrivacyConsentSection() {
                   Copy
                 </Button>
               </div>
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+              <p className="text-xs text-amber-600 font-medium">
                 ⚠️ Important: This key is unique to this export. Keep it secure.
               </p>
             </div>

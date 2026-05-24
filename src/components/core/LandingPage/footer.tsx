@@ -1,23 +1,54 @@
 'use client';
 
-import { useTheme } from 'next-themes';
+import { Facebook, Instagram, Linkedin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { openCookieSettings } from '@/components/common/CookieConsent';
 
-const Footer = () => {
-  const { resolvedTheme } = useTheme();
+const XIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 
+const socialLinks = [
+  {
+    href: 'https://www.facebook.com/share/14Wed3qHeke/',
+    label: 'Facebook',
+    icon: Facebook,
+    hoverClass: 'hover:text-[#1877F2]',
+  },
+  {
+    href: 'https://x.com/therasynced',
+    label: 'X (Twitter)',
+    icon: XIcon,
+    hoverClass: 'hover:text-black',
+  },
+  {
+    href: 'https://www.instagram.com/therasynced',
+    label: 'Instagram',
+    icon: Instagram,
+    hoverClass: 'hover:text-[#E1306C]',
+  },
+  {
+    href: 'https://www.linkedin.com/in/lee-o-grady-9a517518b',
+    label: 'LinkedIn',
+    icon: Linkedin,
+    hoverClass: 'hover:text-[#0A66C2]',
+  },
+];
+
+const Footer = () => {
   return (
-    <footer className="w-full bg-[#faf9f6] dark:bg-black border-t border-gray-100 dark:border-neutral-900">
+    <footer className="w-full bg-[#faf9f6] border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="col-span-2 space-y-4">
             <Link href="/" className="inline-block">
               <Image
-                src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
+                src="/svgs/NewLogoDark.svg"
                 alt="TheraSynced"
                 width={120}
                 height={32}
@@ -30,12 +61,26 @@ const Footer = () => {
               Find and book sessions with independent therapists.
             </p>
 
-            {/* Newsletter */}
+            {/* Social Links */}
+            <div className="flex items-center gap-3 pt-1">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className={`text-gray-400 transition-colors ${social.hoverClass}`}
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* Platform Links */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 font-inter">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 font-inter">
               Platform
             </h3>
             <ul className="space-y-2.5 text-sm text-gray-500 font-open-sans">
@@ -55,6 +100,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/guide" className="hover:text-primary transition-colors">
+                  Guide
+                </Link>
+              </li>
+              <li>
                 <Link
                   href="/authentication/sign-in"
                   className="hover:text-primary transition-colors"
@@ -67,7 +117,7 @@ const Footer = () => {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 font-inter">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 font-inter">
               Legal
             </h3>
             <ul className="space-y-2.5 text-sm text-gray-500 font-open-sans">
@@ -102,18 +152,36 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Contact */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 font-inter">
-              Support
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 font-inter">
+              Contact
             </h3>
             <ul className="space-y-2.5 text-sm text-gray-500 font-open-sans">
               <li>
+                <Link href="/contact" className="hover:text-primary transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
                 <a
                   href="mailto:support@therasynced.com"
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-colors break-all"
                 >
-                  Contact Us
+                  support@therasynced.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:sales@therasynced.com"
+                  className="hover:text-primary transition-colors break-all"
+                >
+                  sales@therasynced.com
+                </a>
+              </li>
+              <li>
+                <a href="tel:+353894958346" className="hover:text-primary transition-colors">
+                  089 495 8346
                 </a>
               </li>
             </ul>
@@ -121,7 +189,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-10 pt-6 border-t border-gray-100 dark:border-neutral-900 flex flex-col sm:flex-row justify-between gap-4">
+        <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between gap-4">
           <p className="text-xs text-gray-400 font-inter">
             © {new Date().getFullYear()} TheraSynced. All rights reserved.
           </p>

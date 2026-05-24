@@ -93,13 +93,13 @@ export const NextAppointmentCard = () => {
     return (
       <Card className="w-full border border-gray-200/80 shadow-soft backdrop-blur-sm bg-white/80 rounded-2xl">
         <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-mint/30 to-white px-5 py-5">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700/30 rounded w-1/3 mb-2" />
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-2" />
         </CardHeader>
         <CardContent className="p-5">
           <div className="space-y-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700/30 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700/20 rounded w-1/2" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700/20 rounded w-2/3" />
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+            <div className="h-3 bg-gray-200 rounded w-2/3" />
           </div>
         </CardContent>
       </Card>
@@ -127,7 +127,7 @@ export const NextAppointmentCard = () => {
               variant="outline"
               size="sm"
               onClick={() => {
-                window.location.href = '/dashboard/availability';
+                window.location.href = '/dashboard/slots';
               }}
             >
               Create Availability

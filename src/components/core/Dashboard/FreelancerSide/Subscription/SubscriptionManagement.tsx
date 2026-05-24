@@ -1,8 +1,9 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, CreditCard, Info, Shield } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,6 +18,7 @@ import {
   useResumeSubscription,
   useSubscriptionPlans,
   useUpdateSubscription,
+  useVerifyCheckoutSession,
 } from '@/hooks/queries/useSubscription';
 import { getDecodedToken } from '@/lib/utils';
 import { PlanType, SubscriptionStatus } from '@/types/types';
@@ -38,11 +40,14 @@ import { SubscriptionTabs } from './SubscriptionTabs';
 export default function SubscriptionManagement() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
+  const [checkoutSessionId, setCheckoutSessionId] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isCancellationDialogOpen, setIsCancellationDialogOpen] = useState(false);
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanType | null>(null);
   const [showPreCheckoutSummary, setShowPreCheckoutSummary] = useState(false);
+  const verifyAttemptedRef = useRef(false);
 
   // Get default tab from URL query param
   const viewParam = searchParams.get('view');
@@ -65,20 +70,42 @@ export default function SubscriptionManagement() {
 
   // For billing portal, we need to use query with enabled: false and refetch
   const { refetch: refetchBillingPortal } = useBillingPortal();
+  const { mutateAsync: verifyCheckout } = useVerifyCheckoutSession();
 
-  // Refetch subscription data when returning from Stripe checkout
+  // Handle checkout success: verify with backend and invalidate cache
+  const handleCheckoutSuccess = useCallback(
+    async (sessionId?: string | null) => {
+      try {
+        if (sessionId) {
+          await verifyCheckout(sessionId);
+        }
+      } catch {
+        // Verification may fail if webhook already processed it - that's OK
+      }
+      // Always invalidate and refetch subscription data to get latest state
+      await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      toast.success('Payment successful! Your subscription is now active.');
+    },
+    [verifyCheckout, queryClient],
+  );
+
+  // Refetch subscription data when returning from Stripe checkout (URL redirect flow)
   useEffect(() => {
     const subscriptionSuccess = searchParams.get('subscription');
+    const sessionId = searchParams.get('session_id');
 
-    // If coming from successful subscription, refetch data
-    if (subscriptionSuccess === 'success') {
-      void refetchSubscription();
-      // Clean up URL param after refetching
-      const url = new URL(window.location.href);
-      url.searchParams.delete('subscription');
-      window.history.replaceState({}, '', url.toString());
+    // If coming from successful subscription, verify and refetch data
+    if (subscriptionSuccess === 'success' && !verifyAttemptedRef.current) {
+      verifyAttemptedRef.current = true;
+      void handleCheckoutSuccess(sessionId).finally(() => {
+        // Clean up URL params after verification
+        const url = new URL(window.location.href);
+        url.searchParams.delete('subscription');
+        url.searchParams.delete('session_id');
+        window.history.replaceState({}, '', url.toString());
+      });
     }
-  }, [searchParams, refetchSubscription]);
+  }, [searchParams, handleCheckoutSuccess]);
 
   // Refetch subscription data when window regains focus (user returns from Stripe)
   useEffect(() => {
@@ -165,10 +192,15 @@ export default function SubscriptionManagement() {
       onSuccess: (checkoutData: unknown) => {
         const data =
           checkoutData && typeof checkoutData === 'object' && 'data' in checkoutData
-            ? (checkoutData as { data: { clientSecret?: string; sessionUrl?: string } }).data
-            : (checkoutData as { clientSecret?: string; sessionUrl?: string });
+            ? (
+                checkoutData as {
+                  data: { clientSecret?: string; sessionUrl?: string; sessionId?: string };
+                }
+              ).data
+            : (checkoutData as { clientSecret?: string; sessionUrl?: string; sessionId?: string });
         if (data?.clientSecret) {
           setCheckoutClientSecret(data.clientSecret);
+          setCheckoutSessionId(data.sessionId ?? null);
           setIsCheckoutOpen(true);
         } else if (data?.sessionUrl) {
           window.location.href = data.sessionUrl;
@@ -374,9 +406,7 @@ export default function SubscriptionManagement() {
       <div>
         <div className="mb-6">
           <h3 className="text-2xl font-poppins font-bold text-charcoal mb-2">Choose Your Plan</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Select the plan that best fits your needs
-          </p>
+          <p className="text-sm text-gray-600">Select the plan that best fits your needs</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {plans.map((plan) => (
@@ -388,6 +418,7 @@ export default function SubscriptionManagement() {
               onSelectPlan={handleSelectPlan}
               isLoading={isSubscribing || isUpdating}
               hasActiveSubscription={userHasActiveSubscription}
+              isTrial={isTrial}
             />
           ))}
         </div>
@@ -402,7 +433,7 @@ export default function SubscriptionManagement() {
         <h1 className="text-3xl font-poppins font-bold text-charcoal mb-2">
           Subscription Management
         </h1>
-        <p className="text-base font-inter text-gray-600 dark:text-gray-400">
+        <p className="text-base font-inter text-gray-600">
           Manage your subscription plan, billing, and payment methods
         </p>
       </div>
@@ -414,12 +445,12 @@ export default function SubscriptionManagement() {
         trialHasExpired &&
         !(status === 'INACTIVE' && currentSubscription?.plan) &&
         (status === 'TRIAL_EXPIRED' || status === 'INACTIVE' || !currentSubscription?.plan) && (
-          <Alert className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 shadow-sm mb-4">
-            <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-            <AlertTitle className="text-base font-poppins font-semibold text-orange-900 dark:text-orange-100">
+          <Alert className="border-orange-300 bg-orange-50 shadow-sm mb-4">
+            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <AlertTitle className="text-base font-poppins font-semibold text-orange-900">
               Trial Expired
             </AlertTitle>
-            <AlertDescription className="text-sm text-orange-800 dark:text-orange-200 space-y-3 mt-2">
+            <AlertDescription className="text-sm text-orange-800 space-y-3 mt-2">
               <div>
                 {currentSubscription.message ||
                   'Your trial has expired. Please subscribe to continue creating slots.'}
@@ -437,16 +468,16 @@ export default function SubscriptionManagement() {
 
       {/* Grace Period / PAST_DUE Warning Banner */}
       {(isPastDue || inGracePeriod) && (
-        <Alert className="border-red-400 dark:border-red-700 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 shadow-sm animate-in slide-in-from-top duration-300 mb-4">
+        <Alert className="border-red-400 bg-gradient-to-r from-red-50 to-orange-50 shadow-sm animate-in slide-in-from-top duration-300 mb-4">
           <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0">
-              <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <div className="p-1.5 rounded-lg bg-red-100 flex-shrink-0">
+              <Shield className="h-5 w-5 text-red-600" />
             </div>
             <div className="flex-1">
-              <AlertTitle className="text-base font-poppins font-semibold text-red-900 dark:text-red-100 mb-2">
+              <AlertTitle className="text-base font-poppins font-semibold text-red-900 mb-2">
                 Payment Update Required
               </AlertTitle>
-              <AlertDescription className="text-sm text-red-800 dark:text-red-200 space-y-3">
+              <AlertDescription className="text-sm text-red-800 space-y-3">
                 <p>
                   We couldn&apos;t process your payment. Update your payment method to continue your
                   subscription.
@@ -457,9 +488,9 @@ export default function SubscriptionManagement() {
                       {gracePeriodDaysRemaining} {gracePeriodDaysRemaining === 1 ? 'day' : 'days'}{' '}
                       remaining
                     </span>
-                    <div className="flex-1 h-2 bg-red-200 dark:bg-red-900/50 rounded-full overflow-hidden max-w-xs">
+                    <div className="flex-1 h-2 bg-red-200 rounded-full overflow-hidden max-w-xs">
                       <div
-                        className="h-full bg-red-500 dark:bg-red-400 transition-all duration-500"
+                        className="h-full bg-red-500 transition-all duration-500"
                         style={{
                           width: `${Math.max(0, Math.min(100, (gracePeriodDaysRemaining / 7) * 100))}%`,
                         }}
@@ -495,12 +526,12 @@ export default function SubscriptionManagement() {
       )}
 
       {currentSubscription && isTrial && (
-        <Alert className="border-primary/30 dark:border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-sm mb-6">
+        <Alert className="border-primary/30 bg-primary/5 shadow-sm mb-6">
           <Info className="h-5 w-5 text-primary" />
           <AlertTitle className="text-base font-poppins font-semibold text-charcoal">
             Trial Period Active
           </AlertTitle>
-          <AlertDescription className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+          <AlertDescription className="text-sm text-gray-700 mt-2">
             {currentSubscription.cancelAtPeriodEnd ? (
               <>
                 Your subscription has been cancelled. You&apos;ll continue with trial access until
@@ -508,8 +539,15 @@ export default function SubscriptionManagement() {
               </>
             ) : (
               <>
-                You&apos;re currently in your trial period. Your subscription will start after the
-                trial ends. You won&apos;t be charged until then.
+                All features are unlimited during your trial.{' '}
+                {currentSubscription.plan && (
+                  <>
+                    Your <strong>{currentSubscription.plan.displayName}</strong> plan (EUR{' '}
+                    {currentSubscription.plan.price?.toFixed(2)}/month) activates when your trial
+                    ends.
+                  </>
+                )}{' '}
+                You won&apos;t be charged until then.
               </>
             )}
           </AlertDescription>
@@ -539,9 +577,7 @@ export default function SubscriptionManagement() {
               <CardContent className="space-y-4">
                 <div className="rounded-lg border p-4">
                   <h3 className="font-poppins font-semibold text-lg">{selectedPlan.displayName}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedPlan.description}
-                  </p>
+                  <p className="text-sm text-gray-600">{selectedPlan.description}</p>
                   <p className="mt-2 text-2xl font-poppins font-bold text-primary">
                     EUR {selectedPlan.price}/month
                   </p>
@@ -567,7 +603,7 @@ export default function SubscriptionManagement() {
                       setShowPreCheckoutSummary(false);
                       setSelectedPlanForCheckout(null);
                     }}
-                    className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
+                    className="flex-1 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50"
                   >
                     Cancel
                   </button>
@@ -607,14 +643,14 @@ export default function SubscriptionManagement() {
           onClose={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
+            setCheckoutSessionId(null);
           }}
           onSuccess={() => {
             setIsCheckoutOpen(false);
             setCheckoutClientSecret(null);
-            toast.success('Payment successful! Your subscription is now active.');
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
+            const sessionId = checkoutSessionId;
+            setCheckoutSessionId(null);
+            void handleCheckoutSuccess(sessionId);
           }}
         />
       )}

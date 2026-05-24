@@ -46,6 +46,13 @@ export interface SubscriptionPlan {
   billingInterval: string;
   stripePriceId: string;
   maxSlots: number | null; // null = unlimited
+  maxServiceCategories?: number | null; // null = unlimited
+  maxLocationTypes?: number | null; // null = unlimited
+  maxMessagesPerBillingCycle?: number | null; // null = unlimited
+  invoiceAccess?: boolean;
+  customFormsAccess?: boolean;
+  verifiedBadgeVisible?: boolean;
+  analyticsAccess?: boolean;
   commissionRate: number;
   features: string[];
   isActive: boolean;
@@ -73,6 +80,9 @@ export interface Subscription {
   gracePeriodEndsAt?: string | null; // Grace period end date (7 days after payment failure)
   canCreateSlots: boolean; // Required field from API
   canAcceptBookings: boolean; // Required field from API
+  canGenerateInvoice?: boolean; // Added by backend based on plan.invoiceAccess
+  canAccessCustomForms?: boolean; // Added by backend based on plan.customFormsAccess
+  canShowVerifiedBadge?: boolean; // Added by backend based on plan.verifiedBadgeVisible
   slotsUsed: number; // Required field from API - Current active slots count
   slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
   maxDaysPerWeek: number | null; // Days per week limit (null = unlimited)

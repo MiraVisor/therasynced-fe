@@ -12,7 +12,7 @@ export const ExpertList: React.FC<ExpertListProps> = ({ experts }) => {
   if (!experts || experts.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400">No experts available</p>
+        <p className="text-gray-500">No experts available</p>
       </div>
     );
   }

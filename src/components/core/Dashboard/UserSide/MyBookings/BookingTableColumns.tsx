@@ -40,12 +40,8 @@ export const createBookingColumns = ({
         const startTime = parseISO(row.original.slot.startTime);
         return (
           <div className="flex flex-col">
-            <span className="font-medium text-charcoal dark:text-white">
-              {format(startTime, 'MMM d, yyyy')}
-            </span>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {format(startTime, 'h:mm a')}
-            </span>
+            <span className="font-medium text-charcoal">{format(startTime, 'MMM d, yyyy')}</span>
+            <span className="text-sm text-gray-600">{format(startTime, 'h:mm a')}</span>
           </div>
         );
       },
@@ -58,9 +54,9 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal dark:text-white">{freelancer.name}</span>
+              <span className="font-medium text-charcoal">{freelancer.name}</span>
               {freelancer.averageRating && (
-                <span className="text-xs text-gray-600 dark:text-gray-400">
+                <span className="text-xs text-gray-600">
                   ⭐ {freelancer.averageRating.toFixed(1)}
                 </span>
               )}
@@ -77,7 +73,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="font-medium text-charcoal dark:text-white">{freelancer.email}</span>
+              <span className="font-medium text-charcoal">{freelancer.email}</span>
             </div>
           </div>
         );
@@ -94,7 +90,7 @@ export const createBookingColumns = ({
         return (
           <div className="flex flex-col gap-1">
             {serviceCategories.slice(0, 2).map((service, idx) => (
-              <span key={idx} className="text-sm text-charcoal dark:text-white">
+              <span key={idx} className="text-sm text-charcoal">
                 {service.name}
               </span>
             ))}
@@ -116,9 +112,7 @@ export const createBookingColumns = ({
             <Badge variant="outline" className="w-fit">
               {locationType === 'HOME' ? 'Home' : 'Clinic'}
             </Badge>
-            {location && (
-              <span className="text-xs text-gray-600 dark:text-gray-400 mt-1">{location.name}</span>
-            )}
+            {location && <span className="text-xs text-gray-600 mt-1">{location.name}</span>}
           </div>
         );
       },
@@ -137,16 +131,16 @@ export const createBookingColumns = ({
 
         if (isUpcoming) {
           statusLabel = 'CONFIRMED';
-          statusClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+          statusClass = 'bg-blue-100 text-blue-800  ';
         } else if (status === 'COMPLETED' || (status === 'CONFIRMED' && isPast)) {
           statusLabel = 'COMPLETED';
-          statusClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+          statusClass = 'bg-green-100 text-green-800  ';
         } else if (status === 'CANCELLED') {
           statusLabel = 'CANCELLED';
-          statusClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+          statusClass = 'bg-red-100 text-red-800  ';
         } else if (status === 'RESCHEDULED') {
           statusLabel = 'RESCHEDULED';
-          statusClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+          statusClass = 'bg-yellow-100 text-yellow-800  ';
         }
 
         return <Badge className={cn('font-semibold', statusClass)}>{statusLabel}</Badge>;
@@ -157,7 +151,7 @@ export const createBookingColumns = ({
       header: 'Amount',
       cell: ({ row }) => {
         return (
-          <span className="font-semibold text-charcoal dark:text-white">
+          <span className="font-semibold text-charcoal">
             €{row.original.totalAmount.toFixed(2)}
           </span>
         );
@@ -173,47 +167,65 @@ export const createBookingColumns = ({
         const isUpcoming = booking.status === 'CONFIRMED' && !isPast;
         const isCancelled = booking.status === 'CANCELLED';
         const isCancelling = cancellingBookingId === booking.id;
+        const canRate = isPast && !isCancelled && booking.canBeRated && !booking.hasRating;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0" disabled={isCancelling}>
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+          <div className="flex items-center gap-2 justify-end">
+            {/* Inline "Rate" action - surfaces the rating flow instead of
+                burying it three clicks deep in the dropdown menu. Only
+                shows once the session's start time has passed and the
+                client hasn't already rated. */}
+            {canRate && (
+              <Button
+                size="sm"
+                onClick={() => onRate(booking)}
+                className="h-8 gap-1.5 px-2.5 text-xs bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                <Star className="h-3.5 w-3.5 fill-white" />
+                Rate
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onBookingClick(booking)}>
-                <Calendar className="mr-2 h-4 w-4" />
-                View Details
-              </DropdownMenuItem>
-              {isUpcoming && (
-                <>
-                  <DropdownMenuItem onClick={() => onMessage(booking)}>
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Message Freelancer
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onReschedule(booking)}>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Reschedule
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onCancel(booking)}
-                    className="text-red-600 focus:text-red-600"
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel
-                  </DropdownMenuItem>
-                </>
-              )}
-              {isPast && !isCancelled && booking.canBeRated && !booking.hasRating && (
-                <DropdownMenuItem onClick={() => onRate(booking)}>
-                  <Star className="mr-2 h-4 w-4" />
-                  Rate & Review
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isCancelling}>
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onBookingClick(booking)}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  View Details
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {isUpcoming && (
+                  <>
+                    <DropdownMenuItem onClick={() => onMessage(booking)}>
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Message Freelancer
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onReschedule(booking)}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Reschedule
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onCancel(booking)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canRate && (
+                  <DropdownMenuItem onClick={() => onRate(booking)}>
+                    <Star className="mr-2 h-4 w-4" />
+                    Rate & Review
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },

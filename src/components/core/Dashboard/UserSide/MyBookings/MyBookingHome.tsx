@@ -96,9 +96,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   if (slotsError && !freelancer) {
     return (
       <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-        <p className="text-gray-600 dark:text-gray-400">
-          Failed to load booking information. Please try again.
-        </p>
+        <p className="text-gray-600">Failed to load booking information. Please try again.</p>
         <Button
           onClick={() => window.location.reload()}
           className="bg-primary hover:bg-primary/90 text-white"
@@ -113,7 +111,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   if (!freelancer) {
     return (
       <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600">
           No freelancer information available. Please go back and try again.
         </p>
         <Button onClick={() => window.history.back()} variant="outline" className="border-gray-300">
@@ -126,7 +124,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
   return (
     <div className="space-y-6">
       {/* Therapist Header */}
-      {/* <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0">
+      {/* <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-0">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16 border-2 border-primary">
@@ -139,7 +137,7 @@ const MyBookingHome: React.FC<MyBookingHomeProps> = ({ rescheduleBookingId }) =>
               <CardTitle className="text-xl font-poppins font-bold text-charcoal mb-1">
                 {freelancer.name}
               </CardTitle>
-              <p className="text-gray-600 dark:text-gray-400 mb-2">{freelancer.specialty}</p>
+              <p className="text-gray-600 mb-2">{freelancer.specialty}</p>
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <span>
                   ⭐ {freelancer.rating} ({freelancer.reviews} reviews)

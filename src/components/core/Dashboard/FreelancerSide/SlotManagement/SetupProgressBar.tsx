@@ -61,7 +61,10 @@ export const SetupProgressBar = ({ currentStep, hasPricing, hasSlots }: SetupPro
             </div>
             {index < steps.length - 1 && (
               <div
-                className={cn('w-12 h-0.5 mx-3', step.completed ? 'bg-green-500' : 'bg-gray-200')}
+                className={cn(
+                  'w-12 h-0.5 mx-3',
+                  steps[index]?.completed ? 'bg-green-500' : 'bg-gray-200',
+                )}
               />
             )}
           </div>

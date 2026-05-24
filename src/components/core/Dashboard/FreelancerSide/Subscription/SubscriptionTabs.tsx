@@ -66,7 +66,7 @@ export function SubscriptionTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+      <TabsList className="grid w-full grid-cols-3 mb-8 bg-gray-100 p-1 rounded-lg">
         <TabsTrigger
           value="overview"
           className="font-poppins font-medium text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"

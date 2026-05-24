@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -10,14 +9,15 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { isTokenValid } from '@/lib/utils';
 
-const navLinks = [
+const navLinks: Array<{ href: string; label: string; isPage?: boolean }> = [
   { href: '#how-it-works', label: 'Process' },
   { href: '#features', label: 'Why Us' },
   { href: '#pricing', label: 'Pricing' },
+  { href: '/guide', label: 'Guide', isPage: true },
+  { href: '/contact', label: 'Contact', isPage: true },
 ];
 
 const Navbar = () => {
-  const { resolvedTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [hasValidToken, setHasValidToken] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -56,7 +56,7 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-200 border-b ${
         scrolled
-          ? 'bg-white/80 dark:bg-black/80 backdrop-blur-md border-gray-100 dark:border-neutral-900 py-3'
+          ? 'bg-white/80  backdrop-blur-md border-gray-100  py-3'
           : 'bg-transparent border-transparent py-5'
       }`}
     >
@@ -64,7 +64,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
-            src={resolvedTheme === 'dark' ? '/svgs/NewLogoLight.svg' : '/svgs/NewLogoDark.svg'}
+            src="/svgs/NewLogoDark.svg"
             alt="TheraSynced"
             width={180}
             height={45}
@@ -76,18 +76,30 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
-          {navLinks.map((link) => (
-            <button
-              key={link.href}
-              onClick={() => handleNavClick(link.href)}
-              className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors relative group font-inter"
-            >
-              {link.label}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
-            </button>
-          ))}
+          {navLinks.map((link) =>
+            link.isPage ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className="text-sm font-medium text-gray-600 hover:text-primary transition-colors relative group font-inter"
+              >
+                {link.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+              </Link>
+            ) : (
+              <button
+                key={link.href}
+                onClick={() => handleNavClick(link.href)}
+                className="text-sm font-medium text-gray-600 hover:text-primary transition-colors relative group font-inter"
+              >
+                {link.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+              </button>
+            ),
+          )}
 
-          <div className="w-px h-4 bg-gray-200 dark:bg-neutral-800" />
+          <div className="w-px h-4 bg-gray-200" />
           <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'}>
             <Button size="sm" className="bg-primary text-white font-semibold font-inter">
               {hasValidToken ? 'Go to Dashboard' : 'Sign In'}
@@ -96,10 +108,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button
-          className="md:hidden p-2 text-gray-600 dark:text-neutral-400"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+        <button className="md:hidden p-2 text-gray-600" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -112,17 +121,28 @@ const Navbar = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 p-6 space-y-4 shadow-xl"
+            className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 p-6 space-y-4 shadow-xl"
           >
-            {navLinks.map((link) => (
-              <button
-                key={link.href}
-                onClick={() => handleNavClick(link.href)}
-                className="block w-full text-left text-base font-medium text-gray-600 dark:text-neutral-400 font-inter"
-              >
-                {link.label}
-              </button>
-            ))}
+            {navLinks.map((link) =>
+              link.isPage ? (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full text-left text-base font-medium text-gray-600 font-inter"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <button
+                  key={link.href}
+                  onClick={() => handleNavClick(link.href)}
+                  className="block w-full text-left text-base font-medium text-gray-600 font-inter"
+                >
+                  {link.label}
+                </button>
+              ),
+            )}
             <Link href={hasValidToken ? '/dashboard' : '/authentication/sign-in'} className="block">
               <Button className="w-full bg-primary text-white font-inter">
                 {hasValidToken ? 'Dashboard' : 'Sign In'}

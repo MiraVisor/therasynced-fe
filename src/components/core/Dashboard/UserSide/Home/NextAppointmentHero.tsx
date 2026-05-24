@@ -53,17 +53,17 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
 
   if (loading) {
     return (
-      <Card className="border border-gray-200 dark:border-gray-700">
+      <Card className="border border-gray-200">
         <CardContent className="p-8">
           <div className="animate-pulse">
             <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              <div className="w-20 h-20 bg-gray-200 rounded-full" />
               <div className="flex-1">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-1/3" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+                <div className="h-6 bg-gray-200 rounded mb-2 w-1/3" />
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+                <div className="h-4 bg-gray-200 rounded w-1/4" />
               </div>
-              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+              <div className="h-12 bg-gray-200 rounded w-32" />
             </div>
           </div>
         </CardContent>
@@ -124,9 +124,9 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
   const isWithin24Hours = bookingDate.getTime() - now.getTime() <= 24 * 60 * 60 * 1000;
 
   const getUrgencyColor = () => {
-    if (isToday) return 'border-blue-500 bg-blue-50 dark:bg-blue-900/10';
-    if (isTomorrow) return 'border-blue-300 bg-blue-50/50 dark:bg-blue-900/5';
-    return 'border-gray-200 dark:border-gray-700';
+    if (isToday) return 'border-blue-500 bg-blue-50 ';
+    if (isTomorrow) return 'border-blue-300 bg-blue-50/50 ';
+    return 'border-gray-200 ';
   };
 
   // Unused function removed - was: const _getUrgencyText = () => { ... };
@@ -183,7 +183,7 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
               {/* Job title or specialty */}
               {(booking?.slot?.freelancer as unknown as { mainJobTitle?: { name: string } })
                 ?.mainJobTitle && (
-                <p className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-3">
+                <p className="text-sm font-inter text-gray-600 mb-3">
                   {
                     (booking.slot.freelancer as unknown as { mainJobTitle: { name: string } })
                       .mainJobTitle.name
@@ -197,56 +197,46 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
           <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-4">
             {/* Date */}
             <div className="flex items-start gap-2">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {getBookingDate(booking)}
-                </p>
+                <p className="text-xs text-gray-500 mb-1">Date</p>
+                <p className="text-sm font-semibold text-gray-900">{getBookingDate(booking)}</p>
               </div>
             </div>
 
             {/* Time */}
             <div className="flex items-start gap-2">
-              <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Time</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {getBookingTime(booking)}
-                </p>
+                <p className="text-xs text-gray-500 mb-1">Time</p>
+                <p className="text-sm font-semibold text-gray-900">{getBookingTime(booking)}</p>
                 {isWithin24Hours && timeUntil && (
-                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">
-                    {timeUntil}
-                  </p>
+                  <p className="text-xs text-green-600 font-medium mt-0.5">{timeUntil}</p>
                 )}
               </div>
             </div>
 
             {/* Location */}
             <div className="flex items-start gap-2">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
-                <LocationIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <LocationIcon className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Location</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {getBookingLocation(booking)}
-                </p>
+                <p className="text-xs text-gray-500 mb-1">Location</p>
+                <p className="text-sm font-semibold text-gray-900">{getBookingLocation(booking)}</p>
               </div>
             </div>
           </div>
 
           {/* Right Section: Price and Actions */}
-          <div className="flex flex-col items-end justify-between gap-4 md:border-l md:pl-6 md:border-gray-200 dark:md:border-gray-700">
+          <div className="flex flex-col items-end justify-between gap-4 md:border-l md:pl-6 md:border-gray-200">
             {booking?.totalAmount && (
               <div className="text-center">
-                <p className="text-xs font-inter text-gray-500 dark:text-gray-400 mb-1">
-                  Total Amount
-                </p>
+                <p className="text-xs font-inter text-gray-500 mb-1">Total Amount</p>
                 <div className="flex items-center gap-1 text-2xl font-poppins font-bold text-primary">
                   <span>EUR {booking.totalAmount}</span>
                 </div>
@@ -262,19 +252,6 @@ const NextAppointmentHero: React.FC<NextAppointmentHeroProps> = ({ booking, load
                 View Details
                 <ExternalLink className="w-4 h-4 ml-2" />
               </Button>
-              {isWithin24Hours && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/10 dark:text-green-400"
-                  onClick={() => {
-                    // TODO: Implement join session logic
-                  }}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Join Session
-                </Button>
-              )}
             </div>
           </div>
         </div>

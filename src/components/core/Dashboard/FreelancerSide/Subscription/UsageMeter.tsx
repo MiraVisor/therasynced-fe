@@ -42,12 +42,12 @@ export function UsageMeter({
 
   const getStatusIcon = () => {
     if (isAtLimit || !canCreateSlots) {
-      return <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
+      return <XCircle className="h-4 w-4 text-red-600" />;
     }
     if (isNearLimit) {
-      return <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />;
+      return <AlertTriangle className="h-4 w-4 text-orange-600" />;
     }
-    return <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />;
+    return <CheckCircle2 className="h-4 w-4 text-green-600" />;
   };
 
   return (
@@ -55,26 +55,24 @@ export function UsageMeter({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           {getStatusIcon()}
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">Slot Usage</span>
+          <span className="text-sm font-semibold text-gray-900">Slot Usage</span>
         </div>
-        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="text-sm font-medium text-gray-700">
           {isUnlimited ? (
             <span className="font-semibold text-primary">{slotsUsed} slots active</span>
           ) : slotsLimit !== null ? (
             <span>
               <span className="font-bold text-charcoal">{slotsUsed}</span> /{' '}
-              <span className="text-gray-600 dark:text-gray-400">{slotsLimit}</span> slots
+              <span className="text-gray-600">{slotsLimit}</span> slots
             </span>
           ) : (
-            <span className="font-semibold text-gray-600 dark:text-gray-400">
-              {slotsUsed} slots active
-            </span>
+            <span className="font-semibold text-gray-600">{slotsUsed} slots active</span>
           )}
         </div>
       </div>
 
       {!isUnlimited && slotsLimit !== null && (
-        <Progress value={percentage} className="h-3 bg-gray-200 dark:bg-gray-700">
+        <Progress value={percentage} className="h-3 bg-gray-200">
           <div
             className={`h-full rounded-full transition-all duration-500 ease-out ${getProgressColor()}`}
             style={{ width: `${percentage}%` }}
@@ -99,9 +97,9 @@ export function UsageMeter({
       )}
 
       {showWarning && isNearLimit && !isAtLimit && (
-        <Alert className="mt-2 border-orange-500 bg-orange-50 dark:bg-orange-900/20">
-          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-          <AlertDescription className="text-orange-800 dark:text-orange-200">
+        <Alert className="mt-2 border-orange-500 bg-orange-50">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
             You're using {Math.round(percentage)}% of your available slots. Consider upgrading to
             avoid hitting the limit.
           </AlertDescription>

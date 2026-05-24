@@ -756,7 +756,7 @@ const Appointments = () => {
                     setSelectedAppointment(selectedAppointment);
                     setShowCancelDialog(true);
                   }}
-                  className="flex-1 "
+                  className="flex-1"
                 >
                   Cancel Appointment
                 </Button>

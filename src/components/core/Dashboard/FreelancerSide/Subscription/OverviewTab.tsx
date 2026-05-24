@@ -144,33 +144,31 @@ export function OverviewTab({
     <div className="space-y-8">
       {/* PAST_DUE / Grace Period Action Card */}
       {(isPastDue || inGracePeriod) && hasPlan && plan && (
-        <Card className="border-red-300 dark:border-red-800 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 shadow-sm overflow-hidden animate-in slide-in-from-top duration-300">
+        <Card className="border-red-300 bg-gradient-to-br from-red-50 to-orange-50 shadow-sm overflow-hidden animate-in slide-in-from-top duration-300">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-lg bg-red-100 dark:bg-red-900/30 flex-shrink-0">
-                <Shield className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="p-2.5 rounded-lg bg-red-100 flex-shrink-0">
+                <Shield className="h-6 w-6 text-red-600" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-poppins font-semibold text-red-900 dark:text-red-100 mb-1">
+                <h3 className="text-lg font-poppins font-semibold text-red-900 mb-1">
                   Action Required
                 </h3>
-                <p className="text-sm text-red-800 dark:text-red-200 mb-4">
+                <p className="text-sm text-red-800 mb-4">
                   Your payment method needs to be updated to continue your subscription.
                 </p>
                 {gracePeriodDaysRemaining !== null && gracePeriodDaysRemaining > 0 && (
-                  <div className="mb-4 p-3 rounded-lg bg-red-200/50 dark:bg-red-900/30">
+                  <div className="mb-4 p-3 rounded-lg bg-red-200/50">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-red-900 dark:text-red-100">
-                        Grace Period
-                      </span>
-                      <span className="text-sm font-bold text-red-900 dark:text-red-100">
+                      <span className="text-sm font-medium text-red-900">Grace Period</span>
+                      <span className="text-sm font-bold text-red-900">
                         {gracePeriodDaysRemaining} {gracePeriodDaysRemaining === 1 ? 'day' : 'days'}{' '}
                         left
                       </span>
                     </div>
-                    <div className="h-2 bg-red-200 dark:bg-red-900/50 rounded-full overflow-hidden">
+                    <div className="h-2 bg-red-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-red-500 dark:bg-red-400 transition-all duration-500"
+                        className="h-full bg-red-500 transition-all duration-500"
                         style={{
                           width: `${Math.max(0, Math.min(100, (gracePeriodDaysRemaining / 7) * 100))}%`,
                         }}
@@ -179,9 +177,9 @@ export function OverviewTab({
                   </div>
                 )}
                 {gracePeriodEndDate && (
-                  <Alert className="mb-4 border-red-300 dark:border-red-800 bg-red-100/50 dark:bg-red-900/20">
-                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    <AlertDescription className="text-xs text-red-800 dark:text-red-200">
+                  <Alert className="mb-4 border-red-300 bg-red-100/50">
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-xs text-red-800">
                       If payment isn't updated by{' '}
                       {gracePeriodEndDate.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -207,7 +205,7 @@ export function OverviewTab({
                     onClick={() => router.push('/dashboard/account?tab=subscription')}
                     variant="outline"
                     size="lg"
-                    className="border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-6 py-2.5"
+                    className="border-red-300 text-red-700 hover:bg-red-50 px-6 py-2.5"
                   >
                     Contact Support
                   </Button>
@@ -220,19 +218,19 @@ export function OverviewTab({
 
       {/* Cancellation Warning Card */}
       {isCanceledButActive && (
-        <Card className="border border-orange-300 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 shadow-sm overflow-hidden animate-in slide-in-from-top duration-300">
+        <Card className="border border-orange-300 bg-gradient-to-br from-orange-50 to-orange-100/50 shadow-sm overflow-hidden animate-in slide-in-from-top duration-300">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex-shrink-0">
-                <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 rounded-lg bg-orange-100 flex-shrink-0">
+                <Calendar className="h-5 w-5 text-orange-600" />
               </div>
               <div className="flex-1">
                 {isTrial ? (
                   <>
-                    <h3 className="text-lg font-poppins font-semibold text-orange-900 dark:text-orange-100 mb-1">
+                    <h3 className="text-lg font-poppins font-semibold text-orange-900 mb-1">
                       Subscription Canceled - Trial Continues
                     </h3>
-                    <p className="text-sm text-orange-800 dark:text-orange-200 mb-4">
+                    <p className="text-sm text-orange-800 mb-4">
                       Your subscription has been canceled. You'll continue with trial access until{' '}
                       {trialEndDate?.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -244,7 +242,7 @@ export function OverviewTab({
                     </p>
                     {trialDaysRemaining !== null && trialDaysRemaining > 0 && (
                       <div className="mb-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 dark:bg-orange-900/50 text-orange-900 dark:text-orange-100">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 text-orange-900">
                           Trial ends in {trialDaysRemaining}{' '}
                           {trialDaysRemaining === 1 ? 'day' : 'days'}
                         </span>
@@ -253,10 +251,10 @@ export function OverviewTab({
                   </>
                 ) : (
                   <>
-                    <h3 className="text-lg font-poppins font-semibold text-orange-900 dark:text-orange-100 mb-1">
+                    <h3 className="text-lg font-poppins font-semibold text-orange-900 mb-1">
                       Your subscription is ending
                     </h3>
-                    <p className="text-sm text-orange-800 dark:text-orange-200 mb-4">
+                    <p className="text-sm text-orange-800 mb-4">
                       Your subscription will end on{' '}
                       {nextBillingDate?.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -267,7 +265,7 @@ export function OverviewTab({
                     </p>
                     {daysUntilEnd !== null && daysUntilEnd > 0 && (
                       <div className="mb-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 dark:bg-orange-900/50 text-orange-900 dark:text-orange-100">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-200 text-orange-900">
                           Ends in {daysUntilEnd} {daysUntilEnd === 1 ? 'day' : 'days'}
                         </span>
                       </div>
@@ -308,20 +306,20 @@ export function OverviewTab({
       {/* Hero Section - Current Plan Card */}
       {hasPlan && plan && (
         <Card
-          className={`border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-all duration-300 ${
+          className={`border border-gray-200  shadow-sm overflow-hidden transition-all duration-300 ${
             isCanceledButActive
-              ? 'border-orange-300 dark:border-orange-800'
+              ? 'border-orange-300 '
               : isPastDue || inGracePeriod
-                ? 'border-red-300 dark:border-red-800 animate-pulse'
+                ? 'border-red-300  animate-pulse'
                 : ''
           }`}
         >
-          <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent dark:from-primary/10 dark:via-primary/5 p-8">
+          <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent p-8">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
               {/* Plan Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2.5 rounded-lg bg-primary/10 dark:bg-primary/20">
+                  <div className="p-2.5 rounded-lg bg-primary/10">
                     <Crown className="h-6 w-6 text-primary" />
                   </div>
                   <div>
@@ -340,15 +338,15 @@ export function OverviewTab({
                     />
                   </div>
                 </div>
-                <CardDescription className="text-base font-inter text-gray-700 dark:text-gray-300 mb-6">
+                <CardDescription className="text-base font-inter text-gray-700 mb-6">
                   {plan.description}
                 </CardDescription>
 
                 {/* Trial Status Message */}
                 {isTrial && (
-                  <Alert className="mb-6 border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
-                    <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                    <AlertDescription className="text-sm text-orange-800 dark:text-orange-200">
+                  <Alert className="mb-6 border-orange-300 bg-orange-50">
+                    <AlertTriangle className="h-4 w-4 text-orange-600" />
+                    <AlertDescription className="text-sm text-orange-800">
                       {isCanceledButActive ? (
                         <>
                           Your subscription has been canceled. You'll continue with trial access
@@ -376,27 +374,28 @@ export function OverviewTab({
                   </Alert>
                 )}
 
-                {/* Pricing - Very Prominent (only show if not in trial) */}
-                {!isTrial && (
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-poppins font-bold text-charcoal">
-                        EUR {plan.price.toFixed(2)}
-                      </span>
-                      <span className="text-lg font-inter text-gray-600 dark:text-gray-400">
-                        /month
-                      </span>
-                    </div>
+                {/* Pricing */}
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-poppins font-bold text-charcoal">
+                      EUR {plan.price.toFixed(2)}
+                    </span>
+                    <span className="text-lg font-inter text-gray-600">/month</span>
                   </div>
-                )}
+                  {isTrial && (
+                    <p className="text-sm text-gray-500 font-inter mt-1">
+                      After your trial ends. All features are unlimited during trial.
+                    </p>
+                  )}
+                </div>
 
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                   {nextBillingDate && (
-                    <div className="p-4 rounded-lg bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200">
                       <div className="flex items-center gap-2 mb-2">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
                           {isTrial ? 'Trial Ends' : 'Next Billing'}
                         </p>
                       </div>
@@ -409,11 +408,24 @@ export function OverviewTab({
                       </p>
                     </div>
                   )}
+                  {isTrial && nextBillingDate && (
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CreditCard className="h-4 w-4 text-primary" />
+                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                          First Charge
+                        </p>
+                      </div>
+                      <p className="text-lg font-poppins font-semibold text-charcoal">
+                        EUR {plan.price.toFixed(2)}
+                      </p>
+                    </div>
+                  )}
                   {isTrial && trialDaysRemaining !== null && (
-                    <div className="p-4 rounded-lg bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200">
                       <div className="flex items-center gap-2 mb-2">
                         <TrendingUp className="h-4 w-4 text-primary" />
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
                           Days Remaining
                         </p>
                       </div>
@@ -423,10 +435,10 @@ export function OverviewTab({
                     </div>
                   )}
                   {subscription && (
-                    <div className="p-4 rounded-lg bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 rounded-lg bg-white/60 border border-gray-200">
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="h-4 w-4 text-primary" />
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
                           Status
                         </p>
                       </div>
@@ -457,7 +469,7 @@ export function OverviewTab({
                       onClick={onManageBilling}
                       variant="outline"
                       size="lg"
-                      className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 px-6 py-2.5 transition-all duration-200 hover:scale-[1.02]"
+                      className="border-gray-300 hover:bg-gray-50 px-6 py-2.5 transition-all duration-200 hover:scale-[1.02]"
                     >
                       <CreditCard className="mr-2 h-4 w-4" />
                       Manage Billing
@@ -469,7 +481,7 @@ export function OverviewTab({
                       onClick={onCancel}
                       variant="outline"
                       size="lg"
-                      className="border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 px-6 py-2.5 transition-all duration-200 hover:scale-[1.02]"
+                      className="border-red-200 text-red-600 hover:bg-red-50 px-6 py-2.5 transition-all duration-200 hover:scale-[1.02]"
                     >
                       Cancel Subscription
                     </Button>
@@ -486,9 +498,7 @@ export function OverviewTab({
         <div className="space-y-6">
           <div>
             <h3 className="text-xl font-poppins font-bold text-charcoal mb-1">Usage & Limits</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Monitor your subscription usage and limits
-            </p>
+            <p className="text-sm text-gray-600">Monitor your subscription usage and limits</p>
           </div>
           <div className="grid grid-cols-1 gap-6">
             {/* Slots Limit */}
@@ -505,7 +515,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Slots used</span>
+                      <span className="text-sm text-gray-600">Slots used</span>
                       <span className="text-sm font-semibold text-primary">
                         {subscription.slotsUsed ?? 0} / Unlimited
                       </span>
@@ -532,15 +542,15 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Slots used</span>
+                        <span className="text-sm text-gray-600">Slots used</span>
                         <span className="text-sm font-semibold">
                           {subscription.slotsUsed ?? 0}/{formatLimit(subscription.slotsLimit)}
                         </span>
                       </div>
                       {isApproachingLimit(subscription.slotsUsed ?? 0, subscription.slotsLimit) && (
-                        <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
-                          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                          <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
+                        <Alert className="mt-2 border-orange-300 bg-orange-50">
+                          <AlertTriangle className="h-4 w-4 text-orange-600" />
+                          <AlertDescription className="text-xs text-orange-800">
                             You're approaching your slot limit. Consider upgrading for more slots.
                           </AlertDescription>
                         </Alert>
@@ -565,9 +575,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Days used this week
-                      </span>
+                      <span className="text-sm text-gray-600">Days used this week</span>
                       <span className="text-sm font-semibold text-primary">
                         {subscription.daysUsed ?? 0} / Unlimited
                       </span>
@@ -594,9 +602,7 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Days used this week
-                        </span>
+                        <span className="text-sm text-gray-600">Days used this week</span>
                         <span className="text-sm font-semibold">
                           {subscription.daysUsed ?? 0}/{formatLimit(subscription.maxDaysPerWeek)}
                         </span>
@@ -605,9 +611,9 @@ export function OverviewTab({
                         subscription.daysUsed ?? 0,
                         subscription.maxDaysPerWeek,
                       ) && (
-                        <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
-                          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                          <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
+                        <Alert className="mt-2 border-orange-300 bg-orange-50">
+                          <AlertTriangle className="h-4 w-4 text-orange-600" />
+                          <AlertDescription className="text-xs text-orange-800">
                             You're approaching your weekly day limit. Consider upgrading for more
                             flexibility.
                           </AlertDescription>
@@ -633,9 +639,7 @@ export function OverviewTab({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Messages used
-                      </span>
+                      <span className="text-sm text-gray-600">Messages used</span>
                       <span className="text-sm font-semibold text-primary">
                         {subscription.messagesUsed ?? 0} / Unlimited
                       </span>
@@ -662,9 +666,7 @@ export function OverviewTab({
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Messages used
-                        </span>
+                        <span className="text-sm text-gray-600">Messages used</span>
                         <span className="text-sm font-semibold">
                           {subscription.messagesUsed ?? 0}/
                           {formatLimit(subscription.maxMessagesPerBillingCycle)}
@@ -674,7 +676,7 @@ export function OverviewTab({
                         const billingCycleEnd = getBillingCycleEndDate(subscription);
                         const daysUntilReset = getDaysUntilBillingCycleReset(subscription);
                         return (
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="text-xs text-gray-500">
                             {billingCycleEnd && daysUntilReset !== null ? (
                               <span>
                                 Billing cycle resets in {daysUntilReset}{' '}
@@ -696,9 +698,9 @@ export function OverviewTab({
                         subscription.messagesUsed ?? 0,
                         subscription.maxMessagesPerBillingCycle,
                       ) && (
-                        <Alert className="mt-2 border-orange-300 bg-orange-50 dark:bg-orange-900/20">
-                          <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                          <AlertDescription className="text-xs text-orange-800 dark:text-orange-200">
+                        <Alert className="mt-2 border-orange-300 bg-orange-50">
+                          <AlertTriangle className="h-4 w-4 text-orange-600" />
+                          <AlertDescription className="text-xs text-orange-800">
                             You're approaching your messaging limit. Consider upgrading for
                             unlimited messages.
                           </AlertDescription>
@@ -715,9 +717,9 @@ export function OverviewTab({
 
       {/* No Plan State / Inactive State - Improved Empty State */}
       {(!hasPlan || subscription?.status === 'UNPAID' || subscription?.status === 'INACTIVE') && (
-        <Card className="border-2 border-dashed border-gray-300 dark:border-gray-600 shadow-sm">
+        <Card className="border-2 border-dashed border-gray-300 shadow-sm">
           <CardContent className="flex flex-col items-center justify-center py-16 px-6">
-            <div className="p-4 rounded-full bg-gray-100 dark:bg-gray-800 mb-6">
+            <div className="p-4 rounded-full bg-gray-100 mb-6">
               <Crown className="h-10 w-10 text-gray-400" />
             </div>
             <h3 className="text-2xl font-poppins font-bold text-charcoal mb-3">
@@ -725,7 +727,7 @@ export function OverviewTab({
                 ? 'Your subscription is paused'
                 : 'No Active Plan'}
             </h3>
-            <p className="text-base text-gray-600 dark:text-gray-400 text-center mb-8 max-w-md">
+            <p className="text-base text-gray-600 text-center mb-8 max-w-md">
               {subscription?.status === 'TRIAL_EXPIRED' || subscription?.status === 'INACTIVE'
                 ? 'Your trial has expired. Subscribe to a plan to continue using the platform and unlock all features.'
                 : subscription?.status === 'UNPAID'
@@ -733,7 +735,7 @@ export function OverviewTab({
                   : 'Choose a subscription plan to unlock all features and start accepting bookings.'}
             </p>
             {subscription?.status === 'UNPAID' && (
-              <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="mb-4 text-sm text-gray-600">
                 <p className="font-medium mb-2">You'll get back:</p>
                 <ul className="list-disc list-inside space-y-1">
                   {plan && (

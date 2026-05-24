@@ -43,8 +43,8 @@ export interface UserProfileData {
   profilePicture?: string;
   role: string;
   dob: string;
-  county?: string | null;
-  cityTown?: string | null;
+  county?: string;
+  cityTown?: string;
   description?: string; // Bio/description field
   isEmailVerified: boolean;
   authProvider: string;
@@ -54,6 +54,7 @@ export interface UserProfileData {
   mainJobTitleId?: string;
   clinicAddress?: string;
   homeAddress?: string; // NEW: Home address for bookings
+  verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   verificationDocuments?: string[];
   verificationRequestedAt?: Date | null;
   verificationApprovedAt?: Date | null;

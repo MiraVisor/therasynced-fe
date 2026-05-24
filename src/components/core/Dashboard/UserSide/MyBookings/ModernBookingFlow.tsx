@@ -17,7 +17,7 @@ import { useAvailableSlots } from '@/hooks/queries/useSlots';
 import { useSocketSlots } from '@/hooks/useSocketSlots';
 import { useBookingStore } from '@/stores/bookingStore';
 import { getApiErrorMessage, type ServiceCategory } from '@/types/common';
-import type { LocationType } from '@/types/pricing';
+import { LocationType } from '@/types/pricing';
 import type { Expert, Slot } from '@/types/types';
 
 import { BookingSummarySidebar } from './BookingSummarySidebar';
@@ -55,10 +55,8 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   const { data: slots = [] } = useAvailableSlots(freelancerId ?? null);
   const { mutate: createBooking, isPending: isCreatingBooking } = useCreateBooking();
   const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(null);
-  // Note: useFreelancerPricing fetches pricing for logged-in freelancer
-  // In booking flow, we're booking with a different freelancer
-  // For now, pricing will be optional and we'll use slot's basePrice as fallback
-  // TODO: Add endpoint to fetch pricing for a specific freelancer if needed
+  // useFreelancerPricing fetches pricing for the logged-in freelancer; in the
+  // client booking flow we fall back to slot.basePrice when pricing isn't available.
   const { data: pricing } = useFreelancerPricing();
 
   // Location selection state
@@ -157,17 +155,17 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     if (selectedCategoryIds.length === 0) {
       // No categories selected - use slot's locationType or default to CLINIC
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     // If pricing is not available, use slot's locationType or default to CLINIC
     if (!pricing?.servicePricing) {
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     // Find common location types across all selected categories
@@ -192,9 +190,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     if (locationSets.length === 0) {
       // If no locations found, fall back to slot's locationType
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     const commonLocations = locationSets.reduce((intersection, locationSet) => {
@@ -206,9 +204,9 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
     // If no common locations, fall back to slot's locationType or CLINIC
     if (result.length === 0) {
       if (selectedSlot?.locationType) {
-        return [selectedSlot.locationType as LocationType];
+        return [selectedSlot.locationType];
       }
-      return ['CLINIC' as LocationType];
+      return [LocationType.CLINIC];
     }
 
     return result;
@@ -569,7 +567,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
   return (
     <div className="min-h-screen">
       {/* Header with Progress */}
-      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             {/* Back Button */}
@@ -593,7 +591,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                         currentStep >= step.id
                           ? 'bg-primary text-white shadow-md'
-                          : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
+                          : 'bg-gray-100 text-gray-400  '
                       }`}
                     >
                       {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : step.id}
@@ -601,22 +599,18 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
                     <div className="hidden sm:block">
                       <div
                         className={`text-sm font-medium ${
-                          currentStep >= step.id
-                            ? 'text-charcoal dark:text-white'
-                            : 'text-gray-400 dark:text-gray-500'
+                          currentStep >= step.id ? 'text-charcoal ' : 'text-gray-400 '
                         }`}
                       >
                         {step.title}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {step.description}
-                      </div>
+                      <div className="text-xs text-gray-500">{step.description}</div>
                     </div>
                   </div>
                   {index < steps.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-2 transition-all ${
-                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                        currentStep > step.id ? 'bg-primary' : 'bg-gray-200 '
                       }`}
                     />
                   )}
@@ -631,12 +625,12 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Main Content Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             {renderStepContent()}
 
             {/* Continue Button - Moved to bottom of content */}
             {currentStep < steps.length && (
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+              <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end">
                 <Button
                   onClick={nextStep}
                   disabled={!isStepValid()}
@@ -650,7 +644,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
           </div>
 
           {/* Booking Summary - Moved to bottom */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <BookingSummarySidebar
               currentStep={currentStep}
               totalSteps={steps.length}
@@ -674,7 +668,7 @@ const ModernBookingFlow: React.FC<ModernBookingFlowProps> = ({ freelancerData })
           <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
             Debug Information
           </summary>
-          <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs space-y-2">
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg text-xs space-y-2">
             <div className="grid grid-cols-4 gap-4">
               <div>Socket: {'N/A' /* isConnected missing */}</div>
               <div>Reserved: {'N/A' /* reservedSlots missing */}</div>

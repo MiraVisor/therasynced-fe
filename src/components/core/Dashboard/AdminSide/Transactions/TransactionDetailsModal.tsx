@@ -49,24 +49,22 @@ export function TransactionDetailsModal({
           {/* Transaction Info */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                Transaction Information
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Transaction Information</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Transaction ID</p>
+                  <p className="text-xs text-gray-500">Transaction ID</p>
                   <p className="font-mono text-sm font-medium">{transaction.transactionId}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Invoice ID</p>
+                  <p className="text-xs text-gray-500">Invoice ID</p>
                   <p className="font-mono text-sm font-medium">{transaction.invoiceId}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Date</p>
+                  <p className="text-xs text-gray-500">Date</p>
                   <p className="text-sm font-medium">{formatDate(transaction.date)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
+                  <p className="text-xs text-gray-500">Status</p>
                   <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       transaction.status === 'PAID'
@@ -88,16 +86,14 @@ export function TransactionDetailsModal({
 
             {/* Freelancer Info */}
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                Freelancer Information
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Freelancer Information</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Name</p>
+                  <p className="text-xs text-gray-500">Name</p>
                   <p className="text-sm font-medium">{transaction.freelancerName}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
+                  <p className="text-xs text-gray-500">Email</p>
                   <p className="text-sm font-medium">{transaction.freelancerEmail}</p>
                 </div>
               </div>
@@ -107,9 +103,7 @@ export function TransactionDetailsModal({
 
             {/* Payment Breakdown */}
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                Payment Breakdown
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Payment Breakdown</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm">Plan</span>
@@ -120,18 +114,9 @@ export function TransactionDetailsModal({
                   <span className="text-sm font-medium">{formatCurrency(transaction.amount)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">
-                    Commission ({((transaction.commission / transaction.amount) * 100).toFixed(1)}%)
-                  </span>
-                  <span className="text-sm font-medium text-red-600">
-                    -{formatCurrency(transaction.commission)}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span className="text-sm font-semibold">Net Revenue</span>
+                  <span className="text-sm font-semibold">Total</span>
                   <span className="text-sm font-bold text-primary">
-                    {formatCurrency(transaction.netAmount)}
+                    {formatCurrency(transaction.amount)}
                   </span>
                 </div>
               </div>
@@ -141,9 +126,7 @@ export function TransactionDetailsModal({
 
             {/* Payment Method */}
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                Payment Method
-              </h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Payment Method</h3>
               <p className="text-sm font-medium capitalize">{transaction.paymentMethod}</p>
             </div>
           </div>

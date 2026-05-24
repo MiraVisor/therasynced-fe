@@ -121,11 +121,12 @@ export const useDownloadFormTemplate = () => {
 /**
  * Freelancer: Hook to fetch visible form templates only
  */
-export const useVisibleFormTemplates = () => {
+export const useVisibleFormTemplates = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['formTemplates', 'freelancer'],
     queryFn: () => formTemplateApi.getVisibleFormTemplates(),
     select: (data) => data.data,
+    enabled: options?.enabled ?? true,
   });
 };
 

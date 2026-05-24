@@ -1,7 +1,6 @@
 'use client';
 
 import { format } from 'date-fns';
-import { MapPin } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
@@ -18,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useSignupUIStore } from '@/stores/signupUIStore';
 
 import { SignupFormData } from '../MultiStepSignup';
 
@@ -39,60 +37,6 @@ export function PersonalDetailsStep() {
 
   const selectedDob = watch('dob');
 
-  const {
-    isRequestingLocation,
-    locationPermissionGranted,
-    setIsRequestingLocation,
-    setLocationPermissionGranted,
-  } = useSignupUIStore();
-
-  const onRequestLocation = async () => {
-    setIsRequestingLocation(true);
-    try {
-      if (!('geolocation' in navigator)) {
-        toast.error('Geolocation is not supported by your browser');
-        setIsRequestingLocation(false);
-        return;
-      }
-
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: false,
-          timeout: 10000,
-          maximumAge: 60000,
-        });
-      });
-
-      // Reverse geocode to get county and city/town
-      try {
-        const response = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`,
-        );
-        const data = await response.json();
-        // Try to get county from principalSubdivision or locality
-        const countyName = data.principalSubdivision || data.locality;
-        const cityTownName = data.city || data.locality;
-        if (countyName) {
-          setValue('county', countyName);
-          setLocationPermissionGranted(true);
-          if (cityTownName && cityTownName !== countyName) {
-            setValue('cityTown', cityTownName);
-            toast.success(`Location found: ${cityTownName}, ${countyName}`);
-          } else {
-            toast.success(`Location found: ${countyName}`);
-          }
-        } else {
-          toast.error('Could not determine your county from location');
-        }
-      } catch (error) {
-        toast.error('Failed to get location details');
-      }
-    } catch (error) {
-      toast.error('Location access denied or unavailable. Please select your county manually.');
-    } finally {
-      setIsRequestingLocation(false);
-    }
-  };
   return (
     <div className="w-full space-y-2">
       {/* Header */}
@@ -223,27 +167,13 @@ export function PersonalDetailsStep() {
         {/* County Field */}
         <div className="space-y-1">
           <label className="text-xs font-inter font-medium text-gray-700">County</label>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <LocationDropdown
-                value={watch('county') || ''}
-                onValueChange={(value) => setValue('county', value)}
-                placeholder="Select your county"
-                searchPlaceholder="Search counties..."
-                emptyMessage="No county found."
-              />
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onRequestLocation}
-              disabled={isRequestingLocation || locationPermissionGranted}
-              className="h-10 px-3 border-gray-300"
-              title="Get location"
-            >
-              <MapPin className="h-4 w-4" />
-            </Button>
-          </div>
+          <LocationDropdown
+            value={watch('county') || ''}
+            onValueChange={(value) => setValue('county', value)}
+            placeholder="Select your county"
+            searchPlaceholder="Search counties..."
+            emptyMessage="No county found."
+          />
           {errors.county && (
             <p className="text-red-500 text-xs font-inter mt-0.5">{errors.county.message}</p>
           )}

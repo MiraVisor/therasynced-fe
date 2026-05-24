@@ -145,17 +145,17 @@ export default function AdminExportsPage() {
     >
       <div className="space-y-6 lg:space-y-8">
         {/* Security Warning */}
-        <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+        <Card className="border-amber-200 bg-amber-50">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              <CardTitle className="font-poppins font-semibold text-amber-900 dark:text-amber-100">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <CardTitle className="font-poppins font-semibold text-amber-900">
                 Important Security Notice
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="font-inter text-sm text-amber-800 dark:text-amber-200">
+            <p className="font-inter text-sm text-amber-800">
               This feature allows you to export user data for DPC (Data Protection Commission)
               requests. All exports are logged for audit purposes. Encrypted exports are recommended
               for sensitive data. Ensure you have proper authorization before exporting.
@@ -424,7 +424,7 @@ export default function AdminExportsPage() {
                   Copy
                 </Button>
               </div>
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+              <p className="text-xs text-amber-600 font-medium">
                 ⚠️ Important: This key is unique to this export and is included in the downloaded
                 file. Share it securely with DPC.
               </p>
@@ -468,12 +468,10 @@ export default function AdminExportsPage() {
               </p>
             </div>
 
-            <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
-              <Info className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <AlertTitle className="text-green-900 dark:text-green-100">
-                Decryption Information
-              </AlertTitle>
-              <AlertDescription className="text-green-800 dark:text-amber-200 space-y-2">
+            <Alert className="border-green-200 bg-green-50">
+              <Info className="h-4 w-4 text-green-600" />
+              <AlertTitle className="text-green-900">Decryption Information</AlertTitle>
+              <AlertDescription className="text-green-800 space-y-2">
                 <p>
                   The export key above is the decryption key for this specific export. It is
                   included in the downloaded file.
@@ -496,7 +494,7 @@ export default function AdminExportsPage() {
               </AlertDescription>
             </Alert>
 
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm font-medium mb-2">Downloaded File Contains:</p>
               <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
                 <li>

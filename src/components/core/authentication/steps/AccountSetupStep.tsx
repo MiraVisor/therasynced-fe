@@ -42,7 +42,11 @@ export function AccountSetupStep() {
         typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : '';
 
       // Ensure BACKEND_URL doesn't have trailing slash and construct URL properly
-      const backendUrl = (BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
+      if (!BACKEND_URL) {
+        toast.error('Backend URL is not configured. Please contact support.');
+        return;
+      }
+      const backendUrl = BACKEND_URL.replace(/\/$/, '');
 
       // Construct Google OAuth URL with signup=true parameter
       // IMPORTANT: signup=true must be included for signup flow

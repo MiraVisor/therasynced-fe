@@ -93,13 +93,13 @@ const YourSessions = () => {
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'CONFIRMED':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-100 text-green-800  ';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-100 text-red-800  ';
       case 'RESCHEDULED':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-yellow-100 text-yellow-800  ';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800  ';
     }
   };
 
@@ -122,11 +122,11 @@ const YourSessions = () => {
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg animate-pulse"
+                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg animate-pulse"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700/60 rounded w-1/2" />
+                  <div className="h-5 bg-gray-200 rounded w-1/3 mb-2" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -149,9 +149,9 @@ const YourSessions = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-48 text-center">
-            <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-2" />
-            <p className="text-sm font-inter text-gray-500 dark:text-gray-400">No sessions yet</p>
-            <p className="text-xs font-inter text-gray-400 dark:text-gray-500 mt-1">
+            <Calendar className="w-12 h-12 text-gray-300 mb-2" />
+            <p className="text-sm font-inter text-gray-500">No sessions yet</p>
+            <p className="text-xs font-inter text-gray-400 mt-1">
               Your booking history will appear here
             </p>
             <Button
@@ -187,7 +187,7 @@ const YourSessions = () => {
           {/* Upcoming Sessions */}
           {upcomingSessions.length > 0 && (
             <div>
-              <h3 className="text-lg font-poppins font-semibold text-gray-900 dark:text-white mb-4">
+              <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-4">
                 Upcoming ({upcomingSessions.length})
               </h3>
               <div className="space-y-3">
@@ -196,17 +196,17 @@ const YourSessions = () => {
                   return (
                     <div
                       key={booking.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => handleBookingClick(booking)}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-poppins font-semibold text-gray-900 dark:text-white truncate">
+                          <h4 className="font-poppins font-semibold text-gray-900 truncate">
                             {booking.slot.freelancer?.name || 'Unknown Freelancer'}
                           </h4>
                           <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{formatDate(booking.slot.startTime)}</span>
@@ -222,7 +222,7 @@ const YourSessions = () => {
                         </div>
                         {booking.totalAmount && (
                           <div className="mt-2">
-                            <span className="text-sm font-poppins font-semibold text-gray-900 dark:text-white">
+                            <span className="text-sm font-poppins font-semibold text-gray-900">
                               EUR {booking.totalAmount}
                             </span>
                           </div>
@@ -238,7 +238,7 @@ const YourSessions = () => {
           {/* Past Sessions */}
           {pastSessions.length > 0 && (
             <div>
-              <h3 className="text-lg font-poppins font-semibold text-gray-900 dark:text-white mb-4">
+              <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-4">
                 Past Sessions ({pastSessions.length})
               </h3>
               <div className="space-y-3">
@@ -247,17 +247,17 @@ const YourSessions = () => {
                   return (
                     <div
                       key={booking.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer opacity-75"
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer opacity-75"
                       onClick={() => handleBookingClick(booking)}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-poppins font-semibold text-gray-900 dark:text-white truncate">
+                          <h4 className="font-poppins font-semibold text-gray-900 truncate">
                             {booking.slot.freelancer?.name || 'Unknown Freelancer'}
                           </h4>
                           <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-4 text-sm font-inter text-gray-600">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{formatDate(booking.slot.startTime)}</span>
@@ -273,7 +273,7 @@ const YourSessions = () => {
                         </div>
                         {booking.totalAmount && (
                           <div className="mt-2">
-                            <span className="text-sm font-poppins font-semibold text-gray-900 dark:text-white">
+                            <span className="text-sm font-poppins font-semibold text-gray-900">
                               EUR {booking.totalAmount}
                             </span>
                           </div>

@@ -14,6 +14,7 @@ interface PlanCardProps {
   onSelectPlan?: (planType: PlanType) => void;
   isLoading?: boolean;
   hasActiveSubscription?: boolean;
+  isTrial?: boolean;
 }
 
 export const PlanCard = ({
@@ -23,6 +24,7 @@ export const PlanCard = ({
   onSelectPlan,
   isLoading = false,
   hasActiveSubscription = false,
+  isTrial = false,
 }: PlanCardProps) => {
   const isCurrentPlan = currentPlanName === plan.name;
 
@@ -32,22 +34,22 @@ export const PlanCard = ({
       case 'BRONZE':
         return {
           border: 'border-amber-600',
-          bg: 'bg-amber-50 dark:bg-amber-900/20',
-          text: 'text-amber-700 dark:text-amber-300',
+          bg: 'bg-amber-50 ',
+          text: 'text-amber-700 ',
           accent: 'bg-amber-600',
         };
       case 'SILVER':
         return {
           border: 'border-gray-400',
-          bg: 'bg-gray-50 dark:bg-gray-800/50',
-          text: 'text-gray-700 dark:text-gray-300',
+          bg: 'bg-gray-50 ',
+          text: 'text-gray-700 ',
           accent: 'bg-gray-400',
         };
       case 'GOLD':
         return {
           border: 'border-yellow-500',
-          bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-          text: 'text-yellow-700 dark:text-yellow-300',
+          bg: 'bg-yellow-50 ',
+          text: 'text-yellow-700 ',
           accent: 'bg-yellow-500',
         };
       default:
@@ -88,7 +90,7 @@ export const PlanCard = ({
       className={`group relative flex h-full flex-col transition-all duration-300 ${
         isCurrentPlan
           ? `border-2 ${planColors.border} ${planColors.bg} shadow-md`
-          : 'border border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02]'
+          : 'border border-gray-200  hover:border-primary/50 hover:shadow-lg hover:scale-[1.02]'
       } ${isRecommended && !isCurrentPlan ? 'ring-2 ring-primary/30 ring-offset-2' : ''}`}
     >
       {isRecommended && !isCurrentPlan && (
@@ -101,7 +103,9 @@ export const PlanCard = ({
 
       {isCurrentPlan && (
         <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2">
-          <Badge className="bg-primary text-white">Current Plan</Badge>
+          <Badge className="bg-primary text-white">
+            {isTrial ? 'Selected Plan' : 'Current Plan'}
+          </Badge>
         </div>
       )}
 
@@ -111,8 +115,8 @@ export const PlanCard = ({
             variant="outline"
             className={`flex items-center gap-1 ${
               upgradeDowngrade.type === 'upgrade'
-                ? 'border-green-500 text-green-700 dark:text-green-400'
-                : 'border-orange-500 text-orange-700 dark:text-orange-400'
+                ? 'border-green-500 text-green-700 '
+                : 'border-orange-500 text-orange-700 '
             }`}
           >
             {upgradeDowngrade.type === 'upgrade' ? (
@@ -133,7 +137,7 @@ export const PlanCard = ({
         >
           {plan.displayName}
         </CardTitle>
-        <CardDescription className="text-sm font-inter text-gray-600 dark:text-gray-400 mb-6">
+        <CardDescription className="text-sm font-inter text-gray-600 mb-6">
           {plan.description}
         </CardDescription>
 
@@ -147,7 +151,7 @@ export const PlanCard = ({
             >
               EUR {plan.price.toFixed(2)}
             </span>
-            <span className="text-lg font-inter text-gray-600 dark:text-gray-400">/month</span>
+            <span className="text-lg font-inter text-gray-600">/month</span>
           </div>
         </div>
       </CardHeader>
@@ -155,70 +159,17 @@ export const PlanCard = ({
       <CardContent className="flex-grow space-y-4 pb-6">
         <div>
           <h4 className="mb-4 text-sm font-poppins font-semibold text-charcoal uppercase tracking-wide">
-            Features Included
+            What&apos;s Included
           </h4>
           <ul className="space-y-3">
-            {/* Tier Limits - Always shown */}
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? '3 slots per week'
-                  : plan.name === 'SILVER'
-                    ? '5 slots per week'
-                    : 'Unlimited slots'}
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? '3 days per week'
-                  : plan.name === 'SILVER'
-                    ? '5 days per week'
-                    : 'Unlimited days'}
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? '50 messages per billing cycle'
-                  : plan.name === 'SILVER'
-                    ? '100 messages per billing cycle'
-                    : 'Unlimited messages'}
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300">
-              <CheckCircle2
-                className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                  isCurrentPlan ? planColors.text : 'text-primary'
-                }`}
-              />
-              <span className="leading-relaxed">
-                {plan.name === 'BRONZE'
-                  ? 'Rating visibility: Always visible'
-                  : 'Rating visibility: Can toggle on/off'}
-              </span>
-            </li>
-            {/* Backend-provided features */}
+            {/*
+              Feature list is driven entirely by the backend plan.features
+              array so this card stays in sync with the landing page
+              pricing section. Do not add hardcoded feature lines here —
+              update the seed (scripts/seed-subscription-plans.ts) instead.
+            */}
             {plan.features.map((feature, index) => (
-              <li
-                key={index}
-                className="flex items-start gap-3 text-sm font-inter text-gray-700 dark:text-gray-300"
-              >
+              <li key={index} className="flex items-start gap-3 text-sm font-inter text-gray-700">
                 <CheckCircle2
                   className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
                     isCurrentPlan ? planColors.text : 'text-primary'
@@ -238,7 +189,7 @@ export const PlanCard = ({
             disabled={isCurrentPlan || isLoading}
             className={`w-full transition-all duration-200 font-medium ${
               isCurrentPlan
-                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60'
+                ? 'bg-gray-300  text-gray-500  cursor-not-allowed opacity-60'
                 : 'bg-primary hover:bg-primary/90 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] text-white'
             }`}
             size="lg"

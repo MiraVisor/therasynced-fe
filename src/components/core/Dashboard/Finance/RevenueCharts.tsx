@@ -56,9 +56,7 @@ export function RevenueCharts({ revenueData, subscriptionData, isLoading }: Reve
 
       <TabsContent value="revenue" className="space-y-6">
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-          <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">
-            Revenue Comparison
-          </h3>
+          <h3 className="font-poppins font-semibold text-lg text-gray-700 mb-4">Booking Revenue</h3>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

@@ -52,31 +52,27 @@ export const FreelancerCalendarCard: React.FC<{
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <h3 className="font-poppins font-semibold text-lg text-charcoal dark:text-white truncate">
+            <h3 className="font-poppins font-semibold text-lg text-charcoal truncate">
               {freelancer.name}
             </h3>
             {freelancer.specialty && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {freelancer.specialty}
-              </p>
+              <p className="text-sm text-gray-600 mt-1">{freelancer.specialty}</p>
             )}
             <div className="flex items-center gap-2 mt-2">
               {freelancer.rating !== undefined && freelancer.rating > 0 && (
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-gray-700">
                     {freelancer.rating.toFixed(1)}
                   </span>
                   {freelancer.reviews !== undefined && freelancer.reviews > 0 && (
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      ({freelancer.reviews})
-                    </span>
+                    <span className="text-xs text-gray-500">({freelancer.reviews})</span>
                   )}
                 </div>
               )}
             </div>
             {freelancer.location && (
-              <div className="flex items-center gap-1 mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-1 mt-2 text-sm text-gray-600">
                 <MapPin className="w-4 h-4" />
                 <span>{freelancer.location}</span>
               </div>
@@ -86,7 +82,7 @@ export const FreelancerCalendarCard: React.FC<{
 
         {/* Calendar Grid */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <Calendar className="w-4 h-4" />
             <span>Available Dates</span>
           </div>
@@ -106,8 +102,8 @@ export const FreelancerCalendarCard: React.FC<{
                     aspect-square text-xs font-medium rounded-md transition-all
                     ${
                       available
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-900/50 cursor-pointer'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                        ? 'bg-green-100  text-green-800  hover:bg-green-200  cursor-pointer'
+                        : 'bg-gray-100  text-gray-400  cursor-not-allowed'
                     }
                     ${isToday ? 'ring-2 ring-primary' : ''}
                   `}
@@ -119,9 +115,7 @@ export const FreelancerCalendarCard: React.FC<{
             })}
           </div>
           {availableDates.length === 0 && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-              No available dates
-            </p>
+            <p className="text-sm text-gray-500 text-center py-2">No available dates</p>
           )}
         </div>
       </CardContent>

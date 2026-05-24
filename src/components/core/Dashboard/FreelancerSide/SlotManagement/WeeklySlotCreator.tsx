@@ -259,7 +259,7 @@ export const WeeklySlotCreator = ({ weekStart, onSuccess, onClose }: WeeklySlotC
               </Button>
             )}
             {onClose && (
-              <Button variant="ghost" size="icon" onClick={onClose}>
+              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
                 <X className="h-4 w-4" />
               </Button>
             )}

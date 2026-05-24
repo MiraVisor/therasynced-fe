@@ -1,7 +1,5 @@
 'use client';
 
-import { useTheme } from 'next-themes';
-
 import { NotificationPopover } from '@/components/common/notifications';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useNotificationsWithCount } from '@/hooks/queries/useNotifications';
@@ -20,7 +18,6 @@ export function DashboardPageWrapper({
   showNotifications?: boolean;
   userRole?: RoleType | null;
 }) {
-  const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
   const notifications = useNotificationsWithCount();
 
@@ -44,9 +41,7 @@ export function DashboardPageWrapper({
                 'h-10 w-10 border bg-background shadow-soft',
                 'hover:bg-accent hover:text-accent-foreground',
                 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                resolvedTheme === 'dark'
-                  ? 'border-border/40 hover:border-border/60'
-                  : 'border-border/20 hover:border-border/40',
+                'border-border/20 hover:border-border/40',
               )}
             />
           )}

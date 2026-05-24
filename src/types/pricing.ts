@@ -1,15 +1,9 @@
 /**
  * Pricing-related types
  */
+import { LocationType } from './enums';
 
-export type LocationType =
-  | 'HOME'
-  | 'CLINIC'
-  | 'CORPORATE'
-  | 'GYM'
-  | 'TRAINING'
-  | 'PITCHSIDE'
-  | 'EVENT';
+export { LocationType };
 
 export interface LocationPricing {
   locationType: LocationType;

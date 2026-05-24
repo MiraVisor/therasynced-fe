@@ -306,23 +306,11 @@ export const CreateSlotForm = ({ onSuccess }: CreateSlotFormProps) => {
       const day = entry.date.getDate();
 
       const localStartDate = new Date(
-        year,
-        month,
-        day,
-        parseInt(hours || '0'),
-        parseInt(minutes || '0'),
-        0,
-        0,
+        Date.UTC(year, month, day, parseInt(hours || '0'), parseInt(minutes || '0'), 0, 0),
       );
       const [endHours, endMinutes] = entry.endTime.split(':');
       const localEndDate = new Date(
-        year,
-        month,
-        day,
-        parseInt(endHours || '0'),
-        parseInt(endMinutes || '0'),
-        0,
-        0,
+        Date.UTC(year, month, day, parseInt(endHours || '0'), parseInt(endMinutes || '0'), 0, 0),
       );
 
       // locationType is optional - use entry's locationType, form default, or undefined (will default to CLINIC on backend)

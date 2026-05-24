@@ -233,7 +233,7 @@ export default function ClientAuthPage({ authtype }: ClientAuthPageProps) {
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <Image
-              src="/svgs/therasynced_logo.svg"
+              src="/svgs/NewLogoDark.svg"
               alt="Therasynced Logo"
               width={100}
               height={90}

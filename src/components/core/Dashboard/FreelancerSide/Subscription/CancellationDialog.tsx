@@ -99,9 +99,9 @@ export function CancellationDialog({
 
         <div className="space-y-4 py-4">
           {isTrialing && trialEnd ? (
-            <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-900/20">
+            <Alert className="border-orange-500 bg-orange-50">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800 dark:text-orange-200">
+              <AlertDescription className="text-orange-800">
                 Your subscription has been canceled. You'll continue with trial access until{' '}
                 {trialEnd.toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -113,9 +113,9 @@ export function CancellationDialog({
               </AlertDescription>
             </Alert>
           ) : endDate ? (
-            <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-900/20">
+            <Alert className="border-orange-500 bg-orange-50">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800 dark:text-orange-200">
+              <AlertDescription className="text-orange-800">
                 Your subscription will remain active until{' '}
                 {endDate.toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -157,11 +157,9 @@ export function CancellationDialog({
           )}
 
           {!isTrialing && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800">
-              <p className="mb-2 text-sm font-semibold text-red-800 dark:text-red-200">
-                What you'll lose:
-              </p>
-              <ul className="space-y-1 text-sm text-red-700 dark:text-red-300">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="mb-2 text-sm font-semibold text-red-800">What you'll lose:</p>
+              <ul className="space-y-1 text-sm text-red-700">
                 {featuresLost.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2">
                     <X className="mt-0.5 h-4 w-4 flex-shrink-0" />
@@ -172,8 +170,8 @@ export function CancellationDialog({
             </div>
           )}
           {isTrialing && (
-            <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-900/20">
-              <AlertDescription className="text-blue-800 dark:text-blue-200">
+            <Alert className="border-blue-500 bg-blue-50">
+              <AlertDescription className="text-blue-800">
                 <p className="font-medium mb-1">Good news!</p>
                 <p className="text-sm">
                   Since you're canceling during your trial period, you'll keep your trial access

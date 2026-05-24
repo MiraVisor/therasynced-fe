@@ -18,6 +18,7 @@ import { PlanType, SubscriptionPlan } from '@/types/subscription';
 interface FeatureComparisonProps {
   plans: SubscriptionPlan[];
   currentPlanName?: PlanType;
+  isTrial?: boolean;
   className?: string;
 }
 
@@ -32,6 +33,7 @@ interface Feature {
 export function FeatureComparison({
   plans,
   currentPlanName,
+  isTrial = false,
   className = '',
 }: FeatureComparisonProps) {
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -60,7 +62,7 @@ export function FeatureComparison({
   const renderFeatureValue = (value: boolean | string) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+        <CheckCircle2 className="h-5 w-5 text-green-600" />
       ) : (
         <X className="h-5 w-5 text-gray-400" />
       );
@@ -71,11 +73,11 @@ export function FeatureComparison({
   const getPlanColor = (planName: PlanType) => {
     switch (planName) {
       case 'BRONZE':
-        return 'border-amber-600 bg-amber-50 dark:bg-amber-900/20';
+        return 'border-amber-600 bg-amber-50 ';
       case 'SILVER':
-        return 'border-gray-400 bg-gray-50 dark:bg-gray-800/50';
+        return 'border-gray-400 bg-gray-50 ';
       case 'GOLD':
-        return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
+        return 'border-yellow-500 bg-yellow-50 ';
       default:
         return '';
     }
@@ -93,13 +95,11 @@ export function FeatureComparison({
             <Card
               key={plan.id}
               className={`border transition-all ${
-                isCurrent
-                  ? 'border-2 border-primary shadow-md'
-                  : 'border-gray-200 dark:border-gray-700'
+                isCurrent ? 'border-2 border-primary shadow-md' : 'border-gray-200 '
               } ${getPlanColor(plan.name)}`}
             >
               <CardHeader
-                className="cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
+                className="cursor-pointer hover:bg-gray-50/50 transition-colors"
                 onClick={() => setExpandedPlan(isExpanded ? null : plan.name)}
               >
                 <div className="flex items-center justify-between">
@@ -109,7 +109,7 @@ export function FeatureComparison({
                     </CardTitle>
                     {isCurrent && (
                       <span className="inline-block rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white mt-1">
-                        Current Plan
+                        {isTrial ? 'Selected Plan' : 'Current Plan'}
                       </span>
                     )}
                   </div>
@@ -128,15 +128,13 @@ export function FeatureComparison({
                     plan.features.map((feature, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
+                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
                       >
                         <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {feature}
-                          </span>
+                          <span className="text-sm font-medium text-gray-900">{feature}</span>
                         </div>
                         <div className="ml-4">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
                         </div>
                       </div>
                     ))
@@ -156,7 +154,7 @@ export function FeatureComparison({
 
   // Desktop: Table layout
   return (
-    <Card className={`border border-gray-200 dark:border-gray-700 shadow-sm ${className}`}>
+    <Card className={`border border-gray-200  shadow-sm ${className}`}>
       <CardHeader className="pb-4">
         <CardTitle className="text-xl font-poppins font-bold text-charcoal">
           Plan Comparison
@@ -169,7 +167,7 @@ export function FeatureComparison({
         <div className="overflow-x-auto -mx-6 px-6">
           <Table>
             <TableHeader>
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700">
+              <TableRow className="border-b-2 border-gray-200">
                 <TableHead className="w-[220px] font-poppins font-semibold text-charcoal">
                   Feature
                 </TableHead>
@@ -191,120 +189,18 @@ export function FeatureComparison({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* Tier Limits - Always shown first */}
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Slots per week
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">3</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">5</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <span className="text-sm font-medium">Unlimited</span>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Days per week
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">3</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">5</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <span className="text-sm font-medium">Unlimited</span>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Messages per billing cycle
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">50</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <span className="text-sm font-medium">100</span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <span className="text-sm font-medium">Unlimited</span>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                <TableCell className="font-medium py-4">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    Rating visibility toggle
-                  </span>
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'BRONZE' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <X className="h-5 w-5 text-gray-400 mx-auto" />
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${
-                    currentPlanName === 'SILVER' ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />
-                </TableCell>
-                <TableCell
-                  className={`text-center py-4 ${currentPlanName === 'GOLD' ? 'bg-primary/5' : ''}`}
-                >
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto" />
-                </TableCell>
-              </TableRow>
-              {/* Backend-provided features */}
+              {/*
+                Comparison rows come entirely from the backend plan.features
+                array so this table stays in sync with the landing page
+                pricing section. Don't reintroduce hardcoded rows - update
+                the seed (scripts/seed-subscription-plans.ts) instead.
+              */}
               {features.length > 0 ? (
                 features.map((feature, idx) => {
                   return (
-                    <TableRow key={idx} className="border-b border-gray-100 dark:border-gray-800">
+                    <TableRow key={idx} className="border-b border-gray-100">
                       <TableCell className="font-medium py-4">
-                        <span className="text-sm text-gray-900 dark:text-gray-100">
-                          {feature.name}
-                        </span>
+                        <span className="text-sm text-gray-900">{feature.name}</span>
                       </TableCell>
                       <TableCell
                         className={`text-center py-4 ${

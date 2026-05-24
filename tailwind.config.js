@@ -5,7 +5,6 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx}',
     './app/**/*.{js,ts,jsx,tsx}',
   ],
-  darkMode: ['class'], // no need to repeat 'class'
   theme: {
     extend: {
       screens: {

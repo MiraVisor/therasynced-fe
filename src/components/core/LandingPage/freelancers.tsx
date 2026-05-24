@@ -59,7 +59,7 @@ const faqData = [
     id: 1,
     question: 'Who can I find on the platform?',
     answer:
-      'Find licensed physiotherapists, athletic therapists, massage therapists, strength & conditioning coaches, and personal trainers — all available for flexible freelance work. Whether you want to expand clinical experience, join a sports team short-term, or offer mobile/in-clinic services, our platform connects you with opportunities that match your skills and schedule.',
+      'Find licensed physiotherapists, athletic therapists, massage therapists, strength & conditioning coaches, and personal trainers - all available for flexible freelance work. Whether you want to expand clinical experience, join a sports team short-term, or offer mobile/in-clinic services, our platform connects you with opportunities that match your skills and schedule.',
   },
   {
     id: 2,
@@ -71,7 +71,7 @@ const faqData = [
     id: 3,
     question: 'Can individuals and athletes book care directly?',
     answer:
-      'Yes — individual clients and athletes can search, compare, and book qualified professionals for in-clinic, in-home, or mobile sessions. The platform simplifies booking and client acquisition so professionals can focus on delivering excellent care.',
+      'Yes - individual clients and athletes can search, compare, and book qualified professionals for in-clinic, in-home, or mobile sessions. The platform simplifies booking and client acquisition so professionals can focus on delivering excellent care.',
   },
   {
     id: 4,
@@ -103,7 +103,7 @@ const Freelancers = () => {
       <div className="flex flex-col items-center gap-8 sm:gap-6 lg:gap-8">
         {/* Header */}
         <div
-          className="text-center space-y-3 sm:space-y-4 lg:space-y-6 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 "
+          className="text-center space-y-3 sm:space-y-4 lg:space-y-6 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"
           data-aos="fade-up"
         >
           <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
@@ -179,7 +179,7 @@ const Freelancers = () => {
         </div>
 
         {/* Professional Healthcare Section - Softer green background that cards overlap into */}
-        <div className="w-full  bg-[#007745]/80  -mt-12 lg:-mt-20 relative z-0 pt-12 lg:pt-20 pb-12 lg:pb-24">
+        <div className="w-full bg-[#007745]/80 -mt-12 lg:-mt-20 relative z-0 pt-12 lg:pt-20 pb-12 lg:pb-24">
           <div className="max-w-6xl mx-auto py-6 md:py-12 lg:py-20 lg:min-h-[500px] grid grid-cols-1 lg:grid-cols-2 gap-10 items-start relative overflow-visible mt-10">
             {/* Left Column - FAQ Section */}
             <div

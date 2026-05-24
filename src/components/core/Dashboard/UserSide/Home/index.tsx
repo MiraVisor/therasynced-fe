@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuthZustand';
 
 import { DashboardPageWrapper } from '../../DashboardPageWrapper';
+import { UnratedBookingsBanner } from '../Ratings/UnratedBookingsBanner';
 import FavoriteFreelancersCarousel from './FavoriteFreelancersCarousel';
 import NextAppointmentHero from './NextAppointmentHero';
 import YourSessions from './YourSessions';
@@ -22,6 +23,10 @@ const UserHome = () => {
       }
     >
       <div className="space-y-6 lg:space-y-8">
+        {/* Rating reminder - nudges the client to review past sessions
+            they haven't rated yet. Renders null when nothing is pending. */}
+        <UnratedBookingsBanner />
+
         {/* Next Appointment Hero */}
         <NextAppointmentHero booking={null} loading={false} />
 

@@ -95,20 +95,20 @@ export function DataAccessLogsSection() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-4">
-        <Shield className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-        <h3 className="text-lg font-poppins font-semibold text-gray-900 dark:text-white">
+        <Shield className="h-5 w-5 text-gray-600" />
+        <h3 className="text-lg font-poppins font-semibold text-gray-900">
           Health Data Access Logs
         </h3>
       </div>
 
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+      <p className="text-sm text-gray-600 mb-6">
         View a record of all access to your health data. Self-access entries show when you accessed
         your own data. Third-party access (FREELANCER/ADMIN) indicates when healthcare professionals
         or administrators accessed your health information.
       </p>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white rounded-lg p-4 border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <div>
             <Label htmlFor="startDate" className="text-sm font-medium">

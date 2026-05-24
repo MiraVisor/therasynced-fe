@@ -35,10 +35,10 @@ const HowItWorks = () => {
   return (
     <section
       id="how-it-works"
-      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-white dark:bg-neutral-900 relative overflow-hidden"
+      className="w-full px-4 sm:px-6 lg:px-8 py-24 lg:py-32 bg-white relative overflow-hidden"
     >
       {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute top-20 left-20 w-96 h-96 border border-primary rounded-full" />
         <div className="absolute bottom-20 right-20 w-72 h-72 border border-sage-warm rounded-full" />
       </div>
@@ -51,10 +51,10 @@ const HowItWorks = () => {
           transition={{ duration: isMobile ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-16 lg:mb-20 space-y-4"
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white font-playfair">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 font-playfair">
             How it works
           </h2>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 max-w-2xl mx-auto font-open-sans">
+          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto font-open-sans">
             Find and book sessions with independent professionals in a few clicks.
           </p>
         </motion.div>
@@ -74,7 +74,7 @@ const HowItWorks = () => {
               }}
               className="relative group"
             >
-              <div className="bg-[#faf9f6] dark:bg-neutral-800 rounded-2xl p-8 lg:p-10 border border-gray-100 dark:border-neutral-700 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 h-full">
+              <div className="bg-[#faf9f6] rounded-2xl p-8 lg:p-10 border border-gray-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 h-full">
                 {/* Step Number */}
                 <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center shadow-lg">
                   {index + 1}
@@ -83,17 +83,15 @@ const HowItWorks = () => {
                 <div className="flex flex-col items-center text-center space-y-5">
                   {/* Icon */}
                   <div
-                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} border border-gray-100 dark:border-neutral-700 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:border-primary/30 transition-all duration-300 group-hover:scale-105`}
+                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} border border-gray-100  flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:border-primary/30 transition-all duration-300 group-hover:scale-105`}
                   >
                     <step.icon className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
                   </div>
 
                   {/* Content */}
                   <div className="space-y-3">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white font-poppins">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-neutral-400 leading-relaxed font-open-sans">
+                    <h3 className="text-xl font-bold text-gray-900 font-poppins">{step.title}</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed font-open-sans">
                       {step.description}
                     </p>
                   </div>

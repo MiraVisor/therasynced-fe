@@ -39,7 +39,7 @@ const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
       <div className="space-y-0.5">
         <label
           htmlFor={name}
-          className="font-[700] text-[14px] leading-[25px] font-sans text-foreground "
+          className="font-[700] text-[14px] leading-[25px] font-sans text-foreground"
         >
           {title}
         </label>

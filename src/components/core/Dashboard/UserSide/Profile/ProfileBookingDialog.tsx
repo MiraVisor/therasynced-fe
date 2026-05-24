@@ -110,7 +110,7 @@ export function ProfileBookingDialog({
 
     // Check if the slot supports different locations
     if (selectedSlot.locationType === 'HOME' || selectedSlot.locationType === 'CLINIC') {
-      locations.push(selectedSlot.locationType as 'HOME' | 'CLINIC');
+      locations.push(selectedSlot.locationType);
     } else {
       // Default to both if not specified
       locations.push('CLINIC', 'HOME');
@@ -241,7 +241,7 @@ export function ProfileBookingDialog({
       <div>
         <div className="flex items-center gap-2 mb-2">
           {icon}
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</span>
+          <span className="text-sm font-medium text-gray-600">{title}</span>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {slotsList.map((slot) => {
@@ -253,7 +253,7 @@ export function ProfileBookingDialog({
                 className={`p-2.5 rounded-lg border text-center transition-all ${
                   isSelected
                     ? 'border-primary bg-primary text-white shadow-md'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:bg-primary/5'
+                    : 'border-gray-200  hover:border-primary/50 hover:bg-primary/5'
                 }`}
               >
                 <div className="font-medium text-sm">
@@ -274,13 +274,13 @@ export function ProfileBookingDialog({
         <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-mint/5">
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-              <AvatarImage src={expert.profilePicture} />
+              <AvatarImage src={expert.profilePicture || undefined} alt={expert.name} />
               <AvatarFallback className="bg-primary text-white font-poppins font-bold">
                 {expert.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-xl font-poppins font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-poppins font-bold text-gray-900">
                 Book with {expert.name}
               </h2>
               {expert.jobTitle?.name && (
@@ -291,7 +291,7 @@ export function ProfileBookingDialog({
         </DialogHeader>
 
         {/* Step Progress */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50">
+        <div className="px-6 py-4 bg-gray-50">
           <div className="flex items-center justify-between">
             {STEPS.filter((s) => hasServices || s !== 'services').map((s, i, arr) => {
               const stepIndex = STEPS.indexOf(s);
@@ -314,7 +314,7 @@ export function ProfileBookingDialog({
                           ? 'bg-primary text-white shadow-md'
                           : isCompleted
                             ? 'bg-green-500 text-white'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                            : 'bg-gray-200  text-gray-500'
                       }`}
                     >
                       {isCompleted ? <Check className="h-4 w-4" /> : i + 1}
@@ -328,7 +328,7 @@ export function ProfileBookingDialog({
                   {i < arr.length - 1 && (
                     <div
                       className={`w-8 sm:w-12 h-0.5 mx-1 ${
-                        isCompleted ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
+                        isCompleted ? 'bg-green-500' : 'bg-gray-200 '
                       }`}
                     />
                   )}
@@ -369,7 +369,7 @@ export function ProfileBookingDialog({
                         className={`p-3 rounded-xl border text-center transition-all ${
                           isSelected
                             ? 'border-primary bg-primary text-white shadow-md'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 hover:bg-primary/5'
+                            : 'border-gray-200  hover:border-primary/50 hover:bg-primary/5'
                         }`}
                       >
                         <div
@@ -477,7 +477,7 @@ export function ProfileBookingDialog({
                       className={`w-full p-4 rounded-xl border text-left flex items-center justify-between transition-all ${
                         isSelected
                           ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                          : 'border-gray-200  hover:border-primary/50'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -515,7 +515,7 @@ export function ProfileBookingDialog({
                       className={`p-4 rounded-xl border text-left transition-all ${
                         selectedLocation === 'CLINIC'
                           ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                          : 'border-gray-200  hover:border-primary/50'
                       }`}
                     >
                       <Building2
@@ -531,7 +531,7 @@ export function ProfileBookingDialog({
                       className={`p-4 rounded-xl border text-left transition-all ${
                         selectedLocation === 'HOME'
                           ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                          : 'border-gray-200  hover:border-primary/50'
                       }`}
                     >
                       <Home
@@ -580,7 +580,7 @@ export function ProfileBookingDialog({
                 <div className="bg-primary/10 p-4 border-b">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={expert.profilePicture} />
+                      <AvatarImage src={expert.profilePicture || undefined} alt={expert.name} />
                       <AvatarFallback className="bg-primary text-white">
                         {expert.name?.charAt(0).toUpperCase()}
                       </AvatarFallback>
@@ -655,7 +655,7 @@ export function ProfileBookingDialog({
         </div>
 
         {/* Actions */}
-        <div className="p-6 pt-4 border-t bg-gray-50 dark:bg-gray-800/50">
+        <div className="p-6 pt-4 border-t bg-gray-50">
           <div className="flex gap-3">
             {step !== 'date' && (
               <Button variant="outline" onClick={goToPrevStep} className="flex-shrink-0">

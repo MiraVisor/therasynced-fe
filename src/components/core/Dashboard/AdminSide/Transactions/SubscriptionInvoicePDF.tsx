@@ -155,11 +155,6 @@ export const SubscriptionInvoicePDF = ({ data }: { data: InvoiceGenerationData }
     return `€${amount.toFixed(2)}`;
   };
 
-  const commissionPercentage = (
-    (data.transaction.commission / data.transaction.amount) *
-    100
-  ).toFixed(1);
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -200,46 +195,26 @@ export const SubscriptionInvoicePDF = ({ data }: { data: InvoiceGenerationData }
         {/* Table */}
         <View style={styles.table}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderCell, { width: '40%' }]}>Description</Text>
-            <Text style={[styles.tableHeaderCell, { width: '20%', textAlign: 'right' }]}>
+            <Text style={[styles.tableHeaderCell, { width: '60%' }]}>Description</Text>
+            <Text style={[styles.tableHeaderCell, { width: '40%', textAlign: 'right' }]}>
               Amount
-            </Text>
-            <Text style={[styles.tableHeaderCell, { width: '20%', textAlign: 'right' }]}>
-              Commission
-            </Text>
-            <Text style={[styles.tableHeaderCell, { width: '20%', textAlign: 'right' }]}>
-              Total
             </Text>
           </View>
           <View style={styles.tableRow}>
-            <Text style={[styles.tableCell, { width: '40%' }]}>
+            <Text style={[styles.tableCell, { width: '60%' }]}>
               {data.transaction.plan} Plan Subscription
             </Text>
-            <Text style={[styles.tableCell, { width: '20%', textAlign: 'right' }]}>
+            <Text style={[styles.tableCell, { width: '40%', textAlign: 'right' }]}>
               {formatCurrency(data.transaction.amount)}
-            </Text>
-            <Text style={[styles.tableCell, { width: '20%', textAlign: 'right' }]}>
-              -{formatCurrency(data.transaction.commission)} ({commissionPercentage}%)
-            </Text>
-            <Text style={[styles.tableCell, { width: '20%', textAlign: 'right' }]}>
-              {formatCurrency(data.transaction.netAmount)}
             </Text>
           </View>
         </View>
 
         {/* Totals */}
         <View style={styles.totalsSection}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Subtotal:</Text>
-            <Text style={styles.totalValue}>{formatCurrency(data.transaction.amount)}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Commission ({commissionPercentage}%):</Text>
-            <Text style={styles.totalValue}>-{formatCurrency(data.transaction.commission)}</Text>
-          </View>
           <View style={styles.grandTotal}>
-            <Text style={styles.grandTotalLabel}>Net Revenue:</Text>
-            <Text style={styles.grandTotalValue}>{formatCurrency(data.transaction.netAmount)}</Text>
+            <Text style={styles.grandTotalLabel}>Total:</Text>
+            <Text style={styles.grandTotalValue}>{formatCurrency(data.transaction.amount)}</Text>
           </View>
         </View>
 

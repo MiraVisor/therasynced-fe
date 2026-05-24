@@ -134,22 +134,18 @@ const MessagesPageContent = () => {
           }, 500);
         }
       } else {
-        // Contact doesn't exist, send a message to create conversation
-        // The sendMessage will create the conversation automatically
-        const createConversation = async () => {
-          try {
-            await sendMessage(targetUserId, 'Hello!');
-            // The contact will appear via socket updates, handled in the next useEffect
-          } catch (error: unknown) {
-            const errorMessage =
-              error instanceof Error ? error.message : 'Failed to start conversation';
-            console.error('Failed to start conversation:', error);
-            toast.error(errorMessage);
-            hasHandledUserIdRef.current = false; // Allow retry
-          }
-        };
-
-        createConversation();
+        // Contact doesn't exist yet. We intentionally do NOT auto-send a
+        // "Hello!" bootstrap message here - that logic previously fired on
+        // every page reload with ?userId=... in the URL and silently
+        // spammed the target user with automated greetings. Instead, the
+        // conversation should be created when the user explicitly types
+        // their first real message. Until then, surface a gentle toast
+        // letting the user know the person hasn't been messaged yet.
+        console.log(
+          '[messages] No existing conversation with target user; waiting for first user-typed message.',
+          targetUserId,
+        );
+        toast.info('No messages yet - type your first message to start this conversation.');
       }
     }
   }, [
@@ -157,7 +153,6 @@ const MessagesPageContent = () => {
     contacts,
     loading.contacts,
     selectConversation,
-    sendMessage,
     isMobile,
     markConversationAsRead,
   ]);
@@ -352,13 +347,8 @@ const MessagesPageContent = () => {
           <h2 className="text-xl lg:text-2xl font-semibold">Messages</h2>
           {messagesLimit !== null && role === 'FREELANCER' && (
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Messages:</span>
-              <span
-                className={cn(
-                  'font-semibold',
-                  isAtLimit ? 'text-red-600' : 'text-gray-900 dark:text-white',
-                )}
-              >
+              <span className="text-gray-600">Messages:</span>
+              <span className={cn('font-semibold', isAtLimit ? 'text-red-600' : 'text-gray-900 ')}>
                 {messagesUsed}/{formatLimit(messagesLimit)}
               </span>
               {billingCycleEnd && daysUntilReset !== null && (
@@ -449,7 +439,7 @@ const MessagesPageContent = () => {
             {selectedContact ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b  flex items-center justify-between">
+                <div className="p-4 border-b flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     {isMobile && (
                       <Button
@@ -515,7 +505,7 @@ const MessagesPageContent = () => {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t ">
+                <div className="p-4 border-t">
                   <div className="flex space-x-2">
                     <Input
                       placeholder={isConnected ? 'Type a message...' : 'Connecting...'}

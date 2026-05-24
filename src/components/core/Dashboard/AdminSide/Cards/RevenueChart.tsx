@@ -36,6 +36,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
           className="text-sm border rounded-md px-4 py-2 focus:outline-none focus:ring"
           value={month}
           onChange={(e) => onMonthChange(e.target.value)}
+          aria-label="Select month"
         >
           {months.map((m) => (
             <option key={m} value={m}>

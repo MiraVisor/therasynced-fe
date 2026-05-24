@@ -32,13 +32,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
     return (
       <div className="flex items-center gap-0.5">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={cn(
-              sizeClasses[size],
-              'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600',
-            )}
-          />
+          <Star key={star} className={cn(sizeClasses[size], 'fill-gray-200 text-gray-300  ')} />
         ))}
       </div>
     );
@@ -64,12 +58,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
                 style={{ width: sizeClasses[size], height: sizeClasses[size] }}
               >
                 {/* Empty star background */}
-                <Star
-                  className={cn(
-                    sizeClasses[size],
-                    'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600',
-                  )}
-                />
+                <Star className={cn(sizeClasses[size], 'fill-gray-200 text-gray-300  ')} />
                 {/* Half-filled star - clipped to left half */}
                 <div className="absolute inset-0 overflow-hidden" style={{ width: '50%' }}>
                   <Star className={cn(sizeClasses[size], 'fill-yellow-400 text-yellow-400')} />
@@ -83,16 +72,14 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
               key={star}
               className={cn(
                 sizeClasses[size],
-                isFilled
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'fill-gray-200 text-gray-300 dark:fill-gray-700 dark:text-gray-600',
+                isFilled ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-300  ',
               )}
             />
           );
         })}
       </div>
       {showCount && (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-gray-600">
           {numericRating.toFixed(1)}{' '}
           {reviewCount > 0 && `(${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`}
         </span>

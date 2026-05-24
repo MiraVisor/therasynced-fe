@@ -33,8 +33,12 @@ export default function GoogleSignInButton({
       const finalReturnUrl = returnUrl || currentUrl;
 
       // Construct the Google OAuth URL with return URL
-      const backendUrl = BACKEND_URL || 'http://localhost:4000';
-      const googleAuthUrl = `${backendUrl}/auth/google?returnUrl=${encodeURIComponent(finalReturnUrl)}`;
+      if (!BACKEND_URL) {
+        toast.error('Backend URL is not configured. Please contact support.');
+        setIsLoading(false);
+        return;
+      }
+      const googleAuthUrl = `${BACKEND_URL}/auth/google?returnUrl=${encodeURIComponent(finalReturnUrl)}`;
 
       // Redirect to Google OAuth
       window.location.href = googleAuthUrl;

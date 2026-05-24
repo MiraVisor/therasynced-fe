@@ -1,4 +1,5 @@
 // Import pricing types for use in Expert interface
+import { LocationType } from './enums';
 import type { DurationPricing, ServicePricing } from './pricing';
 
 // Re-export data rights types
@@ -429,16 +430,6 @@ export type FreelancerStatCardType = {
 
 export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 
-export enum LocationType {
-  HOME = 'HOME',
-  CLINIC = 'CLINIC',
-  CORPORATE = 'CORPORATE',
-  GYM = 'GYM',
-  TRAINING = 'TRAINING',
-  PITCHSIDE = 'PITCHSIDE',
-  EVENT = 'EVENT',
-}
-
 export interface Appointment {
   id: string;
   title: string;
@@ -540,30 +531,22 @@ export interface Slot {
       name: string;
     };
     locationTypes: LocationType[]; // REQUIRED: Location types this service supports
-    pricing?: {
-      HOME?: {
-        price: number;
-        currency: string;
-        discount?: {
-          applicable: boolean;
-          subtotal?: number; // basePrice + service price (total before discount)
-          discountPercentage: number;
-          discountAmount: number;
-          finalAmount: number; // Final price after discount
-        };
-      };
-      CLINIC?: {
-        price: number;
-        currency: string;
-        discount?: {
-          applicable: boolean;
-          subtotal?: number; // basePrice + service price (total before discount)
-          discountPercentage: number;
-          discountAmount: number;
-          finalAmount: number; // Final price after discount
-        };
-      };
-    };
+    pricing?: Partial<
+      Record<
+        LocationType,
+        {
+          price: number;
+          currency: string;
+          discount?: {
+            applicable: boolean;
+            subtotal?: number;
+            discountPercentage: number;
+            discountAmount: number;
+            finalAmount: number;
+          };
+        }
+      >
+    >;
   }>; // Service categories available for this slot (includes pricing with discounts)
   booking?: {
     id: string;
@@ -666,7 +649,7 @@ export interface CreateServiceDto {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
 }
@@ -730,7 +713,7 @@ export interface BackendApiResponse<T = unknown> {
 export interface CreateBookingDto {
   slotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
 }
@@ -739,7 +722,7 @@ export interface RescheduleBookingDto {
   bookingId: string;
   newSlotId: string;
   serviceCategoryIds?: string[];
-  locationType?: 'HOME' | 'CLINIC';
+  locationType?: LocationType;
   clientAddress?: string;
   notes?: string;
   cancellationReason?: string;
@@ -1289,6 +1272,13 @@ export interface SubscriptionPlan {
   billingInterval: string;
   stripePriceId: string;
   maxSlots: number | null; // null = unlimited
+  maxServiceCategories?: number | null;
+  maxLocationTypes?: number | null;
+  maxMessagesPerBillingCycle?: number | null;
+  invoiceAccess?: boolean;
+  customFormsAccess?: boolean;
+  verifiedBadgeVisible?: boolean;
+  analyticsAccess?: boolean;
   commissionRate: number;
   features: string[];
   isActive: boolean;
@@ -1313,8 +1303,12 @@ export interface Subscription {
   subscription?: Subscription | null; // Nested subscription details if active
   isInTrial?: boolean;
   trialExpired?: boolean; // true if trial has expired
+  gracePeriodEndsAt?: string | null; // Grace period end date (7 days after payment failure)
   canCreateSlots: boolean; // Required field from API
   canAcceptBookings: boolean; // Required field from API
+  canGenerateInvoice?: boolean; // Added by backend based on plan.invoiceAccess
+  canAccessCustomForms?: boolean; // Added by backend based on plan.customFormsAccess
+  canShowVerifiedBadge?: boolean; // Added by backend based on plan.verifiedBadgeVisible
   slotsUsed: number; // Required field from API - Current active slots count
   slotsLimit: number | null; // Required field from API - Slot limit (null = unlimited)
   maxDaysPerWeek: number | null; // Days per week limit (null = unlimited)
@@ -1384,7 +1378,7 @@ export interface SearchFilters {
   location: string;
   priceMin?: number;
   priceMax?: number;
-  sessionType: LocationType[];
+  sessionType: ('HOME' | 'CLINIC')[];
   availableThisWeek: boolean;
   verificationStatus: ('PENDING' | 'APPROVED' | 'REJECTED')[];
   minRating?: number;

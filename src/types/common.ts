@@ -1,6 +1,6 @@
-// Helper types for common patterns
-import type { LocationType } from './enums';
+import { LocationType } from './types';
 
+// Helper types for common patterns
 export type Timestamp = string; // ISO date string
 export type UUID = string;
 export type Currency = number;

@@ -58,26 +58,26 @@ export default function TrialBanner() {
   // Determine color based on days remaining
   const getColorClass = () => {
     if (daysRemaining === null)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20';
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50  ';
     if (daysRemaining > 7)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20';
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50  ';
     if (daysRemaining > 3)
-      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20';
-    return 'border-orange-600 bg-gradient-to-r from-orange-100 to-red-50 dark:from-orange-900/30 dark:to-red-900/20';
+      return 'border-orange-500 bg-gradient-to-r from-orange-50 to-orange-100  ';
+    return 'border-orange-600 bg-gradient-to-r from-orange-100 to-red-50  ';
   };
 
   return (
     <Alert className={`${getColorClass()} shadow-sm animate-in slide-in-from-top duration-300`}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1">
-          <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex-shrink-0 mt-0.5">
-            <Sparkles className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <div className="p-1.5 rounded-lg bg-orange-100 flex-shrink-0 mt-0.5">
+            <Sparkles className="h-4 w-4 text-orange-600" />
           </div>
           <div className="flex-1">
-            <AlertTitle className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+            <AlertTitle className="font-semibold text-gray-900 flex items-center gap-2 mb-2">
               Free Trial Active
               {daysRemaining !== null && (
-                <span className="flex items-center gap-1 text-sm font-normal text-orange-700 dark:text-orange-300">
+                <span className="flex items-center gap-1 text-sm font-normal text-orange-700">
                   {daysRemaining === 0
                     ? 'Expires today'
                     : `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left`}
@@ -85,19 +85,19 @@ export default function TrialBanner() {
               )}
             </AlertTitle>
             {/* Progress bar */}
-            {daysRemaining !== null && daysRemaining <= 14 && (
+            {daysRemaining !== null && daysRemaining <= 30 && (
               <div className="mb-3">
-                <div className="h-1.5 bg-orange-200 dark:bg-orange-900/50 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-orange-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-orange-500 dark:bg-orange-400 transition-all duration-500 ease-out"
+                    className="h-full bg-orange-500 transition-all duration-500 ease-out"
                     style={{
-                      width: `${Math.max(0, Math.min(100, (daysRemaining / 14) * 100))}%`,
+                      width: `${Math.max(0, Math.min(100, (daysRemaining / 30) * 100))}%`,
                     }}
                   />
                 </div>
               </div>
             )}
-            <AlertDescription className="mt-2 space-y-2 text-gray-700 dark:text-gray-300">
+            <AlertDescription className="mt-2 space-y-2 text-gray-700">
               {isCanceledDuringTrial ? (
                 <p>
                   Your subscription has been canceled. You&apos;ll continue with trial access until{' '}
@@ -110,19 +110,9 @@ export default function TrialBanner() {
                 </p>
               ) : subscription?.status === 'TRIALING' && subscription?.plan ? (
                 <p>
-                  You&apos;re currently in your trial period. Your{' '}
-                  <strong>{subscription.plan.displayName}</strong> subscription will begin on{' '}
-                  {trialEndDate?.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                  , and you&apos;ll be charged starting then.
-                </p>
-              ) : subscription?.status === 'TRIALING' ? (
-                <p>
-                  You&apos;re currently in your trial period. Your subscription will start after the
-                  trial ends on{' '}
+                  All features are unlimited during your trial. Your{' '}
+                  <strong>{subscription.plan.displayName}</strong> plan (EUR{' '}
+                  {subscription.plan.price?.toFixed(2)}/month) activates on{' '}
                   {trialEndDate?.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -130,8 +120,21 @@ export default function TrialBanner() {
                   })}
                   . You won&apos;t be charged until then.
                 </p>
+              ) : subscription?.status === 'TRIALING' ? (
+                <p>
+                  All features are unlimited during your trial. After your trial ends on{' '}
+                  {trialEndDate?.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                  , your plan limits will apply. You won&apos;t be charged until then.
+                </p>
               ) : (
-                <p>Your 14-day free trial is active. Full platform access, no restrictions!</p>
+                <p>
+                  Your free trial is active — all features are unlimited. After your trial, the
+                  features available to you will depend on the plan you choose.
+                </p>
               )}
               {subscription && (
                 <div className="text-sm">
@@ -146,9 +149,7 @@ export default function TrialBanner() {
                       <>
                         {slotsUsed}/{slotsLimit} active slots
                         {slotsUsed >= slotsLimit && (
-                          <span className="ml-2 text-orange-600 dark:text-orange-400 font-medium">
-                            (Limit reached)
-                          </span>
+                          <span className="ml-2 text-orange-600 font-medium">(Limit reached)</span>
                         )}
                       </>
                     )}

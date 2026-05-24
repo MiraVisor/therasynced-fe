@@ -327,7 +327,7 @@ export const SlotInfoTab = ({ slot }: SlotInfoTabProps) => {
               {isSaving ? (
                 <p className="text-xs font-inter text-muted-foreground">Saving...</p>
               ) : lastSaved ? (
-                <p className="text-xs font-inter text-green-600 dark:text-green-400">
+                <p className="text-xs font-inter text-green-600">
                   Draft saved at {lastSaved.toLocaleTimeString()}
                 </p>
               ) : null}

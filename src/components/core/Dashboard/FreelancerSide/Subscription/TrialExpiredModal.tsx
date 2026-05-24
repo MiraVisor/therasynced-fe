@@ -119,25 +119,23 @@ export function TrialExpiredModal() {
       >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
-              <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <div className="p-2 rounded-full bg-red-100">
+              <AlertCircle className="h-6 w-6 text-red-600" />
             </div>
             <DialogTitle className="text-2xl font-poppins font-bold text-charcoal">
               Trial Expired
             </DialogTitle>
           </div>
-          <DialogDescription className="text-base text-gray-700 dark:text-gray-300 pt-2">
-            Your 14-day free trial has expired. To continue using TheraSynced and access all
+          <DialogDescription className="text-base text-gray-700 pt-2">
+            Your 30-day free trial has expired. To continue using TheraSynced and access all
             features, please subscribe to a plan.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4">
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-2">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              What happens next?
-            </p>
-            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1.5 list-disc list-inside">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <p className="text-sm font-medium text-gray-900">What happens next?</p>
+            <ul className="text-sm text-gray-600 space-y-1.5 list-disc list-inside">
               <li>Subscribe to a plan to regain full platform access</li>
               <li>Choose from Bronze, Silver, or Gold tiers</li>
               <li>Start accepting bookings and managing your practice</li>

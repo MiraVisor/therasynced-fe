@@ -22,10 +22,10 @@ function calculateSlotTimes(
   const [endHour, endMinute] = endTime.split(':').map(Number);
 
   const dayStart = new Date(date);
-  dayStart.setHours(startHour ?? 0, startMinute ?? 0, 0, 0);
+  dayStart.setUTCHours(startHour ?? 0, startMinute ?? 0, 0, 0);
 
   const dayEnd = new Date(date);
-  dayEnd.setHours(endHour ?? 0, endMinute ?? 0, 0, 0);
+  dayEnd.setUTCHours(endHour ?? 0, endMinute ?? 0, 0, 0);
 
   let currentTime = new Date(dayStart);
 
@@ -192,10 +192,10 @@ function calculateSlotTimesWithBreakRange(
   const [endHour, endMinute] = config.endTime.split(':').map(Number);
 
   const dayStart = new Date(date);
-  dayStart.setHours(startHour ?? 0, startMinute ?? 0, 0, 0);
+  dayStart.setUTCHours(startHour ?? 0, startMinute ?? 0, 0, 0);
 
   const dayEnd = new Date(date);
-  dayEnd.setHours(endHour ?? 0, endMinute ?? 0, 0, 0);
+  dayEnd.setUTCHours(endHour ?? 0, endMinute ?? 0, 0, 0);
 
   let currentTime = new Date(dayStart);
 

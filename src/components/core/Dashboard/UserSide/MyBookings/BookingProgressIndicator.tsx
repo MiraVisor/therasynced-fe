@@ -39,9 +39,7 @@ export const BookingProgressIndicator: React.FC<BookingProgressIndicatorProps> =
                 <div
                   className={cn(
                     'w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all',
-                    isActive
-                      ? 'bg-primary text-white shadow-md'
-                      : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                    isActive ? 'bg-primary text-white shadow-md' : 'bg-gray-100 text-gray-400  ',
                     isCurrent && 'ring-4 ring-primary/20',
                   )}
                 >
@@ -55,23 +53,19 @@ export const BookingProgressIndicator: React.FC<BookingProgressIndicatorProps> =
                   <div
                     className={cn(
                       'text-xs font-medium',
-                      isActive
-                        ? 'text-charcoal dark:text-white'
-                        : 'text-gray-400 dark:text-gray-500',
+                      isActive ? 'text-charcoal ' : 'text-gray-400 ',
                     )}
                   >
                     {step.title}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {step.description}
-                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">{step.description}</div>
                 </div>
               </div>
               {index < displaySteps.length - 1 && (
                 <div
                   className={cn(
                     'flex-1 h-0.5 mx-2 transition-all',
-                    currentStep > step.id ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700',
+                    currentStep > step.id ? 'bg-primary' : 'bg-gray-200 ',
                   )}
                 />
               )}

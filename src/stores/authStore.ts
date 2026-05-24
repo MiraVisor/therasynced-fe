@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { queryClient } from '@/lib/queryClient';
 import { getCookie, getDecodedToken, removeCookie, setCookie } from '@/lib/utils';
 import { RoleType } from '@/types/types';
 import { clearLocalStorageDrafts } from '@/utils/clearLocalStorageDrafts';
@@ -47,6 +48,10 @@ export const useAuthStore = create<AuthState>()(
 
       login: (token: string, role: RoleType) => {
         if (typeof window !== 'undefined') {
+          // Clear any cached query data from a previous session before
+          // the new user's queries run. Otherwise React Query serves
+          // stale data (subscription, slots, etc.) from the old account.
+          queryClient.clear();
           setCookie('token', token);
         }
         set({
@@ -60,6 +65,10 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== 'undefined') {
           removeCookie('token');
           clearLocalStorageDrafts();
+          // Nuke the React Query cache so the next user's session doesn't
+          // inherit stale data (subscription, slots, bookings, etc.)
+          // from the account that just logged out.
+          queryClient.clear();
         }
         set({
           isAuthenticated: false,
