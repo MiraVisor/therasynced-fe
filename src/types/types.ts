@@ -1378,7 +1378,7 @@ export interface SearchFilters {
   location: string;
   priceMin?: number;
   priceMax?: number;
-  sessionType: ('HOME' | 'CLINIC')[];
+  sessionType: LocationType[];
   availableThisWeek: boolean;
   verificationStatus: ('PENDING' | 'APPROVED' | 'REJECTED')[];
   minRating?: number;
